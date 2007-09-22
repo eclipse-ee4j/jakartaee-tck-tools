@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="changeme" default="all" basedir=".">
+    <target name="all">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+    </target>
+    
+    <target name="-compile-dir">
+        <javac srcdir="${dir}"/>
+        <jar basedir="${dir}" includes="**/*.class" jarfile="${dir}/api.jar"/>
+    </target>
+</project>
