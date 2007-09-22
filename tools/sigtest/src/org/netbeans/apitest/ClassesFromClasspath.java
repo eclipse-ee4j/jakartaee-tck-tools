@@ -58,8 +58,6 @@ public class ClassesFromClasspath {
     private int pos;
     /** current entry.**/
     private Path currentEntry;
-    /** determines if non-java packages will be scanned.**/
-    private boolean isAllTracked = false;
     /** determines if warning will be printed.**/
     private boolean isIgnorableTrack = false;
 
@@ -167,19 +165,6 @@ public class ClassesFromClasspath {
 
     /** returns the name of the next class which found in the PATH.**/
     public String nextClassName() {
-        if (isAllTracked) {
-            return nextClassNameFromAll();
-        }
-        String name;
-        while ((name = nextClassNameFromAll()) != null) {
-            if (name.startsWith("java."))
-                return name;
-        }
-        return null;
-    }
-            
-    /** returns the name of the next class which found in the PATH.**/
-    private String nextClassNameFromAll() {
         String name = null;
         for (;((currentEntry == null) ||
                ((name = currentEntry.nextClassName()) == null)) &&
@@ -211,11 +196,6 @@ public class ClassesFromClasspath {
         throw new ClassNotFoundException(name);
     }
                 
-
-    /** specify, that non-java packages will be scanned. **/
-    public void setAllClasses() {
-        isAllTracked = true;
-    }
 
     /** This interface represent path entry **/
     private interface Path {

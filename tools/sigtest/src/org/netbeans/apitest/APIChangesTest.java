@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 
 /** This test has following tested mode:<dd>
@@ -163,7 +164,7 @@ public class APIChangesTest implements SignatureConstants {
     /**contains founded nested classes.**/
     private Hashtable nestedClasses;
     /**includes packages which are required to be tracked.**/
-    private String Packages[];
+    private Pattern packages[];
     /** name of the packages or classes which should must be excluded
         from tracking.**/
     private String excludedElements[];
@@ -210,7 +211,7 @@ public class APIChangesTest implements SignatureConstants {
 
 	String fileName = null;
 	URL sigFile;
-	Vector<String> tempPackages = new Vector<String>();
+	Vector<Pattern> tempPackages = new Vector<Pattern>();
 	Vector<String> tempExcludedElements = new Vector<String>();
         String classpath = null;
 
@@ -222,10 +223,18 @@ public class APIChangesTest implements SignatureConstants {
 		fileName = args[++i];
 	    } else if (args[i].equals("-Package") &&
 		       (args.length > i + 1)) {
-		tempPackages.addElement(args[++i]);
+                String pkg = args[++i];
+                if (pkg.indexOf('.') != -1) {
+                    return Status.failed("Package cannot contain a dot: " + pkg);
+                }
+		tempPackages.addElement(Pattern.compile(pkg + "\\..*"));
 	    } else if (args[i].equals("-PackageWithoutSubpackages") &&
 		       (args.length > i + 1)) {
-		tempPackages.addElement(args[++i]);
+                String pkg = args[++i];
+                if (pkg.indexOf('.') != -1) {
+                    return Status.failed("Package cannot contain a dot: " + pkg);
+                }
+		tempPackages.addElement(Pattern.compile(pkg + "\\.[^\\.]*"));
 	    } else if (args[i].equals("-Exclude") &&
 		       (args.length > i + 1)) {
 		tempExcludedElements.addElement(args[++i]);
@@ -249,22 +258,11 @@ public class APIChangesTest implements SignatureConstants {
 	    return Status.failed("Need to specify --FileName");
 	}
 
-        boolean isAPI = true;
 	//Construct array of the tested packages
 	if (tempPackages.isEmpty()) {
-            Packages = new String[1];
-	    Packages[0] = "java.";
+            return Status.failed("Specify some packages to test");
 	} else {
-	    Packages = new String[tempPackages.size()];
-	    for (int i = 0; i < tempPackages.size(); i++) {
-		Packages[i] = tempPackages.elementAt(i);
-                if (!Packages[i].endsWith(".") && !Packages[i].equals("")) {
-                    Packages[i] = Packages[i] + ".";
-                }
-                if (!Packages[i].startsWith("java.")) {
-                    isAPI = false;
-                }
-            }
+	    packages = tempPackages.toArray(new Pattern[0]);
 	}
         //Construct array of the excluded elements
 	if (tempExcludedElements.isEmpty()) {
@@ -306,18 +304,17 @@ public class APIChangesTest implements SignatureConstants {
                 errorWriter = new APISortedErrorFormatter(log);
         }
 
-        if (classpath == null)
-            classIterator = new ClassesFromClasspath(isIgnorableReported);
-        else 
-            classIterator = new ClassesFromClasspath(classpath,
-                                                     isIgnorableReported);
-        if (!isAPI)
-            classIterator.setAllClasses();
+        if (classpath == null) {
+            return Status.failed("Specify --Classpath");
+        } else {
+            classIterator = new ClassesFromClasspath(classpath, isIgnorableReported);
+        }
         
-	if (setup)
+	if (setup) {
             return setup(fileName);
-        else 
+        } else {
             return verify(fileName);
+        }
     }
 
     /**runs test in the setup mode. creates API master signature file.
@@ -428,11 +425,13 @@ public class APIChangesTest implements SignatureConstants {
 	}
         errors = errors + classIterator.printErrors(log);
             
+        /*
         try {
             String classpath = ClassesFromClasspath.getClasspath();
             log.println("In the CLASSPATH : " + classpath);
         } catch (Throwable t) {
         }
+        */
         
         log.println("\n  Found classes   : " + allClassesSize);
         log.println("  Scanned classes : " + scanedClassesSize);
@@ -961,11 +960,11 @@ public class APIChangesTest implements SignatureConstants {
 	    if (name.startsWith(excludedElements[j] + ".") ||
                 name.equals(excludedElements[j]))
 		return false;
-	if (Packages == null) 
-	    return true;
-	for (int i = 0; i < Packages.length; i++) 
-	    if (name.startsWith(Packages[i]))
-		return true;
+	for (int i = 0; i < packages.length; i++) {
+            if (packages[i].matcher(name).matches()) {
+                return true;
+            }
+        }
 	return false;
     }
 

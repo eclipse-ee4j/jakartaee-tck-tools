@@ -15,7 +15,8 @@
     </target>
     
     <target name="-compile-dir">
-        <javac srcdir="${dir}" fork="true"/>
-        <jar basedir="${dir}" includes="**/*.class" jarfile="${dir}/api.jar"/>
+        <mkdir dir="${dir}/classes"/>
+        <javac srcdir="${dir}" fork="true" destdir="${dir}/classes"/>
+        <jar basedir="${dir}/classes" includes="**/*.class" jarfile="${dir}/api.jar"/>
     </target>
 </project>
