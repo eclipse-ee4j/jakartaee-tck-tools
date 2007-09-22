@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="changeme" default="all" basedir=".">
+<project name="testing build script" default="all" basedir=".">
     <target name="all">
         <antcall target="-compile-dir">
             <param name="dir" value="${dir1}"/>
@@ -7,10 +7,15 @@
         <antcall target="-compile-dir">
             <param name="dir" value="${dir2}"/>
         </antcall>
+        
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        
+        <sigtest action="Setup" classpath="${dir1}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
+        <sigtest action="Check" classpath="${dir2}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
     </target>
     
     <target name="-compile-dir">
-        <javac srcdir="${dir}"/>
+        <javac srcdir="${dir}" fork="true"/>
         <jar basedir="${dir}" includes="**/*.class" jarfile="${dir}/api.jar"/>
     </target>
 </project>
