@@ -25,15 +25,7 @@
 
 package org.netbeans.apitest;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /** This class find an load SignatureClass. The method Class.forName
  *  is used for founding of the Class object. If the Class.forName(String,
