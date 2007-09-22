@@ -31,9 +31,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -53,13 +60,15 @@ public class ClassesFromClasspath {
     /** number of the errors **/
     private int sizeErrors;
     /** includes PATH entries. **/
-    private Vector entries;
+    private Vector<Path> entries;
     /** the index of the current entry**/
     private int pos;
     /** current entry.**/
     private Path currentEntry;
     /** determines if warning will be printed.**/
     private boolean isIgnorableTrack = false;
+    /** loader */
+    private final ClassLoader loader;
 
     /** creates ClassesFromClasspath with system.class.path + CLASSPATH as PATH
      *  @param isIgnorableTrack determines if warning will be printed **/
@@ -72,50 +81,67 @@ public class ClassesFromClasspath {
      *  @param isIgnorableTrack determines if warning will be printed. **/
     public ClassesFromClasspath(String path, boolean isIgnorableTrack) {
         this.isIgnorableTrack = isIgnorableTrack; 
-        entries = new Vector();
+        entries = new Vector<Path>();
         pos = 0;
         sizeErrors = 0;
 	errors = new Vector();
         currentEntry = null;
         
-        Vector pathEntries = new Vector();
+        Vector<String> pathEntries = new Vector<String>();
+        List<URL> urls = new ArrayList<URL>();
 	//creates Hashtable with ZipFiles and directories from path.
 	while (path != null && path.length() > 0) {
-	    String s;
-	    int index = path.indexOf(File.pathSeparatorChar);
-	    if (index == -1) {
-		s = path;
-		path = null;
-	    } else {
-		s = path.substring(0, index);
-		path = path.substring(index + 1);
-	    }
-	    // remove trailing separator, if necessary
-	    if (s.endsWith(File.separator))
-		s = s.substring(0, s.length() - File.separator.length());
-	    File pathEntry = new File(s);
-            String canonicalEntry = s;
             try {
-                canonicalEntry = pathEntry.getCanonicalPath();
-            } catch (IOException e) {
-            }
-               
-            if (pathEntries.contains(canonicalEntry))
-                continue;//remove duplicates entries from CLASSPATH
-            else
-                pathEntries.addElement(canonicalEntry);
-	    if (pathEntry.isDirectory())
-                entries.addElement(new DirE(pathEntry));
-	    else {
-                try {
-                    entries.addElement(new ZipE(pathEntry));
-                } catch (IOException e) {
-                    String error = "Ignoring " + pathEntry.getAbsolutePath() + ": " + e;
-                    if (!errors.contains(error) && isIgnorableTrack)
-                        errors.addElement(error);
+                String s;
+                int index = path.indexOf(File.pathSeparatorChar);
+                if (index == -1) {
+                    s = path;
+                    path = null;
+                } else {
+                    s = path.substring(0, index);
+                    path = path.substring(index + 1);
                 }
-	    }
+                // remove trailing separator, if necessary
+                if (s.endsWith(File.separator)) {
+                    s = s.substring(0, s.length() - File.separator.length());
+                }
+                File pathEntry = new File(s);
+                File canonicalEntry = pathEntry;
+                try {
+                    canonicalEntry = pathEntry.getCanonicalFile();
+                } catch (IOException e) {
+                }
+
+                if (pathEntries.contains(canonicalEntry.getPath())) {
+                    continue; //remove duplicates entries from CLASSPATH
+                } else {
+                    pathEntries.addElement(canonicalEntry.getPath());
+                }
+                urls.add(canonicalEntry.toURL());
+
+
+                if (pathEntry.isDirectory()) {
+                    entries.addElement(new DirE(pathEntry));
+                } else {
+                    try {
+                        entries.addElement(new ZipE(pathEntry));
+                    } catch (IOException e) {
+                        String error = "Ignoring " + pathEntry.getAbsolutePath() + ": " + e;
+                        if (!errors.contains(error) && isIgnorableTrack) {
+                            errors.addElement(error);
+                        }
+                    }
+                }
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(ClassesFromClasspath.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
+        
+        this.loader = new URLClassLoader(urls.toArray(new URL[0]));
+    }
+    
+    public ClassLoader getClassLoader() {
+        return this.loader;
     }
 
     /** determinate if the throws clause can be tracked in
@@ -125,10 +151,11 @@ public class ClassesFromClasspath {
             Class c = org.netbeans.apitest.ClassesFromClasspath.class;
             Method met = c.getDeclaredMethod("getCurrentClass", new Class[0]);
             Class exep[] = met.getExceptionTypes();
-            if ((exep == null) || (exep.length == 0))
+            if ((exep == null) || (exep.length == 0)) {
                 return false;
-            else
+            } else {
                 return true;
+            }
         } catch (Throwable t) {
             errors.addElement("Can not track that Method.getExceptionTypes()" +
                               " works correctly. " + t + " thrown.");
@@ -169,7 +196,7 @@ public class ClassesFromClasspath {
         for (;((currentEntry == null) ||
                ((name = currentEntry.nextClassName()) == null)) &&
                  (pos < entries.size()); pos++) {
-            currentEntry = (Path)entries.elementAt(pos);
+            currentEntry = entries.elementAt(pos);
             currentEntry.clear();
         }
         return name;
@@ -177,16 +204,17 @@ public class ClassesFromClasspath {
 
     /** open current class file as stream **/
     public InputStream getCurrentClass() throws IOException {
-        if (currentEntry == null)
+        if (currentEntry == null) {
             return null;
-        else
+        } else {
             return currentEntry.getCurrentClass();
+        }
     }
 
     public InputStream findClass(String name)
         throws IOException, ClassNotFoundException {
         for (int i = 0; i < entries.size(); i++) {
-            Path temp = (Path)entries.elementAt(i);
+            Path temp = entries.elementAt(i);
             try {
                 InputStream classFile = temp.findClass(name);
                 return classFile;

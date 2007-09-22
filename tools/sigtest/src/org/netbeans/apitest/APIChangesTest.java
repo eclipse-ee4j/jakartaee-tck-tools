@@ -309,7 +309,7 @@ public class APIChangesTest implements SignatureConstants {
         } else {
             classIterator = new ClassesFromClasspath(classpath, isIgnorableReported);
         }
-        
+
 	if (setup) {
             return setup(fileName);
         } else {
@@ -335,7 +335,7 @@ public class APIChangesTest implements SignatureConstants {
             }
             if (!isThrowsTracked)
                 out.println("#Throws clause not tracked.");
-            loader = createClassFinder();
+            loader = new ClassFinder(converter, details, classIterator.getClassLoader());
 	    String name;
             Vector duplicateClasses = new Vector();
             InputStream classStream;
@@ -373,7 +373,7 @@ public class APIChangesTest implements SignatureConstants {
                         ignore(name);
                     if (!temp.isAccessible(name))
                         continue;
-                    Class c = Class.forName(name);
+                    //Class c = Class.forName(name);
                     if (duplicateClasses.contains(name)) {
                         setupProblem("The class " + name + " is found twice.");
                     } else {
@@ -387,7 +387,7 @@ public class APIChangesTest implements SignatureConstants {
                 } catch (ClassFormatError er) {
                     setupProblem("The primitive constans of the class " + 
                                  name + " can not be tracked throw " +  er);
-                } catch (ClassNotFoundException e) {
+                //} catch (ClassNotFoundException e) {
                 } catch (LinkageError er2) {
                 }
             }
@@ -397,7 +397,7 @@ public class APIChangesTest implements SignatureConstants {
             for (int i = 0; i < packageClasses.size(); i++) {
                 name = (String)packageClasses.elementAt(i);
                 try {
-                    Class c = Class.forName(name);
+             //       Class c = Class.forName(name);
                     scanClass(out, loader.loadClass(name));
                 } catch (ClassNotFoundException ex) {
                     nestedErrors.addUniqueElement(name, "Class not found: " + name);
@@ -479,7 +479,8 @@ public class APIChangesTest implements SignatureConstants {
                 converter = new PrimitiveConstantsChecker(true, isThrowsTracked);
             }
 
-            loader = createClassFinder();
+            loader = new ClassFinder(converter, details, classIterator.getClassLoader());
+        
             in.setDefinitionConverter(converter);
 	    TableOfClass currentClass;
 	    while ((currentClass = in.nextAPIClass()) != null) {
@@ -1063,10 +1064,6 @@ public class APIChangesTest implements SignatureConstants {
     private void ignore(String message) {
         if (isIgnorableReported)
             log.println("Ignoring " + message);
-    }
-
-    protected ClassFinder createClassFinder() {
-        return new ClassFinder(converter, details);
     }
 }
     
