@@ -11,7 +11,9 @@
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         
         <sigtest action="Setup" classpath="${dir1}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
-        <sigtest action="Check" classpath="${dir2}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
+        
+        <property name="check.type" value="Check"/>
+        <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
     </target>
     
     <target name="-compile-dir">

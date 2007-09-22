@@ -91,7 +91,7 @@ final class ExecuteUtils {
         arr.add ("-f");
         arr.add (f.toString ());
         arr.addAll(Arrays.asList(args));
-        arr.add ("-verbose");
+        //arr.add ("-verbose");
         
         
         out.reset ();

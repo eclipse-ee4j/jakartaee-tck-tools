@@ -30,6 +30,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -75,24 +78,74 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2);
     }
     
+    public void testStrictCheckDiscoversAnAPIChange() throws Exception {
+        String c1 =
+            "package x;" +
+            "public class C {" +
+            "  private C() { }" + 
+            "}";
+        createFile(1, "C.java", c1);
+        String cc1 =
+            "package x.ignore;" +
+            "public class X {" +
+            "  private X() { }" +
+            "}";
+        createFile(1, "X.java", cc1);
+        String c2 =
+            "package x;" +
+            "public class C {" +
+            "  public void newMeth() { }" +
+            "}";
+        createFile(2, "C.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.type=StrictCheck");
+            fail("This should fail, the mode is strict and we see some changes");
+        } catch (ExecuteUtils.ExecutionError err) {
+            // ok
+        }
+    }
+    
+    public void testDeleteOfAMethodIsReported() throws Exception {
+        String c1 =
+            "package x;" +
+            "public class C {" +
+            "  public void x() { }" +
+            "}";
+        createFile(1, "C.java", c1);
+        String c2 =
+            "package x;" +
+            "public class C {" +
+            "  public C() { }" +
+            "}";
+        createFile(2, "C.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.type=Check");
+            fail("This comparition should fail");
+        } catch (ExecuteUtils.ExecutionError err) {
+            // ok
+        }
+    }
+    
     protected final void createFile(int slot, String name, String content) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slot);
         File c1 = new File(d1, name);
         copy(content, c1);
     }
     
-    protected final void compareAPIs(int slotFirst, int slotSecond) throws Exception {
+    protected final void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slotFirst);
         File d2 = new File(getWorkDir(), "dir" + slotSecond);
         
         File build = new File(getWorkDir(), "build.xml");
         extractResource("build.xml", build);
         
-        String[] args = {
-            "-Ddir1=" + d1,
-            "-Ddir2=" + d2,
-        };
-        ExecuteUtils.execute(build, args);
+        List<String> args = new ArrayList<String>();
+        args.addAll(Arrays.asList(additionalArgs));
+        args.add("-Ddir1=" + d1);
+        args.add("-Ddir2=" + d2);
+        ExecuteUtils.execute(build, args.toArray(new String[0]));
     }
     
     private static final void copy(String txt, File f) throws Exception {

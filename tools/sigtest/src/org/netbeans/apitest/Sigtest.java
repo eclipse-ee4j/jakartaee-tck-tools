@@ -102,6 +102,12 @@ public class Sigtest extends Task {
         arg.add(fileName.getAbsolutePath());
         if (action.equals("Setup")) {
             arg.add("-setup");
+        } else if (action.equals("Check")) {
+            // no special arg for check
+        } else if (action.equals("StrictCheck")) {
+            arg.add("-maintenance");
+        } else {
+            throw new BuildException("Unknown action: " + action);
         }
         
         File outputFile = null;
@@ -146,10 +152,9 @@ public class Sigtest extends Task {
             arg.add(sb.toString());
         }
         
-        
         int returnCode = APIChangesTest.run(arg.toArray(new String[0])).getType();
         
-        if (returnCode != 95) {
+        if (returnCode != 0) {
             if (failOnError && outputFile == null) {
                 throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
             }

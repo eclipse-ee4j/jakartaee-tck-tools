@@ -251,6 +251,8 @@ public class APIChangesTest implements SignatureConstants {
                 classpath = args[++i];
             } else if (args[i].equals("-Verbose")) {
                 isIgnorableReported = true;
+            } else {
+                return Status.failed("Unknown option: " + args[i]);
             }
 	}
 	// check arguments
