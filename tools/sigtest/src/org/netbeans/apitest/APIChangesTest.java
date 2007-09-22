@@ -29,21 +29,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.netbeans.apitest.Status;
-import org.netbeans.apitest.Test;
 
 /** This test has following tested mode:<dd>
  *  1. In the default mode, APIChangesTest checks the binary compatibility of
@@ -110,7 +105,6 @@ import org.netbeans.apitest.Test;
  *  Options for setup mode
 
  *   <dd> -setup 	 - run in setup mode
- *   <dd> -TestURL &lt;url&gt; - should point to output directory location
  *   <dd> -FileName &lt;n&gt;   - output signature file name 
  *   <dd> -Package &lt;p&gt; - package which are added to signature file,
  *      all "java.*" by default.  (several options can be specified)
@@ -132,7 +126,6 @@ import org.netbeans.apitest.Test;
  * 
  *   <dd>-maintenance - track absence of any API changes. This options
  *        doesn't track throwable clause for jdk1.1 because of JDK bug#4022219.
- *   <dd>-TestURL &lt;url&gt;	 - directory location of signature file 
  *   <dd>-FileName &lt;n&gt;   - signature file name (short, without directory)
  *   <dd>-Package &lt;p&gt;	 - package which are needed to be tracked
  *        (several options can be specified)  
@@ -150,34 +143,14 @@ import org.netbeans.apitest.Test;
  *      adding classes.
  *  <p>Examples:<br>
  *  Creation of the signature file:<br>
- *      <dd>java javasoft.sqe.tests.api.APIChangesTest -TestURL file://`pwd`/ -FileName
+ *      <dd>java javasoft.sqe.tests.api.APIChangesTest-FileName
  *      apiMasterFile.jdk1.1.1 -setup<br>
  *  Tracking of the jdk:<br>
- *      <dd>java javasoft.sqe.tests.api.APIChangesTest -TestURL file://`pwd`/ -FileName
+ *      <dd>java javasoft.sqe.tests.api.APIChangesTest -FileName
  *      apiMasterFile.jdk1.1.1 <br>
  **/
 
-/* @test
-   @compile SignatureConstants.java
-   @compile DefinitionFormat.java
-   @compile MemberEntry.java SignatureClass.java
-   @compile ClassCollection.java
-   @compile ClassFinder.java
-   @compile TableOfClass.java
-   @compile ErrorMessage.java ErrorFormatter.java
-   @compile SortedErrorFormatter.java
-   @compile APISortedErrorFormatter.java
-   @compile ClassSignatureReader.java
-   @compile ClassSorter.java
-   @compile ClassConstants.java
-   @compile ClassesFromClasspath.java
-   @compile MemberDefinition.java
-   @compile PrimitiveConstantsChecker.java
-   @compile APIChangesTest.java
-   @run main/timeout=1200 TestURL -TestURL $testURL -FileName jdk1_2.api
-*/
-
-public class APIChangesTest implements Test, SignatureConstants {
+public class APIChangesTest implements SignatureConstants {
     /** print errors and warnings. **/
     PrintWriter log;
     /**Reads class names and classes, which are available by current
@@ -219,40 +192,38 @@ public class APIChangesTest implements Test, SignatureConstants {
         of implementation **/
     protected Properties details = new Properties();
     
-    public static void main(String[] args) {
+    public static Status run(String[] args) {
 	APIChangesTest t = new APIChangesTest();
         PrintWriter log = new PrintWriter(new OutputStreamWriter(System.err),
                                           true);
         PrintWriter ref = new PrintWriter(new OutputStreamWriter(System.out),
                                           true);
-	Status s = t.run(args, log, ref);
-	s.exit();
+	return t.run(args, log, ref);
     }
 
     /**runs test.**/
-    public Status run(String[] args, PrintWriter log, PrintWriter ref) {
+    private Status run(String[] args, PrintWriter log, PrintWriter ref) {
 	this.log = log;
 	// ref ignored
 	boolean setup = false;
 	boolean isOrdering = true;
 
-	String testURL = null;
 	String fileName = null;
 	URL sigFile;
-	Vector tempPackages = new Vector();
-	Vector tempExcludedElements = new Vector();
+	Vector<String> tempPackages = new Vector<String>();
+	Vector<String> tempExcludedElements = new Vector<String>();
         String classpath = null;
 
 	for (int i = 0; i < args.length; ++i) {
 	    if (args[i].equals("-FormatPlain")) {
 		isOrdering = false;
-	    } else if (args[i].equals("-TestURL") &&
-		       (args.length > i + 1)) {
-		testURL = args[++i];
 	    } else if (args[i].equals("-FileName") &&
 		       (args.length > i + 1)) {
 		fileName = args[++i];
 	    } else if (args[i].equals("-Package") &&
+		       (args.length > i + 1)) {
+		tempPackages.addElement(args[++i]);
+	    } else if (args[i].equals("-PackageWithoutSubpackages") &&
 		       (args.length > i + 1)) {
 		tempPackages.addElement(args[++i]);
 	    } else if (args[i].equals("-Exclude") &&
@@ -274,17 +245,10 @@ public class APIChangesTest implements Test, SignatureConstants {
             }
 	}
 	// check arguments
-	if (testURL == null || fileName == null) {
-	    return Status.failed("Invalid arguments");
+	if (fileName == null) {
+	    return Status.failed("Need to specify --FileName");
 	}
 
-	// Construct file name
-	try {
-	    sigFile = new URL(testURL);
-	    sigFile = new URL(sigFile, fileName);
-	} catch( MalformedURLException e) {
-	    return Status.failed("Invalid URL");
-	}
         boolean isAPI = true;
 	//Construct array of the tested packages
 	if (tempPackages.isEmpty()) {
@@ -293,11 +257,13 @@ public class APIChangesTest implements Test, SignatureConstants {
 	} else {
 	    Packages = new String[tempPackages.size()];
 	    for (int i = 0; i < tempPackages.size(); i++) {
-		Packages[i] = (String)tempPackages.elementAt(i);
-                if (!Packages[i].endsWith(".") && !Packages[i].equals(""))
+		Packages[i] = tempPackages.elementAt(i);
+                if (!Packages[i].endsWith(".") && !Packages[i].equals("")) {
                     Packages[i] = Packages[i] + ".";
-                if (!Packages[i].startsWith("java."))
+                }
+                if (!Packages[i].startsWith("java.")) {
                     isAPI = false;
+                }
             }
 	}
         //Construct array of the excluded elements
@@ -349,9 +315,9 @@ public class APIChangesTest implements Test, SignatureConstants {
             classIterator.setAllClasses();
         
 	if (setup)
-            return setup(sigFile.getFile());
+            return setup(fileName);
         else 
-            return verify(sigFile);
+            return verify(fileName);
     }
 
     /**runs test in the setup mode. creates API master signature file.
@@ -493,7 +459,7 @@ public class APIChangesTest implements Test, SignatureConstants {
 
     /**runs test in the default or maintenance mode
      * @param sigFileURL API signature file.**/
-    private Status verify(URL sigFileURL) {
+    private Status verify(String sigFileURL) {
 	nestedClasses = new Hashtable();
 	trackedClassNames = new Vector();
         ClassSignatureReader in = null;

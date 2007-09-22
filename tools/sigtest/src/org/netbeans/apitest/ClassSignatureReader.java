@@ -26,6 +26,7 @@
 package org.netbeans.apitest;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -48,8 +49,8 @@ public class ClassSignatureReader implements SignatureConstants {
 
     /** Creates new ClassSignatureReader for given URL
      * @param fileURL given URL which contains signature file **/
-    public ClassSignatureReader(URL fileURL) throws IOException {
-	in = new BufferedReader(new InputStreamReader(fileURL.openStream()));
+    public ClassSignatureReader(String fileURL) throws IOException {
+	in = new BufferedReader(new FileReader(fileURL));
 	definitions = new Vector();
 	currentLine = null;
 	//read the first class name

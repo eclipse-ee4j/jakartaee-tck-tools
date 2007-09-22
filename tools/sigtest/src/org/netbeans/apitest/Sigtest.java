@@ -130,9 +130,24 @@ public class Sigtest extends Task {
                     p = p.substring(0, idx);
                 }
             }
+            arg.add(prefix.trim());
+            arg.add(p);
         }
-        int returnCode = 0;
-        APIChangesTest.main(arg.toArray(new String[0]));
+        
+        if (classpath != null) {
+            StringBuffer sb = new StringBuffer();
+            String pref = "";
+            for (String e : classpath.list()) {
+                sb.append(pref);
+                sb.append(e);
+                pref = File.pathSeparator;
+            }
+            arg.add("-Classpath");
+            arg.add(sb.toString());
+        }
+        
+        
+        int returnCode = APIChangesTest.run(arg.toArray(new String[0])).getType();
         
         if (returnCode != 95) {
             if (failOnError && outputFile == null) {

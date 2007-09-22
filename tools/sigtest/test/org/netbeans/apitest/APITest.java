@@ -58,23 +58,32 @@ public class APITest extends NbTestCase {
             "public class C {" +
             "  private C() { }" +
             "}";
+        createFile(1, "C.java", c1);
+        String cc1 =
+            "package x.ignore;" +
+            "public class X {" +
+            "  private X() { }" +
+            "}";
+        createFile(1, "X.java", cc1);
         String c2 =
             "package x;" +
             "public class C {" +
             "  public C() { }" +
             "}";
+        createFile(2, "C.java", c2);
         
-        compareAPIs(c1, c2);
+        compareAPIs(1, 2);
     }
     
-    protected final void compareAPIs(String first, String second) throws Exception {
-        File d1 = new File(getWorkDir(), "d1");
-        File c1 = new File(d1, "C.java");
-        copy(first, c1);
-        
-        File d2 = new File(getWorkDir(), "d2");
-        File c2 = new File(d2, "C.java");
-        copy(first, c2);
+    protected final void createFile(int slot, String name, String content) throws Exception {
+        File d1 = new File(getWorkDir(), "dir" + slot);
+        File c1 = new File(d1, name);
+        copy(content, c1);
+    }
+    
+    protected final void compareAPIs(int slotFirst, int slotSecond) throws Exception {
+        File d1 = new File(getWorkDir(), "dir" + slotFirst);
+        File d2 = new File(getWorkDir(), "dir" + slotSecond);
         
         File build = new File(getWorkDir(), "build.xml");
         extractResource("build.xml", build);
