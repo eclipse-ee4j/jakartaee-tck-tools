@@ -30,7 +30,7 @@ import java.util.Properties;
 /** This is class for formating member definition. It can removes specified
  *  modifiers and throws clause. The subclasses of this class can provides
  *  other operations. **/
-public class DefinitionFormat implements SignatureConstants {
+class DefinitionFormat implements SignatureConstants {
     /** specify if qualified names will be used. **/
     protected boolean isQualifiedName;
     /** specify if throws clause will be tracked. **/

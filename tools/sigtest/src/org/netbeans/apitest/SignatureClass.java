@@ -28,13 +28,12 @@ package org.netbeans.apitest;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Properties;
 
 /** This is class for founding of the declared members. This class
  *  founds declared methods using reflection, but subclasses could uses
  *  other methods, for example class file parsing. **/
-public class SignatureClass implements ClassConstants{
+final class SignatureClass implements ClassConstants{
     /** class object which is required in the declared members founding. **/
     Class classObject;
     /** formats definitions. **/

@@ -25,7 +25,7 @@
 
 package org.netbeans.apitest;
 
-public interface ClassConstants {
+interface ClassConstants {
     /* Class File Constants */
     int JAVA_MAGIC                   = 0xcafebabe;
     int JAVA_VERSION                 = 45;

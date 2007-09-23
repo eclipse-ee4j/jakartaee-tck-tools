@@ -53,7 +53,7 @@ import java.util.zip.ZipFile;
  * to the PrintWriter out and returns number of the errors.*/
 
 /** This class represents class names which are placed in the given PATH. **/
-public class ClassesFromClasspath {
+final class ClassesFromClasspath {
 
     /** includes errors and warnings which are occurred. **/
     private Vector errors;

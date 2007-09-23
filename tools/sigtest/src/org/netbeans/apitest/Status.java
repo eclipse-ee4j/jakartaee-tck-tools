@@ -33,8 +33,7 @@ import java.io.PrintWriter;
  * @author Jonathan J Gibbons
  */
 
-public class Status
-{
+final class Status {
     /**
      * Create a Status that represents the successful outcome of a test.
      */

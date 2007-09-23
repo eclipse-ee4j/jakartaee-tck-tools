@@ -28,7 +28,7 @@ package org.netbeans.apitest;
 import java.util.Vector;
 
 /** This is class for analysis of the member definitions. **/
-class MemberDefinition implements SignatureConstants {
+final class MemberDefinition implements SignatureConstants {
     static final int PRIVATE   = 0;
     static final int DEFAULT   = 1;
     static final int PROTECTED = 2;

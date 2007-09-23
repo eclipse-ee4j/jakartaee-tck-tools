@@ -28,12 +28,10 @@ package org.netbeans.apitest;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Vector;
 
 /** This is class for reading signature or API signature file **/
-public class ClassSignatureReader implements SignatureConstants {
+final class ClassSignatureReader implements SignatureConstants {
     /** reads line from signature file **/
     private BufferedReader in;
     /** the last line which are read from signature file **/

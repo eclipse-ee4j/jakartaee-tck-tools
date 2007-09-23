@@ -32,7 +32,7 @@ import java.util.Vector;
  *  SignatureTest and APIChangesTest. This class returns messages in
  *  the sorted format. The messages are grouped by error type and
  *  alphabetized by class then name **/
-public class SortedErrorFormatter extends ErrorFormatter {
+class SortedErrorFormatter extends ErrorFormatter {
     /** the headers of the group with the same error type **/
     String[]  headers = {
         "Missing Classes",

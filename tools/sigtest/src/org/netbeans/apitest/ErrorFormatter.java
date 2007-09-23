@@ -26,12 +26,11 @@
 package org.netbeans.apitest;
 
 import java.io.PrintWriter;
-import java.util.Vector;
 /** This is class for formatting error messages which are created by
  *  SignatureTest or APIChangesTest. This class returns messages in
  *  the plain format without sorting and grouping. The subclasses of
  *  this class can represents other formats. **/
-public class ErrorFormatter implements SignatureConstants {
+class ErrorFormatter implements SignatureConstants {
     /** field include messages for different type of errors **/
     String[]  messages = {
 	"Required class not found in implementation: ", // Missing Classes

@@ -27,7 +27,7 @@ package org.netbeans.apitest;
 
 /** This class represents Error message created
   *  by APIChanges or SignatureTest **/
-public class ErrorMessage {
+final class ErrorMessage {
     /** messages for current error message. If for current error type this
      *  message is not exist, than ErrorFormatter.messages is used **/
     String messages[];

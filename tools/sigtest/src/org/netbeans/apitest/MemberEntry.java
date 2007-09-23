@@ -25,23 +25,17 @@
 
 package org.netbeans.apitest;
 
-import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Vector;
 
 /** This class represents member names and signatures which are used by
  *  SignatureTest and APIChangesTest. The original name of the member
  *  is begun with signature constants. It contains all modifiers, type for
  *  field or method, name, throws clause. This name could be formatted by
  *  DefinitionFormat. **/
-public class MemberEntry implements SignatureConstants, ClassConstants{
+final class MemberEntry implements SignatureConstants, ClassConstants{
     /** name of the member. **/
     private String entry;
     /** signature of the member. **/

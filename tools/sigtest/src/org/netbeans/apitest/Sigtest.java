@@ -33,10 +33,10 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
-/**
- * @author michal
+/** Ant task to execute setup, check and strict check with the API check class.
+ * @author Michal Zlamal, Jaroslav Tulach
  */
-public class Sigtest extends Task {
+public final class Sigtest extends Task {
 
     File fileName;
     Path classpath;

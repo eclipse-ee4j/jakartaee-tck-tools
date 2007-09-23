@@ -43,7 +43,7 @@ import java.util.Vector;
  *  class provides founding of the protected members using inheritance rules.
  *  This class provides two ways of founding nested classes:<p>- using reflection.
  *  <p>- using previously created table of declared nested classes. **/
-public class TableOfClass implements SignatureConstants {
+final class TableOfClass implements SignatureConstants {
     /** Table of the declared nested classes.**/
     static private ClassCollection nestedClasses = new ClassCollection();
     /** definition of the class. **/

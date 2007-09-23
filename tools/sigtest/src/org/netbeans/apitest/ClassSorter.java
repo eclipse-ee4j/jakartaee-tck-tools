@@ -25,14 +25,13 @@
 
 package org.netbeans.apitest;
 
-import java.io.PrintStream;
 import java.util.Vector;
 
 /** This is class for founding all nested classes and sorting these
  *  classes. Classes are sorted by the following rules: the nested
  *  classes precedes regular classes alphabetically. The hierarchy
  *  tree and enclosing graph are scanned for founding of the nested classes **/
-public class ClassSorter {
+final class ClassSorter {
     /** includes all scanned regular classes. **/ 
     private Vector regularClasses = new Vector();
     /** includes all scanned nested classes. **/ 

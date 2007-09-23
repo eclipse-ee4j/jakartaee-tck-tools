@@ -31,7 +31,7 @@ import java.util.Vector;
 
 /** This class represents table which can store Vector of entries
  *  for each String  key **/
-public class ClassCollection {
+final class ClassCollection {
     private Hashtable definitions;
 
     /** creates empty table **/
