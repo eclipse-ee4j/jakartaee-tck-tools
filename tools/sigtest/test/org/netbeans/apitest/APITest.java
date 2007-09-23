@@ -120,6 +120,25 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
     }
 
+    public void testStaticFieldWasReportedAsMissing() throws Exception {
+        String c1 =
+            "package x.y;" +
+            "public class C {" +
+            "  private C() { }" +
+            "  public static C DEFAULT = new C();" +
+            "}";
+        createFile(1, "C.java", c1);
+        String c2 =
+            "package x.y;" +
+            "public class C {" +
+            "  private C() { }" +
+            "  public static C DEFAULT = new C();" +
+            "}";
+        createFile(2, "C.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
+    }
+
     public void testNonStaticMethodsReportedAsMissing() throws Exception {
         String c1 =
             "package x.y;" +

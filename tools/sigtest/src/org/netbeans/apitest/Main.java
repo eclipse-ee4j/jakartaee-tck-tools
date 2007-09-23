@@ -808,13 +808,14 @@ final class Main {
      * @param name name of the enclosing class.
      * @param def field definition in the based implementation.**/
     private void trackFieldDefinition(String name, String def) {
-        if (converter.isPrimitiveConstant(def))
+        if (converter.isPrimitiveConstant(def)) {
             return;
+        }
         MemberDefinition required = new MemberDefinition(name, def);
         String className = required.getDeclaringClass();
         String fieldName = required.getShortSignature();
         try {
-            Class c = Class.forName(className);
+            Class c = Class.forName(className, false, classIterator.getClassLoader());
             Field field = null;
             for (Class current = c; (current != null) && (field == null);
                  current = current.getSuperclass()) {
