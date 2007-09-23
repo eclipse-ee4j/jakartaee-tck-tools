@@ -162,16 +162,16 @@ final class Main {
     /**prints error message in the specified format.**/
     private ErrorFormatter errorWriter;
     /**contains founded nested classes.**/
-    private Hashtable nestedClasses;
+    private Hashtable<String,TableOfClass> nestedClasses;
     /**includes packages which are required to be tracked.**/
     private Pattern packages[];
     /** name of the packages or classes which should must be excluded
         from tracking.**/
     private String excludedElements[];
     /**classes which can not be linked(LinkageError is thrown)**/
-    private Vector nonLinkedClasses = new Vector();
+    private Vector<String> nonLinkedClasses = new Vector<String>();
     /**contains tracked class names.**/
-    private Vector trackedClassNames = new Vector();
+    private Vector<String> trackedClassNames = new Vector<String>();
     /**specify if the unaccessible nested public classes are required to be
      * tracked.**/
     private boolean isAllPublicTracked = false;
@@ -277,35 +277,37 @@ final class Main {
 		excludedElements[i] = (String)tempExcludedElements.elementAt(i);
 	}
         if (!isOrdering) {
-            if (isMaintenanceMode)
+            if (isMaintenanceMode) {
                 errorWriter = new ErrorFormatter(log);
-            else
-                errorWriter = new ErrorFormatter(log, new String[] {
-                    // Missing Classes
-                    "Required class not found in implementation: ",
+            } else {
+                errorWriter = new ErrorFormatter(log, new String[]{
+                    "Required class not found in implementation: ", 
                     // Missing nested Classes or class definitions
-                    "Definition required but not found in ",       
+                    "Definition required but not found in ", 
                     // Missing Superclasses or Superinterfaces
-                    "Definition required but not found in ",       
+                    "Definition required but not found in ", 
                     "Definition required but not found in ", // Missing Fields
                     // Missing Constructors
                     "Definition required but not found in ", 
                     "Definition required but not found in ", // Missing Methods
-                    "Incompatible change is found in ",
+                    "Incompatible change is found in ", 
                     // Added nested Classes or class definitions
-                    "Incompatible change is found in ",      
+                    "Incompatible change is found in ", 
                     // Added Superclasses or Superinterfaces
-                    "Incompatible change is found in ",     
+                    "Incompatible change is found in ", 
                     "Incompatible change is found in ", // Added Fields
                     "Incompatible change is found in ", // Added Constructors
                     "Incompatible change is found in ", // Added Methods
                     // LinkageError
-                    "LinkageError does not allow to track definition in "});
+                    "LinkageError does not allow to track definition in "
+                });
+            }
         } else {
-            if (isMaintenanceMode)
+            if (isMaintenanceMode) {
                 errorWriter = new SortedErrorFormatter(log);
-            else
+            } else {
                 errorWriter = new APISortedErrorFormatter(log);
+            }
         }
 
         if (classpath == null) {
@@ -337,11 +339,12 @@ final class Main {
                 out.println("#Version " + javaVersion);
             } catch (SecurityException e) {
             }
-            if (!isThrowsTracked)
+            if (!isThrowsTracked) {
                 out.println("#Throws clause not tracked.");
+            }
             loader = new ClassFinder(converter, details, classIterator.getClassLoader());
 	    String name;
-            Vector duplicateClasses = new Vector();
+            Vector<String> duplicateClasses = new Vector<String>();
             InputStream classStream;
             // create table of the nested classes.
 	    while ((name = classIterator.nextClassName()) != null) {
@@ -373,10 +376,12 @@ final class Main {
             // create table of the primitive constants
 	    while ((name = classIterator.nextClassName()) != null) {
                 try {
-                    if (!packageClasses.contains(name))
+                    if (!packageClasses.contains(name)) {
                         ignore(name);
-                    if (!temp.isAccessible(name))
+                    }
+                    if (!temp.isAccessible(name)) {
                         continue;
+                    }
                     //Class c = Class.forName(name);
                     if (duplicateClasses.contains(name)) {
                         setupProblem("The class " + name + " is found twice.");
@@ -417,8 +422,9 @@ final class Main {
                 if (temp.isAccessible(tempName.substring(0, tempPos)) ||
                     temp.isAccessible(tempName)) {
                     Vector h = nestedErrors.get(tempName);
-                    for (int i = 0; i < h.size(); i++)
-                        setupProblem((String)h.elementAt(i));
+                    for (int i = 0; i < h.size(); i++) {
+                        setupProblem((String) h.elementAt(i));
+                    }
                 }
             }
             out.close();
@@ -439,10 +445,11 @@ final class Main {
         
         log.println("\n  Found classes   : " + allClassesSize);
         log.println("  Scanned classes : " + scanedClassesSize);
-	if (errors == 0)
-	    return Status.passed("");
-	else 
-	    return Status.failed(errors + " errors");
+	if (errors == 0) {
+            return Status.passed("");
+        } else {
+            return Status.failed(errors + " errors");
+        }
             
     }
 
@@ -463,7 +470,7 @@ final class Main {
     /**runs test in the default or maintenance mode
      * @param sigFileURL API signature file.**/
     private Status verify(String sigFileURL) {
-	nestedClasses = new Hashtable();
+	nestedClasses = new Hashtable<String, TableOfClass>();
 	trackedClassNames = new Vector();
         ClassSignatureReader in = null;
 	try {
@@ -489,20 +496,22 @@ final class Main {
 	    TableOfClass currentClass;
 	    while ((currentClass = in.nextAPIClass()) != null) {
 		String name = currentClass.getName();
-		if (name.indexOf('$') < 0)
+		if (name.indexOf('$') < 0) {
                     verifyClass(currentClass);
-		else
-		    //includes nested classes to the table.
-		    nestedClasses.put(name, currentClass);
+                } else {
+                    //includes nested classes to the table.
+                    nestedClasses.put(name, currentClass);
+                }
 	    }
 
             // track inaccessible nested classes
-            if (isAllPublicTracked)
-                for (Enumeration e = nestedClasses.keys();
-                     e.hasMoreElements();) {
-                    String name = (String)e.nextElement();
-                    if (!trackedClassNames.contains(name))
-                        verifyClass((TableOfClass)nestedClasses.get(name));
+            if (isAllPublicTracked) {
+                for (Enumeration<String> e = nestedClasses.keys(); e.hasMoreElements();) {
+                    String name = e.nextElement();
+                    if (!trackedClassNames.contains(name)) {
+                        verifyClass(nestedClasses.get(name));
+                    }
+                }
             }
                 
 	} catch (IOException e) {
@@ -549,9 +558,9 @@ final class Main {
         log.println("");
         errors = errorWriter.printErrors();
         
-        if (errors == 0)
-	    return Status.passed("");
-	else {
+        if (errors == 0) {
+            return Status.passed("");
+        } else {
 	    return Status.failed(errors + " errors");
 	}
     }
@@ -564,10 +573,11 @@ final class Main {
             try {
                 SignatureClass c = loader.loadClass(name);
                 TableOfClass cl = new TableOfClass(c, isReflectUsed);
-                if (isMaintenanceMode)
+                if (isMaintenanceMode) {
                     verifyMaintenanceClass(required, cl);
-                else
+                } else {
                     verifyClass(required, cl);
+                }
             } catch (ClassNotFoundException ex) {
                 errorWriter.addError("Missing", name, null, null);
             } catch (LinkageError er) {
@@ -701,10 +711,11 @@ final class Main {
     private void verifyClass(TableOfClass required, TableOfClass found) 
         throws ClassNotFoundException {
 	// adds class name to the table of the tracked classes.
-	if (trackedClassNames.contains(found.getClassName()))
-            return;// this class is tracked
-        else
-	    trackedClassNames.addElement(found.getClassName());
+	if (trackedClassNames.contains(found.getClassName())) {
+            return; // this class is tracked
+        } else {
+            trackedClassNames.addElement(found.getClassName());
+        }
         found.createMembers();
         // track class definition.
         trackClassDefinition(required.getName(), required.classDef, 
@@ -836,7 +847,7 @@ final class Main {
         String name = def.getShortSignature();
         Method meth = null;
         try {
-            Class c = Class.forName(def.getDeclaringClass());
+            Class c = Class.forName(def.getDeclaringClass(), false, classIterator.getClassLoader());
             String methodName = name.substring(0, name.indexOf("("));
             for (Class current = c; (current != null);
                  current = current.getSuperclass()) {
