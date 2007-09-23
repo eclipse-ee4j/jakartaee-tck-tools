@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
@@ -41,7 +42,7 @@ public final class Sigtest extends Task {
     File fileName;
     Path classpath;
     String packages;
-    String action;
+    ActionType action;
     boolean failOnError = true;
     
     public void setFileName(File f) {
@@ -52,7 +53,7 @@ public final class Sigtest extends Task {
         packages = s;
     }
 
-    public void setAction(String s) {
+    public void setAction(ActionType s) {
         action = s;
     }
 
@@ -100,11 +101,11 @@ public final class Sigtest extends Task {
         List<String> arg = new ArrayList<String>();
         arg.add("-FileName");
         arg.add(fileName.getAbsolutePath());
-        if (action.equals("Setup")) {
+        if (action.getValue().equals("generate")) {
             arg.add("-setup");
-        } else if (action.equals("Check")) {
+        } else if (action.getValue().equals("check")) {
             // no special arg for check
-        } else if (action.equals("StrictCheck")) {
+        } else if (action.getValue().equals("strictcheck")) {
             arg.add("-maintenance");
         } else {
             throw new BuildException("Unknown action: " + action);
@@ -165,6 +166,15 @@ public final class Sigtest extends Task {
             if (outputFile != null) {
                 outputFile.delete();
             }
+        }
+    }
+    public static final class ActionType extends EnumeratedAttribute {
+        public String[] getValues () {
+            return new String[] { 
+                "generate",
+                "check",
+                "strictcheck",
+            };
         }
     }
 
