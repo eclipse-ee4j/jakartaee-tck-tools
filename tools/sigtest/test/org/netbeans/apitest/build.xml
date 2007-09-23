@@ -9,11 +9,12 @@
         </antcall>
         
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
         
-        <sigtest action="generate" classpath="${dir1}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
+        <sigtest action="generate" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
         
         <property name="check.type" value="check"/>
-        <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="x.*" filename="${dir1}/api.out"/>
+        <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
     </target>
     
     <target name="-compile-dir">

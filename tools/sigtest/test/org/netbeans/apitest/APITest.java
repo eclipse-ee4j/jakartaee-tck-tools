@@ -78,6 +78,29 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2);
     }
     
+    public void testSubpackage() throws Exception {
+        String c1 =
+            "package x.y;" +
+            "public class C {" +
+            "  private C() { }" +
+            "}";
+        createFile(1, "C.java", c1);
+        String cc1 =
+            "package x.y.ignore;" +
+            "public class X {" +
+            "  private X() { }" +
+            "}";
+        createFile(1, "X.java", cc1);
+        String c2 =
+            "package x.y;" +
+            "public class C {" +
+            "  public C() { }" +
+            "}";
+        createFile(2, "C.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=x.y.*");
+    }
+    
     public void testStrictCheckDiscoversAnAPIChange() throws Exception {
         String c1 =
             "package x;" +

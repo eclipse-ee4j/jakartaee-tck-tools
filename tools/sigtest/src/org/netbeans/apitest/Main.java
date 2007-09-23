@@ -151,7 +151,7 @@ import java.util.regex.Pattern;
  *      apiMasterFile.jdk1.1.1 <br>
  **/
 
-final class Main implements SignatureConstants {
+public final class Main {
     /** print errors and warnings. **/
     PrintWriter log;
     /**Reads class names and classes, which are available by current
@@ -193,7 +193,15 @@ final class Main implements SignatureConstants {
         of implementation **/
     protected Properties details = new Properties();
     
-    public static Status run(String[] args) {
+    public static void main(String[] args) {
+        Status s = run(args);
+        if (s.getType() != 0) {
+            System.err.println(s.getReason());
+            System.exit(s.getType());
+        }
+    }
+    
+    static Status run(String[] args) {
 	Main t = new Main();
         PrintWriter log = new PrintWriter(new OutputStreamWriter(System.err),
                                           true);
@@ -224,16 +232,10 @@ final class Main implements SignatureConstants {
 	    } else if (args[i].equals("-Package") &&
 		       (args.length > i + 1)) {
                 String pkg = args[++i];
-                if (pkg.indexOf('.') != -1) {
-                    return Status.failed("Package cannot contain a dot: " + pkg);
-                }
 		tempPackages.addElement(Pattern.compile(pkg + "\\..*"));
 	    } else if (args[i].equals("-PackageWithoutSubpackages") &&
 		       (args.length > i + 1)) {
                 String pkg = args[++i];
-                if (pkg.indexOf('.') != -1) {
-                    return Status.failed("Package cannot contain a dot: " + pkg);
-                }
 		tempPackages.addElement(Pattern.compile(pkg + "\\.[^\\.]*"));
 	    } else if (args[i].equals("-Exclude") &&
 		       (args.length > i + 1)) {
@@ -473,7 +475,7 @@ final class Main implements SignatureConstants {
             // That the fields is primitive constant is not tracked by test
             if (isMaintenanceMode) {
                 String tempModifiers[][] = {
-                    {FIELD, PRIMITIVE_CONSTANT}
+                    {SignatureConstants.FIELD, SignatureConstants.PRIMITIVE_CONSTANT}
                 };
                 converter = new PrimitiveConstantsChecker(true, isThrowsTracked,
                                                           tempModifiers);
@@ -605,7 +607,7 @@ final class Main implements SignatureConstants {
 	    if (mFou == null) {
 		mFou = new Vector();
             }
-	    if (name.startsWith(INNER)) {
+	    if (name.startsWith(SignatureConstants.INNER)) {
 		trackNestedClass(found, mReq, mFou);
 	    } else {
                 trackMember(found.getName(), mReq, mFou);
@@ -616,7 +618,7 @@ final class Main implements SignatureConstants {
 	    String name = (String)eFou.nextElement();
 	    Vector mReq = required.get(name);
 	    Vector mFou = found.get(name);
-	    if ((mReq == null) && (!name.startsWith(INNER) || isReflectUsed)) {
+	    if ((mReq == null) && (!name.startsWith(SignatureConstants.INNER) || isReflectUsed)) {
 		mReq = new Vector();
 		trackMember(found.getName(), mReq, mFou);
 	    } 
@@ -718,7 +720,7 @@ final class Main implements SignatureConstants {
 	    Vector mFou = found.get(name);
 	    if (mFou == null)
 		mFou = new Vector();
-	    if (name.startsWith(INNER)) {
+	    if (name.startsWith(SignatureConstants.INNER)) {
                 if (isAllPublicTracked)
                     continue;
                 for (int i = 0; i < mReq.size(); i++) {
@@ -741,7 +743,7 @@ final class Main implements SignatureConstants {
                                              def, null);
                     } 
                 }
-            } else if (name.startsWith(SUPER)) {
+            } else if (name.startsWith(SignatureConstants.SUPER)) {
                 if ((mReq != null) && !mReq.isEmpty()) {
                     SignatureClass c = found.getClassObject();
                     if (c != null)
@@ -767,23 +769,23 @@ final class Main implements SignatureConstants {
                         converter.isPrimitiveConstant(tempReq))
                         continue;
                     if ((tempFou == null) &&
-                        (tempReq.startsWith(METHOD) ||
-                         tempReq.startsWith(FIELD)  ||
-                         name.startsWith(INTERFACE) ||
-                         tempReq.startsWith(CONSTRUCTOR))) {
+                        (tempReq.startsWith(SignatureConstants.METHOD) ||
+                         tempReq.startsWith(SignatureConstants.FIELD)  ||
+                         name.startsWith(SignatureConstants.INTERFACE) ||
+                         tempReq.startsWith(SignatureConstants.CONSTRUCTOR))) {
                         errorWriter.addError("Missing", clName, tempReq, null);
                         continue;
                     }
-                    if (tempReq.startsWith(METHOD)) {
+                    if (tempReq.startsWith(SignatureConstants.METHOD)) {
                         if (tempReq.indexOf(" static ") < 0)
                             trackMethodDefinition(clName, required.classDef,
                                                   tempReq, tempFou);
                         else 
                             trackMethodDefinition(clName, required.classDef,
                                                   tempReq);
-                    } else if (tempReq.startsWith(FIELD)) {
+                    } else if (tempReq.startsWith(SignatureConstants.FIELD)) {
                         trackFieldDefinition(clName, tempReq);
-                    } else if (tempReq.startsWith(CONSTRUCTOR)) {
+                    } else if (tempReq.startsWith(SignatureConstants.CONSTRUCTOR)) {
                         trackConstructorDefinition(clName, tempReq, tempFou);
                     } 
                 }
@@ -842,7 +844,7 @@ final class Main implements SignatureConstants {
                 for (int i = 0; i < methods.length; i++) {
                     String temp = new MemberEntry(methods[i],
                                                   converter).getKey();
-                    temp = temp.substring(METHOD.length());
+                    temp = temp.substring(SignatureConstants.METHOD.length());
                     if (methodName.equals(methods[i].getName()) &&
                         name.equals(temp)) {
                         MemberEntry t = new MemberEntry(methods[i], converter);
