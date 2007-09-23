@@ -151,7 +151,7 @@ import java.util.regex.Pattern;
  *      apiMasterFile.jdk1.1.1 <br>
  **/
 
-public final class Main {
+final class Main {
     /** print errors and warnings. **/
     PrintWriter log;
     /**Reads class names and classes, which are available by current
