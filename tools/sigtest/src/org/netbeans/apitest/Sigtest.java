@@ -152,7 +152,7 @@ public final class Sigtest extends Task {
             arg.add(sb.toString());
         }
         
-        int returnCode = APIChangesTest.run(arg.toArray(new String[0])).getType();
+        int returnCode = Main.run(arg.toArray(new String[0])).getType();
         
         if (returnCode != 0) {
             if (failOnError && outputFile == null) {

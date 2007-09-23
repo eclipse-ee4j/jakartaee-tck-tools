@@ -151,7 +151,7 @@ import java.util.regex.Pattern;
  *      apiMasterFile.jdk1.1.1 <br>
  **/
 
-final class APIChangesTest implements SignatureConstants {
+final class Main implements SignatureConstants {
     /** print errors and warnings. **/
     PrintWriter log;
     /**Reads class names and classes, which are available by current
@@ -194,7 +194,7 @@ final class APIChangesTest implements SignatureConstants {
     protected Properties details = new Properties();
     
     public static Status run(String[] args) {
-	APIChangesTest t = new APIChangesTest();
+	Main t = new Main();
         PrintWriter log = new PrintWriter(new OutputStreamWriter(System.err),
                                           true);
         PrintWriter ref = new PrintWriter(new OutputStreamWriter(System.out),
