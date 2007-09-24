@@ -16,6 +16,18 @@
         <property name="check.type" value="check"/>
         <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
     </target>
+
+    <target name="compare">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="org.openide.nodes.*"/>
+        
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${sig}"/>
+    </target>
     
     <target name="-compile-dir">
         <mkdir dir="${dir}/classes"/>
