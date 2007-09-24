@@ -66,8 +66,9 @@ final class SignatureClass implements ClassConstants{
     public MemberEntry[] getDeclaredMethods() {
         Method[] methods = classObject.getDeclaredMethods();
         MemberEntry[] retVal = new MemberEntry[methods.length];
-        for (int i = 0; i < retVal.length; i++)
+        for (int i = 0; i < retVal.length; i++) {
             retVal[i] = new MemberEntry(methods[i], filter);
+        }
         return retVal;
     }
 
@@ -75,8 +76,9 @@ final class SignatureClass implements ClassConstants{
     public MemberEntry[] getDeclaredFields() {
         Field[] fields = classObject.getDeclaredFields();
         MemberEntry[] retVal = new MemberEntry[fields.length];
-        for (int i = 0; i < retVal.length; i++)
+        for (int i = 0; i < retVal.length; i++) {
             retVal[i] = new MemberEntry(fields[i], filter);
+        }
         return retVal;
     }
     

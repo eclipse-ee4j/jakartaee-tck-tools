@@ -53,6 +53,20 @@ public class APITest extends NbTestCase {
         
     }
     
+    public void testGenericsOverridenType() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class A<T> {" +
+            "  public T get() { return null; }" +
+            "  public class B extends A<String> {" +
+            "    public String get() { return \"\"; }" +
+            "  }\n" +
+            "}";
+        createFile(1, "A.java", c1);
+        createFile(2, "A.java", c1);
+        
+        compareAPIs(1, 2);
+    }
     
     
     public void testAntScript() throws Exception {

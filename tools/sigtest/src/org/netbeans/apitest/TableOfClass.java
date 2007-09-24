@@ -408,10 +408,22 @@ final class TableOfClass implements SignatureConstants {
         }
 	    
         MemberEntry[] meth = c.getDeclaredMethods();
-        for (int i = 0; i < meth.length; i++) {
+        BIG: for (int i = 0; i < meth.length; i++) {
             String name = meth[i].getKey();
-            // The method declared in class overrides all inherited methods 
-            methods.put(name, meth[i]);
+            Vector prevVector = methods.get(name);
+            if (prevVector == null) {
+                methods.put(name, meth[i]);
+                continue BIG;
+            }
+            for (Object prev : prevVector) {
+                MemberEntry pm = (MemberEntry)prev;
+                if (!pm.getDeclaringClass().equals(meth[i].getDeclaringClass())) {
+                    // The method declared in class overrides all inherited methods 
+                    methods.put(name, meth[i]);
+                    continue BIG;
+                }
+            }
+            methods.addElement(name, meth[i]);
         }
         return methods;
     }
