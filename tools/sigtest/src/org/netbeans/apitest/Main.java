@@ -620,7 +620,7 @@ final class Main {
 	    if (name.startsWith(SignatureConstants.INNER)) {
 		trackNestedClass(found, mReq, mFou);
 	    } else {
-                trackMember(found.getName(), mReq, mFou);
+                trackMember(found.getName(), mReq, mFou,false);
             }
 	}
 	// track members which are added in the current implementation.
@@ -630,7 +630,7 @@ final class Main {
 	    Vector mFou = found.get(name);
 	    if ((mReq == null) && (!name.startsWith(SignatureConstants.INNER) || isReflectUsed)) {
 		mReq = new Vector();
-		trackMember(found.getName(), mReq, mFou);
+		trackMember(found.getName(), mReq, mFou,false);
 	    } 
 	}
     }
@@ -639,15 +639,19 @@ final class Main {
      *  mode.
      *  @param name name of the enclosing class.
      *  @param required definition of the based implementation.
-     *  @param found definition of the tested implementation.**/
-    private void trackMember(String name, Vector required, Vector found) {
+     *  @param found definition of the tested implementation.
+     *  @param onlyAbstract warn only if an abstract member is added
+     */
+    private void trackMember(String name, Vector required, Vector found, boolean onlyAbstract) {
 	Vector req = (Vector)required.clone();
  	Vector fou = (Vector)found.clone(); 
         
 	Vector retVal = new Vector();
 
 	for (int i = 0; i < req.size(); i++) {
-	    if (i < 0) break;
+	    if (i < 0) {
+                break;
+            }
 	    int pos = fou.indexOf(req.elementAt(i));
 	    if (pos >= 0) {
 		req.removeElementAt(i--);
@@ -655,12 +659,16 @@ final class Main {
 	    }
 	}
 
-	for (int i = 0; i < req.size(); i++)
-	    errorWriter.addError("Missing", name, 
-                                 (String)req.elementAt(i), null); 
-	for (int i = 0; i < fou.size(); i++)
-	   errorWriter.addError("Added", name, 
-                                (String)fou.elementAt(i), null); 
+	for (int i = 0; i < req.size(); i++) {
+            errorWriter.addError("Missing", name, (String) req.elementAt(i), null);
+        } 
+	for (int i = 0; i < fou.size(); i++) {
+            String m = (String)fou.elementAt(i);
+            if (onlyAbstract && !m.contains(" abstract ")) {
+                continue;
+            }
+            errorWriter.addError("Added", name, m, null);
+        }
     }
 
     /** track Vector of the nested classes with the same local name in the maintenance
@@ -671,7 +679,7 @@ final class Main {
     private void trackNestedClass(TableOfClass trackedClass, Vector required,
                                   Vector found) {
         if (required.isEmpty()) {
-            trackMember(trackedClass.getName(), required, found);
+            trackMember(trackedClass.getName(), required, found,false);
             return;
         }
         String localName = (String)required.elementAt(0);
@@ -701,7 +709,7 @@ final class Main {
                 nonLinkedClasses.addElement(name);
             }
         }
-        trackMember(trackedClass.getName(), required, foundClasses);
+        trackMember(trackedClass.getName(), required, foundClasses,false);
     }
 
 
@@ -826,6 +834,30 @@ final class Main {
                 }
             }
         } 
+        trackedClassNames.addElement(found.getClassName());
+        found.createMembers();
+        String modReq = required.classDef;
+        modReq = modReq.substring(0, modReq.lastIndexOf(' '));
+        String modFou = found.classDef;
+        modFou = modFou.substring(0, modFou.lastIndexOf(' '));
+        if (!modReq.equals(modFou)) {
+            errorWriter.addError("Missing", required.getName(), 
+                                 required.classDef, null);
+            errorWriter.addError("Added", found.getName(), found.classDef, null);
+        }
+        
+        
+	// track abstract members which are added in the current implementation.
+	for (Enumeration eFou = found.keys(); eFou.hasMoreElements();) {
+	    String name = (String)eFou.nextElement();
+	    Vector mReq = required.get(name);
+	    Vector mFou = found.get(name);
+            
+	    if (mReq == null) {
+		mReq = new Vector();
+		trackMember(found.getName(), mReq, mFou, true);
+	    } 
+	}
     }
 
     /**founds field in the tested implementation and check it in the default mode

@@ -25,18 +25,20 @@
 
 package org.netbeans.apitest;
 
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.Vector;
 
 /** This class represents table which can store Vector of entries
  *  for each String  key **/
 final class ClassCollection {
-    private Hashtable definitions;
+    private Hashtable<String,Vector<Object>> definitions;
 
     /** creates empty table **/
     public ClassCollection() {
-        this.definitions = new Hashtable();
+        this.definitions = new Hashtable<String, Vector<Object>>();
     }
 
     /** Adds new value to the Vector which mapped by key 
@@ -50,9 +52,9 @@ final class ClassCollection {
      *  @param key the key 
      *  @param def entry which will be included **/
     public void addElement(String key, Object def) {
-        Vector h = (Vector)definitions.get(key);
+        Vector<Object> h = definitions.get(key);
         if (h == null) {
-            h = new Vector();
+            h = new Vector<Object>();
             this.definitions.put(key, h);
         }
         h.addElement(def);
@@ -63,24 +65,29 @@ final class ClassCollection {
      *  @param key the key 
      *  @param def entry which will be included **/
     public void addUniqueElement(String key, Object def) {
-        Vector h = (Vector)definitions.get(key);
+        Vector<Object> h = definitions.get(key);
         if (h == null){
-            h = new Vector();
+            h = new Vector<Object>();
             this.definitions.put(key, h);
         }
-        if (!h.contains(def))
+        if (!h.contains(def)) {
             h.addElement(def);
+        }
     }
 
     /** Returns enumeration of the keys **/
     public Enumeration keys() {
         return definitions.keys();
     }
-
+    
+    public Set<String> keySet() {
+        return Collections.unmodifiableSet(definitions.keySet());
+    }
+    
     /** Returns Vectors of the entries which mapped for given key 
      *  @param key the key **/
-    public Vector get(String key) {
-        return (Vector)definitions.get(key);
+    public Vector<Object> get(String key) {
+        return definitions.get(key);
     }
 
     /** put entry for given key. All entries which mapped by this key
@@ -89,7 +96,7 @@ final class ClassCollection {
      *  @param def the new entry which will be included instead all 
      *  previous values **/
     public void put(String key, Object def) {
-        Vector h = new Vector();
+        Vector<Object> h = new Vector<Object>();
         h.addElement(def);
         this.definitions.put(key, h);
     }
@@ -99,7 +106,7 @@ final class ClassCollection {
      *  @param key the key 
      *  @param def the new entry which will be included instead all 
      *  previous values **/
-    public void putVector(String key, Vector member) {
+    public void putVector(String key, Vector<Object> member) {
         definitions.put(key, member);
     }
 
