@@ -727,20 +727,23 @@ final class Main {
         // primitive constants.
 	for (Enumeration eReq = required.keys(); eReq.hasMoreElements();) {
 	    String name = (String)eReq.nextElement();
-	    Vector mReq = required.get(name);
-	    Vector mFou = found.get(name);
-	    if (mFou == null)
-		mFou = new Vector();
+	    Vector requiredMembers = required.get(name);
+	    Vector existingMembers = found.get(name);
+	    if (existingMembers == null) {
+		existingMembers = new Vector();
+                existingMembers.add(null);
+            }
 	    if (name.startsWith(SignatureConstants.INNER)) {
-                if (isAllPublicTracked)
+                if (isAllPublicTracked) {
                     continue;
-                for (int i = 0; i < mReq.size(); i++) {
-                    String def = (String)mReq.elementAt(i);
+                }
+                for (int i = 0; i < requiredMembers.size(); i++) {
+                    String def = (String)requiredMembers.elementAt(i);
                     def = def.substring(def.lastIndexOf(' ') + 1);
                     try {
                         SignatureClass c = loader.loadClass(def);
                         TableOfClass reqNest;
-                        reqNest = (TableOfClass)nestedClasses.get(def);
+                        reqNest = nestedClasses.get(def);
                         if ((reqNest.classDef.indexOf(" public ") >= 0) ||
                             isProtectedTracked) {
                             TableOfClass cl = new TableOfClass(c, isReflectUsed);
@@ -755,50 +758,71 @@ final class Main {
                     } 
                 }
             } else if (name.startsWith(SignatureConstants.SUPER)) {
-                if ((mReq != null) && !mReq.isEmpty()) {
+                if ((requiredMembers != null) && !requiredMembers.isEmpty()) {
                     SignatureClass c = found.getClassObject();
                     if (c != null)
                         c = c.getSuperclass();
-                    String superName = (String)mReq.elementAt(0);
+                    String superName = (String)requiredMembers.elementAt(0);
                     superName = superName.substring(superName.lastIndexOf(' ')
                                                     + 1);
                     for (; ((c != null) && !superName.equals(c.getName()));
                          c = c.getSuperclass());
                     if ((c == null) && !superName.equals("null"))
                         errorWriter.addError("Missing", required.getName(),
-                                             (String)mReq.elementAt(0), null);
+                                             (String)requiredMembers.elementAt(0), null);
                 }                    
             } else {
-                String tempFou = (mFou.isEmpty()) ? null : (String)mFou.elementAt(0);
-                for (int i = 0; i < mReq.size(); i++) {
-                    String tempReq = (String)mReq.elementAt(i);
+                BIG: for (int i = 0; i < requiredMembers.size(); i++) {
+                    String tempReq = (String)requiredMembers.elementAt(i);
                     String clName = required.getName();
-
-                    if ((tempReq.indexOf(" abstract ") >= 0) ||
+                    
+                    /*
+                    if (
+                        (tempReq.indexOf(" abstract ") >= 0) ||
                         (tempReq.indexOf(" protected ") >= 0) &&
                         !isProtectedTracked ||
-                        converter.isPrimitiveConstant(tempReq))
-                        continue;
-                    if ((tempFou == null) &&
-                        (tempReq.startsWith(SignatureConstants.METHOD) ||
-                         tempReq.startsWith(SignatureConstants.FIELD)  ||
-                         name.startsWith(SignatureConstants.INTERFACE) ||
-                         tempReq.startsWith(SignatureConstants.CONSTRUCTOR))) {
-                        errorWriter.addError("Missing", clName, tempReq, null);
+                        converter.isPrimitiveConstant(tempReq)
+                    ) {
                         continue;
                     }
-                    if (tempReq.startsWith(SignatureConstants.METHOD)) {
-                        if (tempReq.indexOf(" static ") < 0)
-                            trackMethodDefinition(clName, required.classDef,
-                                                  tempReq, tempFou);
-                        else 
-                            trackMethodDefinition(clName, required.classDef,
-                                                  tempReq);
-                    } else if (tempReq.startsWith(SignatureConstants.FIELD)) {
-                        trackFieldDefinition(clName, tempReq);
-                    } else if (tempReq.startsWith(SignatureConstants.CONSTRUCTOR)) {
-                        trackConstructorDefinition(clName, tempReq, tempFou);
-                    } 
+                    */
+
+                    ErrorMessage error = null;
+                    for (Object objMember : existingMembers) {
+                        String tempFou = (String)objMember;
+
+                        if ((tempFou == null) &&
+                            (tempReq.startsWith(SignatureConstants.METHOD) ||
+                             tempReq.startsWith(SignatureConstants.FIELD)  ||
+                             name.startsWith(SignatureConstants.INTERFACE) ||
+                             tempReq.startsWith(SignatureConstants.CONSTRUCTOR))) {
+                            errorWriter.addError("Missing", clName, tempReq, null);
+                            continue BIG;
+                        }
+                        if (tempReq.startsWith(SignatureConstants.METHOD)) {
+                            if (tempReq.indexOf(" static ") < 0) {
+                                error = trackMethodDefinition(
+                                    clName, required.classDef, tempReq, tempFou
+                                );
+                            } else {
+                                error = trackMethodDefinition(
+                                    clName, required.classDef, tempReq
+                                );
+                            }
+                        } else if (tempReq.startsWith(SignatureConstants.FIELD)) {
+                            trackFieldDefinition(clName, tempReq);
+                        } else if (tempReq.startsWith(SignatureConstants.CONSTRUCTOR)) {
+                            trackConstructorDefinition(clName, tempReq, tempFou);
+                        }
+                        
+                        if (error == null) {
+                            // ok, no error, we found the member which passes
+                            // the test
+                            continue BIG;
+                        }
+                    }
+                    assert error != null;
+                    errorWriter.addError(error);
                 }
             }
         } 
@@ -842,7 +866,7 @@ final class Main {
      * @param clName name of the enclosing class.
      * @param clDef class definition in the based implementation.
      * @param definition method definition in the based implementation.**/
-    private void trackMethodDefinition(String clName, String clDef,
+    private ErrorMessage trackMethodDefinition(String clName, String clDef,
                                        String definition) {
         MemberDefinition def = new MemberDefinition("", definition);
         String name = def.getShortSignature();
@@ -860,9 +884,8 @@ final class Main {
                     if (methodName.equals(methods[i].getName()) &&
                         name.equals(temp)) {
                         MemberEntry t = new MemberEntry(methods[i], converter);
-                        trackMethodDefinition(clName, clDef, definition,
+                        return trackMethodDefinition(clName, clDef, definition,
                                               t.getEntry());
-                        return;
                     }
                 }
             }
@@ -870,9 +893,9 @@ final class Main {
         } catch (LinkageError er) {
             errorWriter.addError("LinkageError", clName, definition + 
                                  " throw " + er, null);
-            return;
         }
         errorWriter.addError("Missing", clName, definition, null);
+        return null;
     }
 
     /** check class definition in the default mode.
@@ -939,8 +962,10 @@ final class Main {
      *  @param name name of the enclosing class for nested classes or class
      *  name for regular classes.
      *  @param name before method definition in the based implementation.
-     *  @param name after method definition in the tested implementation.**/
-    private void trackMethodDefinition(String name, String clDef,
+     *  @param name after method definition in the tested implementation.
+     *  @return error message or null, if everythig is ok
+     **/
+    private ErrorMessage trackMethodDefinition(String name, String clDef,
                                        String before, String after) {
 	MemberDefinition beforeDef = new MemberDefinition(name, before);
 	MemberDefinition afterDef = new MemberDefinition(name, after);
@@ -964,9 +989,10 @@ final class Main {
 	trackModifiers(name, modifs, beforeDef, afterDef);
         // track return type
 	if (!beforeDef.getType().equals(afterDef.getType())) {
-	     errorWriter.addError("Change type.", name, before ,
+            return errorWriter.createError("Change type.", name, before ,
                                   " return value of " + afterDef.getType());
 	}  
+        return null;
     }
          
 

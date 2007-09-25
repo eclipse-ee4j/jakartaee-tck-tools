@@ -83,6 +83,11 @@ class ErrorFormatter implements SignatureConstants {
         out.println(createError(errorType, className, def, tail));
         size++;
     }
+    
+    public void addError(ErrorMessage msg) {
+        out.println(msg);
+        size++;
+    }
 
     /** set the new messages
      *  @param messages the new messages **/

@@ -83,6 +83,11 @@ class SortedErrorFormatter extends ErrorFormatter {
         size++;
     }
 
+    public void addError(ErrorMessage msg) {
+        failedMessages.addElement(msg);
+        size++;
+    }
+
     /** Returns number of the error messages and prints errors. **/
     public int printErrors() {
 	int currentErrorType = 0;

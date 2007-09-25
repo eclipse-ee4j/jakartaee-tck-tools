@@ -28,12 +28,15 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -45,12 +48,56 @@ public class APITest extends NbTestCase {
     public APITest(String s) {
         super(s);
     }
+    
+    public static Test suite() {
+        return new NbTestSuite(APITest.class);
+        //return new APITest("testAddMethodInAbstractClassIsDetected");
+    }
 
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+    }
+
+    public void testMissingMethodInAnInterfaceIsDetected() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface I {" +
+            "  public void get();" +
+            "}";
+        createFile(1, "I.java", c1);
         
         
+        String c2 =
+            "package ahoj;" +
+            "public interface I {" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Do not remove methods from interfaces");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+
+    public void testAddMethodInAnInterfaceIsDetected() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface I {" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public interface I {" +
+            "  public void get();" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
     public void testGenericsOverridenType() throws Exception {
@@ -65,7 +112,68 @@ public class APITest extends NbTestCase {
         createFile(1, "A.java", c1);
         createFile(2, "A.java", c1);
         
-        compareAPIs(1, 2);
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testMissingMethodInAbstractClassIsDetected() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public abstract void get();" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Missing method has to be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+/*
+    public void testAddMethodInAbstractClassIsDetected() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public abstract void get();" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Added method has to be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+ */   
+    public void testOverridenTypeChanged() throws Exception {
+        String c1 =
+            "package ahoj; import java.io.IOException; " +
+    "public class W implements Appendable {" +
+    "    public Appendable append(CharSequence csq) throws IOException { return this; }" +
+    "    public Appendable append(CharSequence csq, int start, int end) throws IOException { return this; }" +
+    "    public Appendable append(char c) throws IOException { return this; }" +
+    "}";
+        String c2 = c1.replaceAll("public Appendable", "public W");
+        createFile(1, "W.java", c1);
+        createFile(2, "W.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
     
