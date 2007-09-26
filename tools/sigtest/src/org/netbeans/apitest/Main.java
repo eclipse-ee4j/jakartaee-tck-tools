@@ -179,6 +179,10 @@ final class Main {
     private boolean isIgnorableReported = false;
     /**specify if the current mode is maintenance mode.**/
     private boolean isMaintenanceMode = false;
+    /** in this mode people can add new methods into interfaces,
+     * which is binary compatible for linkage, but not execution
+     */
+    private boolean extendableInterfaces;
     /**specify if the reflection is used for founding nested classes.**/
     private boolean isReflectUsed = false;
     /**number of the founded classes in the scanned PATH.**/
@@ -246,6 +250,8 @@ final class Main {
                 setup = true;
 	    } else if (args[i].equals("-maintenance")) {
                 isMaintenanceMode = true;
+	    } else if (args[i].equals("-extendableinterfaces")) {
+                extendableInterfaces = true;
             } else if (args[i].equals("-UseReflect")) {
                 isReflectUsed = true;
 	    } else if (args[i].equals("-Classpath") &&
@@ -845,7 +851,10 @@ final class Main {
                                  required.classDef, null);
             errorWriter.addError("Added", found.getName(), found.classDef, null);
         }
-        
+    
+        if (extendableInterfaces && required.isInterface()) {
+            return;
+        }
         
 	// track abstract members which are added in the current implementation.
 	for (Enumeration eFou = found.keys(); eFou.hasMoreElements();) {

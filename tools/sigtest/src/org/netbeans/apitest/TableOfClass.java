@@ -325,6 +325,9 @@ final class TableOfClass implements SignatureConstants {
     public boolean isProtected() {
         return classDef.indexOf(" protected ") >= 0;
     }
+    public boolean isInterface() {
+        return classDef.indexOf(" interface ") >= 0;
+    }
     /** includes definitions of the given nested classes to ClassCollection.
      *  @param c enclosing class.
      *  @param innrHash ClassCollection which store founded nested classes. **/

@@ -105,6 +105,8 @@ public final class Sigtest extends Task {
             arg.add("-setup");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
+        } else if (action.getValue().equals("binarycheck")) {
+            arg.add("-extendableinterfaces");
         } else if (action.getValue().equals("strictcheck")) {
             arg.add("-maintenance");
         } else {
@@ -174,6 +176,7 @@ public final class Sigtest extends Task {
                 "generate",
                 "check",
                 "strictcheck",
+                "binarycheck",
             };
         }
     }

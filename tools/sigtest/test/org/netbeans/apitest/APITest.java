@@ -104,6 +104,24 @@ public class APITest extends NbTestCase {
             // ok
         }
     }
+
+    public void testAddMethodInAnInterfaceAllowedInSpecialMode() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface I {" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public interface I {" +
+            "  public void get();" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "-Dcheck.type=binarycheck");
+    }
     
     public void testGenericsOverridenType() throws Exception {
         String c1 =
