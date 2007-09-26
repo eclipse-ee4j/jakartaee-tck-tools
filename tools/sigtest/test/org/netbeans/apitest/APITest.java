@@ -51,7 +51,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(APITest.class);
-        //return new APITest("testAddMethodInAnInterfaceIsDetected");
+        //return new APITest("testMakingAClassNonFinalIsNotIncompatibleChange");
     }
 
     @Override
@@ -121,6 +121,20 @@ public class APITest extends NbTestCase {
         createFile(2, "I.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "-Dcheck.type=binarycheck");
+    }
+    
+    public void testMakingAClassNonFinalIsNotIncompatibleChange() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public final class C {" +
+            "}";
+        createFile(1, "C.java", c1);
+        
+        
+        String c2 = c1.replaceAll("final", "");
+        createFile(2, "C.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
     public void testGenericsOverridenType() throws Exception {

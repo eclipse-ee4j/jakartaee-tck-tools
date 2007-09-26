@@ -846,6 +846,11 @@ final class Main {
         modReq = modReq.substring(0, modReq.lastIndexOf(' '));
         String modFou = found.classDef;
         modFou = modFou.substring(0, modFou.lastIndexOf(' '));
+        if (!isMaintenanceMode) {
+            if (!modFou.endsWith(" final")) {
+                modReq = modReq.replaceAll(" final", "");
+            }
+        }
         if (!modReq.equals(modFou)) {
             errorWriter.addError("Missing", required.getName(), 
                                  required.classDef, null);
