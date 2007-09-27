@@ -249,6 +249,32 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
+    public void testGenerateVersionNumber() throws Exception {
+        String c1 =
+            "package ahoj; import java.io.IOException; " +
+    "public class W implements Appendable {" +
+    "    public Appendable append(CharSequence csq) throws IOException { return this; }" +
+    "    public Appendable append(CharSequence csq, int start, int end) throws IOException { return this; }" +
+    "    public Appendable append(char c) throws IOException { return this; }" +
+    "}";
+        String c2 = c1.replaceAll("public Appendable", "public Object");
+        createFile(1, "W.java", c1);
+        createFile(2, "W.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version", "-Dv1=1.1", "-Dv2=3.3");
+            fail("Should be an incompatible change");
+        } catch (ExecuteUtils.ExecutionError incompat) {
+            // ok
+            if (!ExecuteUtils.getStdOut().contains("1.1")) {
+                fail("Should report 1.1:\n" + ExecuteUtils.getStdErr());
+            }
+            if (!ExecuteUtils.getStdOut().contains("3.3")) {
+                fail("Should report 3.3:\n" + ExecuteUtils.getStdErr());
+            }
+        }
+    }
+    
     
     public void testAntScript() throws Exception {
         String c1 =

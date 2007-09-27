@@ -182,7 +182,7 @@ final class Main {
     /** in this mode people can add new methods into interfaces,
      * which is binary compatible for linkage, but not execution
      */
-    private boolean extendableInterfaces;
+    private boolean extensibleInterfaces;
     /**specify if the reflection is used for founding nested classes.**/
     private boolean isReflectUsed = false;
     /**number of the founded classes in the scanned PATH.**/
@@ -193,6 +193,8 @@ final class Main {
     private int errors;
     /**loads SignatureClasses.**/
     private ClassFinder loader;
+    /** version of the provided file */
+    private String version = System.getProperty("java.version");
     /** contains detail options. This options are used for workaround
         of implementation **/
     protected Properties details = new Properties();
@@ -233,6 +235,9 @@ final class Main {
 	    } else if (args[i].equals("-FileName") &&
 		       (args.length > i + 1)) {
 		fileName = args[++i];
+	    } else if (args[i].equals("-Version") &&
+		       (args.length > i + 1)) {
+		version = args[++i];
 	    } else if (args[i].equals("-Package") &&
 		       (args.length > i + 1)) {
                 String pkg = args[++i];
@@ -250,8 +255,8 @@ final class Main {
                 setup = true;
 	    } else if (args[i].equals("-maintenance")) {
                 isMaintenanceMode = true;
-	    } else if (args[i].equals("-extendableinterfaces")) {
-                extendableInterfaces = true;
+	    } else if (args[i].equals("-extensibleinterfaces")) {
+                extensibleInterfaces = true;
             } else if (args[i].equals("-UseReflect")) {
                 isReflectUsed = true;
 	    } else if (args[i].equals("-Classpath") &&
@@ -279,8 +284,9 @@ final class Main {
 	    excludedElements = new String[0];
         } else {
 	    excludedElements = new String[tempExcludedElements.size()];
-	    for (int i = 0; i < tempExcludedElements.size(); i++)
-		excludedElements[i] = (String)tempExcludedElements.elementAt(i);
+	    for (int i = 0; i < tempExcludedElements.size(); i++) {
+                excludedElements[i] = tempExcludedElements.elementAt(i);
+            }
 	}
         if (!isOrdering) {
             if (isMaintenanceMode) {
@@ -335,16 +341,11 @@ final class Main {
         ClassCollection nestedErrors = new ClassCollection();
         boolean isThrowsTracked = classIterator.isThrowsTracked();
         converter = new PrimitiveConstantsChecker(true, isThrowsTracked);
-        Vector packageClasses = new Vector();
+        Vector<String> packageClasses = new Vector<String>();
 	try {
 	    PrintWriter out = new PrintWriter(new FileOutputStream(outFileName));
-            String javaVersion;
             out.println("#API master signature file");
-            try {
-                javaVersion = System.getProperty("java.version");
-                out.println("#Version " + javaVersion);
-            } catch (SecurityException e) {
-            }
+            out.println("#Version " + version);
             if (!isThrowsTracked) {
                 out.println("#Throws clause not tracked.");
             }
@@ -359,12 +360,15 @@ final class Main {
                         if (name.indexOf('$') >= 0) {
                             if (isAccessible(TableOfClass.addNestedClass(name,
                                                                          loader))
-                                && isPackageMember(name))
+                                && isPackageMember(name)
+                            ) {
                                 packageClasses.addElement(name);
+                            }
                         } else {
                             if (isPackageMember(name) &&
-                                isAccessible(loader.loadClass(name)))
-                                packageClasses.addElement(name);
+                                isAccessible(loader.loadClass(name))) {
+                            packageClasses.addElement(name);
+                        }
                         }
 		    } catch (ClassNotFoundException ex) {
                         nestedErrors.addUniqueElement(name, "Class not found: " +
@@ -410,7 +414,7 @@ final class Main {
             classIterator.clear();
             // scan class and writes definition to the signature file
             for (int i = 0; i < packageClasses.size(); i++) {
-                name = (String)packageClasses.elementAt(i);
+                name = packageClasses.elementAt(i);
                 try {
              //       Class c = Class.forName(name);
                     scanClass(out, loader.loadClass(name));
@@ -477,7 +481,7 @@ final class Main {
      * @param sigFileURL API signature file.**/
     private Status verify(String sigFileURL) {
 	nestedClasses = new Hashtable<String, TableOfClass>();
-	trackedClassNames = new Vector();
+	trackedClassNames = new Vector<String>();
         ClassSignatureReader in = null;
 	try {
 	    String line;
@@ -542,8 +546,10 @@ final class Main {
                     SignatureClass c = loader.loadClass(name);
                     if (isAccessible(c) && isPackageMember(name) &&
                         !trackedClassNames.contains(c.getName()) &&
-                        !nonLinkedClasses.contains(c.getName()))
+                        !nonLinkedClasses.contains(c.getName())
+                    ) {
                         errorWriter.addError("Added", c.getName(), null, null);
+                    }
                 } catch (ClassNotFoundException ex) {
                 } catch (LinkageError ex1) {
                 }
@@ -554,13 +560,11 @@ final class Main {
 	}
 
         log.println("APIChangeTest Report\n");
-        if (in != null)
+        if (in != null) {
             log.println("Base version:   " + in.javaVersion);
-        try {
-            String javaVersion = System.getProperty("java.version");
-            log.println("Tested version: " + javaVersion);
-        } catch (SecurityException e) {
         }
+        String javaVersion = version;
+        log.println("Tested version: " + javaVersion);
         log.println("");
         errors = errorWriter.printErrors();
         
@@ -601,8 +605,9 @@ final class Main {
                                         TableOfClass found)
         throws ClassNotFoundException  {
         // track class modifiers
-	if (trackedClassNames.contains(found.getClassName()))
-            return;// this class is tracked
+	if (trackedClassNames.contains(found.getClassName())) {
+            return; // this class is tracked
+        }// this class is tracked
 
         trackedClassNames.addElement(found.getClassName());
         found.createMembers();
@@ -693,7 +698,7 @@ final class Main {
         localName = localName.substring(localName.lastIndexOf('.') + 1);
         localName = localName.substring(localName.lastIndexOf('$') + 1);
         Vector foundClasses = trackedClass.getNestedClassDefinitions(localName);
-        Vector reqClasses = new Vector();
+        Vector<String> reqClasses = new Vector<String>();
         for (int i = 0; i < required.size(); i++) {
             String temp = (String)required.elementAt(i);
             reqClasses.addElement(temp.substring(0, temp.lastIndexOf(' ') + 1) +
@@ -702,7 +707,7 @@ final class Main {
         for (int i = 0; i < required.size(); i++) {
             String name = (String)required.elementAt(i);
             name = name.substring(name.lastIndexOf(' ') + 1);
-            TableOfClass req = (TableOfClass)nestedClasses.get(name);
+            TableOfClass req = nestedClasses.get(name);
             try {
                 SignatureClass c = loader.loadClass(name);
                 TableOfClass cl = new TableOfClass(c, isReflectUsed);
@@ -741,8 +746,8 @@ final class Main {
         // primitive constants.
 	for (Enumeration eReq = required.keys(); eReq.hasMoreElements();) {
 	    String name = (String)eReq.nextElement();
-	    Vector requiredMembers = required.get(name);
-	    Vector existingMembers = found.get(name);
+	    Vector<?> requiredMembers = required.get(name);
+	    Vector<?> existingMembers = found.get(name);
 	    if (existingMembers == null) {
 		existingMembers = new Vector();
                 existingMembers.add(null);
@@ -774,16 +779,17 @@ final class Main {
             } else if (name.startsWith(SignatureConstants.SUPER)) {
                 if ((requiredMembers != null) && !requiredMembers.isEmpty()) {
                     SignatureClass c = found.getClassObject();
-                    if (c != null)
+                    if (c != null) {
                         c = c.getSuperclass();
+                    }
                     String superName = (String)requiredMembers.elementAt(0);
-                    superName = superName.substring(superName.lastIndexOf(' ')
-                                                    + 1);
+                    superName = superName.substring(superName.lastIndexOf(' ') + 1);
+                    // TBD: Next two lines look like an error to me
                     for (; ((c != null) && !superName.equals(c.getName()));
                          c = c.getSuperclass());
-                    if ((c == null) && !superName.equals("null"))
-                        errorWriter.addError("Missing", required.getName(),
-                                             (String)requiredMembers.elementAt(0), null);
+                    if ((c == null) && !superName.equals("null")) {
+                        errorWriter.addError("Missing", required.getName(), (String) requiredMembers.elementAt(0), null);
+                    }
                 }                    
             } else {
                 BIG: for (int i = 0; i < requiredMembers.size(); i++) {
@@ -857,7 +863,7 @@ final class Main {
             errorWriter.addError("Added", found.getName(), found.classDef, null);
         }
     
-        if (extendableInterfaces && required.isInterface()) {
+        if (extensibleInterfaces && required.isInterface()) {
             return;
         }
         
@@ -1045,10 +1051,11 @@ final class Main {
     /** determinates if the class is member of the tested packages.
      *  @param name name of the class.**/
     private boolean isPackageMember(String name) {
-	for (int j = 0; j < excludedElements.length; ++j)
-	    if (name.startsWith(excludedElements[j] + ".") ||
-                name.equals(excludedElements[j]))
-		return false;
+	for (int j = 0; j < excludedElements.length; ++j) {
+            if (name.startsWith(excludedElements[j] + ".") || name.equals(excludedElements[j])) {
+                return false;
+            }
+        }
 	for (int i = 0; i < packages.length; i++) {
             if (packages[i].matcher(name).matches()) {
                 return true;
@@ -1074,21 +1081,24 @@ final class Main {
         if (isReflectUsed) {
             for (SignatureClass cl = c; cl != null; cl = cl.getDeclaringClass()) {
                 m = cl.getModifiers();
-                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) 
+                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) {
                     return false;
+                }
             }
         } else {
             for (SignatureClass cl = c; cl != null;) {
                 m = cl.getModifiers();
-                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) 
+                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) {
                     return false;
+                }
                 int pos = cl.getName().lastIndexOf('$');
                 try {
                     if (pos > 0) {
                         String nextName = cl.getName().substring(0, pos);
                         cl = loader.loadClass(nextName);
-                    } else
+                    } else {
                         cl = null;
+                    }
                 } catch (ClassNotFoundException e) {
                     cl = null;
                 } catch (LinkageError er) {
@@ -1112,18 +1122,15 @@ final class Main {
         int nBefore = beforeDef.getAccesModifier();
         int nAfter = afterDef.getAccesModifier();
         if (nAfter < nBefore) {
-            if (nBefore == MemberDefinition.PUBLIC)
-                errorWriter.addError("is not public", name, 
-                                     beforeDef.stringDefinition,
-                                     "is not public in the new implementation");
-            else if (nBefore == MemberDefinition.PROTECTED)
-                errorWriter.addError("is not protected", name, 
-                                     beforeDef.stringDefinition, 
-                                     "is not protected in the new implementation");
-            else
-                errorWriter.addError("less accessible", name, 
-                                     beforeDef.stringDefinition, 
-                                     "less accessible in the new implementation");
+            if (nBefore == MemberDefinition.PUBLIC) {
+                errorWriter.addError("is not public", name, beforeDef.stringDefinition, "is not public in the new implementation");
+            }
+            else if (nBefore == MemberDefinition.PROTECTED) {
+                errorWriter.addError("is not protected", name, beforeDef.stringDefinition, "is not protected in the new implementation");
+            }
+            else {
+                errorWriter.addError("less accessible", name, beforeDef.stringDefinition, "less accessible in the new implementation");
+            }
         }
 
         for (int i = 0; i < modifiers.length; i++) {
@@ -1131,19 +1138,15 @@ final class Main {
             String after = modifiers[i][1];
             if (before != null) {
                 if (beforeDef.definitions.contains(before) &&
-                    !afterDef.definitions.contains(before))
-                    errorWriter.addError("is not " + before, name, 
-                                         beforeDef.stringDefinition, 
-                                         "is not " +  before +
-                                         " in the new implementation");
+                    !afterDef.definitions.contains(before)) {
+                    errorWriter.addError("is not " + before, name, beforeDef.stringDefinition, "is not " + before + " in the new implementation");
+                }
             }
             if (after != null) {
                 if (!beforeDef.definitions.contains(after) &&
-                    afterDef.definitions.contains(after))
-                    errorWriter.addError("is " + after, name, 
-                                         beforeDef.stringDefinition, 
-                                         "is " + after +
-                                         " in the new implementation");
+                    afterDef.definitions.contains(after)) {
+                    errorWriter.addError("is " + after, name, beforeDef.stringDefinition, "is " + after + " in the new implementation");
+                }
             }
         }
     }

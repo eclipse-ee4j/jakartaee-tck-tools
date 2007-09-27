@@ -41,6 +41,7 @@ public final class Sigtest extends Task {
 
     File fileName;
     Path classpath;
+    String version;
     String packages;
     ActionType action;
     boolean failOnError = true;
@@ -63,6 +64,9 @@ public final class Sigtest extends Task {
         } else {
             classpath.append(p);
         }
+    }
+    public void setVersion(String v) {
+        version = v;
     }
     public Path createClasspath () {
         if (classpath == null) {
@@ -106,11 +110,15 @@ public final class Sigtest extends Task {
         } else if (action.getValue().equals("check")) {
             // no special arg for check
         } else if (action.getValue().equals("binarycheck")) {
-            arg.add("-extendableinterfaces");
+            arg.add("-extensibleinterfaces");
         } else if (action.getValue().equals("strictcheck")) {
             arg.add("-maintenance");
         } else {
             throw new BuildException("Unknown action: " + action);
+        }
+        if (version != null) {
+            arg.add("-Version");
+            arg.add(version);
         }
         
         File outputFile = null;
