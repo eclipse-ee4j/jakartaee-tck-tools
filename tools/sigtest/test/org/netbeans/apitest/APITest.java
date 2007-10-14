@@ -250,16 +250,16 @@ public class APITest extends NbTestCase {
     }
     
     public void testGenerateVersionNumber() throws Exception {
-        String c1 =
+        String retAppendable =
             "package ahoj; import java.io.IOException; " +
     "public class W implements Appendable {" +
     "    public Appendable append(CharSequence csq) throws IOException { return this; }" +
     "    public Appendable append(CharSequence csq, int start, int end) throws IOException { return this; }" +
     "    public Appendable append(char c) throws IOException { return this; }" +
     "}";
-        String c2 = c1.replaceAll("public Appendable", "public Object");
-        createFile(1, "W.java", c1);
-        createFile(2, "W.java", c2);
+        String retW = retAppendable.replaceAll("public Appendable", "public W");
+        createFile(1, "W.java", retW);
+        createFile(2, "W.java", retAppendable);
         
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version", "-Dv1=1.1", "-Dv2=3.3");
