@@ -366,8 +366,9 @@ final class TableOfClass implements SignatureConstants {
 	boolean hasNested = false;
 	for (SignatureClass t = classObject; t != null; t = t.getSuperclass()) {
 	    if (!isReflectUsed && (nestedClasses.get(t.getName()) != null) ||
-                isReflectUsed  && (t.getDeclaredClasses().length > 0))
-		hasNested = true;
+                isReflectUsed  && (t.getDeclaredClasses().length > 0)) {
+                hasNested = true;
+            }
 	}
 
  	ClassCollection methods = getMethods(classObject);
@@ -380,16 +381,18 @@ final class TableOfClass implements SignatureConstants {
 		MemberEntry meth = (MemberEntry)h.elementAt(i);
 		// exclude synthetic and privte and package access method.
  		if ((meth.isPublic() || meth.isProtected()) &&
-                    !meth.isSynthetic())
-		    members.addElement(meth);
+                    !meth.isSynthetic()) {
+                    members.addElement(meth);
+                }
 	    }
 	}
     }
 
     /** returns all methods of the given class. **/
     private ClassCollection getMethods(SignatureClass c) {
-        if (c == null)
+        if (c == null) {
             return new ClassCollection();
+        }
         ClassCollection methods = getMethods(c.getSuperclass());
         SignatureClass[] intf = c.getInterfaces();
         for (int j = 0; j < intf.length; j++) {
@@ -400,12 +403,14 @@ final class TableOfClass implements SignatureConstants {
                 Vector h = methI.get(key);
                 Vector meth = methods.get(key);
                 if ((meth == null) || (meth.size() == 1) &&
-                    ((MemberEntry)meth.elementAt(0)).isAbstract())
-		    //abstract class inherits all abstract methods, 
-		    //but inherited non-abstract method implements
-		    //all inherited abstract methods.
-                    for (Enumeration e1 = h.elements(); e1.hasMoreElements();)
+                    ((MemberEntry)meth.elementAt(0)).isAbstract()) {
+                    //abstract class inherits all abstract methods,
+                    //but inherited non-abstract method implements
+                    //all inherited abstract methods.
+                    for (Enumeration e1 = h.elements(); e1.hasMoreElements();) {
                         methods.addUniqueElement(key, e1.nextElement());
+                    }
+                }
                     
             }
         }
@@ -435,12 +440,13 @@ final class TableOfClass implements SignatureConstants {
     private void getFields() {
  	ClassCollection fields = getFields(classObject);
 	for (Enumeration e = fields.keys(); e.hasMoreElements();) {
-	    String name = (String)e.nextElement();
-	    Vector h = fields.get(name);
+	    String nm = (String)e.nextElement();
+	    Vector h = fields.get(nm);
 	    for (int i = 0; i < h.size(); i++) {
 		MemberEntry field = (MemberEntry)h.elementAt(i);
-		if (field.isPublic() || field.isProtected())
-		    members.addElement(field);
+		if (field.isPublic() || field.isProtected()) {
+                    members.addElement(field);
+                }
 	    }
 	}
     }
@@ -458,13 +464,15 @@ final class TableOfClass implements SignatureConstants {
             for (Enumeration fields = fieldI.keys(); fields.hasMoreElements();) {
                 String name = (String)fields.nextElement();
                 Vector h = fieldI.get(name);
-                for (Enumeration e = h.elements(); e.hasMoreElements();)
+                for (Enumeration e = h.elements(); e.hasMoreElements();) {
                     retVal.addUniqueElement(name, e.nextElement());
+                }
             }
         }
         MemberEntry declaredFields[] = c.getDeclaredFields();
-        for (int i = 0; i < declaredFields.length; i++)
+        for (int i = 0; i < declaredFields.length; i++) {
             retVal.put(declaredFields[i].getKey(), declaredFields[i]);
+        }
         return retVal;
     }
         
@@ -475,19 +483,22 @@ final class TableOfClass implements SignatureConstants {
 	Vector interfaces = new Vector();
         getInterfaces(classObject, interfaces);
         SignatureClass retVal[] = new SignatureClass[interfaces.size()];
-	for (int i = 0; i < interfaces.size(); i++)
-	    retVal[i] = (SignatureClass)interfaces.elementAt(i);
+	for (int i = 0; i < interfaces.size(); i++) {
+            retVal[i] = (SignatureClass) interfaces.elementAt(i);
+        }
 	return retVal;
     }
 
     /** writes interfaces of the given class to the Vector. **/
     private void getInterfaces(SignatureClass c, Vector h) {
-        if (c == null)
+        if (c == null) {
             return;
+        }
         getInterfaces(c.getSuperclass(), h);
         SignatureClass intf[] = c.getInterfaces();
-        if (c == null)
+        if (c == null) {
             return;
+        }
         for (int i = 0; i < intf.length; i++) {
             if (!h.contains(intf[i])) {
                 h.addElement(intf[i]);
