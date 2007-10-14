@@ -27,7 +27,12 @@ package org.netbeans.apitest;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Properties;
 
 /** This is class for founding of the declared members. This class
@@ -68,8 +73,68 @@ final class SignatureClass implements ClassConstants{
         MemberEntry[] retVal = new MemberEntry[methods.length];
         for (int i = 0; i < retVal.length; i++) {
             retVal[i] = new MemberEntry(methods[i], filter);
+            if (isVisible(methods[i])) {
+                boolean bad = false;
+                if (!isVisible(methods[i].getReturnType())) {
+                    bad = true;
+                }
+                if (!isVisible(methods[i].getParameterTypes())) {
+                    bad = true;
+                }
+                if (!isVisible(methods[i].getGenericExceptionTypes())) {
+                    bad = true;
+                }
+                if (!isVisible(methods[i].getGenericParameterTypes())) {
+                    bad = true;
+                }
+                if (!isVisible(methods[i].getGenericReturnType())) {
+                    bad = true;
+                }
+                if (bad) {
+                    throw new IllegalStateException("Hidden class in " + retVal[i]);
+                }
+            }
         }
         return retVal;
+    }
+    
+    private static boolean isVisible(Member m) {
+        return (m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
+    }
+    
+    private static boolean isVisible(Class<?>... classes) {
+        for (Class<?> c : classes) {
+            if ((c.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    private static boolean isVisible(Type... types) {
+        for (Type t : types) {
+            if (t instanceof Class) {
+                return isVisible((Class<?>)t);
+            }
+            if (t instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)t;
+                if (!isVisible(pt.getActualTypeArguments())) {
+                    return false;
+                }
+                if (!isVisible(pt.getRawType())) {
+                    return false;
+                }
+            }
+            if (t instanceof WildcardType) {
+                WildcardType wt = (WildcardType)t;
+                if (!isVisible(wt.getLowerBounds())) {
+                    return false;
+                }
+                if (!isVisible(wt.getUpperBounds())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** returns all fields declared by current class. **/
@@ -78,6 +143,11 @@ final class SignatureClass implements ClassConstants{
         MemberEntry[] retVal = new MemberEntry[fields.length];
         for (int i = 0; i < retVal.length; i++) {
             retVal[i] = new MemberEntry(fields[i], filter);
+            if (isVisible(fields[i]) && (
+                !isVisible(fields[i].getType()) || !isVisible(fields[i].getGenericType())
+            )) {
+                throw new IllegalStateException("Hidden class in " + retVal[i]);
+            }
         }
         return retVal;
     }
