@@ -51,7 +51,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(APITest.class);
-        //return new APITest("testMakingAClassNonFinalIsNotIncompatibleChange");
+        //return new APITest("testUnion2Problem");
     }
 
     @Override
@@ -355,6 +355,21 @@ public class APITest extends NbTestCase {
             "  private C() { }" +
             "  public static C DEFAULT = new C();" +
             "}";
+        createFile(2, "C.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
+    }
+
+    public void testUnion2Problem() throws Exception {
+        String c1 =
+            "package x.y;" +
+            "public abstract class C<A,B> implements Cloneable {" +
+            "  private C() { }" +
+            "  @Override" +
+            "  public abstract C<A,B> clone();" +
+            "}";
+        createFile(1, "C.java", c1);
+        String c2 = c1;
         createFile(2, "C.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");

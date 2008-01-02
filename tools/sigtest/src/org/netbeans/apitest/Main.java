@@ -971,7 +971,10 @@ final class Main {
             modifs = tempModifs;
         }
         // track modifiers.
-	trackModifiers(name, modifs, beforeDef, afterDef);
+	ErrorMessage em = trackModifiers(name, modifs, beforeDef, afterDef);
+        if (em != null) {
+            errorWriter.addError(em);
+        }
     }
 
     /** check constructor definition in the default mode.
@@ -984,7 +987,10 @@ final class Main {
 	MemberDefinition beforeDef = new MemberDefinition(name, before);
 	MemberDefinition afterDef = new MemberDefinition(name, after);
         // track modifiers.
-	trackModifiers(name, new String[0][0], beforeDef, afterDef);
+	ErrorMessage em = trackModifiers(name, new String[0][0], beforeDef, afterDef);
+        if (em != null) {
+            errorWriter.addError(em);
+        }
     }
 
     /** check field definition in the default mode.
@@ -1002,7 +1008,10 @@ final class Main {
             {"volatile", "volatile"},
         };
         // track modifiers.
-	trackModifiers(name, modifs, beforeDef, afterDef);
+	ErrorMessage em = trackModifiers(name, modifs, beforeDef, afterDef);
+        if (em != null) {
+            errorWriter.addError(em);
+        }
         // track return type
 	if (!beforeDef.getType().equals(afterDef.getType())) {
 	    errorWriter.addError("Change type.", name, before,
@@ -1038,7 +1047,10 @@ final class Main {
             modifs = temp;
         }
         // track modifiers.
-	trackModifiers(name, modifs, beforeDef, afterDef);
+	ErrorMessage em = trackModifiers(name, modifs, beforeDef, afterDef);
+        if (em != null) {
+            return em;
+        }
         // track return type
 	if (!beforeDef.getType().equals(afterDef.getType())) {
             return errorWriter.createError("Change type.", name, before ,
@@ -1117,19 +1129,19 @@ final class Main {
      *  @param modifiers modifiers which required to be checked.
      *  @param beforeDef definition in the based implementation.
      *  @param afterDef definition in the tested implementation.**/
-    private void trackModifiers(String name, String[][] modifiers, MemberDefinition beforeDef,
+    private ErrorMessage trackModifiers(String name, String[][] modifiers, MemberDefinition beforeDef,
                                 MemberDefinition afterDef) {
         int nBefore = beforeDef.getAccesModifier();
         int nAfter = afterDef.getAccesModifier();
         if (nAfter < nBefore) {
             if (nBefore == MemberDefinition.PUBLIC) {
-                errorWriter.addError("is not public", name, beforeDef.stringDefinition, "is not public in the new implementation");
+                return errorWriter.createError("is not public", name, beforeDef.stringDefinition, "is not public in the new implementation");
             }
             else if (nBefore == MemberDefinition.PROTECTED) {
-                errorWriter.addError("is not protected", name, beforeDef.stringDefinition, "is not protected in the new implementation");
+                return errorWriter.createError("is not protected", name, beforeDef.stringDefinition, "is not protected in the new implementation");
             }
             else {
-                errorWriter.addError("less accessible", name, beforeDef.stringDefinition, "less accessible in the new implementation");
+                return errorWriter.createError("less accessible", name, beforeDef.stringDefinition, "less accessible in the new implementation");
             }
         }
 
@@ -1139,16 +1151,18 @@ final class Main {
             if (before != null) {
                 if (beforeDef.definitions.contains(before) &&
                     !afterDef.definitions.contains(before)) {
-                    errorWriter.addError("is not " + before, name, beforeDef.stringDefinition, "is not " + before + " in the new implementation");
+                    return errorWriter.createError("is not " + before, name, beforeDef.stringDefinition, "is not " + before + " in the new implementation");
                 }
             }
             if (after != null) {
                 if (!beforeDef.definitions.contains(after) &&
                     afterDef.definitions.contains(after)) {
-                    errorWriter.addError("is " + after, name, beforeDef.stringDefinition, "is " + after + " in the new implementation");
+                    return errorWriter.createError("is " + after, name, beforeDef.stringDefinition, "is " + after + " in the new implementation");
                 }
             }
         }
+        
+        return null;
     }
 
     /** prints warning in the setup mode.**/
