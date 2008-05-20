@@ -50,7 +50,7 @@ public class HiddenClassTest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(HiddenClassTest.class);
-        //return new APITest("testMakingAClassNonFinalIsNotIncompatibleChange");
+        //return new HiddenClassTest("testOkToHaveInnerclass");
     }
 
     @Override
@@ -118,17 +118,39 @@ public class HiddenClassTest extends NbTestCase {
         
         compareAPIs(1, 1, "-Dcheck.package=ahoj.*");
     }
+    
+    public void testChecksOnlyVisiblePackagesForInnerclass() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public abstract void get(Integer a);" +
+            "  private static class X implements hidden.H {" +
+            "  }" +
+            "}";
+        createFile(1, "I.java", c1);
+        String c2 =
+            "package hidden;" +
+            "public interface H {" +
+            "  public static final Arg arg = new Arg();\n" +
+            "}" +
+            "class Arg { }" +
+            "";
+        createFile(1, "H.java", c2);
+        
+        
+        compareAPIs(1, 1, "-Dcheck.package=ahoj.*");
+    }
 
     public void testOkToHaveInnerclass() throws Exception {
         String c1 =
-            "package ahoj;" +
+            "package ahoj2;" +
             "public class I {" +
             "  class T { }" +
             "}";
         createFile(1, "I.java", c1);
         
         
-        compareAPIs(1, 1, "-Dcheck.package=ahoj.*");
+        compareAPIs(1, 1, "-Dcheck.package=ahoj2.*");
     }
 
     public void testReturnType() throws Exception {

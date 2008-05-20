@@ -47,6 +47,7 @@
     </target>
     
     <target name="-compile-dir">
+        <delete dir="${dir}/classes"/>
         <mkdir dir="${dir}/classes"/>
         <javac srcdir="${dir}" fork="true" destdir="${dir}/classes"/>
         <jar basedir="${dir}/classes" includes="**/*.class" jarfile="${dir}/api.jar"/>
