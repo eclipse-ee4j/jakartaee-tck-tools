@@ -97,6 +97,27 @@ public class HiddenClassTest extends NbTestCase {
         
         compareAPIs(1, 1, "-Dcheck.package=ahoj.*");
     }
+    
+    public void testChecksOnlyVisiblePackagesForFields() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public abstract void get(Integer a);" +
+            "  hidden.H hhh;" +
+            "}";
+        createFile(1, "I.java", c1);
+        String c2 =
+            "package hidden;" +
+            "public class H {" +
+            "  public static final Arg arg = new Arg();" +
+            "}" +
+            "class Arg { }" +
+            "";
+        createFile(1, "H.java", c2);
+        
+        
+        compareAPIs(1, 1, "-Dcheck.package=ahoj.*");
+    }
 
     public void testOkToHaveInnerclass() throws Exception {
         String c1 =
