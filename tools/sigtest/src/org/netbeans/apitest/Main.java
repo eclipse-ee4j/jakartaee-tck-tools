@@ -25,6 +25,9 @@
 
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.sigfile.FileManager;
+import com.sun.tdk.signaturetest.sigfile.Reader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -485,7 +488,15 @@ final class Main {
         ClassSignatureReader in = null;
 	try {
 	    String line;
-	    in = new ClassSignatureFromSigtests(sigFileURL);
+        URL url = new File(sigFileURL).toURI().toURL();
+        Reader r = FileManager.getReader(url);
+        if (r != null) {
+            in = new ClassSignatureFromSigtests(r, url);
+        } else {
+            in = new ClassSignatureReader(sigFileURL);
+        }
+        
+        
             boolean isThrowsTracked = classIterator.isThrowsTracked() &&
                                       in.isThrowsTracked;
             in.isThrowsTracked = isThrowsTracked;
@@ -561,7 +572,7 @@ final class Main {
 
         log.println("APIChangeTest Report\n");
         if (in != null) {
-            log.println("Base version:   " + in.javaVersion);
+            log.println("Base version:   " + in.getJavaVersion());
         }
         String javaVersion = version;
         log.println("Tested version: " + javaVersion);

@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(APITest.class);
-        //return new APITest("testGenericsOverridenType");
+        //return new APITest("testGenerateVersionNumber");
     }
 
     @Override

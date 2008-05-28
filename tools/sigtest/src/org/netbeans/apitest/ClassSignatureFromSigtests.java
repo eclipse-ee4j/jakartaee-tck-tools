@@ -42,10 +42,9 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
 
     /** Creates new ClassSignatureReader for given URL
      * @param fileURL given URL which contains signature file **/
-    public ClassSignatureFromSigtests(String fileURL) throws IOException {
-        super(fileURL);
-        URL url = new File(fileURL).toURI().toURL();
-        reader = FileManager.getReader(url);
+    public ClassSignatureFromSigtests(Reader reader, URL url) throws IOException {
+        super();
+        this.reader = reader;
         reader.readSignatureFile(url);
         /*
         definitions = new Vector();
@@ -54,6 +53,11 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
             if (currentLine.startsWith("#Throws clause not tracked."))
                 isThrowsTracked = false;
          */
+    }
+
+    @Override
+    String getJavaVersion() {
+        return reader.getApiVersion();
     }
 
     /** set the definition converter

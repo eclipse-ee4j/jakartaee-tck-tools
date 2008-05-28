@@ -61,6 +61,10 @@ class ClassSignatureReader implements SignatureConstants {
 	}
     }
 
+    ClassSignatureReader() {
+    }
+    
+
     /** set the definition converter
      *  @param converter given DefinitionFormat. **/
     public void setDefinitionConverter(DefinitionFormat converter) {
@@ -96,6 +100,14 @@ class ClassSignatureReader implements SignatureConstants {
 	}
 	retClass.createMembers(definitions.elements());
 	return retClass;
-    }    
+    }
+
+    String getJavaVersion() {
+        return javaVersion;
+    }
+
+    private void setJavaVersion(String javaVersion) {
+        this.javaVersion = javaVersion;
+    }
 }
 	    
