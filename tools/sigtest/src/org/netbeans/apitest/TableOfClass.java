@@ -162,6 +162,7 @@ final class TableOfClass implements SignatureConstants {
 
     TableOfClass(ClassDescription descr, DefinitionFormat converter) {
         name = descr.getQualifiedName();
+        classDef = converter.getDefinition(descr.toString());
         //name = (enclClass == null) ? c.getName() : (enclClass + "$" + getLocalName(c));
         //classObject = c;
         this.converter = converter;
@@ -170,7 +171,8 @@ final class TableOfClass implements SignatureConstants {
 //        }
         members = new ClassCollection();
         for (com.sun.tdk.signaturetest.model.MethodDescr d : descr.getDeclaredMethods()) {
-            members.addElement(new MemberEntry(d.toString(), converter));
+            String def = converter.getDefinition(d.toString());
+            members.addElement(new MemberEntry(def, converter));
         }
         
         Iterator it = descr.getMembersIterator();

@@ -494,10 +494,10 @@ final class Main {
                 String tempModifiers[][] = {
                     {SignatureConstants.FIELD, SignatureConstants.PRIMITIVE_CONSTANT}
                 };
-                converter = new PrimitiveConstantsChecker(true, isThrowsTracked,
+                converter = new PrimitiveConstantsCheckerFromSigtests(true, isThrowsTracked,
                                                           tempModifiers);
             } else {
-                converter = new PrimitiveConstantsChecker(true, isThrowsTracked);
+                converter = new PrimitiveConstantsCheckerFromSigtests(true, isThrowsTracked);
             }
 
             loader = new ClassFinder(converter, details, classIterator.getClassLoader());
