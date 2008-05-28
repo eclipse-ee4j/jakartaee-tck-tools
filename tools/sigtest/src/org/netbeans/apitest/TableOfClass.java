@@ -26,6 +26,7 @@
 package org.netbeans.apitest;
 
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import java.beans.MethodDescriptor;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -160,7 +161,7 @@ final class TableOfClass implements SignatureConstants {
     }
 
     TableOfClass(ClassDescription descr, DefinitionFormat converter) {
-        name = descr.getName();
+        name = descr.getQualifiedName();
         //name = (enclClass == null) ? c.getName() : (enclClass + "$" + getLocalName(c));
         //classObject = c;
         this.converter = converter;
@@ -168,6 +169,10 @@ final class TableOfClass implements SignatureConstants {
 //            memberClasses = new ClassCollection();
 //        }
         members = new ClassCollection();
+        for (com.sun.tdk.signaturetest.model.MethodDescr d : descr.getDeclaredMethods()) {
+            members.addElement(new MemberEntry(d.toString(), converter));
+        }
+        
         Iterator it = descr.getMembersIterator();
         while (it.hasNext()) {
             members.addElement(new MemberEntry(it.next().toString(), converter));
