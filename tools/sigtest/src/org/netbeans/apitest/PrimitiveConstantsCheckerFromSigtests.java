@@ -89,7 +89,14 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         if (newLine >= 0) {
             definition = definition.substring(0, newLine);
         }
-        
+
+        definition = definition.replaceAll("byte\\[\\]", "[B")
+                .replaceAll("short\\[\\]", "[S")
+                .replaceAll("int\\[\\]", "[I")
+                .replaceAll("float\\[\\]", "[F")
+                .replaceAll("double\\[\\]", "[D")
+                .replaceAll("char\\[\\]", "[C");
+                
         for (;;) {
             int array = definition.indexOf("[]");
             if (array == -1) {

@@ -149,6 +149,24 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
+    public void testPrimitiveArraysBackward() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class ServiceType {" +
+            "  public abstract void get(int[] args);" +
+            "  public abstract void get(short[] args);" +
+            "  public abstract void get(byte[] args);" +
+            "  public abstract void get(double[] args);" +
+            "  public abstract void get(float[] args);" +
+            "  public abstract void get(char[] args);" +
+            "}";
+        createFile(1, "ServiceType.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
     public void testVarArgsBackward() throws Exception {
         String c1 =
             "package ahoj;" +
