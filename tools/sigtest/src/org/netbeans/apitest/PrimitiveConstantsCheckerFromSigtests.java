@@ -54,6 +54,17 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         if (definition.startsWith("method ")) {
             definition = "meth " + definition.substring(7);
         }
+        for (;;) {
+            int beg = definition.indexOf('<');
+            if (beg == -1) {
+                break;
+            }
+            int end = definition.indexOf('>', beg);
+            if (end == -1) {
+                throw new IllegalStateException("Missing > in " + definition);
+            }
+            definition = definition.substring(0, beg) + definition.substring(end + 1);
+        }
         return super.getDefinition(definition);
     }
 }
