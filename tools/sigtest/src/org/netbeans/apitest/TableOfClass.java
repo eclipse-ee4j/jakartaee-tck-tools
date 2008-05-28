@@ -26,6 +26,8 @@
 package org.netbeans.apitest;
 
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.ConstructorDescr;
+import com.sun.tdk.signaturetest.model.FieldDescr;
 import java.beans.MethodDescriptor;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
@@ -174,10 +176,13 @@ final class TableOfClass implements SignatureConstants {
             String def = converter.getDefinition(d.toString());
             members.addElement(new MemberEntry(def, converter));
         }
-        
-        Iterator it = descr.getMembersIterator();
-        while (it.hasNext()) {
-            members.addElement(new MemberEntry(it.next().toString(), converter));
+        for (FieldDescr f : descr.getDeclaredFields()) {
+            String def = converter.getDefinition(f.toString());
+            members.addElement(new MemberEntry(def, converter));
+        }
+        for (ConstructorDescr f : descr.getDeclaredConstructors()) {
+            String def = converter.getDefinition(f.toString());
+            members.addElement(new MemberEntry(def, converter));
         }
     }
 

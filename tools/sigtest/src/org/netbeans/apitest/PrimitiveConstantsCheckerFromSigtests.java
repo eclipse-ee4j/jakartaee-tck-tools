@@ -44,16 +44,21 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                                      String[][] removedModif) {
         super(isQualifiedName, isThrowsTracked, removedModif);
     }
+    
+    private static String replace(String definition, String prefix, String with) {
+        if (definition.startsWith(prefix)) {
+            definition = with + definition.substring(prefix.length());
+        }
+        return definition;
+    }
         
     /** return formatted definition. **/
     @Override
     public String getDefinition(String definition) {
-        if (definition.startsWith("CLASS ")) {
-            definition = "CLSS " + definition.substring(6);
-        }
-        if (definition.startsWith("method ")) {
-            definition = "meth " + definition.substring(7);
-        }
+        definition = replace(definition, "CLASS ", SignatureConstants.CLASS);
+        definition = replace(definition, "method ", SignatureConstants.METHOD);
+        definition = replace(definition, "field ", SignatureConstants.FIELD);
+        definition = replace(definition, "constructor ", SignatureConstants.CONSTRUCTOR);
         for (;;) {
             int beg = definition.indexOf('<');
             if (beg == -1) {
