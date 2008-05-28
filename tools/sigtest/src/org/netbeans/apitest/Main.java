@@ -485,7 +485,7 @@ final class Main {
         ClassSignatureReader in = null;
 	try {
 	    String line;
-	    in = new ClassSignatureReader(sigFileURL);
+	    in = new ClassSignatureFromSigtests(sigFileURL);
             boolean isThrowsTracked = classIterator.isThrowsTracked() &&
                                       in.isThrowsTracked;
             in.isThrowsTracked = isThrowsTracked;

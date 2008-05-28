@@ -24,7 +24,9 @@
  */
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.Setup;
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -102,11 +104,13 @@ public final class Sigtest extends Task {
             return;
         }
 
+        boolean generate = false;
         List<String> arg = new ArrayList<String>();
         arg.add("-FileName");
         arg.add(fileName.getAbsolutePath());
         if (action.getValue().equals("generate")) {
-            arg.add("-setup");
+            generate = true;
+            arg.add("-static");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
         } else if (action.getValue().equals("binarycheck")) {
@@ -163,7 +167,15 @@ public final class Sigtest extends Task {
             arg.add(sb.toString());
         }
         
-        int returnCode = Main.run(arg.toArray(new String[0])).getType();
+        int returnCode;
+        String[] args = arg.toArray(new String[0]);
+        if (generate) {
+            Setup t = new Setup();
+            t.run(args, new PrintWriter(System.err, true), null);
+            returnCode = 0;
+        } else {            
+            returnCode = Main.run(args).getType();
+        }
         
         if (returnCode != 0) {
             if (failOnError && outputFile == null) {

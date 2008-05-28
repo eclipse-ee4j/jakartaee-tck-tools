@@ -25,6 +25,7 @@
 
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.model.ClassDescription;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -33,6 +34,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -155,6 +157,21 @@ final class TableOfClass implements SignatureConstants {
 	String retVal = c.getName();
 	int pos = Math.max(retVal.lastIndexOf("."), retVal.lastIndexOf("$"));
 	return retVal.substring(pos + 1);
+    }
+
+    TableOfClass(ClassDescription descr, DefinitionFormat converter) {
+        name = descr.getName();
+        //name = (enclClass == null) ? c.getName() : (enclClass + "$" + getLocalName(c));
+        //classObject = c;
+        this.converter = converter;
+//        if (isReflectUsed) {
+//            memberClasses = new ClassCollection();
+//        }
+        members = new ClassCollection();
+        Iterator it = descr.getMembersIterator();
+        while (it.hasNext()) {
+            members.addElement(new MemberEntry(it.next().toString(), converter));
+        }
     }
 
 

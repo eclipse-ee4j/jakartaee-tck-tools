@@ -25,44 +25,40 @@
 
 package org.netbeans.apitest;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.sigfile.FileManager;
+import com.sun.tdk.signaturetest.sigfile.Reader;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
 import java.util.Vector;
 
 /** This is class for reading signature or API signature file **/
-class ClassSignatureReader implements SignatureConstants {
-    /** reads line from signature file **/
-    private BufferedReader in;
-    /** the last line which are read from signature file **/
-    private String currentLine;
-    /** the lines of the current class **/
+final class ClassSignatureFromSigtests extends ClassSignatureReader implements SignatureConstants {
     private Vector definitions;
-    /** the converter which converts lines **/
+    private Reader reader;
     private DefinitionFormat converter;
-    /** the java version of the signature file **/
-    String javaVersion = " N/A";
-    /** determines if the throws clause is required to be tracked.**/
-    boolean isThrowsTracked = true;
 
     /** Creates new ClassSignatureReader for given URL
      * @param fileURL given URL which contains signature file **/
-    public ClassSignatureReader(String fileURL) throws IOException {
-	in = new BufferedReader(new FileReader(fileURL));
-	definitions = new Vector();
-	currentLine = null;
-	//read the first class name
-	while (((currentLine = in.readLine()) != null) && 
-	       (!currentLine.startsWith(CLASS))) {
+    public ClassSignatureFromSigtests(String fileURL) throws IOException {
+        super(fileURL);
+        URL url = new File(fileURL).toURI().toURL();
+        reader = FileManager.getReader(url);
+        reader.readSignatureFile(url);
+        /*
+        definitions = new Vector();
             if (currentLine.startsWith("#Version"))
                 javaVersion = currentLine.substring("#Version ".length());
             if (currentLine.startsWith("#Throws clause not tracked."))
                 isThrowsTracked = false;
-	}
+         */
     }
 
     /** set the definition converter
      *  @param converter given DefinitionFormat. **/
+    @Override
     public void setDefinitionConverter(DefinitionFormat converter) {
         this.converter = converter;
     }
@@ -70,22 +66,29 @@ class ClassSignatureReader implements SignatureConstants {
     /** reads definition of the class from signature file and returns
      *  TableOfClass. This TableOfClass contains definitions of the class
      *  members with the short name and can used for SignatureTest only. **/
+    @Override
     public TableOfClass nextClass() throws IOException {
-	if ((in == null) || (currentLine == null))
-	    return null;
-	TableOfClass retClass = new TableOfClass(currentLine, converter);	
-	definitions = new Vector();
-	while (((currentLine = in.readLine()) != null) && 
+        ClassDescription descr = reader.readNextClass();
+        if (descr == null) {
+            return null;
+        }
+        TableOfClass retClass = new TableOfClass(descr, converter);	
+        /*
+        definitions = new Vector();
+        while (((currentLine = in.readLine()) != null) && 
 	       (!currentLine.startsWith(CLASS))) {
 	    definitions.addElement(currentLine);
 	}
 	retClass.createMembers(definitions.elements());
-	return retClass;
+         */
+        return retClass;
     }
 
     /** reads definition of the class from signature file and returns
      *  TableOfClass for APIChangesTest with definitions of the class members.**/
+    @Override
     public TableOfClass nextAPIClass() throws IOException {
+        /*
 	if ((in == null) || (currentLine == null))
 	    return null;
 	TableOfClass retClass = new TableOfClass(currentLine, converter);	
@@ -96,6 +99,8 @@ class ClassSignatureReader implements SignatureConstants {
 	}
 	retClass.createMembers(definitions.elements());
 	return retClass;
+         */
+        return nextClass();
     }    
 }
 	    
