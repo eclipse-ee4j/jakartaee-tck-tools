@@ -121,6 +121,24 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
+    public void testKeepingStaticFieldOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public static final int F = 1;" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public static final int F = 1;" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
     public void testClassesWithAnnotations() throws Exception {
         String c1 =
             "package ahoj;" +

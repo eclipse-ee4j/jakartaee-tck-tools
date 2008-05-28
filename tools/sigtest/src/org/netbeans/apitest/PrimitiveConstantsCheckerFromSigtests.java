@@ -67,6 +67,14 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         definition = replace(definition, "method ", SignatureConstants.METHOD);
         definition = replace(definition, "field ", SignatureConstants.FIELD);
         definition = replace(definition, "constructor ", SignatureConstants.CONSTRUCTOR);
+        
+        if (definition.startsWith(SignatureConstants.FIELD)) {
+            int eqsign = definition.indexOf('=');
+            if (eqsign >= 0) {
+                definition = definition.substring(0, eqsign).trim();
+            }
+        }
+        
         for (;;) {
             int beg = definition.indexOf('<');
             if (beg == -1) {
