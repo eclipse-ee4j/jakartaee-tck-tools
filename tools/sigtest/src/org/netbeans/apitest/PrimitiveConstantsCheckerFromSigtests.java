@@ -25,6 +25,8 @@
         
 package org.netbeans.apitest;
 
+import java.util.regex.Pattern;
+
 /** This class scans class files for founding fields which are primitive constants.
  *  In definition of these fields PRIMITIVE_CONSTANT modifier will be added during
  *  formating. **/
@@ -81,6 +83,10 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             }
             String middle = "java.lang.Object"; //definition.substring(beg + 1, end);//.replaceAll("\\%[0-9]*", "");
             definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
+        }
+        int newLine = definition.indexOf('\n');
+        if (newLine >= 0) {
+            definition = definition.substring(0, newLine);
         }
         
         return super.getDefinition(definition);

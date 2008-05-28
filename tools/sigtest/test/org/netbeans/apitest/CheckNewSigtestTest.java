@@ -81,6 +81,61 @@ public class CheckNewSigtestTest extends NbTestCase {
         }
     }
     
+    public void testMissingStaticFieldDetected() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public static final int F = 1;" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Missing field has to be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+
+    public void testAddingStaticFieldOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  public static final int F = 1;" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testClassesWithAnnotations() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "@Deprecated " +
+            "public abstract class ServiceType extends Object implements java.io.Serializable{" +
+            "}";
+        createFile(1, "ServiceType.java", c1);
+        
+        
+        String c2 = c1;
+        createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    
     public void testMissingConstructorInAbstractClassIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +
