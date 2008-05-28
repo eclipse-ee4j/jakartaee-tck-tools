@@ -28,6 +28,8 @@ package org.netbeans.apitest;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.ConstructorDescr;
 import com.sun.tdk.signaturetest.model.FieldDescr;
+import com.sun.tdk.signaturetest.model.MethodDescr;
+import com.sun.tdk.signaturetest.model.SuperInterface;
 import java.beans.MethodDescriptor;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
@@ -38,6 +40,7 @@ import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -162,7 +165,7 @@ final class TableOfClass implements SignatureConstants {
 	return retVal.substring(pos + 1);
     }
 
-    TableOfClass(ClassDescription descr, DefinitionFormat converter) {
+    TableOfClass(ClassDescription descr, DefinitionFormat converter, Map<String,ClassDescription> all) {
         name = descr.getQualifiedName();
         classDef = converter.getDefinition(descr.toString());
         //name = (enclClass == null) ? c.getName() : (enclClass + "$" + getLocalName(c));
@@ -172,7 +175,11 @@ final class TableOfClass implements SignatureConstants {
 //            memberClasses = new ClassCollection();
 //        }
         members = new ClassCollection();
-        for (com.sun.tdk.signaturetest.model.MethodDescr d : descr.getDeclaredMethods()) {
+        feed(descr, all, true);
+    }
+    
+    private void feed(ClassDescription descr, Map<String,ClassDescription> all, boolean addConstructors) {
+        for (MethodDescr d : descr.getDeclaredMethods()) {
             String def = converter.getDefinition(d.toString());
             members.addElement(new MemberEntry(def, converter));
         }
@@ -180,9 +187,19 @@ final class TableOfClass implements SignatureConstants {
             String def = converter.getDefinition(f.toString());
             members.addElement(new MemberEntry(def, converter));
         }
-        for (ConstructorDescr f : descr.getDeclaredConstructors()) {
-            String def = converter.getDefinition(f.toString());
-            members.addElement(new MemberEntry(def, converter));
+        if (addConstructors) {
+            for (ConstructorDescr f : descr.getDeclaredConstructors()) {
+                String def = converter.getDefinition(f.toString());
+                members.addElement(new MemberEntry(def, converter));
+            }
+        }
+        
+        if (descr.getSuperClass() != null) {
+            feed(all.get(descr.getSuperClass().getQualifiedName()), all, false);
+        }
+
+        for (SuperInterface si : descr.getInterfaces()) {
+            feed(all.get(si.getQualifiedName()), all, false);
         }
     }
 

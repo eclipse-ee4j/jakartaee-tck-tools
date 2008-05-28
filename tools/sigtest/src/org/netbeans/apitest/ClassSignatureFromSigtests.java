@@ -31,7 +31,12 @@ import com.sun.tdk.signaturetest.sigfile.Reader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 /** This is class for reading signature or API signature file **/
@@ -39,6 +44,7 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
     private Vector definitions;
     private Reader reader;
     private DefinitionFormat converter;
+    private Iterator<TableOfClass> allClasses;
 
     /** Creates new ClassSignatureReader for given URL
      * @param fileURL given URL which contains signature file **/
@@ -46,13 +52,30 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
         super();
         this.reader = reader;
         reader.readSignatureFile(url);
-        /*
-        definitions = new Vector();
-            if (currentLine.startsWith("#Version"))
-                javaVersion = currentLine.substring("#Version ".length());
-            if (currentLine.startsWith("#Throws clause not tracked."))
-                isThrowsTracked = false;
-         */
+    }
+    
+    private Iterator<TableOfClass> iterator() throws IOException {
+        if (this.allClasses != null) {
+            return this.allClasses;
+        }
+        
+        Map<String,ClassDescription> all = new HashMap<String, ClassDescription>();
+        for (;;) {
+            ClassDescription descr = reader.readNextClass();
+            if (descr == null) {
+                break;
+            }
+            all.put(descr.getQualifiedName(), descr);
+        }
+        
+        Set<TableOfClass> classes = new HashSet<TableOfClass>();
+        for (Map.Entry<String, ClassDescription> entry : all.entrySet()) {
+            TableOfClass retClass = new TableOfClass(entry.getValue(), converter, all);	
+            classes.add(retClass);
+        }
+        
+        this.allClasses = classes.iterator();
+        return this.allClasses;
     }
 
     @Override
@@ -72,38 +95,13 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
      *  members with the short name and can used for SignatureTest only. **/
     @Override
     public TableOfClass nextClass() throws IOException {
-        ClassDescription descr = reader.readNextClass();
-        if (descr == null) {
-            return null;
-        }
-        TableOfClass retClass = new TableOfClass(descr, converter);	
-        /*
-        definitions = new Vector();
-        while (((currentLine = in.readLine()) != null) && 
-	       (!currentLine.startsWith(CLASS))) {
-	    definitions.addElement(currentLine);
-	}
-	retClass.createMembers(definitions.elements());
-         */
-        return retClass;
+        return iterator().hasNext() ? iterator().next() : null;
     }
 
     /** reads definition of the class from signature file and returns
      *  TableOfClass for APIChangesTest with definitions of the class members.**/
     @Override
     public TableOfClass nextAPIClass() throws IOException {
-        /*
-	if ((in == null) || (currentLine == null))
-	    return null;
-	TableOfClass retClass = new TableOfClass(currentLine, converter);	
-	definitions = new Vector();
-	while (((currentLine = in.readLine()) != null) && 
-	       (!currentLine.startsWith(CLASS))) {
-	    definitions.addElement(currentLine);
-	}
-	retClass.createMembers(definitions.elements());
-	return retClass;
-         */
         return nextClass();
     }    
 }

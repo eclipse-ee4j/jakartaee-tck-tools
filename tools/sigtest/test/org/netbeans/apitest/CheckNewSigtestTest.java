@@ -49,8 +49,9 @@ public class CheckNewSigtestTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return new NbTestSuite(CheckNewSigtestTest.class);
-        //return new CheckNewSigtestTest("testGenerics");
+        Test t = null;
+//        t = new CheckNewSigtestTest("testContextAwareAction");
+        return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
     @Override
@@ -164,6 +165,19 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         String c2 = c1;
         createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testContextAwareAction() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface ContextAwareAction extends javax.swing.Action {" +
+            "    public javax.swing.Action createContextAwareInstance(Object ac);" +
+            "}";
+        createFile(1, "ContextAwareAction.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "ContextAwareAction.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
