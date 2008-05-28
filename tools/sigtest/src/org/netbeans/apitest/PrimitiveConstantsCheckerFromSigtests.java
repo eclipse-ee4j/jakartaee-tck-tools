@@ -65,6 +65,19 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             }
             definition = definition.substring(0, beg) + definition.substring(end + 1);
         }
+        for (;;) {
+            int beg = definition.indexOf('{');
+            if (beg == -1) {
+                break;
+            }
+            int end = definition.indexOf('}', beg);
+            if (end == -1) {
+                throw new IllegalStateException("Missing } in " + definition);
+            }
+            String middle = "java.lang.Object"; //definition.substring(beg + 1, end);//.replaceAll("\\%[0-9]*", "");
+            definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
+        }
+        
         return super.getDefinition(definition);
     }
 }

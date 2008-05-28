@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
@@ -105,11 +106,13 @@ public final class Sigtest extends Task {
         }
 
         boolean generate = false;
+        boolean addBootCP = false;
         List<String> arg = new ArrayList<String>();
         arg.add("-FileName");
         arg.add(fileName.getAbsolutePath());
         if (action.getValue().equals("generate")) {
             generate = true;
+            addBootCP = true;
             arg.add("-static");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
@@ -162,6 +165,13 @@ public final class Sigtest extends Task {
                 sb.append(pref);
                 sb.append(e);
                 pref = File.pathSeparator;
+            }
+            if (addBootCP) {
+                File rtJar = new File(new File(System.getProperty("java.home"), "lib"), "rt.jar");
+                if (!rtJar.exists()) {
+                    log("Missing " + rtJar, Project.MSG_ERR);
+                }
+                sb.append(File.pathSeparator).append(rtJar);
             }
             arg.add("-Classpath");
             arg.add(sb.toString());
