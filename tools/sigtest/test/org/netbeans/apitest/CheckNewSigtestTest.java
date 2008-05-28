@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(CheckNewSigtestTest.class);
-        //return new APITest("testGenerateVersionNumber");
+        //return new CheckNewSigtestTest("testArrayBackward");
     }
 
     @Override
@@ -135,7 +135,34 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
+    public void testArrayBackward() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class ServiceType {" +
+            "  public abstract void get(String[] args);" +
+            "}";
+        createFile(1, "ServiceType.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testVarArgsBackward() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class ServiceType {" +
+            "  public abstract void get(String... args);" +
+            "}";
+        createFile(1, "ServiceType.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
     public void testMissingConstructorInAbstractClassIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +

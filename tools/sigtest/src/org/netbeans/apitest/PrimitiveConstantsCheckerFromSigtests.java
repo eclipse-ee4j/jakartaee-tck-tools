@@ -25,6 +25,7 @@
         
 package org.netbeans.apitest;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** This class scans class files for founding fields which are primitive constants.
@@ -87,6 +88,27 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         int newLine = definition.indexOf('\n');
         if (newLine >= 0) {
             definition = definition.substring(0, newLine);
+        }
+        
+        for (;;) {
+            int array = definition.indexOf("[]");
+            if (array == -1) {
+                break;
+            }
+            int pos = array - 1;
+            while (pos >= 0) {
+                char ch = definition.charAt(pos);
+                if (ch == '.' || Character.isJavaIdentifierPart(ch)) {
+                    pos--;
+                    continue;
+                }
+                break;
+            }
+            pos++;
+            String arrName = definition.substring(pos, array);
+            String beg = definition.substring(0, pos);
+            String end = definition.substring(array + 2);
+            definition = beg + "[L" + arrName + ";" + end;
         }
         
         return super.getDefinition(definition);
