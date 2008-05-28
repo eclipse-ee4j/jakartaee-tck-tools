@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-//        t = new CheckNewSigtestTest("testContextAwareAction");
+//        t = new CheckNewSigtestTest("testOverrideFinalizeAsFinal");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -178,6 +178,32 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         String c2 = c1;
         createFile(2, "ContextAwareAction.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testOverrideFinalizeAsFinal() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class X extends Object {" +
+            "    protected final void finalize() { }" +
+            "}";
+        createFile(1, "X.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "X.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testOverrideFinalize() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class X extends Object {" +
+            "    protected void finalize() { }" +
+            "}";
+        createFile(1, "X.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "X.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }

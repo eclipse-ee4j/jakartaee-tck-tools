@@ -175,11 +175,18 @@ final class TableOfClass implements SignatureConstants {
 //            memberClasses = new ClassCollection();
 //        }
         members = new ClassCollection();
-        feed(descr, all, true);
+        feed(descr, descr, all, true);
     }
     
-    private void feed(ClassDescription descr, Map<String,ClassDescription> all, boolean addConstructors) {
-        for (MethodDescr d : descr.getDeclaredMethods()) {
+    private void feed(ClassDescription main, ClassDescription descr, Map<String,ClassDescription> all, boolean addConstructors) {
+        BIG: for (MethodDescr d : descr.getDeclaredMethods()) {
+            if (main != descr) {
+                for (MethodDescr m : main.getDeclaredMethods()) {
+                    if (m.equals(d)) {
+                        continue BIG;
+                    }
+                }
+            }
             String def = converter.getDefinition(d.toString());
             members.addElement(new MemberEntry(def, converter));
         }
@@ -195,11 +202,11 @@ final class TableOfClass implements SignatureConstants {
         }
         
         if (descr.getSuperClass() != null) {
-            feed(all.get(descr.getSuperClass().getQualifiedName()), all, false);
+            feed(main, all.get(descr.getSuperClass().getQualifiedName()), all, false);
         }
 
         for (SuperInterface si : descr.getInterfaces()) {
-            feed(all.get(si.getQualifiedName()), all, false);
+            feed(main, all.get(si.getQualifiedName()), all, false);
         }
     }
 
