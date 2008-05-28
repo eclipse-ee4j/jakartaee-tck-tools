@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(CheckNewSigtestTest.class);
-        //return new CheckNewSigtestTest("testArrayBackward");
+        //return new CheckNewSigtestTest("testGenerics");
     }
 
     @Override
@@ -141,6 +141,22 @@ public class CheckNewSigtestTest extends NbTestCase {
             "package ahoj;" +
             "public abstract class ServiceType {" +
             "  public abstract void get(String[] args);" +
+            "}";
+        createFile(1, "ServiceType.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "ServiceType.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testGenerics() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public final class ServiceType {" +
+            "  public static <T extends java.util.EventListener> " +
+            "    T create(Class<T> clazz, T inst) {" +
+            "    return inst;" +
+            "  }" +
             "}";
         createFile(1, "ServiceType.java", c1);
         

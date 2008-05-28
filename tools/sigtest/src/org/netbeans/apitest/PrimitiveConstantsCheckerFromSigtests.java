@@ -25,6 +25,8 @@
         
 package org.netbeans.apitest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,7 +56,10 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         }
         return definition;
     }
-        
+    
+    private Map<Integer,String> genericTypes = new HashMap<Integer, String>();
+    private static Pattern BOUND = Pattern.compile(".*%([0-9]*) (extends ([0-9a-zA-Z\\.]*))");
+    
     /** return formatted definition. **/
     @Override
     public String getDefinition(String definition) {
@@ -71,6 +76,15 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             if (end == -1) {
                 throw new IllegalStateException("Missing > in " + definition);
             }
+            Matcher m = BOUND.matcher(definition);
+            if (m.find()) {
+                int index = Integer.parseInt(m.group(1));
+                if (m.groupCount() == 3) {
+                    genericTypes.put(index, m.group(3));
+                } else {
+                    genericTypes.put(index, "java.lang.Object");
+                }
+            }
             definition = definition.substring(0, beg) + definition.substring(end + 1);
         }
         for (;;) {
@@ -82,8 +96,27 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             if (end == -1) {
                 throw new IllegalStateException("Missing } in " + definition);
             }
-            String middle = "java.lang.Object"; //definition.substring(beg + 1, end);//.replaceAll("\\%[0-9]*", "");
-            definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
+            if (
+                definition.charAt(beg + 1) == '%' &&
+                definition.charAt(beg + 2) == '%'
+            ) {
+                // reference
+                int index = Integer.parseInt(definition.substring(beg + 3, end));
+                String middle = genericTypes.get(index);
+                if (middle == null) {
+                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes);
+                }
+                definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
+            } else {
+                // reference
+                int percent = definition.indexOf('%', beg);
+                int index = Integer.parseInt(definition.substring(percent + 1, end));
+                String middle = genericTypes.get(index);
+                if (middle == null) {
+                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes);
+                }
+                definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
+            }
         }
         int newLine = definition.indexOf('\n');
         if (newLine >= 0) {
