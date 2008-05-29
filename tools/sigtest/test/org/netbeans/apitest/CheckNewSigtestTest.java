@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-        //t = new CheckNewSigtestTest("testTopoSort");
+        t = new CheckNewSigtestTest("testEnums");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -222,6 +222,19 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         createFile(2, "X.java", c1);
         createFile(2, "Base.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testEnums() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public enum Type {" +
+            "  AHOJ" +
+            "}";
+        createFile(1, "Type.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "Type.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
