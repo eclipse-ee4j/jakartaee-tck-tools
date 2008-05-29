@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-        //t = new CheckNewSigtestTest("testUnion2");
+        //t = new CheckNewSigtestTest("testTopoSort");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -256,6 +256,28 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         String c2 = c1;
         createFile(2, "Union2.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testTopoSort() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "import java.util.*;" +
+            "import java.io.IOException;" +
+            "public abstract class Utilities {\n" +
+            "  Utilities() {}\n" +
+            "      public static <T> List<T> topologicalSort(" +
+            "           Collection<T> c, " +
+            "           Map<? super T, ? extends Collection<? extends T>> edges" +
+            "      ) " +
+            "      throws IOException {" +
+            "        return null;" +
+            "      }" +
+            "}";
+        createFile(1, "Utilities.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "Utilities.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }

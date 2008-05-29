@@ -76,7 +76,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         }
         
         for (;;) {
-            int beg = definition.indexOf('<');
+            int beg = definition.lastIndexOf('<');
             if (beg == -1) {
                 break;
             }
