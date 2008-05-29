@@ -38,9 +38,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -175,21 +177,21 @@ final class TableOfClass implements SignatureConstants {
 //            memberClasses = new ClassCollection();
 //        }
         members = new ClassCollection();
-        feed(descr, descr, all, true);
+        feed(descr, descr, all, true, new HashSet<MethodDescr>());
     }
     
-    private void feed(ClassDescription main, ClassDescription descr, Map<String,ClassDescription> all, boolean addConstructors) {
+    private void feed(
+        ClassDescription main, ClassDescription descr, 
+        Map<String,ClassDescription> all, boolean addConstructors, 
+        Set<MethodDescr> alreadyPresent
+    ) {
         BIG: for (MethodDescr d : descr.getDeclaredMethods()) {
-            if (main != descr) {
-                for (MethodDescr m : main.getDeclaredMethods()) {
-                    if (m.equals(d)) {
-                        continue BIG;
-                    }
-                }
+            if (alreadyPresent.add(d)) {
+                String def = converter.getDefinition(d.toString());
+                members.addElement(new MemberEntry(def, converter));
             }
-            String def = converter.getDefinition(d.toString());
-            members.addElement(new MemberEntry(def, converter));
         }
+
         for (FieldDescr f : descr.getDeclaredFields()) {
             String def = converter.getDefinition(f.toString());
             members.addElement(new MemberEntry(def, converter));
@@ -202,11 +204,11 @@ final class TableOfClass implements SignatureConstants {
         }
         
         if (descr.getSuperClass() != null) {
-            feed(main, all.get(descr.getSuperClass().getQualifiedName()), all, false);
+            feed(main, all.get(descr.getSuperClass().getQualifiedName()), all, false, alreadyPresent);
         }
 
         for (SuperInterface si : descr.getInterfaces()) {
-            feed(main, all.get(si.getQualifiedName()), all, false);
+            feed(main, all.get(si.getQualifiedName()), all, false, alreadyPresent);
         }
     }
 

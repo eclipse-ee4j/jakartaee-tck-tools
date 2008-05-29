@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-//        t = new CheckNewSigtestTest("testOverrideFinalizeAsFinal");
+        //t = new CheckNewSigtestTest("testSystemActionEquals");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -204,6 +204,24 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         String c2 = c1;
         createFile(2, "X.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testSystemActionEquals() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class X extends Base {" +
+            "}";
+        String c2 =
+            "package ahoj;" +
+            "public class Base extends Object {" +
+            "    public final boolean equals(Object o) { return true; }" +
+            "}";
+        createFile(1, "X.java", c1);
+        createFile(1, "Base.java", c2);
+        
+        createFile(2, "X.java", c1);
+        createFile(2, "Base.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
