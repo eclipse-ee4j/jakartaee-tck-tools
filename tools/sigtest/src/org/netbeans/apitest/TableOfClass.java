@@ -185,6 +185,8 @@ final class TableOfClass implements SignatureConstants {
         Map<String,ClassDescription> all, boolean addConstructors, 
         Set<MethodDescr> alreadyPresent
     ) {
+        String clazzTypes = converter.getDefinition(descr.toString());
+        
         BIG: for (MethodDescr d : descr.getDeclaredMethods()) {
             if (alreadyPresent.add(d)) {
                 String def = converter.getDefinition(d.toString());

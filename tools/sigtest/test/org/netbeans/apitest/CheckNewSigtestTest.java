@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-        t = new CheckNewSigtestTest("testEnums");
+        // t = new CheckNewSigtestTest("testJavaAPICanBeRead");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -224,6 +224,22 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(2, "Base.java", c2);
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    public void testJavaAPICanBeRead() throws Exception {
+        File d1 = new File(getWorkDir(), "dir1");
+        
+        File build = new File(getWorkDir(), "build.xml");
+        extractResource("build.xml", build);
+
+        File sigFile = new File(getWorkDir(), "file.sig");
+        extractResource("org-netbeans-api-java.sig", sigFile);
+        
+        List<String> args = new ArrayList<String>();
+        //args.addAll(Arrays.asList(additionalArgs));
+        args.add("compare");
+        args.add("-Ddir1=" + d1);
+        args.add("-Dsig=" + sigFile);
+        ExecuteUtils.execute(build, args.toArray(new String[0]));
     }
     public void testEnums() throws Exception {
         String c1 =
