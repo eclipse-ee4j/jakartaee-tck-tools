@@ -58,7 +58,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
     }
     
     private Map<Integer,String> genericTypes = new HashMap<Integer, String>();
-    private static Pattern BOUND = Pattern.compile(".*%([0-9]*) (extends ([0-9a-zA-Z\\.]*))");
+    private static Pattern BOUND = Pattern.compile("[^%]*%([0-9]*) (extends ([0-9a-zA-Z\\.]*))");
     
     /** return formatted definition. **/
     @Override
@@ -85,7 +85,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                 throw new IllegalStateException("Missing > in " + definition);
             }
             Matcher m = BOUND.matcher(definition);
-            if (m.find()) {
+            while (m.find()) {
                 int index = Integer.parseInt(m.group(1));
                 if (m.groupCount() == 3) {
                     genericTypes.put(index, m.group(3));

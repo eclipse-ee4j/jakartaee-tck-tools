@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-        //t = new CheckNewSigtestTest("testSystemActionEquals");
+        //t = new CheckNewSigtestTest("testUnion2");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -241,6 +241,26 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
+    public void testUnion2() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class Union2<First,Second> implements Cloneable {\n" +
+            "  Union2() {}\n" +
+            "  public abstract First first() throws IllegalArgumentException;\n" +
+            "  public abstract Second second() throws IllegalArgumentException;\n" +
+            "  @Override public abstract Union2<First,Second> clone();\n" +
+            "  public static <First,Second> Union2<First,Second> createFirst(First first) { return null; }\n" +
+            "  public static <First,Second> Union2<First,Second> createSecond(Second second) { return null; }\n" +
+            "}";
+        createFile(1, "Union2.java", c1);
+        
+        String c2 = c1;
+        createFile(2, "Union2.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    
+    
     public void testPrimitiveArraysBackward() throws Exception {
         String c1 =
             "package ahoj;" +
