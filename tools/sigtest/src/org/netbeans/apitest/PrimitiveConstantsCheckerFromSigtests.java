@@ -63,6 +63,8 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
     /** return formatted definition. **/
     @Override
     public String getDefinition(String definition) {
+        String orig = definition;
+        
         definition = replace(definition, "CLASS ", SignatureConstants.CLASS);
         definition = replace(definition, "method ", SignatureConstants.METHOD);
         definition = replace(definition, "field ", SignatureConstants.FIELD);
@@ -82,7 +84,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             }
             int end = definition.indexOf('>', beg);
             if (end == -1) {
-                throw new IllegalStateException("Missing > in " + definition);
+                throw new IllegalStateException("Missing > in " + orig);
             }
             Matcher m = BOUND.matcher(definition);
             while (m.find()) {
@@ -102,7 +104,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             }
             int end = definition.indexOf('}', beg);
             if (end == -1) {
-                throw new IllegalStateException("Missing } in " + definition);
+                throw new IllegalStateException("Missing } in " + orig);
             }
             if (
                 definition.charAt(beg + 1) == '%' &&
@@ -112,7 +114,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                 int index = Integer.parseInt(definition.substring(beg + 3, end));
                 String middle = genericTypes.get(index);
                 if (middle == null) {
-                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes);
+                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes + " in " + orig);
                 }
                 definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
             } else {
@@ -121,7 +123,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                 int index = Integer.parseInt(definition.substring(percent + 1, end));
                 String middle = genericTypes.get(index);
                 if (middle == null) {
-                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes);
+                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes + " in " + orig);
                 }
                 definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
             }
