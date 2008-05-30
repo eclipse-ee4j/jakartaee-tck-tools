@@ -25,6 +25,7 @@
 
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.core.Erasurator;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Reader;
@@ -59,12 +60,14 @@ final class ClassSignatureFromSigtests extends ClassSignatureReader implements S
             return this.allClasses;
         }
         
+        Erasurator erasurator = new Erasurator();
         Map<String,ClassDescription> all = new HashMap<String, ClassDescription>();
         for (;;) {
             ClassDescription descr = reader.readNextClass();
             if (descr == null) {
                 break;
             }
+            descr = erasurator.fullErasure(descr);
             all.put(descr.getQualifiedName(), descr);
         }
         

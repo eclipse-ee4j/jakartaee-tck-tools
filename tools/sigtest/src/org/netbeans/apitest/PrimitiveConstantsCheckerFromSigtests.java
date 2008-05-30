@@ -77,58 +77,6 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                 definition = definition.substring(0, eqsign).trim();
             }
         }
-        
-        for (;;) {
-            int beg = definition.lastIndexOf('<');
-            if (beg == -1) {
-                break;
-            }
-            int end = definition.indexOf('>', beg);
-            if (end == -1) {
-                throw new IllegalStateException("Missing > in " + orig);
-            }
-            Matcher m = BOUND.matcher(definition);
-            while (m.find()) {
-                int index = Integer.parseInt(m.group(1));
-                if (m.groupCount() == 3) {
-                    genericTypes.put(index, m.group(3));
-                } else {
-                    genericTypes.put(index, "java.lang.Object");
-                }
-            }
-            definition = definition.substring(0, beg) + definition.substring(end + 1);
-        }
-        for (;;) {
-            int beg = definition.indexOf('{');
-            if (beg == -1) {
-                break;
-            }
-            int end = definition.indexOf('}', beg);
-            if (end == -1) {
-                throw new IllegalStateException("Missing } in " + orig);
-            }
-            if (
-                definition.charAt(beg + 1) == '%' &&
-                definition.charAt(beg + 2) == '%'
-            ) {
-                // reference
-                int index = Integer.parseInt(definition.substring(beg + 3, end));
-                String middle = genericTypes.get(index);
-                if (middle == null) {
-                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes + " in " + orig);
-                }
-                definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
-            } else {
-                // reference
-                int percent = definition.indexOf('%', beg);
-                int index = Integer.parseInt(definition.substring(percent + 1, end));
-                String middle = genericTypes.get(index);
-                if (middle == null) {
-                    throw new IllegalStateException("No type for index " + index + " in " + genericTypes + " in " + orig);
-                }
-                definition = definition.substring(0, beg) + middle + definition.substring(end + 1);
-            }
-        }
         int newLine = definition.indexOf('\n');
         if (newLine >= 0) {
             definition = definition.substring(0, newLine);
