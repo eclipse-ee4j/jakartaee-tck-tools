@@ -130,15 +130,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "}";
         createFile(1, "I.java", c1);
         
-        
-        String c2 =
-            "package ahoj;" +
-            "public abstract class I {" +
-            "  public static final int F = 1;" +
-            "}";
-        createFile(2, "I.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testClassesWithAnnotations() throws Exception {
         String c1 =
@@ -147,12 +139,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "public abstract class ServiceType extends Object implements java.io.Serializable{" +
             "}";
         createFile(1, "ServiceType.java", c1);
-        
-        
-        String c2 = c1;
-        createFile(2, "ServiceType.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
 
     public void testArrayBackward() throws Exception {
@@ -162,11 +149,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  public abstract void get(String[] args);" +
             "}";
         createFile(1, "ServiceType.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "ServiceType.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testContextAwareAction() throws Exception {
         String c1 =
@@ -175,11 +158,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "    public javax.swing.Action createContextAwareInstance(Object ac);" +
             "}";
         createFile(1, "ContextAwareAction.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "ContextAwareAction.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testOverrideFinalizeAsFinal() throws Exception {
         String c1 =
@@ -188,11 +167,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "    protected final void finalize() { }" +
             "}";
         createFile(1, "X.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "X.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testOverrideFinalize() throws Exception {
         String c1 =
@@ -201,29 +176,27 @@ public class CheckNewSigtestTest extends NbTestCase {
             "    protected void finalize() { }" +
             "}";
         createFile(1, "X.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "X.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testSystemActionEquals() throws Exception {
+        String c0 =
+            "package ahoj;" +
+            "public class Y extends X {" +
+            "}";
         String c1 =
             "package ahoj;" +
             "public class X extends Base {" +
+            "    public boolean ahoj() { return false; }" +
             "}";
         String c2 =
             "package ahoj;" +
             "public class Base extends Object {" +
-            "    public final boolean equals(Object o) { return true; }" +
+            "    protected boolean ahoj() { return true; }" +
             "}";
+        createFile(1, "Y.java", c0);
         createFile(1, "X.java", c1);
         createFile(1, "Base.java", c2);
-        
-        createFile(2, "X.java", c1);
-        createFile(2, "Base.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testJavaAPICanBeRead() throws Exception {
         File d1 = new File(getWorkDir(), "dir1");
@@ -248,11 +221,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  AHOJ" +
             "}";
         createFile(1, "Type.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "Type.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testGenerics() throws Exception {
         String c1 =
@@ -264,11 +233,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  }" +
             "}";
         createFile(1, "ServiceType.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "ServiceType.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testUnion2() throws Exception {
         String c1 =
@@ -282,11 +247,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  public static <First,Second> Union2<First,Second> createSecond(Second second) { return null; }\n" +
             "}";
         createFile(1, "Union2.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "Union2.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testTopoSort() throws Exception {
         String c1 =
@@ -304,11 +265,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "      }" +
             "}";
         createFile(1, "Utilities.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "Utilities.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     
     
@@ -324,11 +281,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  public abstract void get(char[] args);" +
             "}";
         createFile(1, "ServiceType.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "ServiceType.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
     public void testVarArgsBackward() throws Exception {
         String c1 =
@@ -337,11 +290,7 @@ public class CheckNewSigtestTest extends NbTestCase {
             "  public abstract void get(String... args);" +
             "}";
         createFile(1, "ServiceType.java", c1);
-        
-        String c2 = c1;
-        createFile(2, "ServiceType.java", c2);
-        
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
 
     public void testMissingConstructorInAbstractClassIsDetected() throws Exception {
@@ -385,6 +334,20 @@ public class CheckNewSigtestTest extends NbTestCase {
         args.addAll(Arrays.asList(additionalArgs));
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d2);
+        ExecuteUtils.execute(build, args.toArray(new String[0]));
+    }
+
+    protected void checkAPIsEqual(String... additionalArgs) throws Exception {
+        File d1 = new File(getWorkDir(), "dir1");
+        
+        File build = new File(getWorkDir(), "build.xml");
+        extractResource("build.xml", build);
+        
+        List<String> args = new ArrayList<String>();
+        args.addAll(Arrays.asList(additionalArgs));
+        args.add("-Ddir1=" + d1);
+        args.add("-Ddir2=" + d1);
+        args.add("-Dcheck.type=check");
         ExecuteUtils.execute(build, args.toArray(new String[0]));
     }
     

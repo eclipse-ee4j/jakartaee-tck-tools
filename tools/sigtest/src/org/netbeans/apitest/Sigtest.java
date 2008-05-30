@@ -25,6 +25,7 @@
 package org.netbeans.apitest;
 
 import com.sun.tdk.signaturetest.Setup;
+import com.sun.tdk.signaturetest.SignatureTest;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -106,6 +107,7 @@ public final class Sigtest extends Task {
         }
 
         boolean generate = false;
+        boolean strictcheck = false;
         boolean addBootCP = false;
         List<String> arg = new ArrayList<String>();
         arg.add("-FileName");
@@ -119,7 +121,9 @@ public final class Sigtest extends Task {
         } else if (action.getValue().equals("binarycheck")) {
             arg.add("-extensibleinterfaces");
         } else if (action.getValue().equals("strictcheck")) {
-            arg.add("-maintenance");
+            addBootCP = true;
+            strictcheck = true;
+            arg.add("-static");
         } else {
             throw new BuildException("Unknown action: " + action);
         }
@@ -182,7 +186,11 @@ public final class Sigtest extends Task {
         if (generate) {
             Setup t = new Setup();
             t.run(args, new PrintWriter(System.err, true), null);
-            returnCode = 0;
+            returnCode = t.isPassed() ? 0 : 1;
+        } else if (strictcheck) {            
+            SignatureTest t = new SignatureTest();
+            t.run(args, new PrintWriter(System.err, true), null);
+            returnCode = t.isPassed() ? 0 : 1;
         } else {            
             returnCode = Main.run(args).getType();
         }
