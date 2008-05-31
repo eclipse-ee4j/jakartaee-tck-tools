@@ -211,16 +211,24 @@ final class Main {
     }
     
     static Status run(String[] args) {
-	Main t = new Main();
-        PrintWriter log = new PrintWriter(new OutputStreamWriter(System.err),
-                                          true);
-        PrintWriter ref = new PrintWriter(new OutputStreamWriter(System.out),
-                                          true);
-	return t.run(args, log, ref);
+        PrintWriter log = new PrintWriter(
+            new OutputStreamWriter(System.err),
+            true
+        );
+        PrintWriter ref = new PrintWriter(
+            new OutputStreamWriter(System.out),
+            true
+        );
+        return run(args, log, ref);
+    }
+    
+    static Status run(String[] args, PrintWriter log, PrintWriter ref) {
+        Main t = new Main();
+        return t.doRun(args, log, ref);
     }
 
     /**runs test.**/
-    private Status run(String[] args, PrintWriter log, PrintWriter ref) {
+    private Status doRun(String[] args, PrintWriter log, PrintWriter ref) {
 	this.log = log;
 	// ref ignored
 	boolean setup = false;

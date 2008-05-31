@@ -27,16 +27,32 @@ package org.netbeans.apitest;
 import com.sun.tdk.signaturetest.Setup;
 import com.sun.tdk.signaturetest.SignatureTest;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /** Ant task to execute setup, check and strict check with the API check class.
  * @author Michal Zlamal, Jaroslav Tulach
@@ -49,11 +65,12 @@ public final class Sigtest extends Task {
     String packages;
     ActionType action;
     boolean failOnError = true;
-    
+    File report;
+
     public void setFileName(File f) {
         fileName = f;
     }
-    
+
     public void setPackages(String s) {
         packages = s;
     }
@@ -69,21 +86,28 @@ public final class Sigtest extends Task {
             classpath.append(p);
         }
     }
+
     public void setVersion(String v) {
         version = v;
     }
-    public Path createClasspath () {
+
+    public Path createClasspath() {
         if (classpath == null) {
             classpath = new Path(getProject());
         }
         return classpath.createPath();
     }
+
     public void setClasspathRef(Reference r) {
         createClasspath().setRefid(r);
     }
 
     public void setFailOnError(boolean b) {
         failOnError = b;
+    }
+
+    public void setReport(File report) {
+        this.report = report;
     }
 
     @Override
@@ -100,7 +124,7 @@ public final class Sigtest extends Task {
         if (classpath == null) {
             throw new BuildException("Classpath has to filed", getLocation());
         }
-        
+
         if (packages.equals("-")) {
             log("No public packages, skipping");
             return;
@@ -131,19 +155,9 @@ public final class Sigtest extends Task {
             arg.add("-Version");
             arg.add(version);
         }
-        
-        File outputFile = null;
-        String s = getProject().getProperty("sigtest.output.dir");
-        if (s != null) {
-            File dir = getProject().resolveFile(s);
-            dir.mkdirs();
-            outputFile = new File(dir, fileName.getName().replace(".sig", "").replace("-", "."));
-            log(outputFile.toString());
-        }
-        
-        
+
         log("Packages: " + packages);
-        StringTokenizer packagesTokenizer = new StringTokenizer(packages,",");
+        StringTokenizer packagesTokenizer = new StringTokenizer(packages, ",");
         while (packagesTokenizer.hasMoreTokens()) {
             String p = packagesTokenizer.nextToken().trim();
             String prefix = "-PackageWithoutSubpackages "; // NOI18N
@@ -161,7 +175,7 @@ public final class Sigtest extends Task {
             arg.add(prefix.trim());
             arg.add(p);
         }
-        
+
         if (classpath != null) {
             StringBuffer sb = new StringBuffer();
             String pref = "";
@@ -180,43 +194,106 @@ public final class Sigtest extends Task {
             arg.add("-Classpath");
             arg.add(sb.toString());
         }
-        
+
         int returnCode;
         String[] args = arg.toArray(new String[0]);
+        StringWriter output = new StringWriter();
+        PrintWriter w = new PrintWriter(output, true);
         if (generate) {
             Setup t = new Setup();
-            t.run(args, new PrintWriter(System.err, true), null);
+            t.run(args, w, null);
             returnCode = t.isPassed() ? 0 : 1;
-        } else if (strictcheck) {            
+        } else if (strictcheck) {
             SignatureTest t = new SignatureTest();
-            t.run(args, new PrintWriter(System.err, true), null);
+            t.run(args, w, null);
             returnCode = t.isPassed() ? 0 : 1;
-        } else {            
-            returnCode = Main.run(args).getType();
+        } else {
+            returnCode = Main.run(args, w, w).getType();
         }
-        
+
+        log(output.toString());
+        if (report != null) {
+            writeReport(report, output.toString(), returnCode == 0);
+        }
         if (returnCode != 0) {
-            if (failOnError && outputFile == null) {
+            if (failOnError && report == null) {
                 throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
-            }
-            else {
+            } else {
                 log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
             }
-        } else {
-            if (outputFile != null) {
-                outputFile.delete();
-            }
-        }
-    }
-    public static final class ActionType extends EnumeratedAttribute {
-        public String[] getValues () {
-            return new String[] { 
-                "generate",
-                "check",
-                "strictcheck",
-                "binarycheck",
-            };
         }
     }
 
+    public static final class ActionType extends EnumeratedAttribute {
+
+        public String[] getValues() {
+            return new String[]{
+                        "generate",
+                        "check",
+                        "strictcheck",
+                        "binarycheck",
+                    };
+        }
+    }
+
+    //
+    // Implementation
+    //
+    /**
+     * Possibly write out a report.
+     * @param reportFile an XML file to create with the report; if null, and there were some failures,
+     *                   throw a {@link BuildException} instead
+     */
+    private void writeReport(File reportFile, String msg, boolean success) throws BuildException {
+        assert reportFile != null;
+        try {
+            Document reportDoc = createDocument("testsuite");
+            Element testsuite = reportDoc.getDocumentElement();
+            int failures = 0;
+            testsuite.setAttribute("errors", "0");
+            testsuite.setAttribute("time", "0.0");
+            testsuite.setAttribute("name", Sigtest.class.getName()); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+            Element testcase = reportDoc.createElement("testcase");
+            testsuite.appendChild(testcase);
+            String apiName = fileName.getName().replace(".sig", "").replace("-", ".");
+            testcase.setAttribute("classname", apiName);
+            testcase.setAttribute("name", action.getValue());
+            testcase.setAttribute("time", "0.0");
+            if (!success) {
+                failures++;
+                Element failure = reportDoc.createElement("failure");
+                testcase.appendChild(failure);
+                failure.setAttribute("type", "junit.framework.AssertionFailedError");
+                failure.setAttribute("message", "Failed " + action.getValue() + " for " + apiName + " in version " + version);
+            }
+            testsuite.setAttribute("failures", Integer.toString(failures));
+            testsuite.setAttribute("tests", Integer.toString(1));
+            Element systemerr = reportDoc.createElement("system-err");
+            systemerr.appendChild(reportDoc.createCDATASection(msg));
+            testsuite.appendChild(systemerr);
+            OutputStream os = new FileOutputStream(reportFile);
+            try {
+                DOMSource dom = new DOMSource(reportDoc);
+                StreamResult res = new StreamResult(os);
+                Transformer trans = TransformerFactory.newInstance().newTransformer();
+                trans.transform(dom, res);
+            } finally {
+                os.close();
+            }
+            log(reportFile + ": " + failures + " failures in " + fileName);
+        } catch (TransformerException ex) {
+            throw new BuildException(ex);
+        } catch (IOException x) {
+            throw new BuildException("Could not write " + reportFile + ": " + x, x, getLocation());
+        }
+    }
+
+    private static Document createDocument(String rootQName) throws IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            return factory.newDocumentBuilder().getDOMImplementation().createDocument(null, rootQName, null);
+        } catch (ParserConfigurationException ex) {
+            throw (DOMException) new IOException("Cannot create parser").initCause(ex); // NOI18N
+        }
+    }
 }

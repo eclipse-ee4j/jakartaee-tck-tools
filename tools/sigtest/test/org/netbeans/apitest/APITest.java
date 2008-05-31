@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(APITest.class);
-        //return new APITest("testGenerateVersionNumber");
+        //return new APITest("testGenerateVersionNumberAsJunit");
     }
 
     @Override
@@ -271,6 +271,34 @@ public class APITest extends NbTestCase {
             if (!ExecuteUtils.getStdOut().contains("3.3")) {
                 fail("Should report 3.3:\n" + ExecuteUtils.getStdErr());
             }
+        }
+    }
+    
+    public void testGenerateVersionNumberAsJunit() throws Exception {
+        String retAppendable =
+            "package ahoj; import java.io.IOException; " +
+    "public class W implements Appendable {" +
+    "    public Appendable append(CharSequence csq) throws IOException { return this; }" +
+    "    public Appendable append(CharSequence csq, int start, int end) throws IOException { return this; }" +
+    "    public Appendable append(char c) throws IOException { return this; }" +
+    "}";
+        String retW = retAppendable.replaceAll("public Appendable", "public W");
+        createFile(1, "W.java", retW);
+        createFile(2, "W.java", retAppendable);
+        
+        File report = new File(getWorkDir(), "report.xml");
+        report.delete();
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version-junit", "-Dv1=1.1", "-Dv2=3.3", "-Dcheck.report=" + report);
+
+        assertTrue("Report exists", report.exists());
+        String in = readFile(report);
+        // ok
+        if (!in.contains("1.1")) {
+            fail("Should report 1.1:\n" + ExecuteUtils.getStdErr());
+        }
+        if (!in.contains("3.3")) {
+            fail("Should report 3.3:\n" + ExecuteUtils.getStdErr());
         }
     }
     
