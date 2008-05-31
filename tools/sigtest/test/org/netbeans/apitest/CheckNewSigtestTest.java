@@ -178,6 +178,14 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(1, "X.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
+    public void testUseJavaXNet() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class X extends javax.net.SocketFactory {" +
+            "}";
+        createFile(1, "X.java", c1);
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
+    }
     public void testSystemActionEquals() throws Exception {
         String c0 =
             "package ahoj;" +

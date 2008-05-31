@@ -185,11 +185,22 @@ public final class Sigtest extends Task {
                 pref = File.pathSeparator;
             }
             if (addBootCP) {
-                File rtJar = new File(new File(System.getProperty("java.home"), "lib"), "rt.jar");
-                if (!rtJar.exists()) {
-                    log("Missing " + rtJar, Project.MSG_ERR);
+                boolean rtJAR = false;
+                File lib = new File(System.getProperty("java.home"), "lib");
+                if (!lib.exists()) {
+                    throw new BuildException("Missing " + lib + "/rt.jar");
                 }
-                sb.append(File.pathSeparator).append(rtJar);
+                for (File f : lib.listFiles()) {
+                    if (f.getName().endsWith(".jar")) {
+                        sb.append(File.pathSeparator).append(f);
+                    }
+                    if ("rt.jar".equals(f.getName())) {
+                        rtJAR = true;
+                    }
+                }
+                if (!rtJAR) {
+                    log("Missing " + lib + "/rt.jar");
+                }
             }
             arg.add("-Classpath");
             arg.add(sb.toString());
