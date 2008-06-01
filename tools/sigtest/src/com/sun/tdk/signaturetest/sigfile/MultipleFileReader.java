@@ -58,6 +58,7 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
     private PrintWriter log;
     private int mode;
+    private String apiVersion;
 
     public MultipleFileReader(PrintWriter log, int mode) {
         // Note: Merge mode is not supported yet.
@@ -152,6 +153,8 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
                 if (!in.hasFeature(FeaturesHolder.BuildMembers))
                     features.remove(FeaturesHolder.BuildMembers);
+                
+                apiVersion = in.getApiVersion();
 
                 ClassDescription cl;
                 while ((cl = in.readNextClass()) != null) {
@@ -211,5 +214,9 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         if (classIterator != null && classIterator.hasNext())
             cl = (ClassDescription) classIterator.next();
         return cl; // cl == null ? null : (ClassDescription) cl.clone();
+    }
+
+    public String getApiVersion() {
+        return apiVersion;
     }
 }

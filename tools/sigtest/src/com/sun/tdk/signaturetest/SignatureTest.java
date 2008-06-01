@@ -584,6 +584,7 @@ public class SignatureTest extends SigTest {
             return error(msg);
         }
         log.println(i18n.getString("SignatureTest.mesg.sigtest.report"));
+        log.println(i18n.getString("SignatureTest.mesg.sigtest.basevers", in.getApiVersion()));
         log.println(i18n.getString("SignatureTest.mesg.sigtest.testvers", apiVersion));
 
         if (!isThrowsRemoved)
