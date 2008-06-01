@@ -59,7 +59,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
     
     private Map<Integer,String> genericTypes = new HashMap<Integer, String>();
     private static Pattern BOUND = Pattern.compile("[^%]*%([0-9]*) (extends ([0-9a-zA-Z\\.]*))");
-    private static Pattern ARRAY = Pattern.compile("[^\\p{Alnum}]((byte|short|int|float|double|char)\\[\\])");
+    private static Pattern ARRAY = Pattern.compile("[^\\p{Alnum}]((byte|short|int|long|float|double|char)\\[\\])");
     
     /** return formatted definition. **/
     @Override
@@ -94,6 +94,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
                 case 'b': pa = "[B"; break;
                 case 's': pa = "[S"; break;
                 case 'i': pa = "[I"; break;
+                case 'l': pa = "[J"; break;
                 case 'f': pa = "[F"; break;
                 case 'd': pa = "[D"; break;
                 case 'c': pa = "[C"; break;

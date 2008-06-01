@@ -50,7 +50,7 @@ public class CheckNewSigtestTest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-        // t = new CheckNewSigtestTest("testJavaAPICanBeRead");
+//        t = new CheckNewSigtestTest("testPrimitiveArraysBackward");
         return t != null ? t : new NbTestSuite(CheckNewSigtestTest.class);
     }
 
@@ -296,12 +296,19 @@ public class CheckNewSigtestTest extends NbTestCase {
         String c1 =
             "package ahoj;" +
             "public abstract class ServiceType {" +
+            "  public abstract void get(long[] args);" +
             "  public abstract void get(int[] args);" +
             "  public abstract void get(short[] args);" +
             "  public abstract void get(byte[] args);" +
             "  public abstract void get(double[] args);" +
             "  public abstract void get(float[] args);" +
             "  public abstract void get(char[] args);" +
+            "  public abstract int[] getICounts();" +
+            "  public abstract short[] getSCounts();" +
+            "  public abstract byte[] getBCounts();" +
+            "  public abstract double[] getDCounts();" +
+            "  public abstract char[] getCCounts();" +
+            "  public abstract long[] getLCounts();" +
             "}";
         createFile(1, "ServiceType.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
