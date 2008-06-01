@@ -29,6 +29,26 @@
         <sigtest action="${check.type}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${sig}"/>
     </target>
 
+    <target name="all-property">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+        
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+        
+        <sigtest action="generate" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+        
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"
+            failureproperty="f"
+        />
+        <fail message="${check.type} failed" if="f"/>
+    </target>
+
     <target name="with-version">
         <antcall target="-compile-dir">
             <param name="dir" value="${dir1}"/>

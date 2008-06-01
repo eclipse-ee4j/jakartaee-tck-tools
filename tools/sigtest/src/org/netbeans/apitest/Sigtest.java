@@ -31,7 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -66,6 +64,7 @@ public final class Sigtest extends Task {
     ActionType action;
     boolean failOnError = true;
     File report;
+    String failureProperty;
 
     public void setFileName(File f) {
         fileName = f;
@@ -104,6 +103,10 @@ public final class Sigtest extends Task {
 
     public void setFailOnError(boolean b) {
         failOnError = b;
+    }
+
+    public void setFailureProperty(String p) {
+        failureProperty = p;
     }
 
     public void setReport(File report) {
@@ -250,11 +253,14 @@ public final class Sigtest extends Task {
             writeReport(report, output.toString(), returnCode == 0);
         }
         if (returnCode != 0) {
-            if (failOnError && report == null) {
-                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
+            if (failureProperty != null) {
+                getProject().setProperty(failureProperty, "true");
             } else {
-                log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
+                if (failOnError) {
+                    throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
+                } 
             }
+            log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
         }
     }
 

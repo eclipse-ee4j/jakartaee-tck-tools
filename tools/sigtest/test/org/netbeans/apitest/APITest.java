@@ -477,7 +477,7 @@ public class APITest extends NbTestCase {
         copy(content, c1);
     }
     
-    protected final void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
+    protected void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slotFirst);
         File d2 = new File(getWorkDir(), "dir" + slotSecond);
         
