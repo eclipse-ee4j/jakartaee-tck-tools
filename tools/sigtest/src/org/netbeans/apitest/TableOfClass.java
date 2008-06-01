@@ -25,6 +25,12 @@
 
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.ConstructorDescr;
+import com.sun.tdk.signaturetest.model.FieldDescr;
+import com.sun.tdk.signaturetest.model.MethodDescr;
+import com.sun.tdk.signaturetest.model.SuperInterface;
+import java.beans.MethodDescriptor;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -32,7 +38,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -155,6 +165,53 @@ final class TableOfClass implements SignatureConstants {
 	String retVal = c.getName();
 	int pos = Math.max(retVal.lastIndexOf("."), retVal.lastIndexOf("$"));
 	return retVal.substring(pos + 1);
+    }
+
+    TableOfClass(ClassDescription descr, DefinitionFormat converter, Map<String,ClassDescription> all) {
+        name = descr.getQualifiedName();
+        classDef = converter.getDefinition(descr.toString());
+        //name = (enclClass == null) ? c.getName() : (enclClass + "$" + getLocalName(c));
+        //classObject = c;
+        this.converter = converter;
+//        if (isReflectUsed) {
+//            memberClasses = new ClassCollection();
+//        }
+        members = new ClassCollection();
+        feed(descr, descr, all, true, new HashSet<MethodDescr>());
+    }
+    
+    private void feed(
+        ClassDescription main, ClassDescription descr, 
+        Map<String,ClassDescription> all, boolean addConstructors, 
+        Set<MethodDescr> alreadyPresent
+    ) {
+        String clazzTypes = converter.getDefinition(descr.toString());
+        
+        BIG: for (MethodDescr d : descr.getDeclaredMethods()) {
+            if (alreadyPresent.add(d)) {
+                String def = converter.getDefinition(d.toString());
+                members.addElement(new MemberEntry(def, converter));
+            }
+        }
+
+        for (FieldDescr f : descr.getDeclaredFields()) {
+            String def = converter.getDefinition(f.toString());
+            members.addElement(new MemberEntry(def, converter));
+        }
+        if (addConstructors) {
+            for (ConstructorDescr f : descr.getDeclaredConstructors()) {
+                String def = converter.getDefinition(f.toString());
+                members.addElement(new MemberEntry(def, converter));
+            }
+        }
+        
+        if (descr.getSuperClass() != null) {
+            feed(main, all.get(descr.getSuperClass().getQualifiedName()), all, false, alreadyPresent);
+        }
+
+        for (SuperInterface si : descr.getInterfaces()) {
+            feed(main, all.get(si.getQualifiedName()), all, false, alreadyPresent);
+        }
     }
 
 
@@ -471,6 +528,9 @@ final class TableOfClass implements SignatureConstants {
         }
         MemberEntry declaredFields[] = c.getDeclaredFields();
         for (int i = 0; i < declaredFields.length; i++) {
+            if (!declaredFields[i].isPublic() && !declaredFields[i].isProtected()) {
+                continue;
+            }
             retVal.put(declaredFields[i].getKey(), declaredFields[i]);
         }
         return retVal;

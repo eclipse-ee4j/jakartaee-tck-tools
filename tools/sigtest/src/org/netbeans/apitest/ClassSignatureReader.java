@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 /** This is class for reading signature or API signature file **/
-final class ClassSignatureReader implements SignatureConstants {
+class ClassSignatureReader implements SignatureConstants {
     /** reads line from signature file **/
     private BufferedReader in;
     /** the last line which are read from signature file **/
@@ -60,6 +60,10 @@ final class ClassSignatureReader implements SignatureConstants {
                 isThrowsTracked = false;
 	}
     }
+
+    ClassSignatureReader() {
+    }
+    
 
     /** set the definition converter
      *  @param converter given DefinitionFormat. **/
@@ -96,6 +100,14 @@ final class ClassSignatureReader implements SignatureConstants {
 	}
 	retClass.createMembers(definitions.elements());
 	return retClass;
-    }    
+    }
+
+    String getJavaVersion() {
+        return javaVersion;
+    }
+
+    private void setJavaVersion(String javaVersion) {
+        this.javaVersion = javaVersion;
+    }
 }
 	    

@@ -25,6 +25,9 @@
 
 package org.netbeans.apitest;
 
+import com.sun.tdk.signaturetest.sigfile.FileManager;
+import com.sun.tdk.signaturetest.sigfile.Reader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,16 +211,24 @@ final class Main {
     }
     
     static Status run(String[] args) {
-	Main t = new Main();
-        PrintWriter log = new PrintWriter(new OutputStreamWriter(System.err),
-                                          true);
-        PrintWriter ref = new PrintWriter(new OutputStreamWriter(System.out),
-                                          true);
-	return t.run(args, log, ref);
+        PrintWriter log = new PrintWriter(
+            new OutputStreamWriter(System.err),
+            true
+        );
+        PrintWriter ref = new PrintWriter(
+            new OutputStreamWriter(System.out),
+            true
+        );
+        return run(args, log, ref);
+    }
+    
+    static Status run(String[] args, PrintWriter log, PrintWriter ref) {
+        Main t = new Main();
+        return t.doRun(args, log, ref);
     }
 
     /**runs test.**/
-    private Status run(String[] args, PrintWriter log, PrintWriter ref) {
+    private Status doRun(String[] args, PrintWriter log, PrintWriter ref) {
 	this.log = log;
 	// ref ignored
 	boolean setup = false;
@@ -485,7 +496,15 @@ final class Main {
         ClassSignatureReader in = null;
 	try {
 	    String line;
-	    in = new ClassSignatureReader(sigFileURL);
+        URL url = new File(sigFileURL).toURI().toURL();
+        Reader r = FileManager.getReader(url);
+        if (r != null) {
+            in = new ClassSignatureFromSigtests(r, url);
+        } else {
+            in = new ClassSignatureReader(sigFileURL);
+        }
+        
+        
             boolean isThrowsTracked = classIterator.isThrowsTracked() &&
                                       in.isThrowsTracked;
             in.isThrowsTracked = isThrowsTracked;
@@ -494,10 +513,10 @@ final class Main {
                 String tempModifiers[][] = {
                     {SignatureConstants.FIELD, SignatureConstants.PRIMITIVE_CONSTANT}
                 };
-                converter = new PrimitiveConstantsChecker(true, isThrowsTracked,
+                converter = new PrimitiveConstantsCheckerFromSigtests(true, isThrowsTracked,
                                                           tempModifiers);
             } else {
-                converter = new PrimitiveConstantsChecker(true, isThrowsTracked);
+                converter = new PrimitiveConstantsCheckerFromSigtests(true, isThrowsTracked);
             }
 
             loader = new ClassFinder(converter, details, classIterator.getClassLoader());
@@ -561,7 +580,7 @@ final class Main {
 
         log.println("APIChangeTest Report\n");
         if (in != null) {
-            log.println("Base version:   " + in.javaVersion);
+            log.println("Base version:   " + in.getJavaVersion());
         }
         String javaVersion = version;
         log.println("Tested version: " + javaVersion);
