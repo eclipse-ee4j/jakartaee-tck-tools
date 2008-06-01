@@ -322,6 +322,21 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(1, "ServiceType.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
+    public void testFieldHidesField() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class ServiceBase extends Object {" +
+            "    public javax.accessibility.AccessibleContext accessibleContext;" +
+            "}";
+        String c2 =
+            "package ahoj;" +
+            "public class ServiceType extends ServiceBase {" +
+            "    private javax.accessibility.AccessibleContext accessibleContext;" +
+            "}";
+        createFile(1, "ServiceBase.java", c1);
+        createFile(1, "ServiceType.java", c2);
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
+    }
 
     public void testMissingConstructorInAbstractClassIsDetected() throws Exception {
         String c1 =

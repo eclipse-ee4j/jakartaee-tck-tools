@@ -528,6 +528,9 @@ final class TableOfClass implements SignatureConstants {
         }
         MemberEntry declaredFields[] = c.getDeclaredFields();
         for (int i = 0; i < declaredFields.length; i++) {
+            if (!declaredFields[i].isPublic() && !declaredFields[i].isProtected()) {
+                continue;
+            }
             retVal.put(declaredFields[i].getKey(), declaredFields[i]);
         }
         return retVal;
