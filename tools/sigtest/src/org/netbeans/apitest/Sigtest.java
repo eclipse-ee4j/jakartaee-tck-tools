@@ -133,6 +133,7 @@ public final class Sigtest extends Task {
         boolean generate = false;
         boolean strictcheck = false;
         boolean addBootCP = false;
+        boolean onlySameVersion = false;
         List<String> arg = new ArrayList<String>();
         arg.add("-FileName");
         arg.add(fileName.getAbsolutePath());
@@ -148,6 +149,11 @@ public final class Sigtest extends Task {
             addBootCP = true;
             strictcheck = true;
             arg.add("-static");
+        } else if (action.getValue().equals("versioncheck")) {
+            addBootCP = true;
+            strictcheck = true;
+            arg.add("-static");
+            onlySameVersion = true;
         } else {
             throw new BuildException("Unknown action: " + action);
         }
@@ -218,6 +224,23 @@ public final class Sigtest extends Task {
             SignatureTest t = new SignatureTest();
             t.run(args, w, null);
             returnCode = t.isPassed() ? 0 : 1;
+            
+            if (onlySameVersion && !t.isPassed()) {
+                // check the printed out versions
+                final String prefix = "Base version: ";
+                int index = output.toString().indexOf(prefix);
+                if (index < 0) {
+                    throw new BuildException("Missing " + prefix + " in:\n" + output.toString());
+                }
+                int end = output.toString().indexOf('\n', index);
+                String base = output.toString().substring(index + prefix.length(), end);
+                log("versioncheck.TestedVersion: " + version, Project.MSG_VERBOSE);
+                log("versioncheck.BaseVersion: " + base, Project.MSG_VERBOSE);
+                if (!version.equals(base)) {
+                    log("versioncheck. clearing the return status.", Project.MSG_VERBOSE);
+                    returnCode = 0;
+                }
+            }
         } else {
             returnCode = Main.run(args, w, w).getType();
         }
@@ -242,6 +265,7 @@ public final class Sigtest extends Task {
                         "generate",
                         "check",
                         "strictcheck",
+                        "versioncheck",
                         "binarycheck",
                     };
         }
