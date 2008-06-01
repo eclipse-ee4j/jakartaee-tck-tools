@@ -275,6 +275,21 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(1, "Utilities.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
+    public void testSomeProblemInDebugger() throws Exception {
+        String c1 =
+            "package org.netbeans.api.debugger;" +
+            "public final class DebuggerManager {\n" +
+            "  DebuggerManager() {}\n" +
+            "  public Breakpoint[] getBreakpoints () { return null; }\n" +
+            "}";
+        String c2 =
+            "package org.netbeans.api.debugger;" +
+            "public abstract class Breakpoint {\n" +
+            "}";
+        createFile(1, "DebuggerManager.java", c1);
+        createFile(1, "Breakpoint.java", c2);
+        checkAPIsEqual("-Dcheck.package=org.netbeans.api.debugger.*");
+    }
     
     
     public void testPrimitiveArraysBackward() throws Exception {

@@ -59,6 +59,7 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
     
     private Map<Integer,String> genericTypes = new HashMap<Integer, String>();
     private static Pattern BOUND = Pattern.compile("[^%]*%([0-9]*) (extends ([0-9a-zA-Z\\.]*))");
+    private static Pattern ARRAY = Pattern.compile("[^\\p{Alnum}]((byte|short|int|float|double|char)\\[\\])");
     
     /** return formatted definition. **/
     @Override
@@ -82,13 +83,27 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             definition = definition.substring(0, newLine);
         }
 
-        definition = definition.replaceAll("byte\\[\\]", "[B")
-                .replaceAll("short\\[\\]", "[S")
-                .replaceAll("int\\[\\]", "[I")
-                .replaceAll("float\\[\\]", "[F")
-                .replaceAll("double\\[\\]", "[D")
-                .replaceAll("char\\[\\]", "[C");
-                
+        for(;;) {
+            Matcher primitiveArray = ARRAY.matcher(definition);
+            if (!primitiveArray.find()) {
+                break;
+            }
+            String pa;
+            String match = primitiveArray.group(2);
+            switch (match.charAt(0)) {
+                case 'b': pa = "[B"; break;
+                case 's': pa = "[S"; break;
+                case 'i': pa = "[I"; break;
+                case 'f': pa = "[F"; break;
+                case 'd': pa = "[D"; break;
+                case 'c': pa = "[C"; break;
+                default: throw new IllegalStateException(match);
+            }
+            definition = definition.substring(0, primitiveArray.start(1)) + 
+                pa + 
+                definition.substring(primitiveArray.end(1));
+        }
+        
         for (;;) {
             int array = definition.indexOf("[]");
             if (array == -1) {
