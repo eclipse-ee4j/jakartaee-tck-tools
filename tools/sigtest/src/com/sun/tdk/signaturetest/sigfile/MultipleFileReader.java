@@ -153,7 +153,7 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
                 if (!in.hasFeature(FeaturesHolder.BuildMembers))
                     features.remove(FeaturesHolder.BuildMembers);
-                
+
                 apiVersion = in.getApiVersion();
 
                 ClassDescription cl;
@@ -218,5 +218,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
     public String getApiVersion() {
         return apiVersion;
-    }
+    } 
+
 }
