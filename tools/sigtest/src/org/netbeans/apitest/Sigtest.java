@@ -62,7 +62,7 @@ public final class Sigtest extends Task {
     String version;
     String packages;
     ActionType action;
-    boolean failOnError = true;
+    Boolean failOnError;
     File report;
     String failureProperty;
 
@@ -249,14 +249,18 @@ public final class Sigtest extends Task {
         }
 
         log(output.toString());
+        boolean fail;
         if (report != null) {
             writeReport(report, output.toString(), returnCode == 0);
+            fail = Boolean.TRUE.equals(failOnError);
+        } else {
+            fail = !Boolean.FALSE.equals(failOnError);
         }
         if (returnCode != 0) {
             if (failureProperty != null) {
                 getProject().setProperty(failureProperty, "true");
             } else {
-                if (failOnError) {
+                if (fail) {
                     throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above", getLocation());
                 } 
             }
