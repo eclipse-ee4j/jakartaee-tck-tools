@@ -761,6 +761,7 @@ final class Main {
         // The protected member of the final classes are not tracked, because
         // they are inaccessible in the old implementation.
         boolean isProtectedTracked = (required.classDef.indexOf(" final ") < 0);
+        boolean isNewAbstractAllowed = !isProtectedTracked && (found.classDef.indexOf(" abstract ") >= 0);
 	// track members declared in the API master signature file excluded
         // primitive constants.
 	for (Enumeration eReq = required.keys(); eReq.hasMoreElements();) {
@@ -841,7 +842,7 @@ final class Main {
                         if (tempReq.startsWith(SignatureConstants.METHOD)) {
                             if (tempReq.indexOf(" static ") < 0) {
                                 error = trackMethodDefinition(
-                                    clName, required.classDef, tempReq, tempFou
+                                    clName, required.classDef, tempReq, tempFou, isNewAbstractAllowed
                                 );
                             } else {
                                 error = trackMethodDefinition(
@@ -873,7 +874,10 @@ final class Main {
         modFou = modFou.substring(0, modFou.lastIndexOf(' '));
         if (!isMaintenanceMode) {
             if (!modFou.endsWith(" final")) {
-                modReq = modReq.replaceAll(" final", "");
+                if (modReq.endsWith(" final")) {
+                    modReq = modReq.replaceAll(" final", "");
+                    modFou = modFou.replaceAll(" abstract", "");
+                }
             }
         }
         if (!modReq.equals(modFou)) {
@@ -956,7 +960,7 @@ final class Main {
                         name.equals(temp)) {
                         MemberEntry t = new MemberEntry(methods[i], converter);
                         return trackMethodDefinition(clName, clDef, definition,
-                                              t.getEntry());
+                                              t.getEntry(), false);
                     }
                 }
             }
@@ -984,6 +988,12 @@ final class Main {
         };
         
         if (before.indexOf(" interface ") >= 0) {
+            String tempModifs[][] = {
+                {"interface", "interface"}
+            };
+            modifs = tempModifs;
+        }
+        if (before.indexOf(" final ") >= 0) {
             String tempModifs[][] = {
                 {"interface", "interface"}
             };
@@ -1046,7 +1056,9 @@ final class Main {
      *  @return error message or null, if everythig is ok
      **/
     private ErrorMessage trackMethodDefinition(String name, String clDef,
-                                       String before, String after) {
+                                       String before, String after, 
+                                       boolean isNewAbstractAllowed
+                                   ) {
 	MemberDefinition beforeDef = new MemberDefinition(name, before);
 	MemberDefinition afterDef = new MemberDefinition(name, after);
         String modifs[][];
@@ -1059,11 +1071,18 @@ final class Main {
             };
             modifs = temp;
         } else {
-            String temp[][] = {
-                {"static", "static"},
-                {null, "abstract"}
-            };
-            modifs = temp;
+            if (isNewAbstractAllowed) {
+                String temp[][] = {
+                    {"static", "static"},
+                };
+                modifs = temp;
+            } else {
+                String temp[][] = {
+                    {"static", "static"},
+                    {null, "abstract"}
+                };
+                modifs = temp;
+            }
         }
         // track modifiers.
 	ErrorMessage em = trackModifiers(name, modifs, beforeDef, afterDef);

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.Test;
+import org.netbeans.apitest.ExecuteUtils.ExecutionError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -78,6 +79,59 @@ public class CheckNewSigtestTest extends NbTestCase {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Missing field has to be detected");
         } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+    
+    public void testConvertingFinalClassToAbstract() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "  public final class F {" +
+            "    public void collapseNode(java.lang.Object o) { }" +
+            "    public void expandNode(java.lang.Object o) { }" +
+            "    public boolean isExpanded(java.lang.Object o) { return false; }" +
+            "  }" +
+            "";
+        createFile(1, "F.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "  public abstract class F {" +
+            "    public abstract void collapseNode(java.lang.Object o);" +
+            "    public abstract void expandNode(java.lang.Object o);" +
+            "    public abstract boolean isExpanded(java.lang.Object o);" +
+            "  }";
+        createFile(2, "F.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    
+    
+    public void testConvertingNonFinalClassToAbstract() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "  public class F { " +
+            "    public void collapseNode(java.lang.Object o) { }" +
+            "    public void expandNode(java.lang.Object o) { }" +
+            "    public boolean isExpanded(java.lang.Object o) { return false; }" +
+            "  }";
+        createFile(1, "F.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "  public abstract class F {" +
+            "    public abstract void collapseNode(java.lang.Object o);" +
+            "    public abstract void expandNode(java.lang.Object o);" +
+            "    public abstract boolean isExpanded(java.lang.Object o);" +
+            "  }";
+        createFile(2, "F.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Adding abstract methods is incompatible change");
+        } catch (ExecutionError err) {
             // ok
         }
     }

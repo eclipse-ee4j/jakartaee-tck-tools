@@ -44,7 +44,7 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
     
     public static Test suite() {
         Test t = null;
-//        t = new VersionCheckSigtestTest("testAddingStaticFieldOK");
+//        t = new VersionCheckSigtestTest("testConvertingNonFinalClassToAbstract");
         return t != null ? t : new NbTestSuite(VersionCheckSigtestTest.class);
     }
     
@@ -67,7 +67,8 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
         if (
             getName().equals("testMissingFieldInAbstractClassIsDetected") ||
             getName().equals("testMissingStaticFieldDetected") ||
-            getName().equals("testMissingConstructorInAbstractClassIsDetected")
+            getName().equals("testMissingConstructorInAbstractClassIsDetected") ||
+            getName().equals("testConvertingNonFinalClassToAbstract")
         ) {
             // do the test of signatures for these special tests
             args.add("-Dv2=1.0");
