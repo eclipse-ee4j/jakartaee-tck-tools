@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(APITest.class);
-        //return new APITest("testGenerateVersionNumberAsJunit");
+//        return new APITest("testMakingNonSubclassableClassNonFinalIsNotIncompatibleChange");
     }
 
     @Override
@@ -133,6 +133,22 @@ public class APITest extends NbTestCase {
         String c2 = c1.replaceAll("final", "");
         createFile(2, "C.java", c2);
         
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testMakingNonSubclassableClassNonFinalIsNotIncompatibleChange() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public final class C {" +
+            "  private C() { }" +
+            "  public final int get() BODY" +
+            "}";
+        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }"));
+
+
+        String c2 = c1.replaceAll("final", "abstract");
+        createFile(2, "C.java", c2.replace("BODY", ";"));
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
