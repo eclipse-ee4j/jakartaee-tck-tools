@@ -49,8 +49,12 @@ public class APITest extends NbTestCase {
     }
     
     public static Test suite() {
-        return new NbTestSuite(APITest.class);
-//        return new APITest("testMakingNonSubclassableInnerClassNonFinalIsNotIncompatibleChange");
+        Test t = null;
+//        t = new APITest("testAddMethodInAnInterfaceAllowedInSpecialMode");
+        if (t == null) {
+            t = new NbTestSuite(APITest.class);
+        }
+        return t;
     }
 
     @Override

@@ -71,6 +71,8 @@ final class TableOfClass implements SignatureConstants {
     protected DefinitionFormat converter;
     /** specify if reflection is used for founding of the nested classes. **/
     boolean isReflectUsed = false;
+    /** number of constructors in the class */
+    private int constructorCount = -1;
 
     /** Creates a new TableOfClass for given SignatureClass instance.
      *  @param c  initial class
@@ -199,9 +201,11 @@ final class TableOfClass implements SignatureConstants {
             members.addElement(new MemberEntry(def, converter));
         }
         if (addConstructors) {
+            constructorCount = 0;
             for (ConstructorDescr f : descr.getDeclaredConstructors()) {
                 String def = converter.getDefinition(f.toString());
                 members.addElement(new MemberEntry(def, converter));
+                constructorCount++;
             }
         }
         
@@ -325,9 +329,13 @@ final class TableOfClass implements SignatureConstants {
 	getFields();
 	//includes public and protected constructors
 	MemberEntry[] constr = classObject.getDeclaredConstructors();
+        assert constructorCount == -1;
+        constructorCount = 0;
 	for (int i = 0; i < constr.length; i++) {
-	    if (constr[i].isPublic() || constr[i].isProtected())
+	    if (constr[i].isPublic() || constr[i].isProtected()) {
 		members.addElement(constr[i]);
+                constructorCount++;
+            }
 	}
 	//includes public and protected nested classes
         if (isReflectUsed)
@@ -384,6 +392,10 @@ final class TableOfClass implements SignatureConstants {
     }
     public boolean isInterface() {
         return classDef.indexOf(" interface ") >= 0;
+    }
+    public boolean isFinal() {
+        assert constructorCount != -1;
+        return classDef.indexOf(" final ") >= 0 || constructorCount == 0;
     }
     /** includes definitions of the given nested classes to ClassCollection.
      *  @param c enclosing class.

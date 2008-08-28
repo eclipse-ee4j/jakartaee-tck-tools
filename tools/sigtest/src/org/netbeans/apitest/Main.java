@@ -750,11 +750,11 @@ final class Main {
         found.createMembers();
         // track class definition.
         trackClassDefinition(required.getName(), required.classDef, 
-                             found.classDef);
+                             found.classDef, required.isFinal());
         // The protected member of the final classes are not tracked, because
         // they are inaccessible in the old implementation.
-        boolean isProtectedTracked = (required.classDef.indexOf(" final ") < 0);
-        boolean isNewAbstractAllowed = !isProtectedTracked && (found.classDef.indexOf(" abstract ") >= 0);
+        boolean isProtectedTracked = !required.isFinal();
+        boolean isNewAbstractAllowed = required.isFinal();
 	// track members declared in the API master signature file excluded
         // primitive constants.
 	for (Enumeration eReq = required.keys(); eReq.hasMoreElements();) {
@@ -875,6 +875,10 @@ final class Main {
                 }
             }
         }
+        if (required.isFinal()) {
+            modFou = modFou.replaceAll(" abstract", "");
+            modReq = modReq.replaceAll(" abstract", "");
+        }
         if (!modReq.equals(modFou)) {
             errorWriter.addError("Missing", required.getName(), 
                                  required.classDef, null);
@@ -973,12 +977,12 @@ final class Main {
      *  name for regular classes.
      *  @param name before class definition in the based implementation.
      *  @param name after class definition in the tested implementation.**/
-    private void trackClassDefinition(String name, String before, String after) {
+    private void trackClassDefinition(String name, String before, String after, boolean wasFinal) {
 	MemberDefinition beforeDef = new MemberDefinition(name, before);
 	MemberDefinition afterDef = new MemberDefinition(name, after);
         String modifs[][] = {
             {null, "final"},
-            {null, "abstract"},
+            {null, wasFinal ? null : "abstract"},
             {"interface", "interface"}
         };
         
@@ -1058,17 +1062,18 @@ final class Main {
 	MemberDefinition afterDef = new MemberDefinition(name, after);
         String modifs[][];
 
-        if (clDef.indexOf(" final ") < 0) {
+        if (isNewAbstractAllowed) {
             String temp[][] = {
-                {null, "final"}, 
                 {"static", "static"},
-                {null, "abstract"}
             };
             modifs = temp;
+            
         } else {
-            if (isNewAbstractAllowed) {
+            if (clDef.indexOf(" final ") < 0) {
                 String temp[][] = {
+                    {null, "final"}, 
                     {"static", "static"},
+                    {null, "abstract"}
                 };
                 modifs = temp;
             } else {
