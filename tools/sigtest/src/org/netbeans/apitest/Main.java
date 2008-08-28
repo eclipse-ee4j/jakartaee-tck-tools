@@ -175,9 +175,6 @@ final class Main {
     private Vector<String> nonLinkedClasses = new Vector<String>();
     /**contains tracked class names.**/
     private Vector<String> trackedClassNames = new Vector<String>();
-    /**specify if the unaccessible nested public classes are required to be
-     * tracked.**/
-    private boolean isAllPublicTracked = false;
     /**specify if the warning are reported.**/
     private boolean isIgnorableReported = false;
     /**specify if the current mode is maintenance mode.**/
@@ -260,8 +257,6 @@ final class Main {
 	    } else if (args[i].equals("-Exclude") &&
 		       (args.length > i + 1)) {
 		tempExcludedElements.addElement(args[++i]);
-	    } else if (args[i].equals("-AllPublic")) {
-                isAllPublicTracked = true;
 	    } else if (args[i].equals("-setup")) {
                 setup = true;
 	    } else if (args[i].equals("-maintenance")) {
@@ -534,12 +529,10 @@ final class Main {
 	    }
 
             // track inaccessible nested classes
-            if (isAllPublicTracked) {
-                for (Enumeration<String> e = nestedClasses.keys(); e.hasMoreElements();) {
-                    String name = e.nextElement();
-                    if (!trackedClassNames.contains(name)) {
-                        verifyClass(nestedClasses.get(name));
-                    }
+            for (Enumeration<String> e = nestedClasses.keys(); e.hasMoreElements();) {
+                String name = e.nextElement();
+                if (!trackedClassNames.contains(name)) {
+                    verifyClass(nestedClasses.get(name));
                 }
             }
                 
@@ -773,6 +766,7 @@ final class Main {
                 existingMembers.add(null);
             }
 	    if (name.startsWith(SignatureConstants.INNER)) {
+                /* isAllPublicTracked is now always on...
                 if (isAllPublicTracked) {
                     continue;
                 }
@@ -796,6 +790,7 @@ final class Main {
                                              def, null);
                     } 
                 }
+                 */
             } else if (name.startsWith(SignatureConstants.SUPER)) {
                 if ((requiredMembers != null) && !requiredMembers.isEmpty()) {
                     SignatureClass c = found.getClassObject();
@@ -1124,42 +1119,8 @@ final class Main {
      *  @param name name of the class.**/
     boolean isAccessible(SignatureClass c) {
         int m;
-        if (isAllPublicTracked) {
-            m = c.getModifiers();
-            return (Modifier.isPublic(m) || Modifier.isProtected(m));
-        }
-        if (isReflectUsed) {
-            for (SignatureClass cl = c; cl != null; cl = cl.getDeclaringClass()) {
-                m = cl.getModifiers();
-                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) {
-                    return false;
-                }
-            }
-        } else {
-            for (SignatureClass cl = c; cl != null;) {
-                m = cl.getModifiers();
-                if (!Modifier.isPublic(m) && !Modifier.isProtected(m)) {
-                    return false;
-                }
-                int pos = cl.getName().lastIndexOf('$');
-                try {
-                    if (pos > 0) {
-                        String nextName = cl.getName().substring(0, pos);
-                        cl = loader.loadClass(nextName);
-                    } else {
-                        cl = null;
-                    }
-                } catch (ClassNotFoundException e) {
-                    cl = null;
-                } catch (LinkageError er) {
-                    errorWriter.addError("LinkageError", c.getName(),
-                                         "Can't track accessibility: " +
-                                         er + " thrown.", null);
-                    return false;
-                }
-            }
-        }
-        return true;
+        m = c.getModifiers();
+        return (Modifier.isPublic(m) || Modifier.isProtected(m));
     }
 
     /** tracks modifiers.
