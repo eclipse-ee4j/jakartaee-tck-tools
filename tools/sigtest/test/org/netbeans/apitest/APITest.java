@@ -158,14 +158,29 @@ public class APITest extends NbTestCase {
             "public class C {" +
             "  public static ACCESS class Inner {" +
             "    private Inner() { }" +
-            "    public final int get() BODY" +
+            "    public METHOD int get() BODY" +
             "  }" +
             "}";
-        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", ""));
+        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", "").replace("METHOD", "final"));
+        createFile(2, "C.java", c1.replace("BODY", ";").replace("ACCESS", "abstract").replace("METHOD", "abstract"));
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testSQLQuoter() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class C {" +
+            " public static SQLQuoter createQuoter() { return null; } " +
+            "  public static ACCESS class SQLQuoter {" +
+            "    private SQLQuoter() { }" +
+            "    public METHOD int get() BODY" +
+            "  }" +
+            "}";
+        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", "").replace("METHOD", ""));
 
 
-        String c2 = c1.replaceAll("final", "abstract");
-        createFile(2, "C.java", c2.replace("BODY", ";").replace("ACCESS", "abstract"));
+        createFile(2, "C.java", c1.replace("BODY", ";").replace("ACCESS", "abstract").replace("METHOD", "abstract"));
 
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
