@@ -204,6 +204,24 @@ public class APITest extends NbTestCase {
 
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
+
+    public void testSQLQuoterFinalAndNewAbstract() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class C {" +
+            " public static SQLQuoter createQuoter() { return null; } " +
+            "  public static ACCESS class SQLQuoter {" +
+            "    private SQLQuoter() { }" +
+            "    public METHOD int get() BODY" +
+            "    ADD" +
+            "  }" +
+            "}";
+        String method = "public abstract int additionalMethod();";
+        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", "final").replace("METHOD", "").replace("ADD", ""));
+        createFile(2, "C.java", c1.replace("BODY", ";").replace("ACCESS", "abstract").replace("METHOD", "abstract").replace("ADD", method));
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
     
     public void testGenericsOverridenType() throws Exception {
         String c1 =

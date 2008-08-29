@@ -791,6 +791,9 @@ final class Main {
         if (extensibleInterfaces && required.isInterface()) {
             return;
         }
+        if (required.isFinal()) {
+            return;
+        }
         
 	// track abstract members which are added in the current implementation.
 	for (Enumeration eFou = found.keys(); eFou.hasMoreElements();) {

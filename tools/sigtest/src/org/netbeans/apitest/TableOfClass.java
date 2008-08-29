@@ -394,6 +394,10 @@ final class TableOfClass implements SignatureConstants {
         return classDef.indexOf(" interface ") >= 0;
     }
     public boolean isFinal() {
+        if (isInterface()) {
+            return false;
+        }
+        
         if (constructorCount == -1) {
             constructorCount = 0;
             for (Object o : members.keySet()) {
