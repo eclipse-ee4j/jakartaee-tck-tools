@@ -420,16 +420,19 @@ public class APITest extends NbTestCase {
         File report = new File(getWorkDir(), "report.xml");
         report.delete();
         
-        compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version-junit", "-Dv1=1.1", "-Dv2=3.3", "-Dcheck.report=" + report);
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version-junit", "-Dv1=1.1", "-Dv2=3.3", "-Dcheck.report=" + report, "-Dsigtest.mail=jarda@darda.petarda.org");
 
         assertTrue("Report exists", report.exists());
         String in = readFile(report);
         // ok
         if (!in.contains("1.1")) {
-            fail("Should report 1.1:\n" + ExecuteUtils.getStdErr());
+            fail("Should report 1.1:\n" + in);
         }
         if (!in.contains("3.3")) {
-            fail("Should report 3.3:\n" + ExecuteUtils.getStdErr());
+            fail("Should report 3.3:\n" + in);
+        }
+        if (!in.contains("email: jarda@darda.petarda.org")) {
+            fail("Should contain email:\n" + in);
         }
     }
     

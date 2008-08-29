@@ -251,7 +251,15 @@ public final class Sigtest extends Task {
         log(output.toString());
         boolean fail;
         if (report != null) {
-            writeReport(report, output.toString(), returnCode == 0);
+            String mail = getProject().getProperty("sigtest.mail");
+            String out;
+            if (mail != null) {
+                out = "email: " + mail + "\n" + output;
+            } else {
+                out = output.toString();
+            }
+            
+            writeReport(report, out, returnCode == 0);
             fail = Boolean.TRUE.equals(failOnError);
         } else {
             fail = !Boolean.FALSE.equals(failOnError);
