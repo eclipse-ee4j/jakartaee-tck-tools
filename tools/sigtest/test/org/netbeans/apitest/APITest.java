@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-//        t = new APITest("testProblemsWithInnerInterface");
+//        t = new APITest("testNoFailuresIfInXMLIf");
         if (t == null) {
             t = new NbTestSuite(APITest.class);
         }
@@ -433,6 +433,32 @@ public class APITest extends NbTestCase {
         }
         if (!in.contains("email: jarda@darda.petarda.org")) {
             fail("Should contain email:\n" + in);
+        }
+    }
+    
+    public void testNoFailuresIfInXMLIf() throws Exception {
+        String retAppendable =
+            "package ahoj; import java.io.IOException; " +
+            "public class W {" +
+                "  public void get(X args) { }" +
+                "} class X {} ";
+        createFile(1, "W.java", retAppendable);
+        createFile(2, "W.java", retAppendable);
+        
+        File report = new File(getWorkDir(), "report.xml");
+        report.delete();
+        
+        compareAPIs(1, 2, 
+            "generate",
+            "-Dcheck.package=ahoj.*", 
+            "-Dcheck.report=" + report,
+            "-Dfail.on.error=false"
+        );
+
+        assertTrue("Report exists", report.exists());
+        String in = readFile(report);
+        if (!in.contains("failures=\"0\"")) {
+            fail("Should contain failures='0':\n" + in);
         }
     }
     

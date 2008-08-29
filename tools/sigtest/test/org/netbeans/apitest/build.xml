@@ -17,6 +17,20 @@
         <sigtest action="${check.type}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
     </target>
 
+    <target name="generate">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+        
+        <sigtest action="generate" 
+            classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"
+            failonerror="${fail.on.error}" report="${check.report}"
+        />
+    </target>
+
     <target name="compare">
         <antcall target="-compile-dir">
             <param name="dir" value="${dir1}"/>

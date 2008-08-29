@@ -259,7 +259,7 @@ public final class Sigtest extends Task {
         log(out);
         boolean fail;
         if (report != null) {
-            writeReport(report, out, returnCode == 0);
+            writeReport(report, out, returnCode == 0 || Boolean.FALSE.equals(failOnError));
             fail = Boolean.TRUE.equals(failOnError);
         } else {
             fail = !Boolean.FALSE.equals(failOnError);

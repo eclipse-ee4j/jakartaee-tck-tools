@@ -43,9 +43,14 @@ public class APIWithPropertyTest extends APITest {
     }
     
     public static Test suite() {
-        return new NbTestSuite(APIWithPropertyTest.class);
-        //return new APITest("testGenerateVersionNumberAsJunit");
+        Test t = null;
+//        t = new APIWithPropertyTest("testNoFailuresIfInXMLIf");
+        if (t == null) {
+            t = new NbTestSuite(APIWithPropertyTest.class);
+        }
+        return t;
     }
+    
     @Override
     protected void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slotFirst);
@@ -66,5 +71,7 @@ public class APIWithPropertyTest extends APITest {
     public void testGenerateVersionNumberAsJunit() throws Exception {}
     @Override
     public void testGenerateVersionNumber() throws Exception {}
+    @Override
+    public void testNoFailuresIfInXMLIf() {}
     
 }
