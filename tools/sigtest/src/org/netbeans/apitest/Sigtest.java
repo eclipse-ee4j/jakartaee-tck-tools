@@ -247,18 +247,18 @@ public final class Sigtest extends Task {
         } else {
             returnCode = Main.run(args, w, w).getType();
         }
+        
+        String mail = getProject().getProperty("sigtest.mail");
+        String out;
+        if (mail != null) {
+            out = "\nemail: " + mail + "\n" + output;
+        } else {
+            out = output.toString();
+        }
 
-        log(output.toString());
+        log(out);
         boolean fail;
         if (report != null) {
-            String mail = getProject().getProperty("sigtest.mail");
-            String out;
-            if (mail != null) {
-                out = "email: " + mail + "\n" + output;
-            } else {
-                out = output.toString();
-            }
-            
             writeReport(report, out, returnCode == 0);
             fail = Boolean.TRUE.equals(failOnError);
         } else {
