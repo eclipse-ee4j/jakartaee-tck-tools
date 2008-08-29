@@ -394,7 +394,14 @@ final class TableOfClass implements SignatureConstants {
         return classDef.indexOf(" interface ") >= 0;
     }
     public boolean isFinal() {
-        assert constructorCount != -1;
+        if (constructorCount == -1) {
+            constructorCount = 0;
+            for (Object o : members.keySet()) {
+                if (o.toString().startsWith("cons ")) {
+                    constructorCount++;
+                }
+            }
+        }
         return classDef.indexOf(" final ") >= 0 || constructorCount == 0;
     }
     /** includes definitions of the given nested classes to ClassCollection.

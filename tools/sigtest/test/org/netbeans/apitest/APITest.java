@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-//        t = new APITest("testAddMethodInAnInterfaceAllowedInSpecialMode");
+//        t = new APITest("testSQLQuoterFinal");
         if (t == null) {
             t = new NbTestSuite(APITest.class);
         }
@@ -184,6 +184,22 @@ public class APITest extends NbTestCase {
         createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", "").replace("METHOD", ""));
 
 
+        createFile(2, "C.java", c1.replace("BODY", ";").replace("ACCESS", "abstract").replace("METHOD", "abstract"));
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testSQLQuoterFinal() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class C {" +
+            " public static SQLQuoter createQuoter() { return null; } " +
+            "  public static ACCESS class SQLQuoter {" +
+            "    private SQLQuoter() { }" +
+            "    public METHOD int get() BODY" +
+            "  }" +
+            "}";
+        createFile(1, "C.java", c1.replace("BODY", "{ return 0; }").replace("ACCESS", "final").replace("METHOD", ""));
         createFile(2, "C.java", c1.replace("BODY", ";").replace("ACCESS", "abstract").replace("METHOD", "abstract"));
 
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");

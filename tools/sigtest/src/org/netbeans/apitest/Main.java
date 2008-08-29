@@ -164,8 +164,6 @@ final class Main {
     private PrimitiveConstantsChecker converter;
     /**prints error message in the specified format.**/
     private ErrorFormatter errorWriter;
-    /**contains founded nested classes.**/
-    private Hashtable<String,TableOfClass> nestedClasses;
     /**includes packages which are required to be tracked.**/
     private Pattern packages[];
     /** name of the packages or classes which should must be excluded
@@ -486,7 +484,6 @@ final class Main {
     /**runs test in the default or maintenance mode
      * @param sigFileURL API signature file.**/
     private Status verify(String sigFileURL) {
-	nestedClasses = new Hashtable<String, TableOfClass>();
 	trackedClassNames = new Vector<String>();
         ClassSignatureReader in = null;
 	try {
@@ -520,22 +517,8 @@ final class Main {
 	    TableOfClass currentClass;
 	    while ((currentClass = in.nextAPIClass()) != null) {
 		String name = currentClass.getName();
-		if (name.indexOf('$') < 0) {
-                    verifyClass(currentClass);
-                } else {
-                    //includes nested classes to the table.
-                    nestedClasses.put(name, currentClass);
-                }
+                verifyClass(currentClass);
 	    }
-
-            // track inaccessible nested classes
-            for (Enumeration<String> e = nestedClasses.keys(); e.hasMoreElements();) {
-                String name = e.nextElement();
-                if (!trackedClassNames.contains(name)) {
-                    verifyClass(nestedClasses.get(name));
-                }
-            }
-                
 	} catch (IOException e) {
 	    log.println("problem with definitions file");
 	    log.println(e);
@@ -615,47 +598,8 @@ final class Main {
      *  @param found class specification in the tested implementation.**/
     private void verifyMaintenanceClass(TableOfClass required,
                                         TableOfClass found)
-        throws ClassNotFoundException  {
-        // track class modifiers
-	if (trackedClassNames.contains(found.getClassName())) {
-            return; // this class is tracked
-        }// this class is tracked
-
-        trackedClassNames.addElement(found.getClassName());
-        found.createMembers();
-        String modReq = required.classDef;
-        modReq = modReq.substring(0, modReq.lastIndexOf(' '));
-        String modFou = found.classDef;
-        modFou = modFou.substring(0, modFou.lastIndexOf(' '));
-        if (!modReq.equals(modFou)) {
-            errorWriter.addError("Missing", required.getName(), 
-                                 required.classDef, null);
-            errorWriter.addError("Added", found.getName(), found.classDef, null);
-        }
-	// track members declared in the signature file.
-	for (Enumeration eReq = required.keys(); eReq.hasMoreElements();) {
-	    String name = (String)eReq.nextElement();
-	    Vector mReq = required.get(name);
-	    Vector mFou = found.get(name);
-	    if (mFou == null) {
-		mFou = new Vector();
-            }
-	    if (name.startsWith(SignatureConstants.INNER)) {
-		trackNestedClass(found, mReq, mFou);
-	    } else {
-                trackMember(found.getName(), mReq, mFou,false);
-            }
-	}
-	// track members which are added in the current implementation.
-	for (Enumeration eFou = found.keys(); eFou.hasMoreElements();) {
-	    String name = (String)eFou.nextElement();
-	    Vector mReq = required.get(name);
-	    Vector mFou = found.get(name);
-	    if ((mReq == null) && (!name.startsWith(SignatureConstants.INNER) || isReflectUsed)) {
-		mReq = new Vector();
-		trackMember(found.getName(), mReq, mFou,false);
-	    } 
-	}
+    throws ClassNotFoundException  {
+        throw new ClassNotFoundException("Not implemented");
     }
 
     /** track Vector of the members with the same signature in the maintenance
@@ -692,47 +636,6 @@ final class Main {
             }
             errorWriter.addError("Added", name, m, null);
         }
-    }
-
-    /** track Vector of the nested classes with the same local name in the maintenance
-     *  mode.
-     *  @param trackedClass enclosing class in the tested implementation.
-     *  @param required definition of the based implementation.
-     *  @param found definition of the tested implementation.**/
-    private void trackNestedClass(TableOfClass trackedClass, Vector required,
-                                  Vector found) {
-        if (required.isEmpty()) {
-            trackMember(trackedClass.getName(), required, found,false);
-            return;
-        }
-        String localName = (String)required.elementAt(0);
-        localName = localName.substring(localName.lastIndexOf(' ') + 1);
-        localName = localName.substring(localName.lastIndexOf('.') + 1);
-        localName = localName.substring(localName.lastIndexOf('$') + 1);
-        Vector foundClasses = trackedClass.getNestedClassDefinitions(localName);
-        Vector<String> reqClasses = new Vector<String>();
-        for (int i = 0; i < required.size(); i++) {
-            String temp = (String)required.elementAt(i);
-            reqClasses.addElement(temp.substring(0, temp.lastIndexOf(' ') + 1) +
-                                  localName);
-        }
-        for (int i = 0; i < required.size(); i++) {
-            String name = (String)required.elementAt(i);
-            name = name.substring(name.lastIndexOf(' ') + 1);
-            TableOfClass req = nestedClasses.get(name);
-            try {
-                SignatureClass c = loader.loadClass(name);
-                TableOfClass cl = new TableOfClass(c, isReflectUsed);
-                verifyMaintenanceClass(req, cl);
-            } catch (ClassNotFoundException ex) {
-                errorWriter.addError("Missing", name, null, null);
-            } catch (LinkageError er) {
-                errorWriter.addError("LinkageError", name, 
-                                     name + " throw " + er, null);
-                nonLinkedClasses.addElement(name);
-            }
-        }
-        trackMember(trackedClass.getName(), required, foundClasses,false);
     }
 
 
@@ -876,8 +779,8 @@ final class Main {
             }
         }
         if (required.isFinal()) {
-            modFou = modFou.replaceAll(" abstract", "");
-            modReq = modReq.replaceAll(" abstract", "");
+            modFou = modFou.replaceAll(" abstract", "").replaceAll(" final", "");
+            modReq = modReq.replaceAll(" abstract", "").replaceAll(" final", "");
         }
         if (!modReq.equals(modFou)) {
             errorWriter.addError("Missing", required.getName(), 
