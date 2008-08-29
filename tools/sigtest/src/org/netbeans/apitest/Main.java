@@ -778,6 +778,10 @@ final class Main {
                 }
             }
         }
+        if (required.isInterface()) {
+            modFou = modFou.replaceAll(" static", "");
+            modReq = modReq.replaceAll(" static", "");
+        }
         if (required.isFinal()) {
             modFou = modFou.replaceAll(" abstract", "").replaceAll(" final", "");
             modReq = modReq.replaceAll(" abstract", "").replaceAll(" final", "");

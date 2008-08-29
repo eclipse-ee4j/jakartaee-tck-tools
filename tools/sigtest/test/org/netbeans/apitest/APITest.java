@@ -50,7 +50,7 @@ public class APITest extends NbTestCase {
     
     public static Test suite() {
         Test t = null;
-//        t = new APITest("testSQLQuoterFinal");
+//        t = new APITest("testProblemsWithInnerInterface");
         if (t == null) {
             t = new NbTestSuite(APITest.class);
         }
@@ -82,6 +82,50 @@ public class APITest extends NbTestCase {
             fail("Do not remove methods from interfaces");
         } catch (ExecuteUtils.ExecutionError ex) {
             // ok
+        }
+    }
+    
+    public void testProblemsWithInnerInterface() throws Exception {
+        String c1 = 
+            "package ahoj;" +
+            "public class Utils {" +
+            "  public static interface I { }" +
+            "}";
+        
+        createFile(1, "Utils.java", c1);
+        createFile(2, "Utils.java", c1);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testProblemsWithInnerClass() throws Exception {
+        String c1 = 
+            "package ahoj;" +
+            "public class Utils {" +
+            "  public static class I { }" +
+            "}";
+        
+        createFile(1, "Utils.java", c1);
+        createFile(2, "Utils.java", c1);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testProblemsWithInnerClassChanged() throws Exception {
+        String c1 = 
+            "package ahoj;" +
+            "public class Utils {" +
+            "  public STATIC class I { }" +
+            "}";
+        
+        createFile(1, "Utils.java", c1.replace("STATIC", "static"));
+        createFile(2, "Utils.java", c1.replace("STATIC", ""));
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("This is an incompatible change");
+        } catch (ExecuteUtils.ExecutionError err) {
+            // OK
         }
     }
 
