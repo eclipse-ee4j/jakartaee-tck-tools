@@ -300,16 +300,22 @@ public final class Sigtest extends Task {
     private void writeReport(File reportFile, String msg, boolean success) throws BuildException {
         assert reportFile != null;
         try {
+            String apiName = fileName.getName().replace(".sig", "").replace("-", ".");
+            StringBuilder name = new StringBuilder();
+            name.append(apiName).append('.').append(action.getValue());
+            if (version != null) {
+                name.append("_Version_").append(version.replace('.', '_'));
+            }
+            
             Document reportDoc = createDocument("testsuite");
             Element testsuite = reportDoc.getDocumentElement();
             int failures = 0;
             testsuite.setAttribute("errors", "0");
             testsuite.setAttribute("time", "0.0");
-            testsuite.setAttribute("name", Sigtest.class.getName()); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
+            testsuite.setAttribute("name", name.toString()); // http://www.nabble.com/difference-in-junit-publisher-and-ant-junitreport-tf4308604.html#a12265700
             Element testcase = reportDoc.createElement("testcase");
             testsuite.appendChild(testcase);
-            String apiName = fileName.getName().replace(".sig", "").replace("-", ".");
-            testcase.setAttribute("classname", apiName);
+            testcase.setAttribute("classname", name.toString());
             testcase.setAttribute("name", action.getValue());
             testcase.setAttribute("time", "0.0");
             if (!success) {
