@@ -311,6 +311,22 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(1, "Union2.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
+    public void testInnerTwoConstrs() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "import java.util.EnumSet;" +
+            "public class Anchor {\n" +
+            "  Anchor() {}\n" +
+            "  public enum Kind {" +
+            "  }" +
+            "  public class Region {" +
+            "    public Region(Integer x, Kind l) {}" +
+            "    public Region(Integer x, EnumSet<Kind> l) {}" +
+            "  }" +
+            "}";
+        createFile(1, "Anchor.java", c1);
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
+    }
     public void testTopoSort() throws Exception {
         String c1 =
             "package ahoj;" +
