@@ -205,6 +205,15 @@ public class CheckNewSigtestTest extends NbTestCase {
         createFile(1, "ServiceType.java", c1);
         checkAPIsEqual("-Dcheck.package=ahoj.*");
     }
+    public void testTwoDimArray() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface PrintProvider {" +
+            "  String[][] getPages(int width, int height, double zoom);" +
+            "}";
+        createFile(1, "PrintProvider.java", c1);
+        checkAPIsEqual("-Dcheck.package=ahoj.*");
+    }
     public void testContextAwareAction() throws Exception {
         String c1 =
             "package ahoj;" +

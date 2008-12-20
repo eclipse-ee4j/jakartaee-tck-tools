@@ -112,6 +112,17 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             if (array == -1) {
                 break;
             }
+            String prefix = "[L";
+            int arrayEnd = array + 2;
+            while (
+                arrayEnd + 1 < definition.length() && 
+                definition.charAt(arrayEnd) == '[' && 
+                definition.charAt(arrayEnd + 1) == ']'
+            ) {
+                prefix = "[" + prefix;
+                arrayEnd += 2;
+            }
+            
             int pos = array - 1;
             while (pos >= 0) {
                 char ch = definition.charAt(pos);
@@ -124,8 +135,8 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
             pos++;
             String arrName = definition.substring(pos, array);
             String beg = definition.substring(0, pos);
-            String end = definition.substring(array + 2);
-            definition = beg + "[L" + arrName + ";" + end;
+            String end = definition.substring(arrayEnd);
+            definition = beg + prefix + arrName + ";" + end;
         }
         
         return super.getDefinition(definition);
