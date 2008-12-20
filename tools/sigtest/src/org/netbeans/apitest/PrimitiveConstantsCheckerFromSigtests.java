@@ -71,6 +71,8 @@ class PrimitiveConstantsCheckerFromSigtests extends PrimitiveConstantsChecker {
         definition = replace(definition, "field ", SignatureConstants.FIELD);
         definition = replace(definition, "constructor ", SignatureConstants.CONSTRUCTOR);
         definition = definition.replace("!enum ", "");
+        definition = definition.replaceFirst("abstract static", "static abstract");
+        definition = definition.replaceFirst("final static", "static final");
         
         if (definition.startsWith(SignatureConstants.FIELD)) {
             int eqsign = definition.indexOf('=');
