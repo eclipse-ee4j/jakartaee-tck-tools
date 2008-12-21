@@ -37,7 +37,7 @@ import java.io.OutputStream;
  * @author Sergey Borodin
  */
 public class RemoteLoadManager {
-    
+
     public static void writeClassDescription(String name, OutputStream out) {
         ReflClassDescrLoader loader = new ReflClassDescrLoader();
         Object descr;
@@ -46,13 +46,16 @@ public class RemoteLoadManager {
         }
         catch (ClassNotFoundException e) {
             descr = e;
+        } catch (RuntimeException t) {
+            descr = t;
         }
-        
+
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(out);
             objOut.writeObject(descr);
             objOut.close();
         }
-        catch (IOException e){}
+        catch (IOException e) {
+        }
     }
 }

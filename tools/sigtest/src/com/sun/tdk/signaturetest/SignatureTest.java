@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * <b>SignatureTest</b> is the main class of signature test. <p>
@@ -158,7 +159,7 @@ public class SignatureTest extends SigTest {
     // Test specific options
     public static final String CHECKVALUE_OPTION = "-CheckValue";
     public static final String NOCHECKVALUE_OPTION = "-NoCheckValue";
-    public static final String MODE_OPTION = "-mode";
+    public static final String MODE_OPTION = "-Mode";
     public static final String ENABLESUPERSET_OPTION = "-EnableSuperSet";
     public static final String FILES_OPTION = "-Files";
     public static final String NOMERGE_OPTION = "-NoMerge";
@@ -200,7 +201,12 @@ public class SignatureTest extends SigTest {
     private String mode = null;
 
     public static final String BINARY_MODE = "bin";
-    public static final String SOURCE_MODE = "src";
+    private static final String SOURCE_MODE = "src";
+
+    private static final String FORMAT_PLAIN = "plain";
+    private static final String FORMAT_HUMAN = "human";
+    private static final String FORMAT_BACKWARD = "backward";
+
 
     private boolean isSupersettingEnabled = false;
 
@@ -240,6 +246,7 @@ public class SignatureTest extends SigTest {
         long startTime = System.currentTimeMillis();
 
         SigTest.log = log;
+        mode = null;
         try {
             ClassLoader cl = SignatureTest.class.getClassLoader();
             exclude = (Exclude) cl.loadClass(System.getProperty("exclude.plugin")).newInstance();
@@ -310,6 +317,10 @@ public class SignatureTest extends SigTest {
         parser.addOption(STATIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(CLASSCACHESIZE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(FORMATPLAIN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(FORMATHUMAN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(FORMATHUMAN_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(BACKWARD_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(BACKWARD_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(DEBUG_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XNOTIGER_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XVERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -376,12 +387,6 @@ public class SignatureTest extends SigTest {
             }
         }
 
-        // creates ErrorFormatter.
-        if ((outFormat != null) && "plain".equals(outFormat))
-            errorManager = new ErrorFormatter(log);
-        else 
-            errorManager = new SortedErrorFormatter(log, isVerbose);
-
         // create ClasspathImpl for founding of the added classes
         try {
             classpath = new ClasspathImpl(classpathStr);
@@ -405,7 +410,15 @@ public class SignatureTest extends SigTest {
         } else if (optionName.equalsIgnoreCase(FILES_OPTION)) {
             sigFileNameList = args[0];
         } else if (optionName.equalsIgnoreCase(FORMATPLAIN_OPTION)) {
-            outFormat = "plain";            
+            outFormat = FORMAT_PLAIN;
+        } else if (optionName.equalsIgnoreCase(FORMATHUMAN_ALT_OPTION)) {
+             outFormat = FORMAT_HUMAN;
+        } else if (optionName.equalsIgnoreCase(FORMATHUMAN_OPTION)) {
+             outFormat = FORMAT_HUMAN;
+        } else if (optionName.equalsIgnoreCase(BACKWARD_OPTION)) {
+             outFormat = FORMAT_BACKWARD;
+        } else if (optionName.equalsIgnoreCase(BACKWARD_ALT_OPTION)) {
+             outFormat = FORMAT_BACKWARD;
         } else if (optionName.equalsIgnoreCase(VERBOSE_OPTION)) {
             isVerbose = true;
 
@@ -448,24 +461,32 @@ public class SignatureTest extends SigTest {
         StringBuffer sb = new StringBuffer();
         sb.append(i18n.getString("SignatureTest.usage.version", Version.Number));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.start"));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.testurl", TESTURL_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.static", STATIC_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.mode", MODE_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.backward", new Object[]{BACKWARD_OPTION, BACKWARD_ALT_OPTION}));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.classpath", CLASSPATH_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.filename", FILENAME_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.or"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.files", new Object[]{FILES_OPTION, java.io.File.pathSeparator}));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.package", PACKAGE_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.human", new Object[]{FORMATHUMAN_OPTION, FORMATHUMAN_ALT_OPTION}));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.out", OUT_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.testurl", TESTURL_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.packagewithoutsubpackages", WITHOUTSUBPACKAGES_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.exclude", EXCLUDE_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.classpath", CLASSPATH_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.out", OUT_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.static", STATIC_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.nomerge", NOMERGE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.apiversion", APIVERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.checkvalue", CHECKVALUE_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.mode", MODE_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.classcachesize", new Object[]{CLASSCACHESIZE_OPTION, new Integer(DefaultCacheSize)}));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.formatplain", FORMATPLAIN_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.classcachesize", new Object[]{CLASSCACHESIZE_OPTION, new Integer(DefaultCacheSize)}));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.verbose", VERBOSE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.debug", DEBUG_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.help", HELP_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.end"));
 
         System.err.println(sb.toString());
@@ -547,8 +568,8 @@ public class SignatureTest extends SigTest {
 
         if (mode == null) {
             mode = SOURCE_MODE;
-            MemberType.setMode(false);
         }
+        MemberType.setMode(BINARY_MODE.equals(mode));
 
         isOneWayConstantChecking = isValueTracked.booleanValue() && BINARY_MODE.equals(mode) || !isStatic;
 
@@ -559,9 +580,9 @@ public class SignatureTest extends SigTest {
         }
 
         if (BINARY_MODE.equals(mode)) {
-            MemberType.setMode(true);
             isThrowsRemoved = true;
         }
+        MemberType.setMode(BINARY_MODE.equals(mode));
 
         if (isValueTracked.booleanValue() && !in.hasFeature(FeaturesHolder.ConstInfo)) {
             String errmsg = i18n.getString("SignatureTest.mesg.sigfile.noconst");
@@ -613,6 +634,21 @@ public class SignatureTest extends SigTest {
         classHierarchy = new ClassHierarchyImpl(loader, trackMode);
 
         builder = new MemberCollectionBuilder(this);
+
+        // creates ErrorFormatter.
+        if ((outFormat != null) && FORMAT_PLAIN.equals(outFormat))
+            errorManager = new ErrorFormatter(log);
+        else
+            if ((outFormat != null) && FORMAT_HUMAN.equals(outFormat))
+                errorManager = new HumanErrorFormatter(log, isVerbose, 
+                        reportWarningAsError ? Level.WARNING : Level.SEVERE );
+        else
+            if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
+                errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
+                        classHierarchy,
+                        reportWarningAsError ? Level.WARNING : Level.SEVERE );
+        else
+            errorManager = new SortedErrorFormatter(log, isVerbose);
 
 
         boolean buildMembers = in.hasFeature(FeaturesHolder.BuildMembers);
@@ -880,8 +916,14 @@ public class SignatureTest extends SigTest {
                     normalizer.normThrows(found, true);
                 }
 
-                if (useErasurator())
+                if (useErasurator()) {
                     found = erasurator.erasure(found);
+                } else if (FORMAT_BACKWARD.equals(outFormat)) {
+                    if (!hasClassParameter(required) && hasClassParameter(found)) {
+                        found = erasurator.erasure(found);
+                        required = erasurator.erasure(required); 
+                    }
+                }
 
                 verifyClass(required, found);
 
@@ -912,6 +954,24 @@ public class SignatureTest extends SigTest {
         }
         return passed();
     }
+
+    private boolean hasClassParameter(ClassDescription cl) {
+        String tp = cl.getTypeParameters();
+        boolean result = (tp != null) && (!"".equals(tp));
+        // check all the members also
+        if (!result) {
+            for (Iterator e = cl.getMembersIterator(); e.hasNext();) {
+                MemberDescription mr = (MemberDescription) e.next();
+                String tpM = mr.getTypeParameters();
+                if ((tpM != null) && (!"".equals(tpM))) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
 
     private void verifyPackageInfo(ClassDescription required) {
 
@@ -1033,10 +1093,26 @@ public class SignatureTest extends SigTest {
 
         if (parent.hasModifier(Modifier.FINAL) &&
                 member.isMethod() &&
-                !member.hasModifier(Modifier.FINAL) &&
                 member.getDeclaringClassName().equals(parent.getQualifiedName())) {
-            clonedMember = (MemberDescription) member.clone();
-            clonedMember.addModifier(Modifier.FINAL);
+
+            MethodDescr md = (MethodDescr) member;
+            // below is a fix for issue 21
+            try {
+                if (!member.hasModifier(Modifier.FINAL)) {
+                    if (!classHierarchy.isMethodOverriden(md)) {
+                        clonedMember = (MemberDescription) member.clone();
+                        clonedMember.addModifier(Modifier.FINAL);
+                    }
+                } else {
+                    if (classHierarchy.isMethodOverriden(md)) {
+                        clonedMember = (MemberDescription) member.clone();
+                        clonedMember.removeModifier(Modifier.FINAL);
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            // end of fix
         }
 
         if (BINARY_MODE.equals(mode) && member.isMethod() && member.hasModifier(Modifier.STATIC) && member.hasModifier(Modifier.FINAL)) {
@@ -1069,8 +1145,6 @@ public class SignatureTest extends SigTest {
         //       the third parameter is null in this case
         String name = parentReq.getQualifiedName();
 
-        checkAnnotations(required, found);
-
         if (required != null) {
             required = transformMember(parentReq, required);
         }
@@ -1081,6 +1155,8 @@ public class SignatureTest extends SigTest {
 
         if (required != null && found != null) {
 
+            checkAnnotations(required, found);
+
             // element matching is basically equality of the signature.
             // the signature can be changed depending on the particular
             // levels of enforcement being used (e.g. include constant values
@@ -1090,7 +1166,7 @@ public class SignatureTest extends SigTest {
                 return;                  // OK
 
             // one way constant checking if constant values don't match
-            if (isOneWayConstantChecking && required.isField()) {
+            if (isOneWayConstantChecking && required.isField() ) {
 
                 assert found.isField();
 
@@ -1166,23 +1242,35 @@ public class SignatureTest extends SigTest {
         if (baseAnnotList.length == 0 && testAnnotList.length == 0)
             return;
 
-        int minLen = Math.min(baseAnnotList.length, testAnnotList.length);
-        int maxLen = Math.max(baseAnnotList.length, testAnnotList.length);
-
         // NOTE: getAnnoList() always returns sorted annotations array!
 
-        for (int i = 0; i < maxLen; ++i) {
-            if (i < minLen) {
-                if (baseAnnotList[i].compareTo(testAnnotList[i]) != 0) {
-                    reportError(base, baseAnnotList[i].toString(), false);
-                    reportError(test, testAnnotList[i].toString(), true);
-                }
+        int bl = baseAnnotList.length;
+        int tl = testAnnotList.length;
+        int bPos = 0;
+        int tPos = 0;
+
+        while ((bPos < bl) && (tPos < tl)) {
+            int comp = baseAnnotList[bPos].compareTo(testAnnotList[tPos]);
+            if (comp < 0) {
+                reportError(base, baseAnnotList[bPos].toString(), false);
+                bPos++;
             } else {
-                if (i < baseAnnotList.length)
-                    reportError(base, baseAnnotList[i].toString(), false);
-                if (i < testAnnotList.length)
-                    reportError(test, testAnnotList[i].toString(), true);
+                if (comp > 0) {
+                    reportError(test, testAnnotList[tPos].toString(), true);
+                    tPos++;
+                } else {
+                    tPos++;
+                    bPos++;
+                }
             }
+        }
+        while (bPos < bl) {
+            reportError(base, baseAnnotList[bPos].toString(), false);
+            bPos++;
+        }
+        while (tPos < tl) {
+            reportError(test, testAnnotList[tPos].toString(), true);
+            tPos++;
         }
     }
 

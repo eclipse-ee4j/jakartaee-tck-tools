@@ -40,7 +40,7 @@ import java.util.Set;
  * field, or method, or constructor, or nested class or interface. It contains
  * all modifiers, type for field or returned type for method, name, types of
  * method's or constructor's arguments, and declared exceptions. It does not keep
- * any ``<i><b>extends</b></i> ...'' nor ``<i><b>implements</b></i> ...''
+ * any ``<I><b>extends</b></I> ...'' nor ``<I><b>implements</b></I> ...''
  * information for nested class.
  *
  * @author Maxim Sokolnikov
@@ -103,7 +103,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     String args = NO_ARGS;
 
     /**
-     * Contains <i><b>throws</b></i> clause, if <code>this</code> item
+     * Contains <I><b>throws</b></I> clause, if <code>this</code> item
      * describes some method or constructor. in form: throws t,t,...t
      * null value not allowed!
      */
@@ -116,7 +116,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     /**
      * Sort of entity referred by <code>this</code> item. It should be either field,
      * or method, or constructor, or class or inner class, or interface being
-     * implemented by some class, or <i>superclass</i> being extended by some class.
+     * implemented by some class, or <I>superclass</I> being extended by some class.
      *
      * @see #isField()
      * @see #isMethod()
@@ -169,7 +169,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
 
     /**
      * Check if <code>this</code> item describes superclass for some class.
-     * (I.e., check if <code>this</code> describes ``<i><b>extends</b></i> ...''
+     * (I.e., check if <code>this</code> describes ``<I><b>extends</b></I> ...''
      * suffix for some <b>ClassDescription</b>.)
      */
     public boolean isSuperClass() {
@@ -179,7 +179,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     /**
      * Check if <code>this</code> item describes interface class for some class.
      * (I.e., check if <code>this</code> describes some of interface name(s) in
-     * ``<i><b>implements</b></i> ...'' suffix for some <b>ClassDescription</b>.)
+     * ``<I><b>implements</b></I> ...'' suffix for some <b>ClassDescription</b>.)
      */
     public boolean isSuperInterface() {
         return false;
@@ -314,7 +314,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
 
     /**
      * Returns list of exception names separated by commas declared
-     * in the <i><b>throws</b></i> clause for that method or constructor
+     * in the <I><b>throws</b></I> clause for that method or constructor
      * described by <code>this</code> item.
      *
      */
@@ -425,16 +425,14 @@ public abstract class MemberDescription implements Cloneable, Serializable {
 
         else if (value instanceof Float) {
             Float f = (Float) value;
-            String s = f.toString();
+            return f.toString();
 //            if (!f.isNaN() && !f.isInfinite())
 //                s += "f";
-            return s;
         } else if (value instanceof Double) {
             Double d = (Double) value;
-            String s = d.toString();
+            return d.toString();
 //            if (!d.isNaN() && !d.isInfinite())
 //                s += "d";
-            return s;
         } else // boolean, byte, short, int
             return value.toString();
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: SwissKnife.java 4516 2008-03-17 18:48:27Z eg216457 $
+ * $Id: Test.java 4504 2008-03-13 16:12:22Z sg215604 $
  *
  * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -25,25 +25,41 @@
  * have any questions.
  */
 
-package com.sun.tdk.signaturetest.util;
+package com.sun.tdk.signaturetest;
 
-public class SwissKnife {
+import java.io.PrintWriter;
+
+/**
+ * This is a simple wrapper for SignatureTest class that implements
+ * required by JavaTest interface.
+ *
+ * @author Serguei Ivashin
+ *
+ * @test
+ * @executeClass com.sun.tdk.signaturetest.Test
+ */
+public class Test implements com.sun.javatest.Test {
 
     /**
-     * Determines whether the object <code>x</code> is equal to
-     * object <code>y</code>. If (<code>x</code> == <code>null</code>) and
-     * (<code>y</code> == <code>null</code>) the result is true.
-     *
-     * @param x - first comparable object, may by <code>null</code>
-     * @param y - second comparable object, may by <code>null</code>
-     * @return true if x equal to y
+     * Run the test using command-line; return status via numeric exit code.
      */
-    public static boolean equals(Object x, Object y) {
-        if (x == null)
-            return y == null;
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.run(args, new PrintWriter(System.err, true), new PrintWriter(System.out, true)).exit();
+    }
 
-        return x.equals(y);
+
+    /**
+     * This is the gate to run the test with the JavaTest application.
+     *
+     * @param log This log-file is used for error messages.
+     * @param ref This reference-file is ignored here.
+     */
+    public com.sun.javatest.Status run(String[] args, PrintWriter log, PrintWriter ref) {
+
+        SignatureTest t = SignatureTest.getInstance();
+        t.run(args, log, ref);
+        return com.sun.javatest.Status.parse(t.toString().substring(7));
     }
 
 }
-

@@ -133,7 +133,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         Reader in = FileManager.getReader(fileURL);
 
         if (in == null) {
-            msg = i18n.getString("MultipleFileReader.error.sigreader.missing", fileURL);
             return false;
         } else {
             try {

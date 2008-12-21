@@ -1,5 +1,5 @@
 /*
- * $Id: SortedErrorFormatter.java 4504 2008-03-13 16:12:22Z sg215604 $
+ * $Id$
  *
  * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -88,7 +88,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
             MemberDescription[] items = tested.getInterfaces();
             if (items != null)
                 for (int i = 0; i < items.length; i++) {
-                    //System.err.println("-interface "+tested.getName()+" "+items[i].getName());
+                    //System.err.println("-interface "+tested.getName()+" "+items[I].getName());
                     getTestedsuper().put(tested.getQualifiedName(), items[i].getQualifiedName());
                 }
         }
@@ -103,7 +103,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
     public void addError(MessageType kind, String className, MemberType type, String def, String tail, MemberDescription errorObject) {
         Message c =createError(kind, className, type, def, tail, errorObject);
         failedMessages.add(c);
-        if (!kind.isWarning()) size++;
+        if (!kind.isWarning()) numErrors++;
     }
 
     
@@ -171,7 +171,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
                     if (comp == 0) {
                         comp = m1.definition.compareTo(m2.definition);
                         if (comp == 0) {
-                            if (m1.tail != null && m1.tail != null)
+                            if (m1.tail != null && m2.tail != null)
                                 comp = m1.tail.compareTo(m2.tail);
                             else {
                                 if (m1.tail == null)
@@ -254,7 +254,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
                                 v.set(k, msgi);
                                 v.set(i, msgk);
                                 flag = true;
-                                //System.out.println("swap "+i+" "+k);
+                                //System.out.println("swap "+I+" "+k);
                                 continue rep;
                             }
                         }

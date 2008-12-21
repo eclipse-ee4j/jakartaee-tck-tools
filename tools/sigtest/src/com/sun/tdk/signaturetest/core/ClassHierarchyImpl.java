@@ -28,10 +28,7 @@
 package com.sun.tdk.signaturetest.core;
 
 import com.sun.tdk.signaturetest.SigTest;
-import com.sun.tdk.signaturetest.model.ClassDescription;
-import com.sun.tdk.signaturetest.model.Modifier;
-import com.sun.tdk.signaturetest.model.SuperClass;
-import com.sun.tdk.signaturetest.model.SuperInterface;
+import com.sun.tdk.signaturetest.model.*;
 import com.sun.tdk.signaturetest.plugin.Filter;
 import com.sun.tdk.signaturetest.plugin.PluginAPI;
 import com.sun.tdk.signaturetest.plugin.Transformer;
@@ -167,6 +164,18 @@ public class ClassHierarchyImpl implements ClassHierarchy {
         return load(name, false);
     }
 
+    public boolean isMethodOverriden(MethodDescr md) throws ClassNotFoundException {
+        Erasurator erasurator = new Erasurator();
+        MethodOverridingChecker moc = new MethodOverridingChecker(erasurator);
+        List scs = getSuperClasses(md.getDeclaringClassName());
+        Iterator it = scs.iterator();
+        while(it.hasNext()) {
+            ClassDescription sc = load((String)it.next());
+            moc.addMethods(sc.getDeclaredMethods());
+        }
+        return moc.getOverridingMethod(md, false) != null;        
+    }
+
     private ClassDescription load(String name, boolean no_cache) throws ClassNotFoundException {
         ClassDescription c = loader.load(name);
 
@@ -262,6 +271,11 @@ public class ClassHierarchyImpl implements ClassHierarchy {
     public boolean isInterface(String fqClassName) throws ClassNotFoundException {
         ClassInfo info = getClassInfo(fqClassName);
         return Modifier.hasModifier(info.modifiers, Modifier.INTERFACE);
+    }
+
+    public boolean isAnnotation(String fqClassName) throws ClassNotFoundException {
+        ClassInfo info = getClassInfo(fqClassName);
+        return Modifier.hasModifier(info.modifiers, Modifier.ANNOTATION);
     }
 
     public int getClassModifiers(String fqClassName) throws ClassNotFoundException {
@@ -369,6 +383,7 @@ public class ClassHierarchyImpl implements ClassHierarchy {
             return isAccessible(cls);
         }
     }
+
 }
 
 

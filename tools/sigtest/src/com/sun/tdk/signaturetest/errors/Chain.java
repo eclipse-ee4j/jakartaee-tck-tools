@@ -1,5 +1,5 @@
 /*
- * $Id: SwissKnife.java 4516 2008-03-17 18:48:27Z eg216457 $
+ * $Id$
  *
  * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -25,25 +25,45 @@
  * have any questions.
  */
 
-package com.sun.tdk.signaturetest.util;
+package com.sun.tdk.signaturetest.errors;
 
-public class SwissKnife {
+import java.util.List;
+import java.util.TreeSet;
 
-    /**
-     * Determines whether the object <code>x</code> is equal to
-     * object <code>y</code>. If (<code>x</code> == <code>null</code>) and
-     * (<code>y</code> == <code>null</code>) the result is true.
-     *
-     * @param x - first comparable object, may by <code>null</code>
-     * @param y - second comparable object, may by <code>null</code>
-     * @return true if x equal to y
-     */
-    public static boolean equals(Object x, Object y) {
-        if (x == null)
-            return y == null;
 
-        return x.equals(y);
+/**
+ *
+ * @author Sergey Glazyrin
+ * @author Mikhail Ershov
+ */
+class Chain {
+
+    private List mainList;
+    private TreeSet processedMessages;
+    private TreeSet newMessages;
+
+    void setMessageProcessed(ErrorFormatter.Message m) {
+        processedMessages.add(m);
     }
 
-}
+    void finishProcessing() {
+        mainList.removeAll(processedMessages);
+        processedMessages.clear();
+        mainList.addAll(newMessages);
+        newMessages.clear();
+    }
 
+    void addMessage(ErrorFormatter.Message newM) {
+        newMessages.add(newM);
+    }
+
+    Chain(List failedMessages) {
+        mainList = failedMessages;
+        processedMessages = new TreeSet();
+        newMessages = new TreeSet();
+    }
+
+    public void setMessagesProcessed(List l) {
+        processedMessages.addAll(l);
+    }
+}

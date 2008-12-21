@@ -38,6 +38,10 @@ public class Result {
 
     static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Result.class);
 
+    // Name of system property, see exit method
+    public final static String NO_EXIT = "SigTest.NO_EXIT";
+
+
     private int type = NOT_RUN;
     private String reason;
 
@@ -99,12 +103,21 @@ public class Result {
         return reason;
     }
 
-    protected void exit() {
+    protected boolean exit() {
         if (System.err != null) {
             System.err.println(toString());
             System.err.flush();
         }
-        System.exit(exitCodes[type]);
-    }
+        // for unit-tests and mass runs
 
+        // Don't change this to if(Boolean.parseBoolean(System.getProperty(NO_EXIT))) {
+        // because Boolean.parseBoolean is since 1.5 
+        if(new Boolean(System.getProperty(NO_EXIT)).booleanValue()) {
+            return isPassed();
+        } else {
+            System.exit(exitCodes[type]);
+            return false; // never happens
+        }
+
+    }
 }

@@ -322,7 +322,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
         typeparamList.reset_count();
 
         for (int i = 0; i < params.length; i++) {
-            //System.out.println("TYPEPARAM " + params[i].getName() + "  " + declared);
+            //System.out.println("TYPEPARAM " + params[I].getName() + "  " + declared);
             typeparamList.add(params[i].getName(), declared);
         }
 

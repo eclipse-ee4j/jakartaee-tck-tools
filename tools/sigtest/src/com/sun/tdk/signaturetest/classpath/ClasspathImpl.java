@@ -116,7 +116,7 @@ public class ClasspathImpl implements Classpath {
     private Iterator iterator;
 
     /**
-     * <i>Current</i> directory or zip-file entry, containing <i>current</i>
+     * <I>Current</I> directory or zip-file entry, containing <I>current</I>
      * class. This field is used to organize transparent enumeration of all
      * classes found by this <b>ClasspathImpl</b> instance.
      *

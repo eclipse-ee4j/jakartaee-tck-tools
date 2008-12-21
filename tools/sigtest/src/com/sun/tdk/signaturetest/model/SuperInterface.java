@@ -46,9 +46,7 @@ public final class SuperInterface extends MemberDescription {
         if (!(o instanceof SuperInterface))
             return false;
 
-        SuperInterface superIntf = (SuperInterface) o;
-        
-        return name==((SuperInterface)o).name;
+        return name == ((SuperInterface)o).name;
     }
 
     public int hashCode() {

@@ -94,7 +94,7 @@ public class I18NResourceBundle extends ResourceBundle
             StringBuffer sb = new StringBuffer(key);
             for (int i = 0; i < args.length; i++) {
                 sb.append('\n');
-                sb.append(args.toString());
+                sb.append(args[i].toString());
             }
             return sb.toString();
         }

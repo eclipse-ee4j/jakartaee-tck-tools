@@ -1,5 +1,5 @@
 /*
- * $Id: ErrorFormatter.java 4504 2008-03-13 16:12:22Z sg215604 $
+ * $Id$
  *
  * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -29,9 +29,9 @@ package com.sun.tdk.signaturetest.errors;
 
 import com.sun.tdk.signaturetest.model.MemberDescription;
 import com.sun.tdk.signaturetest.model.MemberType;
-import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.PrintWriter;
+import java.util.logging.Level;
 
 
 /**
@@ -39,16 +39,15 @@ import java.io.PrintWriter;
  * <b>APIChangesTest</b>. This class prints messages using the ``plain'' format
  * without any sorting and grouping of error messages.
  *
- * @version 05/03/22
  * @author Maxim Sokolnikov
  * @author Mikhail Ershov
+ * @version 05/03/22
  */
 public class ErrorFormatter {
-    
+
     // this string is not used in output
     public static final String annoAdded = "Added Annotations",
             annoMissed = "Missed Annotations";
-
 
 
     /**
@@ -59,7 +58,12 @@ public class ErrorFormatter {
     /**
      * Number of added errors.
      */
-    int size;
+    protected int numErrors;
+
+    /**
+     * Number of added warnings.
+     */
+    protected int numWarnings;
 
     /**
      * Assign new <b>ErrorFormatter</b> to the given <b>PrintWriter</b>.
@@ -71,22 +75,20 @@ public class ErrorFormatter {
 
     /**
      * Print new error message, and increment errors counter.
-     *
      */
     public void addError(MessageType kind, String className, MemberType type, String def, MemberDescription errorObject) {
         addError(kind, className, type, def, null, errorObject);
-    }    
+    }
 
-    
+
     public void addError(MessageType kind, String className, MemberType type, String def, String tail, MemberDescription errorObject) {
         out.println(createError(kind, className, type, def, tail, errorObject));
-        if (!kind.isWarning()) size++;
+        if (!kind.isWarning()) numErrors++;
     }
 
 
     /**
      * Create new error message.
-     *
      */
     protected Message createError(MessageType kind, String className, MemberType type, String def, String tail, MemberDescription errorObject) {
         return new Message(kind, className, def, tail, errorObject);
@@ -104,9 +106,16 @@ public class ErrorFormatter {
      * Return number of found errors.
      */
     public int getNumErrors() {
-        return size;
+        return numErrors;
     }
-    
+
+    /**
+     * Return number of found warnings.
+     */
+    public int getNumWarnings() {
+        return numWarnings;
+    }
+
     /**
      * This class formats some error message reported by
      * <b>SignatureTest</b> or other similar tests.
@@ -115,9 +124,8 @@ public class ErrorFormatter {
 
         /**
          * Message templates for different error types.
-         *
          */
-        
+
         public MemberDescription errorObject;
 
         /**
@@ -128,7 +136,7 @@ public class ErrorFormatter {
         /**
          * Class or class member affected by <code>this</code> error message.
          */
-        public String definition;        
+        public String definition;
 
         /**
          * The tail to append to <code>this</code> error message.
@@ -140,18 +148,18 @@ public class ErrorFormatter {
          */
         public MessageType messageType;
 
+        private Level level = Level.SEVERE;
+
+
         /**
          * Create new error message.
-         *
          */
-
         public Message(MessageType error, String className, String definition, String tail, MemberDescription errorObject) {
             this.messageType = error;
             this.className = className;
             this.definition = (definition == null) ? "" : definition;
             this.tail = (tail == null) ? "" : tail;
             this.errorObject = errorObject;
-            
         }
 
 
@@ -172,8 +180,9 @@ public class ErrorFormatter {
                 comp = this.className.compareTo(ob.className);
                 if (comp == 0)
                     comp = (getShortName(this.definition)).compareTo(getShortName(ob.definition));
-	    }
-            return comp;
+                return comp;
+            } else
+                return ob.messageType.compareTo(this.messageType);
         }
 
         /**
@@ -194,6 +203,14 @@ public class ErrorFormatter {
         public String toString() {
             String retVal = messageType.getLocMessage();
             return retVal + " " + className + "\n    " + definition + tail;
+        }
+
+        public Level getLevel() {
+            return level;
+        }
+
+        public void setLevel(Level level) {
+            this.level = level;
         }
     }
 }

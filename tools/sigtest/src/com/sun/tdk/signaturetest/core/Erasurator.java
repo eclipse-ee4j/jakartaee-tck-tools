@@ -40,10 +40,10 @@ import java.util.regex.Pattern;
  * Type erasure is a mapping from types (possibly including parameterized types and
  * type variables) to types (that are never parameterized types or type variables). We
  * write |T| for the erasure of type T. The erasure mapping is defined as follows.
- * <li>The erasure of a parameterized type (p4.5) G&lt;T1, ... ,Tn&gt; is |G|.</li>
+ * <li>The erasure of a parameterized type (p3.5) G&lt;T1, ... ,Tn&gt; is |G|.</li>
  * <li>The erasure of a nested type T.C is |T|.C.</li>
  * <li>The erasure of an array type T[] is |T|[].</li>
- * <li>The erasure of a type variable (p4.4) is the erasure of its leftmost bound.</li>
+ * <li>The erasure of a type variable (p3.4) is the erasure of its leftmost bound.</li>
  * <li>The erasure of every other type is the type itself.
  * The erasure of a method signature s is a signature consisting of the same
  * name as s, and the erasures of all the formal parameter types given in s.</li>

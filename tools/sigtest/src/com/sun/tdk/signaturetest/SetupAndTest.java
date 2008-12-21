@@ -48,8 +48,8 @@ import java.util.List;
 public class SetupAndTest extends Result {
 
     // specific SetupAndTest options
-    public static final String REFERENCE_OPTION = "-reference";
-    public static final String TEST_OPTION = "-test";
+    public static final String REFERENCE_OPTION = "-Reference";
+    public static final String TEST_OPTION = "-Test";
 
     // Sets of command line options for:
     private final List setupOptions = new ArrayList();
@@ -92,8 +92,17 @@ public class SetupAndTest extends Result {
 
         parser.addOption(SigTest.CLASSCACHESIZE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(SigTest.FORMATPLAIN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
+        parser.addOption(SigTest.FORMATHUMAN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(SigTest.FORMATHUMAN_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
+        parser.addOption(SigTest.BACKWARD_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(SigTest.BACKWARD_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
         parser.addOption(SignatureTest.CHECKVALUE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(SignatureTest.NOCHECKVALUE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
+        parser.addOption(SignatureTest.MODE_OPTION, OptionInfo.option(1), optionsDecoder);
 
         parser.addOption(SigTest.VERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
@@ -135,11 +144,9 @@ public class SetupAndTest extends Result {
             log.println(i18n.getString("SetupAndTest.message.invoke.sigtest"));
             SignatureTest sigtest = new SignatureTest();
             sigtest.run((String[]) testOptions.toArray(new String[testOptions.size()]), log, ref);
-            sigtest.exit();
+            return sigtest.exit();
         } else
-            setup.exit();
-
-        return false; // never reached
+            return setup.exit();
     }
 
     private void addOption(List options, String optionName, String optionValue) {
@@ -183,7 +190,15 @@ public class SetupAndTest extends Result {
 
             addOption(testOptions, optionName, args[0]);
 
+        } else if (optionName.equalsIgnoreCase(SignatureTest.MODE_OPTION)) {
+
+            addOption(testOptions, optionName, args[0]);
+
         } else if (optionName.equalsIgnoreCase(SigTest.FORMATPLAIN_OPTION) ||
+                optionName.equalsIgnoreCase(SigTest.FORMATHUMAN_OPTION) ||
+                optionName.equalsIgnoreCase(SigTest.FORMATHUMAN_ALT_OPTION) ||
+                optionName.equalsIgnoreCase(SigTest.BACKWARD_OPTION) ||
+                optionName.equalsIgnoreCase(SigTest.BACKWARD_ALT_OPTION) ||
                 optionName.equalsIgnoreCase(SignatureTest.CHECKVALUE_OPTION)) {
 
             addFlag(testOptions, optionName);
@@ -201,22 +216,30 @@ public class SetupAndTest extends Result {
 
         sb.append(i18n.getString("SetupAndTest.usage.version", Version.Number));        
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.start"));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.reference", REFERENCE_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.test", TEST_OPTION));
+        sb.append(nl).append(i18n.getString("SetupAndTest.usage.package", SigTest.PACKAGE_OPTION));
+        sb.append(nl).append(i18n.getString("SetupAndTest.usage.out", SigTest.OUT_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.backward", new Object[]{SigTest.BACKWARD_OPTION, SigTest.BACKWARD_ALT_OPTION}));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.human", new Object[]{SigTest.FORMATHUMAN_OPTION, SigTest.FORMATHUMAN_ALT_OPTION}));
+
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        
 
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.filename", Setup.FILENAME_OPTION));
-        sb.append(nl).append(i18n.getString("SetupAndTest.usage.package", SigTest.PACKAGE_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.packagewithoutsubpackages", SigTest.WITHOUTSUBPACKAGES_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.exclude", SigTest.EXCLUDE_OPTION));
 
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.verbose", Setup.VERBOSE_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.checkvalue", Setup.CHECKVALUE_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.mode", SignatureTest.MODE_OPTION));
 
-        sb.append(nl).append(i18n.getString("SetupAndTest.usage.out", SigTest.OUT_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.formatplain", SigTest.FORMATPLAIN_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.classcachesize", new Object[]{SigTest.CLASSCACHESIZE_OPTION, new Integer(SigTest.DefaultCacheSize)}));
-
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.help", SigTest.HELP_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
 
         System.err.println(sb.toString());
     }

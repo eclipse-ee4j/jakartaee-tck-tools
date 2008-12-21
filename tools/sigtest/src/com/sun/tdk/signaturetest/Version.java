@@ -28,6 +28,6 @@
 package com.sun.tdk.signaturetest;
 
 class Version{
-  public static final String Number="1.5.2";
+  public static final String Number="2.1";
 }	    
 	    

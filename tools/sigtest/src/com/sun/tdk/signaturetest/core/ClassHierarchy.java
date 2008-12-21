@@ -28,6 +28,7 @@
 package com.sun.tdk.signaturetest.core;
 
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MethodDescr;
 
 import java.util.List;
 import java.util.Set;
@@ -56,6 +57,8 @@ public interface ClassHierarchy extends  ClassDescriptionLoader {
 
     boolean isInterface(String fqClassName) throws ClassNotFoundException;
 
+    boolean isAnnotation(String fqClassName) throws ClassNotFoundException;
+
     int getClassModifiers(String fqClassName) throws ClassNotFoundException;
 
     boolean isSubclass(String subClassName, String superClassName) throws ClassNotFoundException;
@@ -72,4 +75,6 @@ public interface ClassHierarchy extends  ClassDescriptionLoader {
     boolean isClassVisibleOutside(ClassDescription cls) throws ClassNotFoundException;    
 
     int getTrackMode();
+
+    boolean isMethodOverriden(MethodDescr md) throws ClassNotFoundException;
 }
