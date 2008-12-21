@@ -146,6 +146,9 @@ public final class Sigtest extends Task {
             arg.add("-static");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
+            arg.add("-static");
+            arg.add("-b");
+            strictcheck = true;
         } else if (action.getValue().equals("binarycheck")) {
             arg.add("-extensibleinterfaces");
         } else if (action.getValue().equals("strictcheck")) {
