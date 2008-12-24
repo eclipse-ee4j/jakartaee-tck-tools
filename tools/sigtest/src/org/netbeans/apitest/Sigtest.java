@@ -148,6 +148,7 @@ public final class Sigtest extends Task {
             // no special arg for check
             arg.add("-static");
             arg.add("-b");
+            addBootCP = true;
             strictcheck = true;
         } else if (action.getValue().equals("binarycheck")) {
             arg.add("-extensibleinterfaces");
