@@ -33,7 +33,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -199,10 +201,33 @@ public final class Sigtest extends Task {
                 if (!lib.exists()) {
                     throw new BuildException("Missing " + lib + "/rt.jar");
                 }
+                Set<File> candidates = new HashSet<File>();
                 for (File f : lib.listFiles()) {
                     if (f.getName().endsWith(".jar")) {
-                        sb.append(File.pathSeparator).append(f);
+                        try {
+                            candidates.add(f.getCanonicalFile());
+                        } catch (IOException ex) {
+                            log(ex.getMessage(), Project.MSG_ERR);
+                        }
                     }
+                }
+                String bootCP = System.getProperty("sun.boot.class.path");
+                if (bootCP != null) {
+                    for (String c : bootCP.split(File.pathSeparator)) {
+                        try {
+                            final File f = new File(c).getCanonicalFile();
+                            if (f.isFile()) {
+                                candidates.add(f);
+                            }
+                        } catch (IOException ex) {
+                            log(ex.getMessage(), Project.MSG_ERR);
+                        }
+                    }
+                } else {
+                    log("No sun.boot.class.path property defined!", Project.MSG_ERR);
+                }
+                for (File f : candidates) {
+                    sb.append(File.pathSeparator).append(f);
                     if ("rt.jar".equals(f.getName())) {
                         rtJAR = true;
                     }
@@ -210,6 +235,7 @@ public final class Sigtest extends Task {
                 if (!rtJAR) {
                     log("Missing " + lib + "/rt.jar");
                 }
+                log("Using bootclasspath: " + sb, Project.MSG_VERBOSE);
             }
             arg.add("-Classpath");
             arg.add(sb.toString());
