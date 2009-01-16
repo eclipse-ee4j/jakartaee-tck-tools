@@ -144,6 +144,7 @@ public final class Sigtest extends Task {
             generate = true;
             addBootCP = true;
             arg.add("-static");
+            arg.add("-errorall");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
             arg.add("-static");
