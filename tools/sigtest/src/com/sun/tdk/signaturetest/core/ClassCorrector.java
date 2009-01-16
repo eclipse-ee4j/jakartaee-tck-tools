@@ -1,7 +1,7 @@
 /*
  * $Id: ClassCorrector.java 4504 2008-03-13 16:12:22Z sg215604 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -161,10 +161,10 @@ public class ClassCorrector implements Transformer {
             } while (pos != -1);
 
             if (mustCorrect) {
-                if (verboseCorrector) {
+//                if (verboseCorrector) {
                     String invargs[] = {mr.getQualifiedName(), throwables, sb.toString()};
-                    pw.println(i18n.getString("ClassCorrector.message.throwslist.changed", invargs));
-                }
+                    log.storeWarning(i18n.getString("ClassCorrector.message.throwslist.changed", invargs));
+//                }
 
                 mr.setThrowables(sb.toString());
             }
@@ -278,15 +278,15 @@ public class ClassCorrector implements Transformer {
 
                 mr.setType(newName);
 
-                if (verboseCorrector) {
+//                if (verboseCorrector) {
                     if (!mr.isField()) {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        pw.println(i18n.getString("ClassCorrector.message.returntype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.returntype.changed", invargs));
                     } else {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        pw.println(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs));
                     }
-                }
+//                }
             } else {
                 if (!mr.isField()) {
                     String invargs[] = {returnType, mr.toString()};

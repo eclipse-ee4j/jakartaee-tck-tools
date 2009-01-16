@@ -1,7 +1,7 @@
 /*
  * $Id: SignatureTest.java 4549 2008-03-24 08:03:34Z me155718 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -635,17 +635,20 @@ public class SignatureTest extends SigTest {
 
         builder = new MemberCollectionBuilder(this);
 
+        signatureClassesHierarchy = new ClassHierarchyImpl(in, trackMode);
+
+
         // creates ErrorFormatter.
         if ((outFormat != null) && FORMAT_PLAIN.equals(outFormat))
             errorManager = new ErrorFormatter(log);
         else
             if ((outFormat != null) && FORMAT_HUMAN.equals(outFormat))
-                errorManager = new HumanErrorFormatter(log, isVerbose, 
+                errorManager = new HumanErrorFormatter(log, isVerbose,
                         reportWarningAsError ? Level.WARNING : Level.SEVERE );
         else
             if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
                 errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
-                        classHierarchy,
+                        classHierarchy, signatureClassesHierarchy,
                         reportWarningAsError ? Level.WARNING : Level.SEVERE );
         else
             errorManager = new SortedErrorFormatter(log, isVerbose);
@@ -664,8 +667,6 @@ public class SignatureTest extends SigTest {
         Erasurator erasurator = new Erasurator();
 
         try {
-
-            signatureClassesHierarchy = new ClassHierarchyImpl(in, trackMode);
 
             // check that set of classes is transitively closed
             ClassSet closedSet = new ClassSet(signatureClassesHierarchy, true);
@@ -764,7 +765,6 @@ public class SignatureTest extends SigTest {
             return error(msg);
         }
 
-        in.close();
 
         //  Finished - the sigfile closed.
 
@@ -787,6 +787,7 @@ public class SignatureTest extends SigTest {
         if (isVerbose) System.out.println(repmsg);
 
         int errors = errorManager.getNumErrors() + auxErrorCount;
+        in.close();
         if (errors == 0)
             return passed();
         else

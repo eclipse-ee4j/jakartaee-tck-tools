@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,15 +45,16 @@ import java.util.logging.Level;
 public class BCProcessor extends HumanErrorFormatter {
     // is it bin mode?
     private boolean bin;
-    private ClassHierarchy clHier;
+    private ClassHierarchy clHier, sfHier;
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(BCProcessor.class);
     /**
      * Assign the given <b>PrintWriter</b> to print error messages.
      */
-    public BCProcessor(PrintWriter out, boolean isv, boolean binMode, ClassHierarchy classHierarchy, Level l) {
+    public BCProcessor(PrintWriter out, boolean isv, boolean binMode, ClassHierarchy classHierarchy, ClassHierarchy sigFileClassHierarchy, Level l) {
         super(out, isv, l);
         this.bin = binMode;
         this.clHier = classHierarchy;
+        this.sfHier = sigFileClassHierarchy;
     }
 
     protected Handler constructHandlerChain() {
@@ -182,7 +183,7 @@ public class BCProcessor extends HumanErrorFormatter {
                     (m.messageType == MessageType.MISS_METHS);
 
             if (retval && m.errorObject.isProtected()) {
-                if (!canBeSubclassed(m.className, clHier)) {
+                if (!canBeSubclassed(m.className, sfHier)) {
                     retval = false;
                 }
             }
@@ -414,8 +415,11 @@ public class BCProcessor extends HumanErrorFormatter {
         protected boolean proc() {
             if (!meth1.getType().equals(meth2.getType())
                     || !meth1.getSignature().equals(meth2.getSignature())) {
-                newM.definition = i18n.getString("BCProcessor.error.3_1"); //"E3.1 - Changing method signature and/or return type";
-                return true;
+
+                if (!isAssignableTo(meth1.getType(), meth2.getType(), sfHier)) {
+                    newM.definition = i18n.getString("BCProcessor.error.3_1"); //"E3.1 - Changing method signature and/or return type";
+                    return true;
+                }
             }
             return false;
         }
@@ -465,7 +469,7 @@ public class BCProcessor extends HumanErrorFormatter {
 
         protected boolean proc() {
             boolean problem = meth1.isProtected() && meth2.isPublic() && !meth1.isFinal();
-            if (problem && !bin && canBeSubclassed(me1.className, clHier)) {
+            if (problem && !bin && canBeSubclassed(me1.className, sfHier)) {
                 newM.definition = i18n.getString("BCProcessor.error.3_6"); //"W3.6 - Increase access, from protected to public if the class is subclassable";
                 setMessageLevel(newM);
                 return true;
@@ -477,9 +481,11 @@ public class BCProcessor extends HumanErrorFormatter {
     class Rule3_8 extends MethodPairedHandler {
         protected boolean proc() {
             if (!meth1.isAbstract() && meth2.isAbstract()) {
-                newM.definition = i18n.getString("BCProcessor.error.3_8"); //"E3.8 - Changing method from non-abstract to abstract";
-                setMessageLevel(newM);
-                return true;
+                if (canBeSubclassed(me1.className, sfHier)) {
+                    newM.definition = i18n.getString("BCProcessor.error.3_8"); //"E3.8 - Changing method from non-abstract to abstract";
+                    setMessageLevel(newM);
+                    return true;
+                }
             }
             return false;
         }
@@ -488,7 +494,7 @@ public class BCProcessor extends HumanErrorFormatter {
     class Rule3_10 extends MethodPairedHandler {
         protected boolean proc() {
             if (!meth1.isFinal() && meth2.isFinal()) {
-                if (canBeSubclassed(me1.className, clHier)) {
+                if (canBeSubclassed(me1.className, sfHier)) {
                     newM.definition = i18n.getString("BCProcessor.error.3_10"); //"E3.10 - Changing method from non-final to final";
                     setMessageLevel(newM);
                     return true;
@@ -691,17 +697,19 @@ public class BCProcessor extends HumanErrorFormatter {
                 ClassDescription cd = clHier.load(m.className);
                 MethodDescr md = (MethodDescr) m.errorObject;
 
-                if (md.isAbstract()) {
-                    m.definition = i18n.getString("BCProcessor.error.5_2"); //"E5.2 - Adding abstract methods";
-                    ch.addMessage(m);
-                    setMessageLevel(m);
-                    return;
-                }
+                if(canBeSubclassed(m.className, sfHier)) {
+                    if (md.isAbstract()) {
+                        m.definition = i18n.getString("BCProcessor.error.5_2"); //"E5.2 - Adding abstract methods";
+                        ch.addMessage(m);
+                        setMessageLevel(m);
+                        return;
+                    }
 
-                if (md.isStatic() && !cd.hasModifier(Modifier.FINAL) && !bin) {
-                    m.definition = i18n.getString("BCProcessor.error.5_3"); // "E5.3 - Adding static methods";
-                    ch.addMessage(m);
-                    setMessageLevel(m);
+                    if (md.isStatic() && !cd.hasModifier(Modifier.FINAL) && !bin) {
+                        m.definition = i18n.getString("BCProcessor.error.5_3"); // "E5.3 - Adding static methods";
+                        ch.addMessage(m);
+                        setMessageLevel(m);
+                    }
                 }
 
 
@@ -776,9 +784,11 @@ public class BCProcessor extends HumanErrorFormatter {
         protected boolean proc() {
             // TODO - recheck enum can't be subclassed in jdk7
             if (!c1.isAbstract() && !c1.hasModifier(Modifier.ENUM) && c2.isAbstract()) {
-                newM.definition = i18n.getString("BCProcessor.error.5_12"); // "E5.12 - Changing class from non-abstract to abstract";
-                setMessageLevel(newM);
-                return true;
+                if (canBeSubclassed(c1.getQualifiedName(), sfHier)) {
+                    newM.definition = i18n.getString("BCProcessor.error.5_12"); // "E5.12 - Changing class from non-abstract to abstract";
+                    setMessageLevel(newM);
+                    return true;
+                }
             }
             return false;
         }

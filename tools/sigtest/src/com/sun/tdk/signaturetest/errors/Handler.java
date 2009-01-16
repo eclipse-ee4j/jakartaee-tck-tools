@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -126,8 +126,25 @@ abstract class Handler {
             return false;
         }
         return false;
-
     }
+
+    protected boolean isAssignableTo(String origType, String newType, ClassHierarchy clHier) {
+        if (origType.equals(newType))
+            return true;
+        try {
+            ClassDescription cd = clHier.load(newType);
+            SuperInterface[] ints = cd.getInterfaces();
+            for (int i = 0; i < ints.length; i++) {
+                if (origType.equals(ints[i].getQualifiedName()))
+                    return true;
+            }
+            return clHier.isSubclass(newType, origType);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+
 
     protected Level getLevel() {
         return level;
