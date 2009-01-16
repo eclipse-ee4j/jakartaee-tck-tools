@@ -134,7 +134,6 @@ public final class Sigtest extends Task {
         }
 
         boolean generate = false;
-        boolean strictcheck = false;
         boolean addBootCP = false;
         boolean onlySameVersion = false;
         List<String> arg = new ArrayList<String>();
@@ -145,21 +144,19 @@ public final class Sigtest extends Task {
             addBootCP = true;
             arg.add("-static");
             arg.add("-errorall");
-        } else if (action.getValue().equals("check")) {
+        } else if (action.getValue().equals("check") || action.getValue().equals("binarycheck")) {
             // no special arg for check
             arg.add("-static");
             arg.add("-b");
             addBootCP = true;
-            strictcheck = true;
-        } else if (action.getValue().equals("binarycheck")) {
-            arg.add("-extensibleinterfaces");
+            if (action.getValue().equals("binarycheck")) {
+                arg.add("-extensibleinterfaces");
+            }
         } else if (action.getValue().equals("strictcheck")) {
             addBootCP = true;
-            strictcheck = true;
             arg.add("-static");
         } else if (action.getValue().equals("versioncheck")) {
             addBootCP = true;
-            strictcheck = true;
             arg.add("-static");
             onlySameVersion = true;
         } else {
@@ -228,7 +225,7 @@ public final class Sigtest extends Task {
             Setup t = new Setup();
             t.run(args, w, null);
             returnCode = t.isPassed() ? 0 : 1;
-        } else if (strictcheck) {
+        } else {
             SignatureTest t = new SignatureTest();
             t.run(args, w, null);
             returnCode = t.isPassed() ? 0 : 1;
@@ -249,8 +246,6 @@ public final class Sigtest extends Task {
                     returnCode = 0;
                 }
             }
-        } else {
-            returnCode = Main.run(args, w, w).getType();
         }
         
         String mail = getProject().getProperty("sigtest.mail");

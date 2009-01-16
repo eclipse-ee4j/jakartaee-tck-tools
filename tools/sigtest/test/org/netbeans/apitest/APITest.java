@@ -47,10 +47,10 @@ public class APITest extends NbTestCase {
     public APITest(String s) {
         super(s);
     }
-    
+
     public static Test suite() {
         Test t = null;
-//        t = new APITest("testNoFailuresIfInXMLIf");
+//        t = new APITest("testAddMethodInAnInterfaceAllowedInSpecialMode");
         if (t == null) {
             t = new NbTestSuite(APITest.class);
         }
