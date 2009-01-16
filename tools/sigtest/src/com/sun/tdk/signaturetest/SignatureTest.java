@@ -167,6 +167,7 @@ public class SignatureTest extends SigTest {
 
     private String logName = null;
     private String outFormat = null;
+    private boolean extensibleInterfaces;
 
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(SignatureTest.class);
@@ -320,6 +321,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(FORMATHUMAN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(FORMATHUMAN_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(BACKWARD_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption("-extensibleInterfaces", OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(BACKWARD_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(DEBUG_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XNOTIGER_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -419,6 +421,8 @@ public class SignatureTest extends SigTest {
              outFormat = FORMAT_BACKWARD;
         } else if (optionName.equalsIgnoreCase(BACKWARD_ALT_OPTION)) {
              outFormat = FORMAT_BACKWARD;
+        } else if (optionName.equalsIgnoreCase("-extensibleinterfaces")) {
+             extensibleInterfaces = true;
         } else if (optionName.equalsIgnoreCase(VERBOSE_OPTION)) {
             isVerbose = true;
 
@@ -648,6 +652,7 @@ public class SignatureTest extends SigTest {
         else
             if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
                 errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
+                        extensibleInterfaces,
                         classHierarchy, signatureClassesHierarchy,
                         reportWarningAsError ? Level.WARNING : Level.SEVERE );
         else
