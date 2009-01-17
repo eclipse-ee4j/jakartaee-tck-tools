@@ -1,5 +1,7 @@
 /*
- * Copyright 1998-1999 Sun Microsystems, Inc.  All Rights Reserved.
+ * $Id$
+ *
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,37 +25,45 @@
  * have any questions.
  */
 
-package org.netbeans.apitest;
-	
-interface SignatureConstants {
-    static final String 
-        CLASS        = "CLSS ",
-        SUPER        = "supr ",
-        INTERFACE    = "intf ",
-        CONSTRUCTOR  = "cons ",
-        METHOD       = "meth ",
-        FIELD        = "fld  ",
-        // If the field is a primitive constants, then this modifier is added
-        // to the field definition.
-        PRIMITIVE_CONSTANT        = "constant",
-	INNER        = "innr ",
-	NATIVE       = "native",
-	SYNCHRONIZED = "synchronized",
-        TRANSIENT    = "transient",
-        FLAG_SUPER   = "flag_super",
-        // if the member is synthetic, then this modifier is added
-        // to the field definition.
-        SYNTHETIC    = "<synthetic>";
-    
+package com.sun.tdk.signaturetest.errors;
 
-    static final String[][] prefixes = {
-	{CLASS, "class "},
-	{SUPER, "superclass "},
-	{INTERFACE, "interface "},
-	{CONSTRUCTOR, "constructor "},
-	{METHOD, "method "},
-	{FIELD, "field "},
-	{PRIMITIVE_CONSTANT, "field "},
-	{INNER, "innerclass "},
-    };
+import java.util.List;
+import java.util.TreeSet;
+
+
+/**
+ *
+ * @author Sergey Glazyrin
+ * @author Mikhail Ershov
+ */
+class Chain {
+
+    private List mainList;
+    private TreeSet processedMessages;
+    private TreeSet newMessages;
+
+    void setMessageProcessed(ErrorFormatter.Message m) {
+        processedMessages.add(m);
+    }
+
+    void finishProcessing() {
+        mainList.removeAll(processedMessages);
+        processedMessages.clear();
+        mainList.addAll(newMessages);
+        newMessages.clear();
+    }
+
+    void addMessage(ErrorFormatter.Message newM) {
+        newMessages.add(newM);
+    }
+
+    Chain(List failedMessages) {
+        mainList = failedMessages;
+        processedMessages = new TreeSet();
+        newMessages = new TreeSet();
+    }
+
+    public void setMessagesProcessed(List l) {
+        processedMessages.addAll(l);
+    }
 }

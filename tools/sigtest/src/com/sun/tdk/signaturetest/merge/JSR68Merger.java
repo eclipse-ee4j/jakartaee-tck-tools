@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -211,12 +211,8 @@ public class JSR68Merger extends FeaturesHolder {
             return false;
         }
 
-        if (!mergeInterfaces(similarClasses, result)) {
-            return false;
-        }
+        return mergeInterfaces(similarClasses, result);
 
-
-        return true;
     }
 
     private boolean merge2(ClassDescription[] similarClasses, ClassDescription result) {
@@ -413,7 +409,7 @@ public class JSR68Merger extends FeaturesHolder {
         } else if ((vis & Modifier.PROTECTED.getValue()) != 0) {
             z.setModifiers(z.getModifiers() | Modifier.PROTECTED.getValue());
         } else if ((vis & Modifier.PRIVATE.getValue()) != 0) {
-            /* nothing */;
+            /* nothing */
         } else {
             z.setModifiers(z.getModifiers() | Modifier.PRIVATE.getValue());
         }

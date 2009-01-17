@@ -1,7 +1,7 @@
 /*
  * $Id: SwissKnife.java 4516 2008-03-17 18:48:27Z eg216457 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,9 +27,6 @@
 
 package com.sun.tdk.signaturetest.util;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 public class SwissKnife {
 
     /**
@@ -48,28 +45,5 @@ public class SwissKnife {
         return x.equals(y);
     }
 
-    private static final ArrayList EMPTY_ARRAY_LIST = new ArrayList();
-    
-    /**
-     * Converts source string to ArrayList of tokens
-     * 
-     * @param source - source string 
-     * @param delimiters - argument are the delimiters for separating tokens. 
-     * @return ArrayList of tokens found in the source
-     */
-    
-    public static ArrayList stringToArrayList(String source, String delimiters) {
-        if (source == null) {
-            return EMPTY_ARRAY_LIST;
-        }
-        
-        StringTokenizer st = new StringTokenizer(source, delimiters);
-        ArrayList result = new ArrayList();
-        while(st.hasMoreTokens()) {
-            result.add(st.nextToken());
-        }
-        return result;
-    }
-    
 }
 

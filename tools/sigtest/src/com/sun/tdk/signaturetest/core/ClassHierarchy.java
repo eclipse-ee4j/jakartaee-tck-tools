@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,6 +28,7 @@
 package com.sun.tdk.signaturetest.core;
 
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MethodDescr;
 
 import java.util.List;
 import java.util.Set;
@@ -56,6 +57,8 @@ public interface ClassHierarchy extends  ClassDescriptionLoader {
 
     boolean isInterface(String fqClassName) throws ClassNotFoundException;
 
+    boolean isAnnotation(String fqClassName) throws ClassNotFoundException;
+
     int getClassModifiers(String fqClassName) throws ClassNotFoundException;
 
     boolean isSubclass(String subClassName, String superClassName) throws ClassNotFoundException;
@@ -72,4 +75,6 @@ public interface ClassHierarchy extends  ClassDescriptionLoader {
     boolean isClassVisibleOutside(ClassDescription cls) throws ClassNotFoundException;    
 
     int getTrackMode();
+
+    boolean isMethodOverriden(MethodDescr md) throws ClassNotFoundException;
 }

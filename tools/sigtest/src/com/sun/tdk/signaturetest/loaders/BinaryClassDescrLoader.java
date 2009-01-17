@@ -1,7 +1,7 @@
 /*
  * $Id: BinaryClassDescrLoader.java 4516 2008-03-17 18:48:27Z eg216457 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -181,7 +181,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             constants = null;
         }
     }
-
+    
+    private boolean ignoreAnnotations = false;
 
     /**
      * findByName and open class files as InputStream.
@@ -520,7 +521,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                         c.setModifiers(x);
                     }
 
-                    // skip synthetic inner classes 
+                    // skip synthetic inner classes
                     if (Modifier.hasModifier(x, Modifier.ACC_SYNTHETIC))
                         continue;
 
@@ -574,7 +575,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             fid.setAnnoList(AnnotationItem.toArray(attrs.annolist));
             tmpflds.add(attrs.signature);
 
-            if (fid.isStatic() && attrs.value != null) {
+            if (fid.isStatic() && fid.isFinal() && attrs.value != null) {
                 if ("boolean".equals(type))
                     attrs.value = Boolean.valueOf(((Integer) attrs.value).intValue() != 0);
 
@@ -920,6 +921,9 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
 
 
         void readAnnotations(BinaryClassDescription c, int target) throws IOException {
+            if (ignoreAnnotations) {
+                return;
+            }
             if (annolist == null)
                 annolist = new ArrayList();
 
@@ -967,7 +971,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                     }
             }
             catch (ClassNotFoundException e) {
-                throw new ClassFormatError(i18n.getString("BinaryClassDescrLoader.error.annotnotfound", anno.getName()));
+                System.out.println("Warning: " + i18n.getString("BinaryClassDescrLoader.error.annotnotfound", anno.getName()));
+                //throw new ClassFormatError(i18n.getString("BinaryClassDescrLoader.error.annotnotfound", anno.getName()));
             }
         }
 
@@ -1051,8 +1056,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
 
     } //end of abstract class AttrsIter
 
-//    private Constant getConstant(short i) {
-//        return getConstant(((int) i) & 0xFFFF);
+//    private Constant getConstant(short I) {
+//        return getConstant(((int) I) & 0xFFFF);
 //    }
 
     //  Convert JVM type notation (as described in the JVM II 4.3.2, p.100)
@@ -1391,4 +1396,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
         SigTest.log.println(msg);
     }
 
+    
+    public void setIgnoreAnnotations(boolean value) {
+        ignoreAnnotations = value;
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * $Id: ClassCorrector.java 4504 2008-03-13 16:12:22Z sg215604 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -161,10 +161,10 @@ public class ClassCorrector implements Transformer {
             } while (pos != -1);
 
             if (mustCorrect) {
-                if (verboseCorrector) {
+//                if (verboseCorrector) {
                     String invargs[] = {mr.getQualifiedName(), throwables, sb.toString()};
-                    pw.println(i18n.getString("ClassCorrector.message.throwslist.changed", invargs));
-                }
+                    log.storeWarning(i18n.getString("ClassCorrector.message.throwslist.changed", invargs));
+//                }
 
                 mr.setThrowables(sb.toString());
             }
@@ -278,15 +278,15 @@ public class ClassCorrector implements Transformer {
 
                 mr.setType(newName);
 
-                if (verboseCorrector) {
+//                if (verboseCorrector) {
                     if (!mr.isField()) {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        pw.println(i18n.getString("ClassCorrector.message.returntype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.returntype.changed", invargs));
                     } else {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        pw.println(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs));
                     }
-                }
+//                }
             } else {
                 if (!mr.isField()) {
                     String invargs[] = {returnType, mr.toString()};
@@ -321,6 +321,9 @@ public class ClassCorrector implements Transformer {
 
     private void checkActualParameters(ClassDescription cl, MemberDescription mr, String actualParameters) {
         StringTokenizer tz = new StringTokenizer(actualParameters, ",<>[]&", false);
+
+        boolean firstParameter = true;
+
         while (tz.hasMoreTokens()) {
             String param = tz.nextToken().trim();
 
@@ -335,10 +338,25 @@ public class ClassCorrector implements Transformer {
                     param = param.substring(prefix.length());
 
                 if (isInvisibleClass(param)) {
+
+                    // let's ignore first synthetic parameter in nested class' constuctor
+                    // -allpaublic option allows tracking classes like the following:
+                    // class A {
+                    //     public class B {}  // this class
+                    // }
+                    //
+                    boolean isInner = cl.getQualifiedName().indexOf('$') >= 0;
+                    if (mr.isConstructor() && isInner && !cl.hasModifier(Modifier.STATIC) && firstParameter) {
+                        // it's ok. well, it's almost ok :-)
+                        firstParameter = false;
+                        continue;
+                    }
+
                     String invargs[] = {param, mr.toString(), cl.getQualifiedName()};
                     log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs));
                 }
             }
+
         }
     }
 
@@ -371,42 +389,22 @@ public class ClassCorrector implements Transformer {
                 e.remove();
 
                 // check for existing the same. For example:
-                if (!newMember.isField()) {
-                    // check for existing the same. For example:
-                    // public interface I extends hidden { void foo(); }
-                    // interface hidden { void foo(); }
-                    if (!c.containsMember(newMember)) {
+                // public interface I extends hidden { void foo(); }
+                // interface hidden { void foo(); }
+                if (!c.containsMember(newMember)) {
 
-                        newMembers.add(newMember);
+                    newMembers.add(newMember);
 
-                        if (verboseCorrector) {
-                            String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                            pw.println(i18n.getString("ClassCorrector.message.member.moved", invargs));
-                        }
-
-
-                    } else {
-                        if (verboseCorrector) {
-                            String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                            pw.println(i18n.getString("ClassCorrector.message.member.removed", invargs));
-                        }
+                    if (verboseCorrector) {
+                        String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
+                        pw.println(i18n.getString("ClassCorrector.message.member.moved", invargs));
                     }
+
+
                 } else {
-                    //
-                    if (!c.containsMember(newMember)) {
-
-                        newMembers.add(newMember);
-
-                        if (verboseCorrector) {
-                            String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                            pw.println(i18n.getString("ClassCorrector.message.member.moved", invargs));
-                        }
-
-                    } else {
-                        if (verboseCorrector) {
-                            String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                            pw.println(i18n.getString("ClassCorrector.message.member.removed", invargs));
-                        }
+                    if (verboseCorrector) {
+                        String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
+                        pw.println(i18n.getString("ClassCorrector.message.member.removed", invargs));
                     }
                 }
             }
@@ -554,9 +552,9 @@ public class ClassCorrector implements Transformer {
     /*
      * After removing invisible interfaces we can have duplicated constants
      * public class P implements I1, I2 {}
-     * interface I1 { int i = 0; }
-     * interface I2 { int i = 1; }
-     * in this case we must remove constants i from resulted set because
+     * interface I1 { int I = 0; }
+     * interface I2 { int I = 1; }
+     * in this case we must remove constants I from resulted set because
      * reference by simple name is impossible due to ambiguity,
      * and reference by qualified name is impossible also
      * due to I1 and I2 are invisible outside the package
@@ -616,7 +614,7 @@ public class ClassCorrector implements Transformer {
                     int pos = className.indexOf('<');
                     if (pos != -1)
                         checkActualParameters(cl, mr, className.substring(pos));
-                    if (isInvisibleClass(className))
+                    if (isInvisibleClass(className) && !className.equals(mr.getDeclaringClassName()))
                         if (mr.isMethod() || mr.isConstructor()) {
                             String invargs[] = {className, mr.toString(), mr.getDeclaringClassName()};
                             log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs));

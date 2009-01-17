@@ -1,7 +1,7 @@
 /*
  * $Id: Setup.java 4504 2008-03-13 16:12:22Z sg215604 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,6 +30,7 @@ package com.sun.tdk.signaturetest;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MemberType;
 import com.sun.tdk.signaturetest.sigfile.FeaturesHolder;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Writer;
@@ -82,7 +83,7 @@ import java.util.*;
  * <p/>
  * <dt><code><b>-AllPublic</b></code>
  * <dd> track unaccessible nested classes
- * (i.e. which are public or protected but are members of default
+ * (I.e. which are public or protected but are members of default
  * or private access class).
  * <p/>
  * <dt><code><b>-Classpath</b></code> &lt;path&gt;
@@ -149,6 +150,8 @@ public class Setup extends SigTest {
         innerClassesNumber = 0;
         includedClassesNumber = 0;
         excludedClassesNumber = 0;
+
+        MemberType.setMode(false);
 
         if (parseParameters(args)) {
             afterParseParameters();
@@ -219,12 +222,15 @@ public class Setup extends SigTest {
             return failed(e.getMessage());
         }
 
-        if (!parser.isOptionSpecified(XREFLECTION_OPTION) && !parser.isOptionSpecified(STATIC_OPTION))
-            return error(i18n.getString("Setup.error.mode.notspecified", new Object[]{STATIC_OPTION, XREFLECTION_OPTION}));
+        // since 2.1 - static mode by default
+        isStatic = true;
+
+        //if (!parser.isOptionSpecified(XREFLECTION_OPTION) && !parser.isOptionSpecified(STATIC_OPTION))
+        //    return error(i18n.getString("Setup.error.mode.notspecified", new Object[]{STATIC_OPTION, XREFLECTION_OPTION}));
 
         // TODO plugin may set own loader. so these options have no sense in this case
-        if (parser.isOptionSpecified(XREFLECTION_OPTION) && parser.isOptionSpecified(STATIC_OPTION))
-            return error(i18n.getString("Setup.error.mode.contradict", new Object[]{STATIC_OPTION, XREFLECTION_OPTION}));
+        if (parser.isOptionSpecified(XREFLECTION_OPTION) && !parser.isOptionSpecified(STATIC_OPTION))
+            isStatic = false;
 
         if (parser.isOptionSpecified(NONCLOSEDFILE_OPTION) && parser.isOptionSpecified(CLOSEDFILE_OPTION))
             return error(i18n.getString("Setup.error.mode.contradict", new Object[]{NONCLOSEDFILE_OPTION, CLOSEDFILE_OPTION}));
@@ -300,19 +306,25 @@ public class Setup extends SigTest {
 
         sb.append(i18n.getString("Setup.usage.version", Version.Number));
         sb.append(nl).append(i18n.getString("Setup.usage.start"));
-        sb.append(nl).append(i18n.getString("Setup.usage.testurl", TESTURL_OPTION));
-        sb.append(nl).append(i18n.getString("Setup.usage.filename", FILENAME_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("Setup.usage.classpath", CLASSPATH_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.package", PACKAGE_OPTION));
+        sb.append(nl).append(i18n.getString("Setup.usage.filename", FILENAME_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+
+        sb.append(nl).append(i18n.getString("Setup.usage.testurl", TESTURL_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.packagewithoutsubpackages", WITHOUTSUBPACKAGES_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.exclude", EXCLUDE_OPTION));
-        sb.append(nl).append(i18n.getString("Setup.usage.classpath", CLASSPATH_OPTION));
-        sb.append(nl).append(i18n.getString("Setup.usage.static", STATIC_OPTION));
-        sb.append(nl).append(i18n.getString("Setup.usage.closedfile", Setup.CLOSEDFILE_OPTION));
+        // sb.append(nl).append(i18n.getString("Setup.usage.static", STATIC_OPTION));
+        // sb.append(nl).append(i18n.getString("Setup.usage.closedfile", Setup.CLOSEDFILE_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.nonclosedfile", NONCLOSEDFILE_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.apiversion", APIVERSION_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.verbose", VERBOSE_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.debug", DEBUG_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.help", HELP_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.end"));
         System.err.println(sb.toString());
     }
@@ -527,6 +539,7 @@ public class Setup extends SigTest {
         if (errors == 0)
             return passed(outerClassesNumber == 0 ? i18n.getString("Setup.report.message.emptysigfile") : "");
 
+        new File(sigFile.getFile()).delete();
         return failed(i18n.getString("Setup.report.message.numerrors", Integer.toString(errors)));
     }
 

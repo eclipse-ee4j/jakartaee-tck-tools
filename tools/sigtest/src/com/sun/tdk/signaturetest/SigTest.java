@@ -1,7 +1,7 @@
 /*
  * $Id: SigTest.java 4549 2008-03-24 08:03:34Z me155718 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -85,8 +85,12 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String VERBOSE_OPTION = "-Verbose";
     public static final String XVERBOSE_OPTION = "-Xverbose";
     public static final String XNOTIGER_OPTION = "-XnoTiger";
-    public static final String OUT_OPTION = "-out";
+    public static final String OUT_OPTION = "-Out";
     public static final String FORMATPLAIN_OPTION = "-FormatPlain";
+    public static final String FORMATHUMAN_OPTION = "-FormatHuman";
+    public static final String FORMATHUMAN_ALT_OPTION = "-H";
+    public static final String BACKWARD_OPTION = "-Backward";
+    public static final String BACKWARD_ALT_OPTION = "-B";
     public static final String FILENAME_OPTION = "-FileName";
     public static final String TESTURL_OPTION = "-TestURL";
     public static final String PLUGIN_OPTION = "-Plugin";
@@ -303,10 +307,17 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     /**
      * @return number of errors found during Setup or Test run if any
      */
-
     public int getNumErrors() {
         return errorManager.getNumErrors();
     }
+
+    /**
+     * @return number of warnings found during Setup or Test run if any
+     */
+    public int getNumWarnings() {
+        return errorManager.getNumWarnings();
+    }
+
 
     /**
      * Check if the given class <code>name</code> belongs to some of

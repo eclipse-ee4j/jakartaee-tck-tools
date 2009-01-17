@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -133,7 +133,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         Reader in = FileManager.getReader(fileURL);
 
         if (in == null) {
-            msg = i18n.getString("MultipleFileReader.error.sigreader.missing", fileURL);
             return false;
         } else {
             try {

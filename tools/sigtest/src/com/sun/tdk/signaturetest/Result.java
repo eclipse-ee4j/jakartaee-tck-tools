@@ -1,7 +1,7 @@
 /*
  * $Id: Result.java 4504 2008-03-13 16:12:22Z sg215604 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -37,6 +37,10 @@ import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 public class Result {
 
     static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Result.class);
+
+    // Name of system property, see exit method
+    public final static String NO_EXIT = "SigTest.NO_EXIT";
+
 
     private int type = NOT_RUN;
     private String reason;
@@ -99,12 +103,21 @@ public class Result {
         return reason;
     }
 
-    protected void exit() {
+    protected boolean exit() {
         if (System.err != null) {
             System.err.println(toString());
             System.err.flush();
         }
-        System.exit(exitCodes[type]);
-    }
+        // for unit-tests and mass runs
 
+        // Don't change this to if(Boolean.parseBoolean(System.getProperty(NO_EXIT))) {
+        // because Boolean.parseBoolean is since 1.5 
+        if(new Boolean(System.getProperty(NO_EXIT)).booleanValue()) {
+            return isPassed();
+        } else {
+            System.exit(exitCodes[type]);
+            return false; // never happens
+        }
+
+    }
 }

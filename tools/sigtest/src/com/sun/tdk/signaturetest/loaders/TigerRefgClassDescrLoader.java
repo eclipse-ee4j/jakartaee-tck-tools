@@ -1,7 +1,7 @@
 /*
  * $Id: TigerRefgClassDescrLoader.java 4516 2008-03-17 18:48:27Z eg216457 $
  *
- * Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1996-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -322,7 +322,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
         typeparamList.reset_count();
 
         for (int i = 0; i < params.length; i++) {
-            //System.out.println("TYPEPARAM " + params[i].getName() + "  " + declared);
+            //System.out.println("TYPEPARAM " + params[I].getName() + "  " + declared);
             typeparamList.add(params[i].getName(), declared);
         }
 
