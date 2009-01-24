@@ -167,7 +167,7 @@ public class SignatureTest extends SigTest {
 
     private String logName = null;
     private String outFormat = null;
-    private boolean extensibleInterfaces;
+    private boolean extensibleInterfaces = false;
 
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(SignatureTest.class);
@@ -321,8 +321,8 @@ public class SignatureTest extends SigTest {
         parser.addOption(FORMATHUMAN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(FORMATHUMAN_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(BACKWARD_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
-        parser.addOption("-extensibleInterfaces", OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(BACKWARD_ALT_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(EXTENSIBLE_INTERFACES_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(DEBUG_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XNOTIGER_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XVERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -419,10 +419,10 @@ public class SignatureTest extends SigTest {
              outFormat = FORMAT_HUMAN;
         } else if (optionName.equalsIgnoreCase(BACKWARD_OPTION)) {
              outFormat = FORMAT_BACKWARD;
+        } else if (optionName.equalsIgnoreCase(EXTENSIBLE_INTERFACES_OPTION)) {
+             extensibleInterfaces = true;
         } else if (optionName.equalsIgnoreCase(BACKWARD_ALT_OPTION)) {
              outFormat = FORMAT_BACKWARD;
-        } else if (optionName.equalsIgnoreCase("-extensibleinterfaces")) {
-             extensibleInterfaces = true;
         } else if (optionName.equalsIgnoreCase(VERBOSE_OPTION)) {
             isVerbose = true;
 
@@ -484,6 +484,7 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.apiversion", APIVERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.checkvalue", CHECKVALUE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.formatplain", FORMATPLAIN_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.extinterfaces", EXTENSIBLE_INTERFACES_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.classcachesize", new Object[]{CLASSCACHESIZE_OPTION, new Integer(DefaultCacheSize)}));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.verbose", VERBOSE_OPTION));
@@ -652,9 +653,8 @@ public class SignatureTest extends SigTest {
         else
             if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
                 errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
-                        extensibleInterfaces,
                         classHierarchy, signatureClassesHierarchy,
-                        reportWarningAsError ? Level.WARNING : Level.SEVERE );
+                        reportWarningAsError ? Level.WARNING : Level.SEVERE, extensibleInterfaces );
         else
             errorManager = new SortedErrorFormatter(log, isVerbose);
 
@@ -1190,49 +1190,6 @@ public class SignatureTest extends SigTest {
             errorManager.addError(MessageType.getAddedMessageType(found.getMemberType()), name, found.getMemberType(), found.toString(), found);
     }
 
-
-    protected AnnotationItem[] removeUndocumentedAnnotations(AnnotationItem[] annotations, ClassHierarchy h) {
-
-        if (annotations == null)
-            return AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY;
-
-
-        int len = annotations.length;
-
-        AnnotationItem[] tempStorage = new AnnotationItem[len];
-
-        if (len == 0)
-            return annotations;
-
-        int count = 0;
-
-        for (int i = 0; i < len; ++i) {
-            boolean documented = true;
-
-            try {
-                documented = h.isDocumentedAnnotation(annotations[i].getName());
-            } catch (ClassNotFoundException e) {
-                // suppress
-            }
-
-            if (documented) {
-                tempStorage[count++] = annotations[i];
-            }
-
-        }
-
-        if (count == len)
-            return annotations;   // nothing to do
-
-        AnnotationItem[] documentedAnnotations = AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY;
-
-        if (count != 0) {
-            documentedAnnotations = new AnnotationItem[count];
-            System.arraycopy(tempStorage, 0, documentedAnnotations, 0, count);
-        }
-
-        return documentedAnnotations;
-    }
 
     private void checkAnnotations(MemberDescription base, MemberDescription test) {
 

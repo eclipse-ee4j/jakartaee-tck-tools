@@ -45,13 +45,13 @@ import java.util.logging.Level;
 public class BCProcessor extends HumanErrorFormatter {
     // is it bin mode?
     private boolean bin;
-    private final boolean extensibleInterfaces;
+    private boolean extensibleInterfaces;
     private ClassHierarchy clHier, sfHier;
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(BCProcessor.class);
     /**
      * Assign the given <b>PrintWriter</b> to print error messages.
      */
-    public BCProcessor(PrintWriter out, boolean isv, boolean binMode, boolean extensibleInterfaces, ClassHierarchy classHierarchy, ClassHierarchy sigFileClassHierarchy, Level l) {
+    public BCProcessor(PrintWriter out, boolean isv, boolean binMode, ClassHierarchy classHierarchy, ClassHierarchy sigFileClassHierarchy, Level l, boolean extensibleInterfaces) {
         super(out, isv, l);
         this.bin = binMode;
         this.clHier = classHierarchy;
@@ -238,7 +238,7 @@ public class BCProcessor extends HumanErrorFormatter {
                 MethodDescr md = (MethodDescr) m.errorObject;
                 try {
                     String dcn = md.getDeclaringClassName();
-                    return clHier.isInterface(dcn) && !clHier.isAnnotation(dcn) && !extensibleInterfaces;
+                    return !extensibleInterfaces && clHier.isInterface(dcn) && !clHier.isAnnotation(dcn);
                 } catch (ClassNotFoundException e) {
                     return false;
                 }

@@ -31,6 +31,7 @@ import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.MemberType;
+import com.sun.tdk.signaturetest.model.MemberDescription;
 import com.sun.tdk.signaturetest.sigfile.FeaturesHolder;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Writer;
@@ -462,6 +463,7 @@ public class Setup extends SigTest {
                 try {
                     builder.createMembers(c, true, true, false);
                     normalizer.normThrows(c, true);
+                    removeUndocumentedAnnotations(c, classHierarchy);
                 } catch (ClassNotFoundException e) {
                     setupProblem(i18n.getString("Setup.error.message.classnotfound", e.getMessage()));
                 }
@@ -541,6 +543,14 @@ public class Setup extends SigTest {
 
         new File(sigFile.getFile()).delete();
         return failed(i18n.getString("Setup.report.message.numerrors", Integer.toString(errors)));
+    }
+
+    private void removeUndocumentedAnnotations(ClassDescription c, ClassHierarchy classHierarchy) {
+        c.setAnnoList(removeUndocumentedAnnotations(c.getAnnoList(), classHierarchy));
+        for (Iterator e = c.getMembersIterator(); e.hasNext();) {
+            MemberDescription mr = (MemberDescription) e.next();
+            mr.setAnnoList(removeUndocumentedAnnotations(mr.getAnnoList(), classHierarchy));
+        }
     }
 
 

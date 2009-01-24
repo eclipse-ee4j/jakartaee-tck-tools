@@ -32,6 +32,7 @@ import com.sun.tdk.signaturetest.classpath.Classpath;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.AnnotationItem;
 import com.sun.tdk.signaturetest.plugin.*;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Format;
@@ -91,6 +92,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String FORMATHUMAN_ALT_OPTION = "-H";
     public static final String BACKWARD_OPTION = "-Backward";
     public static final String BACKWARD_ALT_OPTION = "-B";
+    public static final String EXTENSIBLE_INTERFACES_OPTION = "-ExtensibleInterfaces";
     public static final String FILENAME_OPTION = "-FileName";
     public static final String TESTURL_OPTION = "-TestURL";
     public static final String PLUGIN_OPTION = "-Plugin";
@@ -217,7 +219,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             storeError(s);
             return;
         }
-        log.println(s);
+        log.println(i18n.getString("SigTest.warning", s));
     }
 
 
@@ -449,6 +451,49 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     public void addFormat(Format format, boolean useByDefault) {
         FileManager.addFormat(format, useByDefault);
+    }
+
+    protected AnnotationItem[] removeUndocumentedAnnotations(AnnotationItem[] annotations, ClassHierarchy h) {
+
+        if (annotations == null)
+            return AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY;
+
+
+        int len = annotations.length;
+
+        AnnotationItem[] tempStorage = new AnnotationItem[len];
+
+        if (len == 0)
+            return annotations;
+
+        int count = 0;
+
+        for (int i = 0; i < len; ++i) {
+            boolean documented = true;
+
+            try {
+                documented = h.isDocumentedAnnotation(annotations[i].getName());
+            } catch (ClassNotFoundException e) {
+                // suppress
+            }
+
+            if (documented) {
+                tempStorage[count++] = annotations[i];
+            }
+
+        }
+
+        if (count == len)
+            return annotations;   // nothing to do
+
+        AnnotationItem[] documentedAnnotations = AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY;
+
+        if (count != 0) {
+            documentedAnnotations = new AnnotationItem[count];
+            System.arraycopy(tempStorage, 0, documentedAnnotations, 0, count);
+        }
+
+        return documentedAnnotations;
     }
 }
 
