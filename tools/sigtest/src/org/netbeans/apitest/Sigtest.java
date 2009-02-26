@@ -145,11 +145,13 @@ public final class Sigtest extends Task {
             generate = true;
             addBootCP = true;
             arg.add("-static");
-            arg.add("-errorall");
+            arg.add("-ErrorAll");
         } else if (action.getValue().equals("check") || action.getValue().equals("binarycheck")) {
             // no special arg for check
             arg.add("-static");
             arg.add("-b");
+            arg.add("-Mode");
+            arg.add("bin");
             addBootCP = true;
             if (action.getValue().equals("binarycheck")) {
                 arg.add("-extensibleinterfaces");
