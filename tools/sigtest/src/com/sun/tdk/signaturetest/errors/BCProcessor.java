@@ -127,8 +127,8 @@ public class BCProcessor extends HumanErrorFormatter {
 
             m = (ErrorFormatter.Message) l.get(0);
 
-            // annotoation fields are exceptions.
-            // checked by the others rules depends on their defalt value
+            // annotation fields are exceptions.
+            // checked by the others rules depends on their default value
             if (m.messageType == MessageType.ADD_METHS && m.errorObject instanceof MethodDescr) {
                 MethodDescr md = (MethodDescr) m.errorObject;
                 try {
@@ -592,7 +592,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
 
         protected boolean proc() {
-            newM.definition = i18n.getString("BCProcessor.error.4_6"); // "E4.6 - Changing field from non-final to filal";
+            newM.definition = i18n.getString("BCProcessor.error.4_6"); // "E4.6 - Changing field from non-final to final";
             setMessageLevel(newM);
             return true;
         }

@@ -187,16 +187,12 @@ public abstract class ReportGenerator extends APIVisitor {
 
     protected boolean isConstType (String s)
     {
-        for (int i = 0; i < consttypes.length; i++) {
-            if (consttypes[i].equals(s)) {
+        for (String consttype : consttypes) {
+            if (consttype.equals(s)) {
                 return true;
             }
         }
         return false;
-    }
-
-    public void setConfig(Map<String, String[]> config) {
-        this.config = config;
     }
 
     public void setConstatnChecking(boolean check) {
@@ -574,7 +570,7 @@ class ReportXML extends ReportGenerator {
     public void print() {
         SAXTransformerFactory stf = (SAXTransformerFactory )
         TransformerFactory.newInstance();
-        stf.setAttribute("indent-number", new Integer(4));
+        stf.setAttribute("indent-number", 4);
         Properties outputProps = new Properties();
         Result result;
         outputProps.put(OutputKeys.INDENT, "yes");

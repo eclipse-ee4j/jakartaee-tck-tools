@@ -97,8 +97,6 @@ public class Main implements Log {
     public static final String OUT_OPTION = "-out";
     public static final String VALIDATE_OPTION = "-validate";
 
-    public static final String VALUE_YES = "yes";
-
     static final String MAIN_URI = "file:";
     public static PrintWriter log;
     static protected boolean debug = false;
@@ -397,13 +395,12 @@ public class Main implements Log {
              * Read TS and send each call to reporter.
              */
             BinaryClassDescrLoader tsLoader = new BinaryClassDescrLoader(classpath,
-                    new Integer(DefaultCacheSize));
+                    DefaultCacheSize);
             tsLoader.setIgnoreAnnotations(true);
             ClassHierarchy tsHierarchy = new ClassHierarchyImpl(tsLoader,
                     ClassHierarchy.ALL_PUBLIC);
             int size = 0;
             List<MemberDescription> calls = new ArrayList<MemberDescription>();
-            b = new MemberCollectionBuilder(this);
             while (classpath.hasNext()) {
                 String name = classpath.nextClassName();
                 if (!isTSMember(name)) {

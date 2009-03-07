@@ -146,13 +146,6 @@ class RefCounter {
         return results.get(md.toString()) != null;
     }
 
-    int refsCount(MemberDescription md) {
-        if (results.get(md.toString()) != null) {
-            return results.get(md.toString());
-        }
-        return 0;
-    }
-
 
     private String findSuper(ClassDescription tsClass) {
         while (tsClass.getSuperClass() != null) {

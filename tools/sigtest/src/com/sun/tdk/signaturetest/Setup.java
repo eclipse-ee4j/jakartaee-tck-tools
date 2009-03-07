@@ -110,6 +110,12 @@ public class Setup extends SigTest {
     public static final String CHECKVALUE_OPTION = "-CheckValue";
     public static final String XGENCONSTS_OPTION = "-XgenConsts";
 
+
+    // -KeepFile option keeps signature file even if some error occured during setup
+    // needs for compatibility between 2.0 and 2.1
+    public static final String KEEP_SIGFILE_OPTION = "-KeepFile";
+
+
     // This option is used only for debugging purposes. It's not recommended
     // to use it to create signature files for production!
     public static final String XREFLECTION_OPTION = "-Xreflection";
@@ -122,6 +128,7 @@ public class Setup extends SigTest {
 
     protected boolean isClosedFile = true;
     private Boolean explicitlyGenConsts = null;
+    private boolean keepSigFile = false;
 
     /**
      * specifies that ignored class names will be reported.
@@ -201,6 +208,7 @@ public class Setup extends SigTest {
 
         parser.addOption(CLOSEDFILE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(NONCLOSEDFILE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(KEEP_SIGFILE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(CHECKVALUE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(XGENCONSTS_OPTION, OptionInfo.option(1), optionsDecoder);
@@ -271,6 +279,8 @@ public class Setup extends SigTest {
             isClosedFile = true;
         } else if (optionName.equalsIgnoreCase(NONCLOSEDFILE_OPTION)) {
             isClosedFile = false;
+        } else if (optionName.equalsIgnoreCase(KEEP_SIGFILE_OPTION)) {
+            keepSigFile = true;
         } else if (optionName.equalsIgnoreCase(CHECKVALUE_OPTION)) {
             // do nothing, just for back. comp.
         } else if (optionName.equalsIgnoreCase(XGENCONSTS_OPTION)) {
@@ -541,7 +551,9 @@ public class Setup extends SigTest {
         if (errors == 0)
             return passed(outerClassesNumber == 0 ? i18n.getString("Setup.report.message.emptysigfile") : "");
 
-        new File(sigFile.getFile()).delete();
+        if (!keepSigFile) {
+            new File(sigFile.getFile()).delete();
+        }
         return failed(i18n.getString("Setup.report.message.numerrors", Integer.toString(errors)));
     }
 

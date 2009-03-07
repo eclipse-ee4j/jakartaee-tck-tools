@@ -188,9 +188,9 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
         Collections.sort(failedMessages, new Comparator() {
 
             // 1 - By class
-            // 2 - By object (CLSS, method, fiels, other)
+            // 2 - By object (CLSS, method, field, other)
             // 3 - By message type
-            // 4 - By defenition
+            // 4 - By definition
 
             public int compare(Object o1, Object o2) {
                 Message m1 = (Message) o1;
@@ -260,8 +260,12 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
                         comp = co1.getSignature().compareTo(co2.getSignature());
 
                     }
-
                 }
+
+                if (comp == 0) {
+                    comp = msg1.className.compareTo(msg2.className);
+                }
+
             }
 
             return comp;

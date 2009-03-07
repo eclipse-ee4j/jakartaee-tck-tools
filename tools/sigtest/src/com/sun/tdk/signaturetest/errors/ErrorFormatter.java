@@ -180,6 +180,15 @@ public class ErrorFormatter {
                 comp = this.className.compareTo(ob.className);
                 if (comp == 0)
                     comp = (getShortName(this.definition)).compareTo(getShortName(ob.definition));
+
+
+                if (comp == 0) {
+                    if (ob.errorObject != null && this.errorObject != null) {
+                        comp = (this.errorObject.getQualifiedName()).compareTo(ob.errorObject.getQualifiedName());
+                    }
+                }
+
+
                 return comp;
             } else
                 return ob.messageType.compareTo(this.messageType);

@@ -42,7 +42,7 @@ import java.util.ArrayList;
  *
  * Required parameters:
  *   "package" attribute or nested "package" element is required.
- *     Corrsponds to -package option
+ *     Corresponds to -package option
  *     Samples -
  *     &lt;setup package="javax.swing" ...
  *     or
@@ -58,7 +58,7 @@ import java.util.ArrayList;
  *     Corresponds to -filename option
  *
  * Optional parameters:
- *   "failonerror" - Stop the buildprocess if the command exits with an error. Default is "false".
+ *   "failonerror" - Stop the build process if the command exits with an error. Default is "false".
  *   "apiVersion" -  corresponds to -apiVersion. Set API version for signature file
  *   "backward" - corresponds to -Backward option. Performs backward compatibility checking.
  *      Default is "false".
@@ -79,7 +79,7 @@ import java.util.ArrayList;
  *       ...
  *     &lt;/setup&gt;
  *
- * Task defenition sample:
+ * Task definition sample:
  * &lt;taskdef name="setup"
  *   classname="com.sun.tdk.signaturetest.ant.ASetup"
  *   classpath="sigtestdev.jar"/&gt;

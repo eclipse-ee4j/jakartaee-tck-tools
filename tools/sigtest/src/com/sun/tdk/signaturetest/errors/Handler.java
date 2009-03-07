@@ -172,7 +172,14 @@ abstract class PairedHandler extends Handler {
 
         init(l);
 
-        newM = new Message(MessageType.CHNG_CLASSES_MEMBERS, m1.getDeclaringClassName(), "", "", m1);
+        String clName;
+        if (m1.isClass() || m1.isInterface()) {
+            clName = m1.getQualifiedName();
+        } else {
+            clName = m1.getDeclaringClassName();
+        }
+
+        newM = new Message(MessageType.CHNG_CLASSES_MEMBERS, clName, "", "", m1);
 
         if (proc()) {
             ch.setMessageProcessed(me1);

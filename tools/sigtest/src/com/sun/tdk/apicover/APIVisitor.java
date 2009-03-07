@@ -48,16 +48,6 @@ class APIVisitor
     List<ClassDescription> api = new ArrayList<ClassDescription>();
     PackageDescr top = new PackageDescr("");
 
-    public void set (List<ClassDescription> api)
-    {
-        this.api = api;
-        collectPackages();
-    }
-
-  //  public void visit() {
-  //      visit(top);
-  //  }
-
     public void visit(List<ClassDescription> api) {
         this.api = api;
         collectPackages();

@@ -43,7 +43,7 @@ import java.util.*;
  * <b>ClasspathImpl</b> provides access to all classes placed inside
  * directories and/or jar-files listed in the classpath, which is given
  * to the constructor for new <b>ClasspathImpl</b> instance.
- * <p/>
+ * </p>
  * <p>The constructor searches every directory or jar-file listed and keeps
  * corresponding <b>ClasspathEntry</b> element, which can provide access to a bytecode
  * for each class found inside the directory or jar-file. All classes found inside

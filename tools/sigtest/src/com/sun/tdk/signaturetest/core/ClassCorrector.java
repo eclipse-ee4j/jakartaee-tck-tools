@@ -339,8 +339,8 @@ public class ClassCorrector implements Transformer {
 
                 if (isInvisibleClass(param)) {
 
-                    // let's ignore first synthetic parameter in nested class' constuctor
-                    // -allpaublic option allows tracking classes like the following:
+                    // let's ignore first synthetic parameter in nested class' constructor
+                    // -allpublic option allows tracking classes like the following:
                     // class A {
                     //     public class B {}  // this class
                     // }
