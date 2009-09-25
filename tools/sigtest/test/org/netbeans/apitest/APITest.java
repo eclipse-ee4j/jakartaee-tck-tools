@@ -170,6 +170,25 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
+    public void testMakeConstructorOfAbstractClassProtectedIsOK() throws Exception {
+       String c1 =
+            "package ahoj;" +
+            " public abstract class A {" +
+            "   public A() {}" +
+            "}";
+        createFile(1, "A.java", c1);
+
+
+        String c2 =
+            "package ahoj;" +
+            " public abstract class A {" +
+            "   protected A() {}" +
+            "}";
+        createFile(2, "A.java", c2);
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
     public void testAddMethodInAnInterfaceAllowedInSpecialMode() throws Exception {
         String c1 =
             "package ahoj;" +
