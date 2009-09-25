@@ -31,6 +31,7 @@ import com.sun.tdk.signaturetest.model.ClassDescription;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
 
 /**
  * @author Mikhail Ershov
@@ -38,6 +39,8 @@ import java.net.URL;
 public interface Reader {
 
     boolean hasFeature(Format.Feature feature);
+
+    Set getAllSupportedFeatures();
 
     boolean readSignatureFile(URL fileURL) throws IOException;
 

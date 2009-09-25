@@ -233,7 +233,7 @@ public class Erasurator {
         // TODO (Roman Makarchuk) just for debugging
         if (SigTest.debug) {
             String s = cloned_m.toString();
-            assert s.indexOf('<') == -1 && s.indexOf('?') == -1 && s.indexOf('{') == -1;
+            assert s.indexOf('<') == -1 && s.indexOf('?') == -1 && s.indexOf('{') == -1 : s;
         }
 
         return cloned_m;

@@ -27,7 +27,28 @@
 
 package com.sun.tdk.signaturetest;
 
-class Version{
-  public static final String Number="2.1";
+import com.sun.tdk.signaturetest.util.I18NResourceBundle;
+
+public class Version {
+
+    private static I18NResourceBundle i18n =
+            I18NResourceBundle.getBundleForClass(Version.class);
+
+    // the following constatnts should be filled in by the build script
+    public static final String Number="2.2";
+    public static final String build_time="";
+    public static final String build_os="";
+    public static final String build_user="";
+
+    public static String getVersionInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(i18n.getString("Main.usage.version", Version.Number) + '\n');
+        sb.append("=========================\n");
+        sb.append(i18n.getString("Version.version.build", Version.build_time) + '\n');
+        sb.append(i18n.getString("Version.version.build_on", Version.build_os) + '\n');
+        sb.append(i18n.getString("Version.version.build_by", Version.build_user));
+        return sb.toString();
+    }
+
 }	    
 	    

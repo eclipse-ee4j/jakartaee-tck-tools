@@ -31,8 +31,9 @@ import com.sun.tdk.signaturetest.model.*;
 import com.sun.tdk.signaturetest.plugin.Transformer;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
-import java.io.PrintWriter;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <b>ClassCorrector</b> is the main part of solving problems related with hidden language elements<p>
@@ -56,16 +57,42 @@ public class ClassCorrector implements Transformer {
     protected ClassHierarchy classHierarchy = null;
     private Log log;
 
+
+    /**
+     * Selftracing can be turned on by setting FINER level
+     * for logger com.sun.tdk.signaturetest.core.ClassCorrector
+     * It can be done via custom logging config file, for example:
+     * java -Djava.util.logging.config.file=/home/ersh/wrk/st/trunk_prj/logging.properties -jar sigtest.jar
+     * where logging.properties context is:
+     * -------------------------------------------------------------------------
+     * handlers= java.util.logging.FileHandler, java.util.logging.ConsoleHandler
+     * java.util.logging.FileHandler.pattern = sigtest.log.xml
+     * java.util.logging.FileHandler.formatter = java.util.logging.XMLFormatter
+     * com.sun.tdk.signaturetest.core.ClassCorrector.level = FINER
+     * -------------------------------------------------------------------------
+     * In this case any java.util compatible log viewer can be used, for instance
+     * Apache Chainsaw (http://logging.apache.org/chainsaw)
+     */
+    private static Logger logger = Logger.getLogger(ClassCorrector.class.getName());
+
+
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(ClassCorrector.class);
 
     public ClassCorrector(Log log) {
         this.log = log;
+        // not configured externally
+        if(logger.getLevel() == null) {
+            logger.setLevel(Level.OFF);
+        }
     }
 
 
     public ClassDescription transform(ClassDescription cl) throws ClassNotFoundException {
 
         classHierarchy = cl.getClassHierarchy();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(">>>> ClassCorrector for class " + cl.getQualifiedName());
+        }
 
         replaceInvisibleExceptions(cl);
         replaceInvisibleInMembers(cl);
@@ -78,6 +105,10 @@ public class ClassCorrector implements Transformer {
         checkClassTypeParameters(cl);
         removeInvisibleAnnotations(cl);
         additionalChecks(cl);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("<<<< ClassCorrector for class " + cl.getQualifiedName());
+        }
         return cl;
     }
 
@@ -109,7 +140,7 @@ public class ClassCorrector implements Transformer {
                 if ((mr.isMethod()) && !mr.hasModifier(Modifier.PUBLIC) &&
                         !mr.hasModifier(Modifier.PROTECTED) && mr.hasModifier(Modifier.ABSTRACT)) {
                     String invargs[] = {cl.getQualifiedName(), mr.toString()};
-                    log.storeWarning(i18n.getString("ClassCorrector.error.class.useless_abst_public_class", invargs));
+                    log.storeWarning(i18n.getString("ClassCorrector.error.class.useless_abst_public_class", invargs), null);
                 }
             }
         }
@@ -161,10 +192,8 @@ public class ClassCorrector implements Transformer {
             } while (pos != -1);
 
             if (mustCorrect) {
-//                if (verboseCorrector) {
-                    String invargs[] = {mr.getQualifiedName(), throwables, sb.toString()};
-                    log.storeWarning(i18n.getString("ClassCorrector.message.throwslist.changed", invargs));
-//                }
+                String invargs[] = {mr.getQualifiedName(), throwables, sb.toString()};
+                log.storeWarning(i18n.getString("ClassCorrector.message.throwslist.changed", invargs), null);
 
                 mr.setThrowables(sb.toString());
             }
@@ -281,19 +310,19 @@ public class ClassCorrector implements Transformer {
 //                if (verboseCorrector) {
                     if (!mr.isField()) {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        log.storeWarning(i18n.getString("ClassCorrector.message.returntype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.returntype.changed", invargs), logger);
                     } else {
                         String invargs[] = {cl.getName(), mr.getName(), returnType, newName};
-                        log.storeWarning(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs));
+                        log.storeWarning(i18n.getString("ClassCorrector.message.fieldtype.changed", invargs), logger);
                     }
 //                }
             } else {
                 if (!mr.isField()) {
                     String invargs[] = {returnType, mr.toString()};
-                    log.storeError(i18n.getString("ClassCorrector.error.returntype.hidden", invargs));
+                    log.storeError(i18n.getString("ClassCorrector.error.returntype.hidden", invargs), logger);
                 } else {
                     String invargs[] = {returnType, mr.toString()};
-                    log.storeError(i18n.getString("ClassCorrector.error.fieldtype.hidden", invargs));
+                    log.storeError(i18n.getString("ClassCorrector.error.fieldtype.hidden", invargs), logger);
                 }
 
             }
@@ -353,7 +382,7 @@ public class ClassCorrector implements Transformer {
                     }
 
                     String invargs[] = {param, mr.toString(), cl.getQualifiedName()};
-                    log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs));
+                    log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs), logger);
                 }
             }
 
@@ -395,16 +424,16 @@ public class ClassCorrector implements Transformer {
 
                     newMembers.add(newMember);
 
-                    if (verboseCorrector) {
+                    if (logger.isLoggable(Level.FINE)) {
                         String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                        pw.println(i18n.getString("ClassCorrector.message.member.moved", invargs));
+                        logger.fine(i18n.getString("ClassCorrector.message.member.moved", invargs));
                     }
 
 
                 } else {
-                    if (verboseCorrector) {
+                    if (logger.isLoggable(Level.FINE)) {
                         String invargs[] = {mr.getQualifiedName(), mr.getDeclaringClassName(), newMember.getDeclaringClassName()};
-                        pw.println(i18n.getString("ClassCorrector.message.member.removed", invargs));
+                        logger.fine(i18n.getString("ClassCorrector.message.member.removed", invargs));
                     }
                 }
             }
@@ -427,9 +456,9 @@ public class ClassCorrector implements Transformer {
                 String siName = si.getQualifiedName();
 
                 if (isInvisibleClass(siName)) {
-                    if (verboseCorrector) {
+                    if (logger.isLoggable(Level.FINE)) {
                         String invargs[] = {mr.getQualifiedName(), c.getQualifiedName()};
-                        pw.println(i18n.getString("ClassCorrector.message.interface.removed", invargs));
+                        logger.fine(i18n.getString("ClassCorrector.message.interface.removed", invargs));
                     }
                     e.remove();
 
@@ -454,10 +483,11 @@ public class ClassCorrector implements Transformer {
 
             for (Iterator it = c.getMembersIterator(); it.hasNext();) {
                 MemberDescription mr = (MemberDescription) it.next();
-                if (mr.isSuperInterface() && makeThemDirect.contains(mr.getQualifiedName()))
+                if (mr.isSuperInterface() && makeThemDirect.contains(mr.getQualifiedName())) {
                     // NOTE: clone not required here, because MemberCollectionBuilder clone
                     // all non-direct superinterfaces!
                     ((SuperInterface) mr).setDirect(true);
+                }
             }
         }
     }
@@ -479,9 +509,9 @@ public class ClassCorrector implements Transformer {
                     newMember = (MemberDescription) mr.clone();
                     newMember.setupClassName(newName);
 
-                    if (verboseCorrector) {
+                    if (logger.isLoggable(Level.FINE)) {
                         String invargs[] = {c.getQualifiedName(), mr.getQualifiedName(), newName};
-                        pw.println(i18n.getString("ClassCorrector.message.super.changed", invargs));
+                        logger.fine(i18n.getString("ClassCorrector.message.super.changed", invargs));
                     }
                     e.remove();
 
@@ -505,6 +535,7 @@ public class ClassCorrector implements Transformer {
                 SuperInterface m = (SuperInterface) c.findMember(intfs[i]);
                 if (m != null) {
                     m.setDirect(true);
+                    m.setDeclaringClass(c.getQualifiedName());
                 }
             }
         }
@@ -578,9 +609,9 @@ public class ClassCorrector implements Transformer {
             if (mr.isField())
                 if (((FieldDescr) mr).isConstant() && constantNames.contains(mr.getQualifiedName())) {
                     e.remove();
-                    if (verboseCorrector) {
+                    if (logger.isLoggable(Level.FINE)) {
                         String invargs[] = {mr.getQualifiedName(), c.getQualifiedName()};
-                        pw.println(i18n.getString("ClassCorrector.message.const.removed", invargs));
+                        logger.fine(i18n.getString("ClassCorrector.message.const.removed", invargs));
                     }
                 }
         }
@@ -617,10 +648,10 @@ public class ClassCorrector implements Transformer {
                     if (isInvisibleClass(className) && !className.equals(mr.getDeclaringClassName()))
                         if (mr.isMethod() || mr.isConstructor()) {
                             String invargs[] = {className, mr.toString(), mr.getDeclaringClassName()};
-                            log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs));
+                            log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden", invargs), logger);
                         } else {
                             String invargs[] = {className, mr.getQualifiedName()};
-                            log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden2", invargs));
+                            log.storeError(i18n.getString("ClassCorrector.error.parametertype.hidden2", invargs), logger);
                         }
                 }
             }
@@ -682,7 +713,7 @@ public class ClassCorrector implements Transformer {
             accessible = classHierarchy.isAccessible(pname);
         }
         catch (ClassNotFoundException e) {
-            log.storeError(i18n.getString("ClassCorrector.error.missingclass", new String[]{pname}));
+            log.storeError(i18n.getString("ClassCorrector.error.missingclass", new String[]{pname}), logger);
         }
 
         return !accessible;
@@ -705,8 +736,8 @@ public class ClassCorrector implements Transformer {
             boolean documented = classHierarchy.isDocumentedAnnotation(annoName);
 
             if (isInvisibleClass(annoName)) {
-                if (documented)
-                    pw.println(i18n.getString("ClassCorrector.error.invisible_documented_annotation", annoName));
+                if (documented && logger.isLoggable(Level.WARNING))
+                    logger.warning(i18n.getString("ClassCorrector.error.invisible_documented_annotation", annoName));
                 annotations[i] = null;
             } else
                 ++count;
@@ -729,8 +760,4 @@ public class ClassCorrector implements Transformer {
         cl.setAnnoList(visibleAnnotations);
     }
 
-
-    public static PrintWriter pw = new PrintWriter(System.out, true);
-
-    private boolean verboseCorrector = false;
 }

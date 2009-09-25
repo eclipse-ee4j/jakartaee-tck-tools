@@ -40,12 +40,10 @@ public interface Writer {
 
     void setApiVersion(String apiVersion);
     public void addFeature(Format.Feature feature);
-    public void setAllFeatures(FeaturesHolder features);
 
     public void writeHeader();
     public void write(ClassDescription classDescription);
 
     public void close();
-
 
 }

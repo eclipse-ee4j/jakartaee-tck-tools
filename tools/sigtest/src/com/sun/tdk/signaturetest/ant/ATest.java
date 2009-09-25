@@ -68,6 +68,7 @@ import java.util.ArrayList;
  *   "formatHuman" - corresponds to "-formatHuman" option, processes human readable error output.
  *     Default is "false".
  *   "output" - corresponds to "-out filename" option, specifies report file name
+ *   "negative" - inverts result (that is passed status treats as faild and vice versa, default is "false"
  *   "exclude" attribute or nested "exclude" element. Corresponds to -exclude option.
  *     package or class, which is not required to be tested
  *     Samples -
@@ -116,14 +117,20 @@ public class ATest extends ABase {
 
     public void execute() throws BuildException {
         checkParams();
-        SignatureTest s = new SignatureTest();
+        SignatureTest s = testFactory();
         System.setProperty(Result.NO_EXIT, "true");
         s.run(createParams(), new PrintWriter(System.out, true), null);
-        if (!s.isPassed())
-            if (failOnError)
+        if (negative ? s.isPassed() : !s.isPassed()) {
+            if (failOnError) {
                 throw new BuildException(s.toString());
-            else
+            } else {
                 getProject().log(s.toString(), Project.MSG_ERR);
+            }
+        }
+    }
+
+    protected SignatureTest testFactory() {
+        return new SignatureTest();
     }
 
     private String[] createParams() {
@@ -191,4 +198,5 @@ public class ATest extends ABase {
     public void setErrorAll(boolean d) {
         debug = d;
     }
+
 }

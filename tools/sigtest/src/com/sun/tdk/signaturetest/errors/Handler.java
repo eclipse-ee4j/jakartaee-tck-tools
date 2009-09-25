@@ -27,15 +27,15 @@
 
 package com.sun.tdk.signaturetest.errors;
 
+import com.sun.tdk.signaturetest.core.ClassHierarchy;
 import com.sun.tdk.signaturetest.errors.ErrorFormatter.Message;
 import com.sun.tdk.signaturetest.model.*;
-import com.sun.tdk.signaturetest.core.ClassHierarchy;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 import java.util.logging.Level;
+import java.util.regex.PatternSyntaxException;
 
 
 
@@ -43,7 +43,7 @@ import java.util.logging.Level;
  * @author Sergey Glazyrin
  * @author Mikhail Ershov
  */
-abstract class Handler {
+public abstract class Handler {
 
     private Handler next;
 
@@ -56,7 +56,7 @@ abstract class Handler {
         return this;
     }
 
-    public void process(List l, Chain ch) {
+    void process(List l, Chain ch) {
         if (acceptMessageList(l)) {
             writeMessage(l, ch);
         }

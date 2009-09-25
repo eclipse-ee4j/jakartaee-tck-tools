@@ -27,16 +27,11 @@
 
 package com.sun.tdk.apicover;
 
+import com.sun.tdk.signaturetest.model.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.sun.tdk.signaturetest.model.ClassDescription;
-import com.sun.tdk.signaturetest.model.ConstructorDescr;
-import com.sun.tdk.signaturetest.model.FieldDescr;
-import com.sun.tdk.signaturetest.model.MemberDescription;
-import com.sun.tdk.signaturetest.model.MethodDescr;
-import com.sun.tdk.signaturetest.model.PackageDescr;
 
 /**
  * APIVisitor is used to go through api.

@@ -55,27 +55,21 @@ public class JSR68Merger extends FeaturesHolder {
     private Result result;
     private Erasurator erasurator;
 
-    public JSR68Merger(Log log, Result result) {
+    public JSR68Merger(Log log, Result result, FeaturesHolder fh) {
         this.log = log;
         this.result = result;
-        this.addSupportedFeature(FeaturesHolder.ConstInfo);
-        this.addSupportedFeature(FeaturesHolder.BuildMembers);
-        this.addSupportedFeature(FeaturesHolder.TigerInfo);
         erasurator = new Erasurator();
+        setFeatures(fh.getSupportedFeatures());
     }
 
     public VirtualClassDescriptionLoader merge(MergedSigFile[] files, int mode) {
         this.mode = mode;
         VirtualClassDescriptionLoader result = new VirtualClassDescriptionLoader();
         setLogger();
+
+
         for (int i = 0; i < files.length; i++) {
             MergedSigFile mf = files[i];
-            if (!mf.getLoader().hasFeature(FeaturesHolder.ConstInfo))
-                this.removeSupportedFeature(FeaturesHolder.ConstInfo);
-            if (!mf.getLoader().hasFeature(FeaturesHolder.TigerInfo))
-                this.removeSupportedFeature(FeaturesHolder.TigerInfo);
-            if (!mf.getLoader().hasFeature(FeaturesHolder.BuildMembers))
-                this.removeSupportedFeature(FeaturesHolder.BuildMembers);
             Iterator it = mf.getClassSet().values().iterator();
             while (it.hasNext()) {
                 ClassDescription cd = (ClassDescription) it.next();
@@ -562,12 +556,18 @@ public class JSR68Merger extends FeaturesHolder {
         // result should be intersection
         HashSet internalFields = new HashSet(similarClasses[0].getInternalFields());
         HashSet internalClasses = new HashSet(similarClasses[0].getInternalClasses());
+        HashSet xFields = new HashSet(similarClasses[0].getXFields());
+        HashSet xClasses = new HashSet(similarClasses[0].getXClasses());
         for (int i = 1; i < similarClasses.length; i++) {
             internalFields.retainAll(similarClasses[i].getInternalFields());
             internalClasses.retainAll(similarClasses[i].getInternalClasses());
+            xFields.retainAll(similarClasses[i].getXFields());
+            xClasses.retainAll(similarClasses[i].getXClasses());
         }
         result.setInternalClasses(internalClasses);
         result.setInternalFields(internalFields);
+        result.setXFields(xFields);
+        result.setXClasses(xFields);
 
         return true;
     }
@@ -579,6 +579,10 @@ public class JSR68Merger extends FeaturesHolder {
             FieldDescr [] fds = similarClasses[i].getDeclaredFields();
             for (int j = 0; j < fds.length; j++) {
                 FieldDescr fd = fds[j];
+
+                if (!isFeatureSupported(FeaturesHolder.NonStaticConstants) && !fd.isStatic())
+                    fd.setConstantValue(null);
+
                 ArrayList sameFields = new ArrayList();
                 sameFields.add(fd);
                 boolean isUnique = true;
@@ -873,7 +877,7 @@ public class JSR68Merger extends FeaturesHolder {
     }
 
     private void error(String msg) {
-        log.storeError(msg);
+        log.storeError(msg, null);
         result.error(i18n.getString("Merger.error"));
     }
 

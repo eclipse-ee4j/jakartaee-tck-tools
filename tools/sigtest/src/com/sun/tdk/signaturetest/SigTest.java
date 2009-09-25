@@ -27,12 +27,12 @@
 
 package com.sun.tdk.signaturetest;
 
-import com.sun.tdk.signaturetest.errors.ErrorFormatter;
 import com.sun.tdk.signaturetest.classpath.Classpath;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
-import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.errors.ErrorFormatter;
 import com.sun.tdk.signaturetest.model.AnnotationItem;
+import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.plugin.*;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Format;
@@ -44,6 +44,8 @@ import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class represents core part of the signature tests.
@@ -57,7 +59,7 @@ import java.util.Set;
  * <dt><code>-PackageWithoutSubpackages</code> &lt;package&gt;
  * <dt><code>-Exclude</code> &lt;package_or_class_name&gt;
  * <dt><code>-Classpath</code> &lt;path&gt;
- * <dt><code>-Version</code> &lt;version&gt;
+ * <dt><code>-APIversion</code> &lt;version&gt;
  * <dt><code>-static</code>
  * <dt><code>-ClassCacheSize</code> &lt;number&gt;
  * <dt><code>-AllPublic</code>
@@ -78,7 +80,6 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String EXCLUDE_OPTION = "-Exclude";
     public static final String STATIC_OPTION = "-Static";
     public static final String APIVERSION_OPTION = "-ApiVersion";
-    public static final String VERSION_OPTION = "-Version";
     public static final String DEBUG_OPTION = "-Debug";
     public static final String HELP_OPTION = "-Help";
     public static final String QUESTIONMARK = "-?";
@@ -150,7 +151,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
      * @see #isStatic
      */
 
-    protected MemberCollectionBuilder builder;
+    protected MemberCollectionBuilder testableMCBuilder;
     protected ThrowsNormalizer normalizer = new ThrowsNormalizer();
 
     protected boolean isStatic = false;
@@ -199,7 +200,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     static boolean Xverbose = false;
 
-    protected ClassHierarchy classHierarchy;
+    protected ClassHierarchy testableHierarchy;
 
     protected Set errorMessages = new HashSet();
 
@@ -210,14 +211,20 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         errorMessages.clear();
     }
 
-    public void storeError(String s) {
+    public void storeError(String s, Logger utilLogger) {
+        if (utilLogger != null && utilLogger.isLoggable(Level.SEVERE)) {
+            utilLogger.severe(s);
+        }
         errorMessages.add(s);
     }
 
-    public void storeWarning(String s) {
+    public void storeWarning(String s, Logger utilLogger) {
         if (reportWarningAsError) {
-            storeError(s);
+            storeError(s, utilLogger);
             return;
+        }
+        if (utilLogger != null && utilLogger.isLoggable(Level.WARNING)) {
+            utilLogger.warning(s);
         }
         log.println(i18n.getString("SigTest.warning", s));
     }
@@ -267,7 +274,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
 
-        } else if (optionName.equalsIgnoreCase(VERSION_OPTION) || optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
+        } else if (optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
             apiVersion = args[0];
 
         } else if (optionName.equalsIgnoreCase(STATIC_OPTION)) {
@@ -298,7 +305,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(PLUGIN_OPTION)) {
             pluginClass = loadPlugin(args[0]);
             if (pluginClass==null) {
-                throw new CommandLineParserException(i18n.getString("SigTest.error.cant_load.plugin", args[0]));                
+                throw new CommandLineParserException(i18n.getString("SigTest.error.cant_load.plugin", args[0]));
             }
 
         } else if (optionName.equalsIgnoreCase(HELP_OPTION) || optionName.equalsIgnoreCase(QUESTIONMARK)) {
@@ -359,6 +366,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             //  reflection mode
 
             if (isTigerFeaturesTracked) {
+
                 loader = getLoader("com.sun.tdk.signaturetest.loaders.TigerRefgClassDescrLoader", new Class[]{}, new Object[]{});
                 if (loader != null)
                     return loader;
@@ -377,17 +385,17 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     protected ClassDescription load(String name) {
         try {
-            return classHierarchy.load(name);
+            return testableHierarchy.load(name);
         }
         catch (ClassNotFoundException e) {
             if (SigTest.debug)
                 e.printStackTrace();
-            storeError(i18n.getString("SigTest.error.class.missing", name));
+            storeError(i18n.getString("SigTest.error.class.missing", name), null);
         }
         catch (LinkageError e) {
             if (SigTest.debug)
                 e.printStackTrace();
-            storeError(i18n.getString("SigTest.error.class.notlinked", e.getMessage()));
+            storeError(i18n.getString("SigTest.error.class.notlinked", e.getMessage()), null);
         }
         return null;
     }
@@ -415,6 +423,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     protected abstract void usage();
 
+    protected abstract String getComponentName();
 
     protected Plugin loadPlugin(String pluginClassName) {
         try {
@@ -444,6 +453,10 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         injectionPoint.setTransformer(transformer);
     }
 
+    protected boolean addInherited() {
+        return true;
+    }
+
     // TODO implement the method
     public Context getContext() {
         throw new UnsupportedOperationException("This method is not implemented");
@@ -451,6 +464,10 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     public void addFormat(Format format, boolean useByDefault) {
         FileManager.addFormat(format, useByDefault);
+    }
+
+    public void setFormat(Format format) {
+        FileManager.setFormat(format);
     }
 
     protected AnnotationItem[] removeUndocumentedAnnotations(AnnotationItem[] annotations, ClassHierarchy h) {

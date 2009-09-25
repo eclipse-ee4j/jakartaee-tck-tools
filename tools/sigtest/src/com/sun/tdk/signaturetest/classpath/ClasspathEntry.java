@@ -34,7 +34,7 @@ import java.util.LinkedHashSet;
  * @author Maxim Sokolnikov
  * @author Serguei Ivashin
  */
-abstract class ClasspathEntry implements Classpath {
+public abstract class ClasspathEntry implements Classpath {
 
     protected static final String JAVA_CLASSFILE_EXTENSION = ".class";
     protected static final int JAVA_CLASSFILE_EXTENSION_LEN = JAVA_CLASSFILE_EXTENSION.length();

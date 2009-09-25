@@ -34,6 +34,6 @@ import java.util.List;
 /**
  * @author Roman Makarchuk
  */
-interface Parser {
+public interface Parser {
     public ClassDescription parseClassDescription(String classDefinition, List /*String*/ members);
 }

@@ -27,7 +27,11 @@
 
 package com.sun.tdk.signaturetest;
 
+import com.sun.tdk.signaturetest.util.BatchFileParser;
+import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
     // Command line options
@@ -37,6 +41,7 @@ public class Main {
     private static final String COMMAND_SETUP_AND_TEST = "SetupAndTest";
     private static final String COMMAND_MERGE = "Merge";
     private static final String COMMAND_HELP = "-help";
+    private static final String COMMAND_VERSION = "-v";
     
     private static I18NResourceBundle i18n =
             I18NResourceBundle.getBundleForClass(Main.class);
@@ -75,6 +80,12 @@ public class Main {
             isSigtestdevJar = false;
         }
         jar = isSigtestdevJar ? "sigtestdev.jar" : "sigtest.jar";
+
+        try {
+            args = BatchFileParser.processParameters(args);
+        } catch (CommandLineParserException ex) {
+            ex.printStackTrace();
+        }
         
         if (args.length == 0
                 || (args.length == 1
@@ -105,10 +116,17 @@ public class Main {
                 }
             } else if (args[0].equalsIgnoreCase(COMMAND_MERGE)) {
                 Merge.main(otherArgs);
+            } else if (args[0].equalsIgnoreCase(COMMAND_VERSION)) {
+                printVersionInfo();
+                System.exit(1);
             } else {
                 commonUsage();
                 System.exit(1);
             }
         }
+    }
+
+    private static void printVersionInfo() {
+        System.out.println(Version.getVersionInfo());
     }
 }

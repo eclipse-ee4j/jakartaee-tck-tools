@@ -36,9 +36,7 @@ import com.sun.tdk.signaturetest.loaders.VirtualClassDescriptionLoader;
 import com.sun.tdk.signaturetest.merge.JSR68Merger;
 import com.sun.tdk.signaturetest.merge.MergedSigFile;
 import com.sun.tdk.signaturetest.model.ClassDescription;
-import com.sun.tdk.signaturetest.sigfile.FeaturesHolder;
-import com.sun.tdk.signaturetest.sigfile.FileManager;
-import com.sun.tdk.signaturetest.sigfile.MultipleFileReader;
+import com.sun.tdk.signaturetest.sigfile.*;
 import com.sun.tdk.signaturetest.sigfile.Writer;
 import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
@@ -49,17 +47,17 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 
 public class Merge extends SigTest implements Log {
 
     // Command line options
-    private static final String FILES_OPTION = "-Files";
-    private static final String WRITE_OPTION = "-Write";
-    private static final String BINARY_OPTION = "-Binary";
-    private static final String HELP_OPTION = "-Help";
+    public static final String FILES_OPTION = "-Files";
+    public static final String WRITE_OPTION = "-Write";
+    public static final String BINARY_OPTION = "-Binary";
 
-    public static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Merge.class);
+    private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Merge.class);
     private boolean binary = false;
     private String resultedFile;
     private String[] signatureFiles;
@@ -143,7 +141,7 @@ public class Merge extends SigTest implements Log {
         } catch (IOException e) {
             throw new CommandLineParserException(i18n.getString("Merge.could.not.resolve.file", resultedFile));
         }
-        
+
         for (int i = 0; i < signatureFiles.length; i++) {
             try {
                 File sigFile = (new File(signatureFiles[i])).getCanonicalFile();
@@ -154,7 +152,7 @@ public class Merge extends SigTest implements Log {
                 throw new CommandLineParserException(i18n.getString("Merge.could.not.resolve.file", signatureFiles[i]));
             }
         }
-        
+
         try {
             FileOutputStream f = new FileOutputStream(resultedFile);
             f.close();
@@ -186,17 +184,24 @@ public class Merge extends SigTest implements Log {
 
         String msg;
         MergedSigFile[] files = new MergedSigFile[signatureFiles.length];
-
+        PrintWriter log = new PrintWriter(System.out);
+        FeaturesHolder fh = new FeaturesHolder();
         for (int i = 0; i < signatureFiles.length; i++) {
-            PrintWriter log = new PrintWriter(System.out);
-            MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE);
             String sigFiles = signatureFiles[i];
+            MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE);
             if (!in.readSignatureFiles(testURL, sigFiles)) {
                 msg = i18n.getString("SignatureTest.error.sigfile.invalid", sigFiles);
                 in.close();
                 error(msg);
             }
             files[i] = new MergedSigFile(in, this);
+            if (i == 0) {
+                fh.setFeatures(in.getSupportedFeatures());
+            } else {
+                fh.retainFeatures(in.getSupportedFeatures());
+            }
+
+            // why do we need to build members here ????
             MemberCollectionBuilder builder = new MemberCollectionBuilder(new SilentLog());
 
             Iterator it = files[i].getClassSet().values().iterator();
@@ -204,7 +209,7 @@ public class Merge extends SigTest implements Log {
                 ClassDescription c = (ClassDescription) it.next();
                 c.setHierarchy(files[i].getClassHierarchy());
                 try {
-                    if (in.hasFeature(FeaturesHolder.BuildMembers))
+                    if (in.isFeatureSupported(FeaturesHolder.BuildMembers))
                         builder.createMembers(c, true, true, false);
                     normalizer.normThrows(c, true);
                 } catch (ClassNotFoundException e) {
@@ -213,7 +218,7 @@ public class Merge extends SigTest implements Log {
             }
         }
 
-        JSR68Merger merger = new JSR68Merger(this, this);
+        JSR68Merger merger = new JSR68Merger(this, this, fh);
         VirtualClassDescriptionLoader result = merger.merge(files,
                 binary ? JSR68Merger.BINARY_MODE : JSR68Merger.SOURCE_MODE);
 
@@ -234,20 +239,28 @@ public class Merge extends SigTest implements Log {
                 builder.createMembers(c, false, true, false);
                 normalizer.normThrows(c, true);
             } catch (ClassNotFoundException e) {
-                storeError(i18n.getString("Merge.warning.message.classnotfound", e.getMessage()));
+                storeError(i18n.getString("Merge.warning.message.classnotfound", e.getMessage()), null);
             }
         }
 
         try {
             //write header to the signature file
-            Writer writer = FileManager.getDefaultFormat().getWriter();
+            Writer writer = FileManager.getWriter(merger.getSupportedFeatures());
+            if (writer == null) {
+                failed("Could not find a writer for given sigtest file formats.");
+                return;
+            }
+            
             writer.setApiVersion("");
             if (resultedFile != null) {
                 writer.init(new PrintWriter(new OutputStreamWriter(new FileOutputStream(resultedFile), "UTF8")));
             } else {
                 writer.init(new PrintWriter(System.out));
             }
-            writer.setAllFeatures(merger);
+            Iterator it = merger.getSupportedFeatures().iterator();
+            while (it.hasNext()) {
+                writer.addFeature((Format.Feature) it.next());
+            }
             writer.writeHeader();
 
             // scan class and writes definition to the signature file
@@ -273,20 +286,27 @@ public class Merge extends SigTest implements Log {
     protected void usage() {
         String nl = System.getProperty("line.separator");
         StringBuffer sb = new StringBuffer();
-
-        sb.append(i18n.getString("Setup.usage.start"));
+        sb.append(nl).append(getComponentName() + " - " + i18n.getString("SignatureTest.usage.version", Version.Number));
+        sb.append(nl).append(i18n.getString("Setup.usage.start"));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Merge.usage.files", FILES_OPTION));
         sb.append(nl).append(i18n.getString("Merge.usage.write", WRITE_OPTION));
         sb.append(nl).append(i18n.getString("Merge.usage.binary", BINARY_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.help", HELP_OPTION));
+        sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.end"));
         System.err.println(sb.toString());
     }
 
+    protected String getComponentName() {
+        return "Merge";
+    }
+
     class SilentLog implements Log {
-        public void storeError(String s) {
+        public void storeError(String s, Logger utilLogger) {
         }
-        public void storeWarning(String s) {
+        public void storeWarning(String s, Logger utilLogger) {
         }
     }
 

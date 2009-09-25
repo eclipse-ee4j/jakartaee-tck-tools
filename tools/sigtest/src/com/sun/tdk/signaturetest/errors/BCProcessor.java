@@ -28,8 +28,8 @@
 
 package com.sun.tdk.signaturetest.errors;
 
-import com.sun.tdk.signaturetest.model.*;
 import com.sun.tdk.signaturetest.core.ClassHierarchy;
+import com.sun.tdk.signaturetest.model.*;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.PrintWriter;
@@ -48,6 +48,7 @@ public class BCProcessor extends HumanErrorFormatter {
     private boolean extensibleInterfaces;
     private ClassHierarchy clHier, sfHier;
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(BCProcessor.class);
+
     /**
      * Assign the given <b>PrintWriter</b> to print error messages.
      */
@@ -64,7 +65,7 @@ public class BCProcessor extends HumanErrorFormatter {
         Handler[] handlers = {
                 new Rule1_1(), new Rule1_2(), new Rule1_3(), new Rule2_1(),
                 new Rule2_2(), new Rule2_3(), new Rule2_4(), new Rule2_5(),
-                new Rule2_7(), new Rule3_1(), new Rule3_3(), new Rule3_4(),
+                new Rule2_7(), new Rule2_8(), new Rule3_1(), new Rule3_3(), new Rule3_4(),
                 new Rule3_6(), new Rule3_8(), new Rule3_10(), new Rule3_11(),
                 new Rule3_12(), new Rule4_1(), new Rule4_2(), new Rule4_6(),
                 new Rule4_7(), new Rule4_8(), new Rule5_1_2(), new Rule5_2_3(),
@@ -203,15 +204,22 @@ public class BCProcessor extends HumanErrorFormatter {
     /*
     1.3 Narrowing type or member visibility - from public to non-public,
     from protected to package or private (actually it means type or member disappearing)
-    UPD 28.08 It looks like this is safety change visibility from protected to invisible for final classes
 
     Breaks - Both
+
+    UPD 28.08.2008 It looks like this is safety change visibility from protected
+    to invisible for final classes
+
+    UPD 16.09.2009 For abstract classes constructors can change an access
+    from public to protected
+
     */
     class Rule1_3 extends PairedHandler {
 
         protected boolean proc() {
             boolean problem = m1.hasModifier(Modifier.PUBLIC) && !m2.hasModifier(Modifier.PUBLIC);
             if (problem) {
+
                 newM.definition = i18n.getString("BCProcessor.error.1_3"); // "E1.3 - Narrowing type or member visibility";
                 setMessageLevel(newM);
                 return true;
@@ -410,6 +418,19 @@ public class BCProcessor extends HumanErrorFormatter {
             m.definition = i18n.getString("BCProcessor.error.2_7"); //"E2.7 - Removing member from annotation type";
             setMessageLevel(m);
             ch.addMessage(m);
+        }
+    }
+
+    class Rule2_8 extends MethodPairedHandler {
+        protected boolean proc() {
+            if (me1.messageType == MessageType.MISS_METHS && me2.messageType == MessageType.ADD_METHS) {
+                if (meth1.getSignature().equals(meth2.getSignature())
+                        && meth1.hasModifier(Modifier.HASDEFAULT) && !meth2.hasModifier(Modifier.HASDEFAULT)) {
+                    newM.definition = i18n.getString("BCProcessor.error.2_8"); //  Removing default value from member of annotation type
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -699,7 +720,7 @@ public class BCProcessor extends HumanErrorFormatter {
                 ClassDescription cd = clHier.load(m.className);
                 MethodDescr md = (MethodDescr) m.errorObject;
 
-                if(canBeSubclassed(m.className, sfHier)) {
+                if (canBeSubclassed(m.className, sfHier)) {
                     if (md.isAbstract()) {
                         m.definition = i18n.getString("BCProcessor.error.5_2"); //"E5.2 - Adding abstract methods";
                         ch.addMessage(m);

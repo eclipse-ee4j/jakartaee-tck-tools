@@ -36,6 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * <b>ReflClassDescrLoader</b> is intended to compile information about
@@ -48,7 +49,7 @@ import java.util.Arrays;
  * @version 05/03/22
  * @see com.sun.tdk.signaturetest.model.ClassDescription
  */
-public class ReflClassDescrLoader implements ClassDescriptionLoader {
+public class ReflClassDescrLoader implements ClassDescriptionLoader, LoadingHints {
 
     public static boolean debug = false;
 
@@ -166,17 +167,19 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader {
 
             String type = fld.getType();
 
-            if (fld.isStatic() && fld.isFinal() && (PrimitiveTypes.isPrimitive(type) || "java.lang.String".equals(type))) {
-                try {
-                    fields[i].setAccessible(true);
-                    Object v = fields[i].get(null);
-                    String val = MemberDescription.valueToString(v);
-                    fld.setConstantValue(val) /*valueToString(v)*/;
-                } catch (Throwable e) {
-                    // catch error or exception that may be thrown during static class initialization
-                    if (debug) {
-                        System.err.println("Error during reading field value " + fld.toString());
-                        e.printStackTrace(System.err);
+            if (fld.isFinal() && (PrimitiveTypes.isPrimitive(type) || "java.lang.String".equals(type))) {
+                if (!hasHint(LoadingHints.DONT_READ_VALUES)) {
+                    try {
+                        fields[i].setAccessible(true);
+                        Object v = fields[i].get(null);
+                        String val = MemberDescription.valueToString(v);
+                        fld.setConstantValue(val) /*valueToString(v)*/;
+                    } catch (Throwable e) {
+                        // catch error or exception that may be thrown during static class initialization
+                        if (debug) {
+                            System.err.println("Error during reading field value " + fld.toString());
+                            e.printStackTrace(System.err);
+                        }
                     }
                 }
             }
@@ -191,6 +194,12 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader {
             InnerDescr m = new InnerDescr();
             cd.setNested(i, m);
             m.setModifiers(nested[i].getModifiers());
+
+            // -----
+            // workaround of a problem with obsfucated inner classes whith no dollar sign in name
+            m.setupInnerClassName(cd.getQualifiedName(), nested[i].getName());
+            // -----
+
             m.setupClassName(nested[i].getName());
         }
     }
@@ -292,7 +301,7 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader {
         return throwables.toString();
     }
 
-    
+
     private static String getArgs(Class[] args) {
         StringBuffer sb = new StringBuffer();
 
@@ -305,5 +314,13 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader {
         return sb.toString();
     }
 
+    private HashSet hints = new HashSet();
 
+    public void addLoadingHint(Hint hint) {
+        hints.add(hint);
+    }
+
+    private boolean hasHint(Hint hint) {
+        return hints.contains(hint);
+    }
 }

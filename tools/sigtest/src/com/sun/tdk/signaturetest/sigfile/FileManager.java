@@ -37,6 +37,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Mikhail Ershov
@@ -76,6 +77,38 @@ public class FileManager {
         return currentLine;
     }
 
+    /**
+     * Returns the latest Writer for format supported given set of features
+     */
+    public static Writer getWriter(Set features) {
+
+        List applicableFormats = new ArrayList(formats.size());
+
+        for (int i = 0; i < formats.size(); i++) {
+            Format format = (Format) formats.get(i);
+            Set formatFeatures = format.getSupportedFeatures();
+            if (features.equals(formatFeatures))
+                applicableFormats.add(format);
+        }
+
+        double latestVersion = 0;
+        Writer latestWriter = null;
+
+        for (int i = 0; i < applicableFormats.size(); i++) {
+            Format f = (Format) applicableFormats.get(i);
+
+            String[] sv = f.getVersion().split(" ");
+            double v = Double.parseDouble(sv[sv.length - 1].substring(1));
+
+            if (v > latestVersion) {
+                latestVersion = v;
+                latestWriter = f.getWriter();
+            }
+        }
+        return latestWriter;
+    }
+
+
     public static Reader getReader(URL fileURL) {
         String format = getFormat(fileURL);
         if (format != null) {
@@ -100,12 +133,19 @@ public class FileManager {
             defaultFormat = frm;
     }
 
-    private static Format defaultFormat = new F40Format();
+    public static void setFormat(Format frm) {
+        formats.clear();
+        formats.add(frm);
+        defaultFormat = frm;
+    }
+
+    private static Format defaultFormat = new F41Format();
     private static List formats = new ArrayList();
 
     static {
         formats.add(defaultFormat);
         formats.add(new F21Format());
         formats.add(new F31Format());
+        formats.add(new F40Format());
     }
 }

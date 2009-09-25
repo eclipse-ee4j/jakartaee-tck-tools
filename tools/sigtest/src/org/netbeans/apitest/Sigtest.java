@@ -167,7 +167,7 @@ public final class Sigtest extends Task {
             throw new BuildException("Unknown action: " + action);
         }
         if (version != null) {
-            arg.add("-Version");
+            arg.add("-ApiVersion");
             arg.add(version);
         }
 

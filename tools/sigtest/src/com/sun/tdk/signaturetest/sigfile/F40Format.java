@@ -32,11 +32,12 @@ package com.sun.tdk.signaturetest.sigfile;
  */
 public class F40Format extends Format {
 
-    {
+    public F40Format() {
         addSupportedFeature(FeaturesHolder.ConstInfo);
         addSupportedFeature(FeaturesHolder.TigerInfo);
         addSupportedFeature(FeaturesHolder.MergeModeSupported);
         addSupportedFeature(FeaturesHolder.BuildMembers);
+        addSupportedFeature(FeaturesHolder.ListOfHiders);
     }
 
     public String getVersion() {

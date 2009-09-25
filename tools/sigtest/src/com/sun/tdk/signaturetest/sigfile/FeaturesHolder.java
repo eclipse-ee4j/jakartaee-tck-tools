@@ -27,32 +27,54 @@
 
 package com.sun.tdk.signaturetest.sigfile;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class FeaturesHolder {
-    private Set supportedFeatures = new HashSet();
+    private Set supportedFeatures;
     public static final Feature ConstInfo = new Feature("#NoConstInfo");
     public static final Feature TigerInfo = new Feature("#NoTigerFeaturesInfo");
     public static final Feature MergeModeSupported = new Feature("#MergeModeSupported");
     public static final Feature BuildMembers = new Feature("#BuildMembers");
+    public static final Feature NonStaticConstants = new Feature("#NonStaticConstants");
+    public static final Feature ListOfHiders = new Feature("#ListOfHiders");
+    public static final Feature XHiders = new Feature("#XHiders");
 
-    protected void addSupportedFeature(Feature feature) {
+    public void addSupportedFeature(Feature feature) {
+        ensureInitialized();
         supportedFeatures.add(feature);
     }
-    
+
+    public Set getSupportedFeatures() {
+        ensureInitialized();
+        return supportedFeatures;
+    }
+
+    private void ensureInitialized() {
+        if (supportedFeatures == null) {
+            supportedFeatures = new HashSet();
+        }
+    }
+
     protected void removeSupportedFeature(Feature feature) {
+        ensureInitialized();
         supportedFeatures.remove(feature);
     }
 
     public boolean isFeatureSupported(Feature feature) {
+        ensureInitialized();
         return supportedFeatures.contains(feature);
     }
 
-    public Set getAllSupportedFeatures() {
-        Set fs = new HashSet();
-        fs.addAll(supportedFeatures);
-        return fs;
+    protected boolean isInitialized() {
+        return supportedFeatures != null;
+    }
+
+    public void setFeatures(Set features) {
+        supportedFeatures = new HashSet(features);
+    }
+
+    public void retainFeatures(Set features) {
+        supportedFeatures.retainAll(features);
     }
 
     public static class Feature {

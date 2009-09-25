@@ -78,6 +78,16 @@ public class MemberCollection {
         return members.iterator();
     }
 
+    public void changeMember(MemberDescription oldMember, MemberDescription newMember) {
+        if (MemberType.CLASS==newMember.getMemberType())
+            throw new IllegalArgumentException("Instances of ClassDescription are not allowed here!");
+        if (!contains(oldMember))
+            throw new IllegalArgumentException("Member " + oldMember + " not found!");
+        members.remove(oldMember);
+        members.add(newMember);
+    }
+
+
     // TODO (Roman Makarchuk) weak performance!
     public MemberDescription find(MemberDescription mr) {
         for (Iterator e = members.iterator(); e.hasNext();) {
@@ -87,6 +97,16 @@ public class MemberCollection {
         }
         return null;
     }
+
+    public MemberDescription findSimilar(MemberDescription mr) {
+        for (Iterator e = members.iterator(); e.hasNext();) {
+            MemberDescription member = (MemberDescription) e.next();
+            if (member.getType().equals(mr.getType()) && member.getName().equals(mr.getName()))
+                return member;
+        }
+        return null;
+    }
+
 
     public int getMembersCount(MemberType memberType, String fqname) {
         int count = 0;

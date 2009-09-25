@@ -59,6 +59,9 @@ public interface PluginAPI {
     // add new format to read/write signature files
     void addFormat(Format format, boolean useByDefault);
 
+    // set format to read/write signature files
+    void setFormat(Format format);
+
     // set own classDesription loader
     void setClassDescrLoader(ClassDescriptionLoader loader);
 

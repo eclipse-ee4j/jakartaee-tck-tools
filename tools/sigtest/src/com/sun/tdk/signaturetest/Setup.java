@@ -30,8 +30,8 @@ package com.sun.tdk.signaturetest;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.model.ClassDescription;
-import com.sun.tdk.signaturetest.model.MemberType;
 import com.sun.tdk.signaturetest.model.MemberDescription;
+import com.sun.tdk.signaturetest.model.MemberType;
 import com.sun.tdk.signaturetest.sigfile.FeaturesHolder;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Writer;
@@ -152,8 +152,6 @@ public class Setup extends SigTest {
 //        assert( pw != null );
         log = pw;
 
-        ClassCorrector.pw = log;
-
         outerClassesNumber = 0;
         innerClassesNumber = 0;
         includedClassesNumber = 0;
@@ -194,7 +192,6 @@ public class Setup extends SigTest {
 
         parser.addOption(WITHOUTSUBPACKAGES_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(EXCLUDE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
-        parser.addOption(VERSION_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(APIVERSION_OPTION, OptionInfo.option(1), optionsDecoder);
 
         parser.addOption(STATIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -315,7 +312,7 @@ public class Setup extends SigTest {
         String nl = System.getProperty("line.separator");
         StringBuffer sb = new StringBuffer();
 
-        sb.append(i18n.getString("Setup.usage.version", Version.Number));
+        sb.append(getComponentName() + " - " + i18n.getString("Setup.usage.version", Version.Number));
         sb.append(nl).append(i18n.getString("Setup.usage.start"));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.classpath", CLASSPATH_OPTION));
@@ -340,6 +337,9 @@ public class Setup extends SigTest {
         System.err.println(sb.toString());
     }
 
+    protected String getComponentName() {
+        return "Setup";
+    }
 
     private int outerClassesNumber = 0,
             innerClassesNumber = 0,
@@ -384,9 +384,9 @@ public class Setup extends SigTest {
 
         classpath.setListToBegin();
 
-        ClassDescriptionLoader loader = getClassDescrLoader();
-        classHierarchy = new ClassHierarchyImpl(loader, trackMode);
-        builder = new MemberCollectionBuilder(this);
+        ClassDescriptionLoader testableLoader = getClassDescrLoader();
+        testableHierarchy = new ClassHierarchyImpl(testableLoader, trackMode);
+        testableMCBuilder = new MemberCollectionBuilder(this);
 
         // adds classes which are member of classes from tracked package
         // and sorts class names
@@ -401,7 +401,7 @@ public class Setup extends SigTest {
 
 
         if (isClosedFile) {
-            ClassSet closedSetOfClasses = new ClassSet(classHierarchy, true);
+            ClassSet closedSetOfClasses = new ClassSet(testableHierarchy, true);
 
             // add all classes including non-accessible
             for (Iterator i = packageClasses.iterator(); i.hasNext();) {
@@ -417,7 +417,7 @@ public class Setup extends SigTest {
                 name = (String) i.next();
                 ClassDescription c = load(name);
 
-                if (!classHierarchy.isAccessible(c))
+                if (!testableHierarchy.isAccessible(c))
                     invisibleClasses.add(name);
             }
 
@@ -455,7 +455,7 @@ public class Setup extends SigTest {
                 name = (String) i.next();
                 ClassDescription c = load(name);
 
-                if (!classHierarchy.isAccessible(c))
+                if (!testableHierarchy.isAccessible(c))
                     continue;
 
                 // do not write excluded classes
@@ -469,11 +469,10 @@ public class Setup extends SigTest {
                 else
                     innerClassesNumber++;
 
-
                 try {
-                    builder.createMembers(c, true, true, false);
+                    testableMCBuilder.createMembers(c, addInherited(), true, false);
                     normalizer.normThrows(c, true);
-                    removeUndocumentedAnnotations(c, classHierarchy);
+                    removeUndocumentedAnnotations(c, testableHierarchy);
                 } catch (ClassNotFoundException e) {
                     setupProblem(i18n.getString("Setup.error.message.classnotfound", e.getMessage()));
                 }
@@ -514,7 +513,7 @@ public class Setup extends SigTest {
 
                 String clsName = (String) it.next();
 
-                String[] subClasses = classHierarchy.getDirectSubclasses(clsName);
+                String[] subClasses = testableHierarchy.getDirectSubclasses(clsName);
 
                 if (subClasses.length > 0) {
 
@@ -565,7 +564,6 @@ public class Setup extends SigTest {
         }
     }
 
-
     /**
      * initialize table of the nested classes and returns Vector of the names
      * required to be tracked.
@@ -581,8 +579,8 @@ public class Setup extends SigTest {
             if (isPackageMember(name)) {
                 includedClassesNumber++;
                 try {
-                    ClassDescription c = classHierarchy.load(name);
-                    if (classHierarchy.isAccessible(c)) {
+                    ClassDescription c = testableHierarchy.load(name);
+                    if (testableHierarchy.isAccessible(c)) {
                         packageClasses.add(name);
                         if (!c.isTiger()) {
                             nonTigerCount++;

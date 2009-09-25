@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * @author Sergey Glazyrin
  * @author Mikhail Ershov
  */
-class Chain {
+public class Chain {
 
     private List mainList;
     private TreeSet processedMessages;

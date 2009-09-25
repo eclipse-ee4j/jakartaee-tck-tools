@@ -121,9 +121,10 @@ class F31Parser implements Parser {
         if (alist.size() != 0) {
 
             AnnotationItem[] tmp = new AnnotationItem[alist.size()];
+            AnnotationParser par = new AnnotationParser();
 
             for (int i = 0; i < alist.size(); ++i)
-                tmp[i] = AnnotationItem.parse((String) alist.get(i));
+                tmp[i] = par.parse((String) alist.get(i));
 
             fid.setAnnoList(tmp);
             alist.clear();

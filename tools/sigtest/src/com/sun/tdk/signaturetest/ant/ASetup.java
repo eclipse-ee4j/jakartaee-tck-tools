@@ -60,6 +60,8 @@ import java.util.ArrayList;
  * Optional parameters:
  *   "failonerror" - Stop the build process if the command exits with an error. Default is "false".
  *   "apiVersion" -  corresponds to -apiVersion. Set API version for signature file
+ *   "nonclosedfile" - Corresponds to -NonClosedFile option, Default is "false".
+ *   "negative" - inverts result (that is passed status treats as faild and vice versa, default is "false"
  *   "exclude" attribute or nested "exclude" element. Corresponds to -exclude option.
  *     package or class, which is not required to be tested
  *     Samples -
@@ -98,37 +100,51 @@ import java.util.ArrayList;
  */
 public class ASetup extends ABase {
 
+    private boolean nonclosedfile=false;
+
     public void execute() throws BuildException {
         checkParams();
         Setup s = new Setup();
         System.setProperty(Result.NO_EXIT, "true");
         s.run(createParams(), new PrintWriter(System.out, true), null);
-        if (!s.isPassed())
-            if (failOnError)
+        if (negative ? s.isPassed() : !s.isPassed()) {
+            if (failOnError) {
                 throw new BuildException(s.toString());
-            else
+            } else {
                 getProject().log(s.toString(), Project.MSG_ERR);
+            }
+        }
     }
 
     private String[] createParams() {
         ArrayList params = new ArrayList();
         createBaseParameters(params);
+        if (nonclosedfile) {
+            params.add(Setup.NONCLOSEDFILE_OPTION);
+        }
         return (String[]) params.toArray(new String[]{});
     }
 
     private void checkParams() throws BuildException {
         // classpath
-        if (classpath == null || classpath.size() == 0)
+        if (classpath == null || classpath.size() == 0) {
             throw new BuildException("Classpath is not specified");
+        }
 
         // package
-        if (pac.size() == 0)
+        if (pac.size() == 0) {
             throw new BuildException("Package is not specified");
+        }
 
         // filename
-        if (fileName == null || fileName.length() == 0)
+        if (fileName == null || fileName.length() == 0) {
             throw new BuildException("Filename is not specified");
+        }
 
+    }
+
+    public void setNonclosedFile(boolean b) {
+        nonclosedfile = b;
     }
 
 }

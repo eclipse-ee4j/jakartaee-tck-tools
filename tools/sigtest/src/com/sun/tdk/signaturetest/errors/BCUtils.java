@@ -28,9 +28,9 @@
 
 package com.sun.tdk.signaturetest.errors;
 
+import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.FieldDescr;
 import com.sun.tdk.signaturetest.model.MethodDescr;
-import com.sun.tdk.signaturetest.model.ClassDescription;
 
 import java.util.List;
 

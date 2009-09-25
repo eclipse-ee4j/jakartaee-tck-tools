@@ -60,6 +60,10 @@ class F40Parser implements Parser {
 
             String str = (String) it.next();
 
+            if (parseFutureSpecific(str, classDescription)) {
+                continue;
+            }
+
             if (str.startsWith(AnnotationItem.ANNOTATION_PREFIX)) {
                 alist.add(str);
             } else if (str.startsWith(F40Format.HIDDEN_FIELDS)) {
@@ -140,7 +144,14 @@ class F40Parser implements Parser {
         return classDescription;
     }
 
-    private Set parseInternals(String str) {
+    /*
+     * This method can be overriden in subclasses
+     */
+    protected boolean parseFutureSpecific(String str, ClassDescription cl) {
+        return false;
+    }
+
+    protected Set parseInternals(String str) {
 
         Set result = new HashSet();
         int startPos = str.indexOf(' ') + 1;
@@ -166,9 +177,10 @@ class F40Parser implements Parser {
         if (alist.size() != 0) {
 
             AnnotationItem[] tmp = new AnnotationItem[alist.size()];
+            AnnotationParser par = new AnnotationParser();
 
             for (int i = 0; i < alist.size(); ++i)
-                tmp[i] = AnnotationItem.parse((String) alist.get(i));
+                tmp[i] = par.parse((String) alist.get(i));
 
             fid.setAnnoList(tmp);
             alist.clear();
@@ -320,10 +332,11 @@ class F40Parser implements Parser {
     private MemberDescription parse(SuperClass superCls, String def) {
 
         init(superCls, def);
-
+        superCls.setModifiers(Modifier.scanModifiers(elems));
         int n = elems.size();
-        if (n == 0)
+        if (n == 0) {
             err();
+        }
         superCls.setupGenericClassName((String) elems.get(n - 1));
 
         return superCls;
@@ -332,12 +345,13 @@ class F40Parser implements Parser {
     private MemberDescription parse(SuperInterface superIntf, String def) {
 
         init(superIntf, def);
-
+        superIntf.setModifiers(Modifier.scanModifiers(elems));
         int n = elems.size();
-        if (n == 0)
+        if (n == 0) {
             err();
-
+        }
         superIntf.setupGenericClassName((String) elems.get(n - 1));
+        
         return superIntf;
     }
 

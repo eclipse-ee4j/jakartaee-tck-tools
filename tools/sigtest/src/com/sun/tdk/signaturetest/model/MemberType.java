@@ -96,8 +96,12 @@ public final class MemberType implements Comparable, Serializable {
         return applicableModifiers;
     }
 
-    int getModifiersMask() {
+    public int getModifiersMask() {
         return modifiersMask;
+    }
+
+    public void setModifiersMask(int m) {
+        modifiersMask = m;
     }
 
     boolean isCompatible(int m1, int m2) {
@@ -147,6 +151,6 @@ public final class MemberType implements Comparable, Serializable {
     private int modifiersMask;
     private int trackedModifiersMask;     // used to clean non-tracked modifiers quickly
 
-    private static final MemberType[] knownTypes = {CLASS, SUPERCLASS, SUPERINTERFACE, CONSTRUCTOR, METHOD, FIELD, INNER};
+    public static final MemberType[] knownTypes = {CLASS, SUPERCLASS, SUPERINTERFACE, CONSTRUCTOR, METHOD, FIELD, INNER};
 }
 

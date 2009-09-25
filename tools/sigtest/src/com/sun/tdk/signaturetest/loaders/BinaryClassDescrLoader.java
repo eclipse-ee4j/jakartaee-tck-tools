@@ -48,7 +48,7 @@ import java.util.*;
  * @author Maxim Sokolnikov
  * @author Roman Makarchuk
  */
-public class BinaryClassDescrLoader implements ClassDescriptionLoader {
+public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHints {
 
     public static boolean ANNOTATION_DEFAULT_VALUES_ON = true;
 
@@ -181,7 +181,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             constants = null;
         }
     }
-    
+
     private boolean ignoreAnnotations = false;
 
     /**
@@ -259,6 +259,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
     private static final int MAGIC = 0xCAFEBABE;
 
     private static final int TIGER_CLASS_VERSION = 49;
+    private static final int J7_CLASS_VERSION = 51;
 
     //  Constant pool tags (see the JVM II 4.4, p. 103)
     private static final int
@@ -346,6 +347,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
 
         try {
             readClass(c, classData);
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
         finally {
             c.cleanup();
@@ -521,9 +524,12 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                         c.setModifiers(x);
                     }
 
-                    // skip synthetic inner classes
-                    if (Modifier.hasModifier(x, Modifier.ACC_SYNTHETIC))
-                        continue;
+                    if (!hasHint(LoadingHints.READ_SYNTETHIC)) {
+                        // skip synthetic inner classes
+                        if (Modifier.hasModifier(x, Modifier.ACC_SYNTHETIC)) {
+                            continue;
+                        }
+                    }
 
                     // Warning: javax.crypto.SunJCE_m reported as inner class of javax.crypto.Cipher
                     // so additional check inner.indexOf(outer) added!
@@ -563,11 +569,13 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             FieldAttrs attrs = new FieldAttrs();
             attrs.read(c, classData);
 
-            if (fid.hasModifier(Modifier.ACC_SYNTHETIC)) {
-                if (SigTest.debug)
-                    System.out.println(i18n.getString("BinaryClassDescrLoader.message.synthetic_field_skipped",
-                            fid.getType() + " " + fid.getQualifiedName()));
-                continue;
+            if (!hasHint(LoadingHints.READ_SYNTETHIC)) {
+                if (fid.hasModifier(Modifier.ACC_SYNTHETIC)) {
+                    if (SigTest.debug)
+                        System.out.println(i18n.getString("BinaryClassDescrLoader.message.synthetic_field_skipped",
+                                fid.getType() + " " + fid.getQualifiedName()));
+                    continue;
+                }
             }
 
             flds.add(fid);
@@ -575,7 +583,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             fid.setAnnoList(AnnotationItem.toArray(attrs.annolist));
             tmpflds.add(attrs.signature);
 
-            if (fid.isStatic() && fid.isFinal() && attrs.value != null) {
+            if (fid.isFinal() && attrs.value != null) {
                 if ("boolean".equals(type))
                     attrs.value = Boolean.valueOf(((Integer) attrs.value).intValue() != 0);
 
@@ -657,7 +665,6 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             boolean isSynthetic = fid.hasModifier(Modifier.ACC_SYNTHETIC);
 //            boolean isSyntheticConstuctor = isConstructor && fid.hasModifier(Modifier.ACC_SYNTHETIC);
 
-
             String descr = c.getName(classData.readUnsignedShort());
             int pos = descr.indexOf(')');
 
@@ -674,11 +681,9 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
             attrs.read(c, classData);
 
             // skip synthetic methods and constructors
-            if (isSynthetic) {
-
+            if (!hasHint(LoadingHints.READ_SYNTETHIC) && isSynthetic) {
                 if (SigTest.debug) {
                     if (isConstructor) {
-
                         System.out.println(i18n.getString("BinaryClassDescrLoader.message.synthetic_constr_skipped",
                                 fid.getQualifiedName() + "(" + fid.getArgs() + ")"));
                     } else {
@@ -693,7 +698,6 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                 }
                 continue;
             }
-
 
             if (attrs.annodef != null) {
                 fid.addModifier(Modifier.HASDEFAULT);
@@ -850,6 +854,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
         }
     }
 
+    //TreeSet<Integer> ts = new TreeSet<Integer>();
+
 //  Commons
 
     //  Utility class to help in attributes processing.
@@ -865,7 +871,6 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
 
         List/*AnnotationItem*/ annolist = null;
         Object annodef = null;
-
 
         void read(BinaryClassDescription c, DataInput classData) throws IOException {
             int n = classData.readUnsignedShort();
@@ -897,8 +902,14 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                 } else if (SigTest.isTigerFeaturesTracked && name.equals("RuntimeInvisibleAnnotations")) {
                     checkVersion(c, name, TIGER_CLASS_VERSION);
                     readAnnotations(c, 0);
-
-                } else if (SigTest.isTigerFeaturesTracked && name.equals("RuntimeVisibleParameterAnnotations")) {
+                } else if (SigTest.isTigerFeaturesTracked && name.equals("RuntimeVisibleTypeAnnotations")) {
+                    checkVersion(c, name, J7_CLASS_VERSION);
+                    readExtAnnotations(c, 0);
+                } else if (SigTest.isTigerFeaturesTracked && name.equals("RuntimeInvisibleTypeAnnotations")) {
+                    checkVersion(c, name, J7_CLASS_VERSION);
+                    readExtAnnotations(c, 0);
+                } else if (SigTest.isTigerFeaturesTracked && 
+                        (name.equals("RuntimeVisibleParameterAnnotations") || name.equals("RuntimeInvisibleParameterAnnotations")) ) {
                     checkVersion(c, name, TIGER_CLASS_VERSION);
                     int m = is.readUnsignedByte();
                     for (int l = 0; l < m; l++)
@@ -906,8 +917,9 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                 } else if (SigTest.isTigerFeaturesTracked && name.equals("AnnotationDefault")) {
                     checkVersion(c, name, TIGER_CLASS_VERSION);
                     annodef = read_member_value(c);
-                } else
+                } else {
                     check(c, name);
+                }
 
                 if (count != 0) {
                     try {
@@ -929,13 +941,143 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
 
             int m = is.readUnsignedShort();
             for (int l = 0; l < m; l++) {
-                AnnotationItem anno = readAnnotation(c, target);
+                AnnotationItem anno = readAnnotation(c, target, false);
                 annolist.add(anno);
             }
         }
 
-        AnnotationItem readAnnotation(BinaryClassDescription c, int target) throws IOException {
-            AnnotationItem anno = new AnnotationItem(target, convertVMType(c.getName(is.readUnsignedShort())));
+        void readExtAnnotations(BinaryClassDescription c, int target) throws IOException {
+            if (ignoreAnnotations) {
+                return;
+            }
+            if (annolist == null) {
+                annolist = new ArrayList();
+            }
+            boolean tracked = true;
+            int m = is.readUnsignedShort();
+            for (int l = 0; l < m; l++) {
+                AnnotationItemEx anno = (AnnotationItemEx) readAnnotation(c, target, true);
+                int target_type = is.readUnsignedByte();
+
+                anno.setTargetType(target_type);
+                switch (target_type) {
+                    case AnnotationItemEx.TARGET_METHOD_RECEIVER:
+                        // empty, it's ok
+                        break;
+                    case AnnotationItemEx.TARGET_METHOD_RETURN_TYPE_GENERIC_ARRAY:
+                    case AnnotationItemEx.TARGET_FIELD_GENERIC_ARRAY:
+                        anno.setLocations(readLocations());
+                        break;
+                    case AnnotationItemEx.TARGET_METHOD_PARAMETER_GENERIC_ARRAY:
+                        anno.setParameterIndex(readByte()).setLocations(readLocations());
+                        break;
+                    case AnnotationItemEx.TARGET_CLASS_TYPE_PARAMETER_BOUND:
+                    case AnnotationItemEx.TARGET_METHOD_TYPE_PARAMETER_BOUND:
+                        anno.setParameterIndex(readByte()).setBoundIndex(readByte());
+                        break;
+                    case AnnotationItemEx.TARGET_CLASS_TYPE_PARAMETER_BOUND_GENERIC_ARRAY:
+                    case AnnotationItemEx.TARGET_METHOD_TYPE_PARAMETER_BOUND_GENERIC_ARRAY:
+                        anno.setParameterIndex(readByte()).setBoundIndex(readByte()).setLocations(readLocations());
+                        break;
+                    case AnnotationItemEx.TARGET_CLASS_EXTENDS_IMPLEMENTS:
+                    case AnnotationItemEx.TARGET_EXCEPTION_TYPE_IN_THROWS:
+                        anno.setTypeIndex(readByte());
+                        break;
+                    case AnnotationItemEx.TARGET_CLASS_EXTENDS_IMPLEMENTS_GENERIC_ARRAY:
+                        anno.setTypeIndex(readByte()).setLocations(readLocations());
+                        break;
+                    case AnnotationItemEx.TARGET_WILDCARD_BOUND:
+                        throw new IllegalStateException("TARGET_WILDCARD_BOUND is not supported yet");
+//                         break;
+                    case AnnotationItemEx.TARGET_WILDCARD_BOUND_GENERIC_ARRAY:
+                        throw new IllegalStateException("TARGET_WILDCARD_BOUND_GENERIC_ARRAY is not supported yet");
+//                        break;
+                    case AnnotationItemEx.TARGET_METHOD_TYPE_PARAMETER:
+                    case AnnotationItemEx.TARGET_CLASS_TYPE_PARAMETER:
+                        anno.setParameterIndex(readByte());
+                        break;
+                        // --- BODY's annotations - just skip them ---
+                    case AnnotationItemEx.TARGET_TYPECAST:
+                    case AnnotationItemEx.TARGET_TYPE_TEST:
+                    case AnnotationItemEx.TARGET_OBJECT_CREATION:
+                    case AnnotationItemEx.TARGET_CLASS_LITERAL:
+                        is.readUnsignedShort();
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_TYPECAST_GENERIC_ARRAY:
+                    case AnnotationItemEx.TARGET_TYPE_TEST_GENERIC_ARRAY:
+                    case AnnotationItemEx.TARGET_OBJECT_CREATION_GENERIC_ARRAY:
+                        is.readUnsignedShort();
+                        readLocations();
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_LOCAL_VARIABLE: 
+                        int table_length = is.readUnsignedShort();
+                        for (int i = 0; i < table_length; i++) {
+                            is.readUnsignedShort();
+                            is.readUnsignedShort();
+                            is.readUnsignedShort();
+                        }
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_LOCAL_VARIABLE_GENERIC_ARRAY:
+                        table_length = is.readUnsignedShort();
+                        for (int i = 0; i < table_length; i++) {
+                            is.readUnsignedShort();
+                            is.readUnsignedShort();
+                            is.readUnsignedShort();
+                        }
+                        readLocations();
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_TYPE_ARGUMENT_IN_CONSTRUCTOR_CALL:
+                    case AnnotationItemEx.TARGET_TYPE_ARGUMENT_IN_METHOD_CALL:
+                        is.readUnsignedShort();
+                        is.readUnsignedByte();
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_TYPE_ARGUMENT_IN_CONSTRUCTOR_CALL_GENERIC_ARRAY:
+                    case AnnotationItemEx.TARGET_TYPE_ARGUMENT_IN_METHOD_CALL_GENERIC_ARRAY:
+                        is.readUnsignedShort();
+                        is.readUnsignedByte();
+                        readLocations();
+                        tracked = false;
+                        break;
+                    case AnnotationItemEx.TARGET_CLASS_LITERAL_GENERIC_ARRAY:
+                        is.readUnsignedShort();
+                        readLocations();
+                        tracked = false;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknown type 0x" + Integer.toHexString(target_type));
+                }
+                if (tracked || hasHint(LoadingHints.READ_ANY_ANNOTATIONS)) {
+                    annolist.add(anno);
+                }
+            }
+        }
+
+        private int readByte() throws IOException {
+            int parameter_index = is.readUnsignedByte();
+            return parameter_index;
+        }
+
+        private int[] readLocations() throws IOException {
+            int location_length = is.readUnsignedShort();
+            int [] loc = new int [location_length];
+            for (int i = 0; i < location_length; i++) {
+                loc[i] = is.readUnsignedByte();
+            }
+            return loc;
+        }
+
+        private AnnotationItem readAnnotation(BinaryClassDescription c, int target, boolean isExtended) throws IOException {
+            AnnotationItem anno;
+            if (isExtended) {
+                anno = new AnnotationItemEx(target, convertVMType(c.getName(is.readUnsignedShort())));
+            } else {
+                anno = new AnnotationItem(target, convertVMType(c.getName(is.readUnsignedShort())));
+            }
 
             int k = is.readUnsignedShort();
             for (int j = 0; j < k; j++)
@@ -1021,7 +1163,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
                 }
 
                 case'@':
-                    v = readAnnotation(c, 0);
+                    v = readAnnotation(c, 0, false);
                     break;
 
                 case'[': {
@@ -1396,8 +1538,18 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader {
         SigTest.log.println(msg);
     }
 
-    
     public void setIgnoreAnnotations(boolean value) {
         ignoreAnnotations = value;
     }
+
+    private HashSet hints = new HashSet();
+
+    public void addLoadingHint(Hint hint) {
+        hints.add(hint);
+    }
+
+    private boolean hasHint(Hint hint) {
+        return hints.contains(hint);
+    }
+
 }

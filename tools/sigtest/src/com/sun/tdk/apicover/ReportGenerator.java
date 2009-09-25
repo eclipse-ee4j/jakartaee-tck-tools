@@ -27,20 +27,15 @@
 
 package com.sun.tdk.apicover;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import com.sun.tdk.signaturetest.core.Erasurator;
+import com.sun.tdk.signaturetest.core.PrimitiveTypes;
+import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MemberDescription;
+import com.sun.tdk.signaturetest.model.Modifier;
+import com.sun.tdk.signaturetest.model.PackageDescr;
+import com.sun.tdk.signaturetest.util.I18NResourceBundle;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -49,23 +44,19 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import com.sun.tdk.signaturetest.core.Erasurator;
-import com.sun.tdk.signaturetest.core.PrimitiveTypes;
-import com.sun.tdk.signaturetest.model.ClassDescription;
-import com.sun.tdk.signaturetest.model.MemberDescription;
-import com.sun.tdk.signaturetest.model.Modifier;
-import com.sun.tdk.signaturetest.model.PackageDescr;
-import com.sun.tdk.signaturetest.util.I18NResourceBundle;
+import java.io.*;
+import java.util.*;
 
 public abstract class ReportGenerator extends APIVisitor {
     protected RefCounter refCounter;
-    enum FIELD_MODE { NOCONST, ALL }
-    enum EXLUDE_MODE { EXCLUDEINTERFACES, EXCLUDEABSTRACTCLASSES,
-        EXCLUDEABSTRACTMETHODS ,EXCLUDEFIELD }
+
+    enum FIELD_MODE {
+        NOCONST, ALL }
+
+    enum EXLUDE_MODE {
+        EXCLUDEINTERFACES, EXCLUDEABSTRACTCLASSES,
+        EXCLUDEABSTRACTMETHODS,EXCLUDEFIELD }
+
     int detail = 2;
     FIELD_MODE fieldMode = FIELD_MODE.NOCONST;
     Set<EXLUDE_MODE> excludeMode = new HashSet<EXLUDE_MODE>();
@@ -107,7 +98,7 @@ public abstract class ReportGenerator extends APIVisitor {
     }
 
     public void addConfig(String key, String value) {
-        this.config.put(key, new String[] {value});
+        this.config.put(key, new String[]{value});
     }
 
     public void addXList(String[] names) {
@@ -173,20 +164,19 @@ public abstract class ReportGenerator extends APIVisitor {
      * The possible types of consts. They are included/excluded by option -includeConstantFields
      */
     private static final String[] consttypes =
-    {
-        "boolean",
-        "byte",
-        "short",
-        "int",
-        "long",
-        "char",
-        "float",
-        "double",
-        "java.lang.String",
-    };
+            {
+                    "boolean",
+                    "byte",
+                    "short",
+                    "int",
+                    "long",
+                    "char",
+                    "float",
+                    "double",
+                    "java.lang.String",
+            };
 
-    protected boolean isConstType (String s)
-    {
+    protected boolean isConstType(String s) {
         for (String consttype : consttypes) {
             if (consttype.equals(s)) {
                 return true;
@@ -200,16 +190,19 @@ public abstract class ReportGenerator extends APIVisitor {
     }
 
     public void excludeInterfaces() {
-         excludeMode.add(EXLUDE_MODE.EXCLUDEINTERFACES);
+        excludeMode.add(EXLUDE_MODE.EXCLUDEINTERFACES);
     }
+
     public void excludeAbstractClasses() {
-         excludeMode.add(EXLUDE_MODE.EXCLUDEABSTRACTCLASSES);
+        excludeMode.add(EXLUDE_MODE.EXCLUDEABSTRACTCLASSES);
     }
+
     public void excludeAbstractMethods() {
-         excludeMode.add(EXLUDE_MODE.EXCLUDEABSTRACTMETHODS);
+        excludeMode.add(EXLUDE_MODE.EXCLUDEABSTRACTMETHODS);
     }
+
     public void excludeFields() {
-         excludeMode.add(EXLUDE_MODE.EXCLUDEFIELD);
+        excludeMode.add(EXLUDE_MODE.EXCLUDEFIELD);
     }
 
     public void setReportfile(String reportfile) {
@@ -231,35 +224,34 @@ public abstract class ReportGenerator extends APIVisitor {
 
     private void filter() {
         APIVisitor calc = new APIVisitor() {
-            protected void visit (ClassDescription cd)
-            {
+            protected void visit(ClassDescription cd) {
                 for (Iterator i = cd.getMembersIterator(); i.hasNext();) {
-                    MemberDescription md = (MemberDescription)i.next();
+                    MemberDescription md = (MemberDescription) i.next();
                     if (!(md.isConstructor() || md.isField() || md.isMethod())) {
                         i.remove();
                         continue;
                     }
                     if (fieldMode == FIELD_MODE.NOCONST && md.isField() && md.hasModifier(Modifier.FINAL) &&
-                             md.hasModifier(Modifier.STATIC) && isConstType(md.getType())) {
+                            md.hasModifier(Modifier.STATIC) && isConstType(md.getType())) {
                         i.remove();
                         continue;
                     }
-                    if(excludeMode.contains(EXLUDE_MODE.EXCLUDEFIELD) && md.isField()) {
+                    if (excludeMode.contains(EXLUDE_MODE.EXCLUDEFIELD) && md.isField()) {
                         i.remove();
                         continue;
                     }
-                    if(excludeMode.contains(EXLUDE_MODE.EXCLUDEABSTRACTMETHODS) && md.isAbstract()) {
+                    if (excludeMode.contains(EXLUDE_MODE.EXCLUDEABSTRACTMETHODS) && md.isAbstract()) {
                         i.remove();
                         continue;
                     }
                     if (md.hasModifier(Modifier.FINAL)
                             && !md.getDeclaringClassName().equals(
-                                    cd.getQualifiedName())) {
+                            cd.getQualifiedName())) {
                         i.remove();
                         continue;
                     }
                     if (isExcluded(cd.getQualifiedName() + "."
-                            + md.getName() + (md.isField() ? "" : "("  + md.getArgs() + ")"))) {
+                            + md.getName() + (md.isField() ? "" : "(" + md.getArgs() + ")"))) {
                         i.remove();
                         continue;
                     }
@@ -268,7 +260,7 @@ public abstract class ReportGenerator extends APIVisitor {
                 int members = 0;
                 int tested = 0;
                 for (Iterator i = cd.getMembersIterator(); i.hasNext();) {
-                    MemberDescription md = (MemberDescription)i.next();
+                    MemberDescription md = (MemberDescription) i.next();
                     members++;
                     if (refCounter.isCovered(md))
                         tested++;
@@ -276,25 +268,24 @@ public abstract class ReportGenerator extends APIVisitor {
                 results.put(cd.toString(), new Field(members, tested));
             }
 
-            protected void visit (PackageDescr pd)
-            {
+            protected void visit(PackageDescr pd) {
                 int members = 0;
                 int tested = 0;
                 int classes = 0;
 
                 for (Object o : pd.getDeclaredClasses()) {
-                    ClassDescription cd = (ClassDescription)o;
+                    ClassDescription cd = (ClassDescription) o;
                     visit(cd);
                     members += results.get(cd.toString()).members;
-                    tested  += results.get(cd.toString()).tested;
+                    tested += results.get(cd.toString()).tested;
                     classes ++;
                 }
 
                 for (Object o : pd.getDeclaredPackages()) {
-                    PackageDescr sub = (PackageDescr)o;
+                    PackageDescr sub = (PackageDescr) o;
                     visit(sub);
                     members += results.get(sub.toString()).members;
-                    tested  += results.get(sub.toString()).tested;
+                    tested += results.get(sub.toString()).tested;
                     classes += results.get(sub.toString()).classes;
                 }
                 results.put(pd.toString(), new Field(classes, members, tested));
@@ -303,12 +294,12 @@ public abstract class ReportGenerator extends APIVisitor {
 
         for (Iterator<ClassDescription> it = api.iterator(); it.hasNext();) {
             ClassDescription cd = it.next();
-            if(excludeMode.contains(EXLUDE_MODE.EXCLUDEABSTRACTCLASSES)
+            if (excludeMode.contains(EXLUDE_MODE.EXCLUDEABSTRACTCLASSES)
                     && cd.isAbstract()) {
                 it.remove();
                 continue;
             }
-            if(excludeMode.contains(EXLUDE_MODE.EXCLUDEINTERFACES)
+            if (excludeMode.contains(EXLUDE_MODE.EXCLUDEINTERFACES)
                     && cd.isInterface()) {
                 it.remove();
                 continue;
@@ -323,9 +314,7 @@ public abstract class ReportGenerator extends APIVisitor {
     }
 
 
-
-    void out()
-    {
+    void out() {
         this.api = new ArrayList<ClassDescription>();
         api.addAll(refCounter.getClasses());
         filter();
@@ -335,16 +324,17 @@ public abstract class ReportGenerator extends APIVisitor {
 }
 
 // Plain report generator
+
 class ReportPlain extends ReportGenerator {
     private final static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(ReportPlain.class);
     final int p0 = 0,
-    p1 = 4,
-    p2 = 8,
-    p3 = 40,
-    p4 = 50,
-    p5 = 58,
-    p6 = 66,
-    p7 = 74;
+            p1 = 4,
+            p2 = 8,
+            p3 = 40,
+            p4 = 50,
+            p5 = 58,
+            p6 = 66,
+            p7 = 74;
 
     int packnb = 0;
 
@@ -352,8 +342,7 @@ class ReportPlain extends ReportGenerator {
         super(reporter);
     }
 
-    public void print()
-    {
+    public void print() {
         tab(p0).append(i18n.getString("ReportPlain.report.Coverage"));
         println();
         println();
@@ -418,7 +407,7 @@ class ReportPlain extends ReportGenerator {
 
         tab(0).append(i18n.getString("ReportPlain.report.Configuration"));
 
-        String[] keys = {Main.TS_OPTION,Main.EXCLUDELIST_OPTION, Main.API_OPTION,
+        String[] keys = {Main.TS_OPTION, Main.EXCLUDELIST_OPTION, Main.API_OPTION,
                 Main.EXCLUDEINTERFACES_OPTION,
                 Main.EXCLUDEABSTRACTCLASSES_OPTION, Main.EXCLUDEABSTRACTMETHODS_OPTION,
                 Main.EXCLUDEFIELD_OPTION, Main.INCLUDECONSTANTFIELDS_OPTION, Main.MODE_OPTION};
@@ -475,8 +464,7 @@ class ReportPlain extends ReportGenerator {
 
     Erasurator erasurator = new Erasurator();
 
-    protected void visit(ClassDescription cd)
-    {
+    protected void visit(ClassDescription cd) {
         if (detail == 0) {
             return;
         }
@@ -485,7 +473,7 @@ class ReportPlain extends ReportGenerator {
         }
 
         tab(p1).append(classRepr(cd));
-        int members =results.get(cd.toString()).members;
+        int members = results.get(cd.toString()).members;
         int tested = results.get(cd.toString()).tested;
         String percent = results.get(cd.toString()).getPercent();
         tab(p4).append(members);
@@ -499,11 +487,11 @@ class ReportPlain extends ReportGenerator {
     }
 
     protected void visit(MemberDescription x) {
-        printMember(x,  refCounter.isCovered(x));
+        printMember(x, refCounter.isCovered(x));
     }
 
     void printMember(MemberDescription md, boolean isCovered) {
-        if (detail < 2 ) { //XXX|| !isCounted(x))
+        if (detail < 2) { //XXX|| !isCounted(x))
             return;
         }
 
@@ -515,9 +503,9 @@ class ReportPlain extends ReportGenerator {
             return;
         }
         md = erasurator.processMember(md);
-        tab(p2-2).append(isCovered ? '+' : '-');
+        tab(p2 - 2).append(isCovered ? '+' : '-');
         tab(p2).append(md.getName()
-                + (md.isField() ? "" : "("  + md.getArgs() + ")"));
+                + (md.isField() ? "" : "(" + md.getArgs() + ")"));
         println();
     }
 
@@ -552,7 +540,7 @@ class ReportXML extends ReportGenerator {
         super(reporter);
     }
 
-    public void printHead(){
+    public void printHead() {
         startElement("head");
         for (String key : config.keySet()) {
             for (String value : config.get(key)) {
@@ -568,8 +556,8 @@ class ReportXML extends ReportGenerator {
     }
 
     public void print() {
-        SAXTransformerFactory stf = (SAXTransformerFactory )
-        TransformerFactory.newInstance();
+        SAXTransformerFactory stf = (SAXTransformerFactory)
+                TransformerFactory.newInstance();
         stf.setAttribute("indent-number", 4);
         Properties outputProps = new Properties();
         Result result;
@@ -601,8 +589,7 @@ class ReportXML extends ReportGenerator {
     }
 
 
-    protected void visit(PackageDescr pd)
-    {
+    protected void visit(PackageDescr pd) {
         AttributesImpl atts = new AttributesImpl();
         atts.addAttribute("", "", "name", "", pd.getName());
         atts.addAttribute("", "", "members", "", String.valueOf(results.get(pd.toString()).members));
@@ -615,7 +602,7 @@ class ReportXML extends ReportGenerator {
 
     protected void visit(ClassDescription cd) {
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute("", "", "name", "", cd.getName());
+        atts.addAttribute("", "", "name", "", constructClassName(cd));
         if (cd.getTypeParameters() != null) {
             atts.addAttribute("", "", "typeArgs", "", cd.getTypeParameters());
         }
@@ -632,6 +619,15 @@ class ReportXML extends ReportGenerator {
         erasurator.parseTypeParameters(cd);
         super.visit(cd);
         endElement("class");
+    }
+
+    private String constructClassName(ClassDescription cd) {
+        int pos = cd.getQualifiedName().lastIndexOf('.');
+        if (pos == -1) {
+            return cd.getName();
+        } else {
+            return cd.getQualifiedName().substring(++pos);
+        }
     }
 
     protected void visit(MemberDescription x) {
@@ -658,14 +654,14 @@ class ReportXML extends ReportGenerator {
 
     void printMember(MemberDescription md, boolean isCovered) {
         String type = md.getMemberType().toString();
-        String sig =  md.isField() ? md.getType()
-                    : md.isConstructor() ? "("  + md.getArgs() + ")"
-                    : /* meth */"("  + md.getArgs() + ")" +  md.getType();
+        String sig = md.isField() ? md.getType()
+                : md.isConstructor() ? "(" + md.getArgs() + ")"
+                : /* meth */"(" + md.getArgs() + ")" + md.getType();
 
         md = erasurator.processMember(md);
-        String vmsig =  md.isField() ? convertTypeToVM(md.getType())
-                    : md.isConstructor() ? convertArgsToVM(md.getArgs())
-                    : /* meth */convertArgsToVM(md.getArgs()) +  convertTypeToVM(md.getType());
+        String vmsig = md.isField() ? convertTypeToVM(md.getType())
+                : md.isConstructor() ? convertArgsToVM(md.getArgs())
+                : /* meth */convertArgsToVM(md.getArgs()) + convertTypeToVM(md.getType());
         AttributesImpl atts = new AttributesImpl();
         atts.addAttribute("", "", "name", "", md.getName());
         atts.addAttribute("", "", "vmsig", "", vmsig);
@@ -678,14 +674,14 @@ class ReportXML extends ReportGenerator {
                 atts.addAttribute("", "", modifier, "", "true");
             }
         }
-        atts.addAttribute("", "", "tested", "",  isCovered ? "1" : "0");
-        startElement(type,atts);
+        atts.addAttribute("", "", "tested", "", isCovered ? "1" : "0");
+        startElement(type, atts);
         endElement(type);
     }
 
     private void startElement(String name, AttributesImpl attrs) {
         try {
-            ser.startElement("","", name, attrs);
+            ser.startElement("", "", name, attrs);
         } catch (SAXException e) {
             e.printStackTrace();
         }
@@ -695,7 +691,7 @@ class ReportXML extends ReportGenerator {
         AttributesImpl attrImpl = new AttributesImpl();
         assert attrs.length % 2 == 0;
         for (int i = 0; i < attrs.length; i += 2) {
-            attrImpl.addAttribute("", "'", attrs[i], "", attrs[i+1]);
+            attrImpl.addAttribute("", "'", attrs[i], "", attrs[i + 1]);
         }
         try {
             ser.startElement("", "", name, attrImpl);

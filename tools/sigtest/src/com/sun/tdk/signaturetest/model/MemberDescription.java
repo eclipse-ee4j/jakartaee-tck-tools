@@ -265,7 +265,9 @@ public abstract class MemberDescription implements Cloneable, Serializable {
             }
 
         } else {
-            declaringClass = fqn.substring(0, delimPos).intern();
+
+            if (delimPos >= 0) // this is possible if a inner class was obsfucated and has no dollar sign  
+                declaringClass = fqn.substring(0, delimPos).intern();
             name = fqn.substring(delimPos + 1).intern();
         }
     }
@@ -479,7 +481,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
         int mask = memberType.getModifiersMask();
 
         if ((access & mask) != access)
-            throw new IllegalArgumentException("Unknown modifier(s) found " + (access & ~mask));
+            throw new ClassFormatError("Unknown modifier(s) found " + (access & ~mask));
 
         modifiers = access;
 

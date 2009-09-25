@@ -29,7 +29,7 @@ package com.sun.tdk.signaturetest.sigfile;
 
 import java.util.List;
 
-class F40Reader extends SignatureClassLoader implements Reader {
+public class F40Reader extends SignatureClassLoader implements Reader {
 
     public F40Reader(Format format) {
         super(format);

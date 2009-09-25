@@ -39,12 +39,13 @@ import java.lang.annotation.Inherited;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
  * This is J2SE 1.5 (Tiger) loader
  */
-public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
+public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, LoadingHints {
 
     public static boolean debug = false;
 
@@ -56,12 +57,15 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
     private ClassLoader ldr;
 
     public TigerRefgClassDescrLoader() {
+        this(null);
+    }
 
-        ldr = getClass().getClassLoader();
-
-        // Just to test if the class can be loaded.
-        // If run on a pre-Tiger JRE, this will fail.
-//        new TigerRefgClassDescription();
+    public TigerRefgClassDescrLoader(ClassLoader l) {
+        if (l == null) {
+            ldr = getClass().getClassLoader();
+        } else {
+            ldr = l;
+        }
     }
 
     public ClassDescription load(String name) throws ClassNotFoundException {
@@ -144,7 +148,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
                 if (SigTest.debug)
                     System.out.println(i18n.getString("TigerRefgClassDescrLoader.message.synthetic_field_skipped", fld));
                 continue;
-            } 
+            }
 
             FieldDescr fid = new FieldDescr(fld.getName(), fqname, fld.getModifiers());
             c.setField( ++j, fid);
@@ -152,17 +156,19 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
             fid.setType(decodeType(c.getTypeparamList(), fld.getGenericType()));
 
             //  Get the constant value, if possible
-            if (fid.isStatic() && fid.isFinal() && (PrimitiveTypes.isPrimitive(fid.getType()) || "java.lang.String".equals(fid.getType()))) {
-                try {
-                    fld.setAccessible(true);
-                    Object v = fld.get(null);
-                    fid.setConstantValue(MemberDescription.valueToString(v));
-                }
-                catch (Throwable e) {
-                    // catch error or exception that may be thrown during static class initialization
-                    if (debug) {
-                        System.err.println("Error during reading field value " + fld.toString());
-                        e.printStackTrace(System.err);
+            if (fid.isFinal() && (PrimitiveTypes.isPrimitive(fid.getType()) || "java.lang.String".equals(fid.getType()))) {
+                if (!hasHint(LoadingHints.DONT_READ_VALUES)) {
+                    try {
+                        fld.setAccessible(true);
+                        Object v = fld.get(null);
+                        fid.setConstantValue(MemberDescription.valueToString(v));
+                    }
+                    catch (Throwable e) {
+                        // catch error or exception that may be thrown during static class initialization
+                        if (debug) {
+                            System.err.println("Error during reading field value " + fld.toString());
+                            e.printStackTrace(System.err);
+                        }
                     }
                 }
             }
@@ -502,4 +508,15 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader {
 
         return anno;
     }
+
+    private HashSet hints = new HashSet();
+
+    public void addLoadingHint(Hint hint) {
+        hints.add(hint);
+    }
+
+    private boolean hasHint(Hint hint) {
+        return hints.contains(hint);
+    }
+
 }

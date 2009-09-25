@@ -27,39 +27,28 @@
 
 package com.sun.tdk.signaturetest.model;
 
-//import java.lang.annotation.*;
-
-import com.sun.tdk.signaturetest.util.I18NResourceBundle;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author Serguei Ivashin (isl@nbsp.nsk.su)
  */
 public class AnnotationItem implements Comparable {
 
-    private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(AnnotationItem.class);
-
     public static final String ANNOTATION_PREFIX = "anno";
 
     public static final String ANNOTATION_INHERITED = "java.lang.annotation.Inherited";
     public static final String ANNOTATION_DOCUMENTED = "java.lang.annotation.Documented";
-    private static final String CLASS_PREFIX = "java.lang.Class";
-
     public AnnotationItem(int target, String name) {
         setTarget(target);
         setName(name);
     }
 
-    private AnnotationItem() {
+    public AnnotationItem() {
     }
 
     public int compareTo(Object o) {
         AnnotationItem that = (AnnotationItem) o;
-        int diff = target - that.target;
+        int diff = getSpecificData().compareTo(that.getSpecificData());
         if (diff == 0) {
             diff = name.compareTo(that.name);
 
@@ -106,6 +95,10 @@ public class AnnotationItem implements Comparable {
     //  List of the member/value pairs.
     private SortedSet/*Member*/ members = null;
 
+    protected Set getMembers() {
+        return members;
+    }
+
     public String getName() {
         return name;
     }
@@ -137,9 +130,9 @@ public class AnnotationItem implements Comparable {
     }
 
     public static class Member implements Comparable {
-        String type;
-        String name;
-        String value;
+        public String type;
+        public String name;
+        public String value;
 
         public Member(String type, String name, Object value) {
             this.type = type;
@@ -152,7 +145,7 @@ public class AnnotationItem implements Comparable {
             setValue(value);
         }
 
-        private Member() {
+        public Member() {
         }
 
         public int compareTo(Object x) {
@@ -212,10 +205,23 @@ public class AnnotationItem implements Comparable {
         return null;
     }
 
+    // for extensions
+    protected String getSpecificData() {
+        return "" + target;
+    }
+
+    protected String getPrefix() {
+        return ANNOTATION_PREFIX;
+    }
+    // -----
 
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(ANNOTATION_PREFIX).append(" ").append(target).append(" ");
+        sb.append(getPrefix()).append(" ");
+
+        if (! "".equals(getSpecificData())) {
+            sb.append(getSpecificData()).append(" ");
+        }
 
         sb.append(name).append('(');
         int i = 0;
@@ -231,140 +237,6 @@ public class AnnotationItem implements Comparable {
         sb.append(')');
 
         return sb.toString();
-    }
-
-    // Opposite action that toString() method does.
-    // TODO should be moved to the parser as well as "toString" moved to the writer  
-    public static AnnotationItem parse(String str) {
-
-//        str = "anno 0 javax.xml.ws.BindingType(java.lang.String value=\"http://schemas.xmlsoap.org/wsdl/soap/http\", javax.xml.ws.Feature[] features=[anno 0 javax.xml.ws.Feature(boolean enabled=true, java.lang.String value=\"http://www.w3.org/2005/08/addressing/module\", javax.xml.ws.FeatureParameter[] parameters=[]), anno 0 javax.xml.ws.Feature(boolean enabled=true, java.lang.String value=\"http://www.w3.org/2004/08/soap/features/http-optimization\", javax.xml.ws.FeatureParameter[] parameters=[anno 0 javax.xml.ws.FeatureParameter(java.lang.String name=\"MTOM_THRESHOLD\", java.lang.String value=\"1000\")])]):     anno 0 javax.xml.ws.BindingType(java.lang.String value=\\\"http://schemas.xmlsoap.org/wsdl/soap/http\\\", javax.xml.ws.Feature[] features=[anno 0 javax.xml.ws.Feature(boolean enabled=true, java.lang.String value=\\\"http://www.w3.org/2005/08/addressing/module\\\", javax.xml.ws.FeatureParameter[] parameters=[]), anno 0 javax.xml.ws.Feature(boolean enabled=true, java.lang.String value=\\\"http://www.w3.org/2004/08/soap/features/http-optimization\\\", javax.xml.ws.FeatureParameter[] parameters=[anno 0 javax.xml.ws.FeatureParameter(java.lang.String name=\\\"MTOM_THRESHOLD\\\", java.lang.String value=\\\"1000\\\")])])";
-
-        AnnotationItem item = new AnnotationItem();
-
-        if (!str.startsWith(ANNOTATION_PREFIX))
-            throw new IllegalArgumentException(i18n.getString("AnnotationItem.error.bad_annotation_descr") + str);
-
-        int pos;
-        pos = str.indexOf(' ');
-        // skip the prefix
-        str = str.substring(pos).trim();
-
-        pos = str.indexOf(' ');
-        item.setTarget(Integer.valueOf(str.substring(0, pos)).intValue());
-        // remove target
-        str = str.substring(pos + 1);
-
-        pos = str.indexOf('(');
-        item.setName(str.substring(0, pos).trim());
-        str = str.substring(pos + 1, str.lastIndexOf(')'));
-
-        if (str.length() != 0) {
-
-            while (str.length() > 0 && str.charAt(0) != ')') {
-                pos = parseMember(item, str);
-                str = str.substring(pos);
-                if (str.length() > 0 && str.charAt(0) == ',')
-                    str = str.substring(1).trim();
-            }
-        }
-        return item;
-
-    }
-
-    private static int parseMember(AnnotationItem item, String str) {
-
-        int pos, result = 0;
-
-        Member m = new Member();
-
-        pos = str.indexOf(' ');
-
-        // java.lang.Class<? extends java.util.ArrayList<? super javax.swing.JLabel>> value=class com.sun.tdk.signaturetest.model.Regtest_6564000$CL_4
-        if (str.startsWith(CLASS_PREFIX + "<")) {
-            // skip possible spaces inside
-            char [] strChar = str.toCharArray();
-            int level = 0;
-            for (int i = CLASS_PREFIX.length(); i < strChar.length; i++) {
-                if(strChar[i] == '<') level++;
-                else if(strChar[i] == '>') level--;
-                if (level == 0 && strChar[i+1] == ' ') {
-                    pos = i+1;
-                    break;
-                }
-            }
-        }
-
-        m.type = str.substring(0, pos);
-        str = str.substring(pos + 1).trim();
-        result += pos + 1;
-
-        pos = str.indexOf('=');
-        m.name = str.substring(0, pos);
-
-        str = str.substring(pos + 1).trim();
-        result += pos + 1;
-
-        char ch = str.charAt(0);
-
-        switch (ch) {
-            case'[': {
-                pos = findClosingBracket(str, 1, '[', ']') + 1;
-                break;
-            }
-
-            case'"':
-            case'\'': {
-                pos = str.indexOf(ch, 1) + 1;
-                break;
-            }
-
-            case'a': {
-                if (str.startsWith(ANNOTATION_PREFIX)) {
-                    AnnotationItem a = parse(str);
-                    pos = a.toString().length();
-                    break;
-                }
-            }
-
-            default: {
-                pos = str.indexOf(',');
-
-                if (pos == -1)
-                    pos = str.indexOf(')');
-
-                if (pos == -1)
-                    pos = str.length();
-            }
-        }
-
-        m.value = str.substring(0, pos);
-        item.addMember(m);
-
-        result += pos;
-        return result;
-    }
-
-    private static int findClosingBracket(String str, int startPos, char openingChar, char closingChar) {
-
-        int level = 0;
-        int len = str.length();
-        for (int i = startPos; i < len; ++i) {
-
-            char ch = str.charAt(i);
-
-            if (ch == openingChar) {
-                ++level;
-                continue;
-            }
-
-            if (ch == closingChar) {
-                if (level == 0)
-                    return i;
-                --level;
-            }
-        }
-
-        return -1;
     }
 
     public void setInheritable(boolean inh) {

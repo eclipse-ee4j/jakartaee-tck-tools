@@ -87,6 +87,11 @@ public final class Modifier implements Serializable {
         return (Modifier) knownModifiers.get(name);
     }
 
+    public static Modifier[] getAllModifiers() {
+        return (Modifier[]) knownModifiers.values().toArray(new Modifier[] {});
+    }
+
+
     public static int scanModifiers(List elems) {
 
         int result = 0;
@@ -142,6 +147,43 @@ public final class Modifier implements Serializable {
         this.value = vmID;
         this.isTracked = isTracked;
         knownModifiers.put(name, this);
+    }
+
+    public Modifier(String name, boolean isTracked) {
+
+        Modifier[] ms = Modifier.getAllModifiers();
+        int v = 0;
+
+        for (int i = 0; i < ms.length; i++) {
+            if (ms[i].name.equals(name)) {
+                throw new IllegalArgumentException("Name " + name + " is already used");
+            }
+            v |= ms[i].getValue();
+        }
+        v = highestOneBit(~v);
+        if (v == 0) {
+            throw new IllegalArgumentException("No room for the new modifier " + name);
+        }
+
+        this.name = name;
+        this.value = v;
+        this.isTracked = isTracked;
+        knownModifiers.put(name, this);
+    }
+
+
+    /**
+     * This is copy of Integer.highestOneBit from JDK 1.5
+     * Because this class must be 1.4 compatible
+     * we can not use the original method
+     */
+    private int highestOneBit(int i) {
+        i |= (i >>  1);
+        i |= (i >>  2);
+        i |= (i >>  4);
+        i |= (i >>  8);
+        i |= (i >> 16);
+        return i - (i >>> 1);
     }
 
     private final String name;

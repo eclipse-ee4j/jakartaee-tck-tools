@@ -60,11 +60,6 @@ class F32Writer implements Writer {
         features.add(feature);
     }
     
-    public void setAllFeatures(FeaturesHolder features) {
-		this.features.clear();
-		this.features.addAll(features.getAllSupportedFeatures());
-	}
-
 	public void setApiVersion(String apiVersion) {
         this.apiVersion = apiVersion;
     }

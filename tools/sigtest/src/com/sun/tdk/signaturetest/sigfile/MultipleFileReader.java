@@ -24,7 +24,6 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  */
-
 package com.sun.tdk.signaturetest.sigfile;
 
 import com.sun.tdk.signaturetest.SigTest;
@@ -37,9 +36,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -48,14 +45,9 @@ import java.util.StringTokenizer;
 public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(MultipleFileReader.class);
-
-    public static int CLASSPATH_MODE = 1;
-    public static int MERGE_MODE = 2;
-
-    private Set features = new HashSet();
-
+    public static final int CLASSPATH_MODE = 1;
+    public static final int MERGE_MODE = 2;
     private Iterator classIterator = null;
-
     private PrintWriter log;
     private int mode;
     private String apiVersion;
@@ -67,15 +59,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         this.log = log;
         this.mode = mode;
 
-        // add all features
-        features.add(FeaturesHolder.ConstInfo);
-        features.add(FeaturesHolder.TigerInfo);
-        features.add(FeaturesHolder.BuildMembers);
-    }
-
-
-    public boolean hasFeature(Format.Feature feature) {
-        return features.contains(feature);
     }
 
     public boolean readSignatureFiles(String testURL, String sigFileList) {
@@ -95,7 +78,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         return result;
     }
 
-
     public boolean readSignatureFile(String testURL, String sigFileName) {
 
         assert testURL != null;
@@ -106,16 +88,17 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         try {
             URL fileURL = FileManager.getURL(testURL, sigFileName);
             result = readFile(fileURL);
-        }
-        catch (MalformedURLException e) {
-            if (SigTest.debug)
+        } catch (MalformedURLException e) {
+            if (SigTest.debug) {
                 e.printStackTrace();
+            }
             String invargs[] = {testURL, e.getMessage()};
             log.println(i18n.getString("MultipleFileReader.error.url.threwerror", invargs));
             return false;
         } catch (IOException er) {
-            if (SigTest.debug)
+            if (SigTest.debug) {
                 er.printStackTrace();
+            }
             log.println(er);
             return false;
         }
@@ -123,7 +106,6 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         rewind();
         return result;
     }
-
 
     private boolean readFile(URL fileURL) {
 
@@ -137,21 +119,19 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         } else {
             try {
 
-                if (!in.readSignatureFile(fileURL))
+                if (!in.readSignatureFile(fileURL)) {
                     msg = i18n.getString("MultipleFileReader.error.sigfile.invalid", fileURL);
+                }
 
-                if (mode == MERGE_MODE && !in.hasFeature(FeaturesHolder.MergeModeSupported))
+                if (mode == MERGE_MODE && !in.hasFeature(FeaturesHolder.MergeModeSupported)) {
                     throw new IOException(i18n.getString("MultipleFileReader.error.cannt_merge_old_files") + fileURL);
+                }
 
-                // update the supported features
-                if (!in.hasFeature(FeaturesHolder.ConstInfo))
-                    features.remove(FeaturesHolder.ConstInfo);
-
-                if (!in.hasFeature(FeaturesHolder.TigerInfo))
-                    features.remove(FeaturesHolder.TigerInfo);
-
-                if (!in.hasFeature(FeaturesHolder.BuildMembers))
-                    features.remove(FeaturesHolder.BuildMembers);
+                if (!isInitialized()) { // first file
+                    setFeatures(in.getAllSupportedFeatures());
+                } else {
+                    retainFeatures(in.getAllSupportedFeatures());
+                }
 
                 apiVersion = in.getApiVersion();
 
@@ -159,28 +139,26 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
                 while ((cl = in.readNextClass()) != null) {
 
                     String name = cl.getQualifiedName();
-
                     if (mode == CLASSPATH_MODE) {
-
-                        ClassDescription old_cl = (ClassDescription) classDescriptions.get(name);
-                        // use only first class description
-                        if (old_cl == null)
-                            classDescriptions.put(name, cl);
+                        try {
+                            load(name);
+                        } catch (ClassNotFoundException ex) {
+                            // use only first class description
+                            add(cl);
+                        }
                     } else {
                         assert mode == MERGE_MODE;
-
-
                     }
                 }
-            }
-            catch (IOException e) {
-                if (SigTest.debug)
+            } catch (IOException e) {
+                if (SigTest.debug) {
                     e.printStackTrace();
+                }
                 msg = i18n.getString("MultipleFileReader.error.sigfile.prob") + "\n" + e;
-            }
-            catch (SecurityException e) {
-                if (SigTest.debug)
+            } catch (SecurityException e) {
+                if (SigTest.debug) {
                     e.printStackTrace();
+                }
                 msg = i18n.getString("MultipleFileReader.error.sigfile.sec") + "\n" + e;
             }
 
@@ -201,7 +179,7 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
     public void close() {
         classIterator = null;
-        classDescriptions.clear();
+        cleanUp();
     }
 
     public void rewind() {
@@ -210,13 +188,14 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
 
     public ClassDescription nextClass() throws IOException {
         ClassDescription cl = null;
-        if (classIterator != null && classIterator.hasNext())
+        if (classIterator != null && classIterator.hasNext()) {
             cl = (ClassDescription) classIterator.next();
+        }
         return cl; // cl == null ? null : (ClassDescription) cl.clone();
     }
 
     public String getApiVersion() {
         return apiVersion;
-    } 
+    }
 
 }

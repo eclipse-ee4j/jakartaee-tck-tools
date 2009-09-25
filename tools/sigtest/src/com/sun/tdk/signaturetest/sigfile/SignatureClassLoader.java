@@ -69,7 +69,7 @@ abstract class SignatureClassLoader implements Reader {
 
     protected SignatureClassLoader(Format format) {
         this.format = format;
-        features = format.getAllSupportedFeatures();
+        features = format.getSupportedFeatures();
         parser = getParser();
     }
 
@@ -77,6 +77,10 @@ abstract class SignatureClassLoader implements Reader {
 
     public boolean hasFeature(Format.Feature feature) {
         return features.contains(feature);
+    }
+
+    public Set getAllSupportedFeatures() {
+        return features;
     }
 
     public void close() throws IOException {
@@ -101,6 +105,7 @@ abstract class SignatureClassLoader implements Reader {
                 break;
 
             currentLine = currentLine.trim();
+            currentLine = preprocessLine(currentLine);
             if (currentLine.length() == 0 || currentLine.startsWith("#"))
                 continue;
 
@@ -128,6 +133,9 @@ abstract class SignatureClassLoader implements Reader {
         return parser.parseClassDescription(classDescr, definitions);
     }
 
+    protected String preprocessLine(String currentLine) {
+        return currentLine;
+    }
 
     protected abstract String convertClassDescr(String descr);
 

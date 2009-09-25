@@ -32,6 +32,7 @@ import com.sun.tdk.signaturetest.model.MemberDescription;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,4 +190,5 @@ class F21Reader extends SignatureClassLoader implements Reader {
     private static Pattern arrayDeclaration = Pattern.compile("\\[+[BCDFIJSZVL]");
     private static Pattern constructorName = Pattern.compile("\\.\\w+\\(");
     private static Pattern unicodeSim = Pattern.compile("\\\\u(?i)[\\da-f]{4}");
+
 }

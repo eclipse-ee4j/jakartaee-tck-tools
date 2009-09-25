@@ -154,6 +154,18 @@ public class ClassDescription extends MemberDescription implements Serializable 
         final String ident;
         final String declared;
 
+        public int getSeqnb() {
+            return seqnb;
+        }
+
+        public String getIdent() {
+            return ident;
+        }
+
+        public String getDeclared() {
+            return declared;
+        }
+
         TypeParam hidden = null; // hidden type parameter
     }
 
@@ -451,6 +463,8 @@ public class ClassDescription extends MemberDescription implements Serializable 
     // these class's members initialized only if class description loaded from signature file
     private Set internalFields = null;  // contains private and package access fields
     private Set internalClasses = null; // contains private and package access nested classes
+    private Set xFields = null;  // contains fields that prevent resolve other fields by simple name
+    private Set xClasses = null;  // contains inner that prevent resolve other classes by simple name
 
     public void setNestedClasses(InnerDescr[] ncls) {
         nestedClasses = ncls;
@@ -506,6 +520,44 @@ public class ClassDescription extends MemberDescription implements Serializable 
                 result = Collections.EMPTY_SET;
         }
         return result;
+    }
+
+    public Set getXFields() {
+        if (xFields == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return xFields;
+        }
+    }
+
+    public void setXFields(Set fileds) {
+        xFields = fileds;
+    }
+
+    public void addXFields(String name) {
+        if (xFields == null) {
+            xFields = new HashSet();
+        }
+        xFields.add(name);
+    }
+
+    public Set getXClasses() {
+        if (xClasses == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return xClasses;
+        }
+    }
+
+    public void setXClasses(Set classes) {
+        xClasses = classes;
+    }
+
+    public void addXClasses(String name) {
+        if (xClasses == null) {
+            xClasses = new HashSet();
+        }
+        xClasses.add(name);
     }
 
     public Set getInternalClasses() {

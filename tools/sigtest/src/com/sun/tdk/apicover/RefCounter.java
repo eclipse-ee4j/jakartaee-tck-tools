@@ -32,8 +32,7 @@ package com.sun.tdk.apicover;
 import com.sun.tdk.signaturetest.core.Erasurator;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.MemberDescription;
-
-
+import com.sun.tdk.apicover.markup.Adapter;
 
 import java.util.*;
 
@@ -52,8 +51,16 @@ class RefCounter {
 
     public void addClass(ClassDescription cd) {
         ArrayList<MemberDescription> modified = new ArrayList<MemberDescription>();
-        for (Iterator i = cd.getMembersIterator(); i.hasNext();) {
+        boolean hasTracked = false;
+        Iterator i = cd.getMembersIterator();
+        boolean hasMembers = i.hasNext();
+        while (i.hasNext()) {
                 MemberDescription md = (MemberDescription)i.next();
+                if (md.hasModifier(Adapter.coverIgnore)) {
+                    i.remove();
+                    continue;
+                }
+                hasTracked = true;
                 MemberDescription md2 = (MemberDescription) md.clone();
                 if (mode.equals(MODE.WORST) && !md.getDeclaringClassName().equals(
                         cd.getQualifiedName()) && !md.isFinal()) {
@@ -65,7 +72,9 @@ class RefCounter {
         for (MemberDescription md : modified) {
             cd.add(md);
         }
-        api.put(cd.getQualifiedName(), cd);
+        if (hasTracked || !hasMembers) {
+            api.put(cd.getQualifiedName(), cd);
+        }
     }
 
     public void addTSClass(ClassDescription cd, boolean fromAPI) {

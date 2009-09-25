@@ -27,11 +27,13 @@
 
 package com.sun.tdk.signaturetest.core;
 
+import java.util.logging.Logger;
+
 /*
  * @author Mikhail Ershov
  * @author Roman Makarchuk
  */
 public interface Log {
-    void storeError(String s);
-    void storeWarning(String s);
+    void storeError(String s, Logger utilLogger);
+    void storeWarning(String s, Logger utilLogger);
 }

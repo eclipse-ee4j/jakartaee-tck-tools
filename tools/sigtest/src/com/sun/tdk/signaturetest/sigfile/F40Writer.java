@@ -35,10 +35,10 @@ import java.util.*;
 /**
  * @author Roman Makarchuk
  */
-class F40Writer implements Writer {
+public class F40Writer implements Writer {
 
     private Set features = new HashSet();
-    private Format format;
+    protected Format format;
     private PrintWriter out;
 
     private boolean isConstantValuesSaved = true;
@@ -61,11 +61,6 @@ class F40Writer implements Writer {
         features.add(feature);
     }
     
-    public void setAllFeatures(FeaturesHolder features) {
-		this.features.clear();
-		this.features.addAll(features.getAllSupportedFeatures());
-	}
-
     public void setApiVersion(String apiVersion) {
         this.apiVersion = apiVersion;
     }
@@ -119,17 +114,17 @@ class F40Writer implements Writer {
         for (int i = 0; i < size; i++)
             out.println(members.get(i));
 
-
-        writeInternalMembers(buf, F40Format.HIDDEN_FIELDS, classDescription.getInternalFields());
-        if (buf.length() > 0)
-            out.println(buf);
-
-        writeInternalMembers(buf, F40Format.HIDDEN_CLASSES, classDescription.getInternalClasses());
-        if (buf.length() > 0)
-            out.println(buf);
+        if (format.isFeatureSupported(FeaturesHolder.ListOfHiders)) {
+            writeHiders(classDescription, buf);
+        }
 
         // write empty string
         out.println("");
+    }
+
+    protected void writeHiders(ClassDescription classDescription, StringBuffer buf) {
+        writeInternalMembers(buf, F40Format.HIDDEN_FIELDS, classDescription.getInternalFields());
+        writeInternalMembers(buf, F40Format.HIDDEN_CLASSES, classDescription.getInternalClasses());
     }
 
 
@@ -355,27 +350,33 @@ class F40Writer implements Writer {
         }
     }
 
-    private void writeInternalMembers(StringBuffer buf, String prefix, Set internalMembers) {
+    protected void writeInternalMembers(StringBuffer buf, String prefix, Set internalMembers) {
 
         // sort members   
-        ArrayList members = new ArrayList();
-        members.addAll(internalMembers);
-        Collections.sort(members);
+        ArrayList intMembers = new ArrayList();
+        intMembers.addAll(internalMembers);
+        Collections.sort(intMembers);
 
         buf.setLength(0);
 
         buf.append(prefix);
         buf.append(" ");
         int count = 0;
-        for (Iterator i = members.iterator(); i.hasNext();) {
+        for (Iterator i = intMembers.iterator(); i.hasNext();) {
             if (count != 0)
                 buf.append(',');
             buf.append(i.next());
             count++;
         }
 
-        if (count == 0)
+        if (count == 0) {
             buf.setLength(0);
+        }
+
+        if (buf.length() > 0) {
+            out.println(buf);
+        }
+
     }
 
 

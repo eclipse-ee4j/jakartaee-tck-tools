@@ -29,6 +29,8 @@ package com.sun.tdk.signaturetest;
 
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
+import com.sun.tdk.signaturetest.errors.*;
+import com.sun.tdk.signaturetest.loaders.LoadingHints;
 import com.sun.tdk.signaturetest.model.*;
 import com.sun.tdk.signaturetest.plugin.PluginAPI;
 import com.sun.tdk.signaturetest.plugin.Transformer;
@@ -38,7 +40,7 @@ import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 import com.sun.tdk.signaturetest.util.OptionInfo;
-import com.sun.tdk.signaturetest.errors.*;
+import com.sun.tdk.signaturetest.updater.Updater;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -46,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <b>SignatureTest</b> is the main class of signature test. <p>
@@ -152,7 +155,6 @@ import java.util.logging.Level;
  * @author Maxim Sokolnikov
  * @author Serguei Ivashin
  * @author Mikhail Ershov
- * @version 05/03/22
  */
 public class SignatureTest extends SigTest {
 
@@ -164,10 +166,28 @@ public class SignatureTest extends SigTest {
     public static final String FILES_OPTION = "-Files";
     public static final String NOMERGE_OPTION = "-NoMerge";
     public static final String WRITE_OPTION = "-Write";
+    public static final String UPDATE_FILE_OPTION = "-Update";
 
     private String logName = null;
     private String outFormat = null;
     private boolean extensibleInterfaces = false;
+
+    /**
+     * Selftracing can be turned on by setting FINER level
+     * for logger com.sun.tdk.signaturetest.SignatureTest
+     * It can be done via custom logging config file, for example:
+     * java -Djava.util.logging.config.file=/home/ersh/wrk/st/trunk_prj/logging.properties -jar sigtest.jar
+     * where logging.properties context is:
+     * -------------------------------------------------------------------------
+     * handlers= java.util.logging.FileHandler, java.util.logging.ConsoleHandler
+     * java.util.logging.FileHandler.pattern = sigtest.log.xml
+     * java.util.logging.FileHandler.formatter = java.util.logging.XMLFormatter
+     * com.sun.tdk.signaturetest.SignatureTest.level = FINER
+     * -------------------------------------------------------------------------
+     * In this case any java.util compatible log viewer can be used, for instance
+     * Apache Chainsaw (http://logging.apache.org/chainsaw)
+     */
+    private static Logger logger = Logger.getLogger(SignatureTest.class.getName());
 
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(SignatureTest.class);
@@ -195,6 +215,7 @@ public class SignatureTest extends SigTest {
     private boolean isOneWayConstantChecking = false;
 
     private String writeFileName = null;
+    private String updateFileName = null;
 
     /**
      * Check mode selected.
@@ -278,6 +299,20 @@ public class SignatureTest extends SigTest {
     }
 
     /**
+     * clean up constant values for non-static constants if this feature
+     * is not supported by the format
+     */
+    private void correctConstants(final ClassDescription currentClass) {
+        FieldDescr[] fields = currentClass.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            FieldDescr fd = fields[i];
+            if (!fd.isStatic()) {
+                fd.setConstantValue(null);
+            }
+        }
+    }
+
+    /**
      * Parse options specific for <b>SignatureTest</b>, and pass other
      * options to <b>SigTest</b> parameters parser.
      *
@@ -290,7 +325,8 @@ public class SignatureTest extends SigTest {
 
         // Print help text only and exit.
         if (args == null || args.length == 0 || (args.length == 1
-                && (parser.isOptionSpecified(args[0], HELP_OPTION) || parser.isOptionSpecified(args[0], QUESTIONMARK)))) {
+                && (parser.isOptionSpecified(args[0], HELP_OPTION) || parser.isOptionSpecified(args[0], QUESTIONMARK))))
+        {
             return false;
         }
 
@@ -311,7 +347,6 @@ public class SignatureTest extends SigTest {
 
         parser.addOption(WITHOUTSUBPACKAGES_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(EXCLUDE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
-        parser.addOption(VERSION_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(APIVERSION_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(OUT_OPTION, OptionInfo.option(1), optionsDecoder);
 
@@ -329,7 +364,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(CHECKVALUE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(NOCHECKVALUE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(ENABLESUPERSET_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
-
+        parser.addOption(UPDATE_FILE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(MODE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(ALLPUBLIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
@@ -414,15 +449,15 @@ public class SignatureTest extends SigTest {
         } else if (optionName.equalsIgnoreCase(FORMATPLAIN_OPTION)) {
             outFormat = FORMAT_PLAIN;
         } else if (optionName.equalsIgnoreCase(FORMATHUMAN_ALT_OPTION)) {
-             outFormat = FORMAT_HUMAN;
+            outFormat = FORMAT_HUMAN;
         } else if (optionName.equalsIgnoreCase(FORMATHUMAN_OPTION)) {
-             outFormat = FORMAT_HUMAN;
+            outFormat = FORMAT_HUMAN;
         } else if (optionName.equalsIgnoreCase(BACKWARD_OPTION)) {
-             outFormat = FORMAT_BACKWARD;
+            outFormat = FORMAT_BACKWARD;
         } else if (optionName.equalsIgnoreCase(EXTENSIBLE_INTERFACES_OPTION)) {
-             extensibleInterfaces = true;
+            extensibleInterfaces = true;
         } else if (optionName.equalsIgnoreCase(BACKWARD_ALT_OPTION)) {
-             outFormat = FORMAT_BACKWARD;
+            outFormat = FORMAT_BACKWARD;
         } else if (optionName.equalsIgnoreCase(VERBOSE_OPTION)) {
             isVerbose = true;
 
@@ -435,7 +470,8 @@ public class SignatureTest extends SigTest {
 
         } else if (optionName.equalsIgnoreCase(WRITE_OPTION)) {
             writeFileName = args[0];
-
+        } else if (optionName.equalsIgnoreCase(UPDATE_FILE_OPTION)) {
+            updateFileName = args[0];
         } else if (optionName.equalsIgnoreCase(MODE_OPTION)) {
 
             if (!SOURCE_MODE.equalsIgnoreCase(args[0]) && !BINARY_MODE.equalsIgnoreCase(args[0]))
@@ -463,7 +499,7 @@ public class SignatureTest extends SigTest {
 
         String nl = System.getProperty("line.separator");
         StringBuffer sb = new StringBuffer();
-        sb.append(i18n.getString("SignatureTest.usage.version", Version.Number));
+        sb.append(getComponentName() + " - " + i18n.getString("SignatureTest.usage.version", Version.Number));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.start"));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.static", STATIC_OPTION));
@@ -481,6 +517,7 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.packagewithoutsubpackages", WITHOUTSUBPACKAGES_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.exclude", EXCLUDE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.nomerge", NOMERGE_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.update", UPDATE_FILE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.apiversion", APIVERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.checkvalue", CHECKVALUE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.formatplain", FORMATPLAIN_OPTION));
@@ -489,6 +526,7 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.classcachesize", new Object[]{CLASSCACHESIZE_OPTION, new Integer(DefaultCacheSize)}));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.verbose", VERBOSE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.debug", DEBUG_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.error_all", ERRORALL_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.help", HELP_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
@@ -497,6 +535,10 @@ public class SignatureTest extends SigTest {
         System.err.println(sb.toString());
     }
 
+
+    protected String getComponentName() {
+        return "Test";
+    }
 
     public boolean useErasurator() {
         return !isTigerFeaturesTracked || BINARY_MODE.equals(mode);
@@ -518,7 +560,8 @@ public class SignatureTest extends SigTest {
         //  Open the specified sigfile and read standard headers.
 
         // ME - TODO: rewrite this in the future
-        if (readMode == MultipleFileReader.MERGE_MODE && sigFileNameList != null && sigFileNameList.indexOf(File.pathSeparator) >= 0) {
+        if (readMode == MultipleFileReader.MERGE_MODE && sigFileNameList != null && sigFileNameList.indexOf(File.pathSeparator) >= 0)
+        {
             try {
                 if (writeFileName == null) {
                     File tmpF = File.createTempFile("sigtest", "sig");
@@ -548,6 +591,21 @@ public class SignatureTest extends SigTest {
             }
         } else readMode = MultipleFileReader.CLASSPATH_MODE;
 
+        // apply update file if it was specified
+        if (updateFileName != null) {
+            try {
+                Updater up = new Updater();
+                File res = File.createTempFile("sigtest", "sig");
+                String resFileName = res.getAbsolutePath();
+                res.deleteOnExit();
+                up.perform(updateFileName, sigFileName, resFileName, SigTest.log);
+                sigFileName = resFileName;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         MultipleFileReader in = new MultipleFileReader(log, readMode);
         String linesep = System.getProperty("line.separator");
         boolean result;
@@ -560,7 +618,7 @@ public class SignatureTest extends SigTest {
         if (!result) {
             if (in != null)
                 in.close();
-            msg = i18n.getString("SignatureTest.error.sigfile.invalid", sigFileNameList==null ? sigFileName : sigFileNameList);
+            msg = i18n.getString("SignatureTest.error.sigfile.invalid", sigFileNameList == null ? sigFileName : sigFileNameList);
             log.println(msg);
             return error(msg);
 
@@ -589,7 +647,7 @@ public class SignatureTest extends SigTest {
         }
         MemberType.setMode(BINARY_MODE.equals(mode));
 
-        if (isValueTracked.booleanValue() && !in.hasFeature(FeaturesHolder.ConstInfo)) {
+        if (isValueTracked.booleanValue() && !in.isFeatureSupported(FeaturesHolder.ConstInfo)) {
             String errmsg = i18n.getString("SignatureTest.mesg.sigfile.noconst");
             log.println(errmsg);
             return failed(errmsg);
@@ -597,7 +655,7 @@ public class SignatureTest extends SigTest {
 
         //  If sigfile doesn't contain constant values, constant checking
         //  is impossible
-        if (!in.hasFeature(FeaturesHolder.ConstInfo)) {
+        if (!in.isFeatureSupported(FeaturesHolder.ConstInfo)) {
             isValueTracked = Boolean.FALSE;
         }
 
@@ -636,33 +694,34 @@ public class SignatureTest extends SigTest {
 
         ClassDescriptionLoader loader = getClassDescrLoader();
 
-        classHierarchy = new ClassHierarchyImpl(loader, trackMode);
+        if (!isValueTracked.booleanValue() && loader instanceof LoadingHints) {
+            ((LoadingHints) loader).addLoadingHint(LoadingHints.DONT_READ_VALUES);
+        }
 
-        builder = new MemberCollectionBuilder(this);
+        testableHierarchy = new ClassHierarchyImpl(loader, trackMode);
+
+        testableMCBuilder = new MemberCollectionBuilder(this);
 
         signatureClassesHierarchy = new ClassHierarchyImpl(in, trackMode);
-
 
         // creates ErrorFormatter.
         if ((outFormat != null) && FORMAT_PLAIN.equals(outFormat))
             errorManager = new ErrorFormatter(log);
-        else
-            if ((outFormat != null) && FORMAT_HUMAN.equals(outFormat))
-                errorManager = new HumanErrorFormatter(log, isVerbose,
-                        reportWarningAsError ? Level.WARNING : Level.SEVERE );
-        else
-            if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
-                errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
-                        classHierarchy, signatureClassesHierarchy,
-                        reportWarningAsError ? Level.WARNING : Level.SEVERE, extensibleInterfaces );
+        else if ((outFormat != null) && FORMAT_HUMAN.equals(outFormat))
+            errorManager = new HumanErrorFormatter(log, isVerbose,
+                    reportWarningAsError ? Level.WARNING : Level.SEVERE);
+        else if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
+            errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
+                    testableHierarchy, signatureClassesHierarchy,
+                    reportWarningAsError ? Level.WARNING : Level.SEVERE, extensibleInterfaces);
         else
             errorManager = new SortedErrorFormatter(log, isVerbose);
 
 
-        boolean buildMembers = in.hasFeature(FeaturesHolder.BuildMembers);
-        MemberCollectionBuilder b = null;
+        boolean buildMembers = in.isFeatureSupported(FeaturesHolder.BuildMembers);
+        MemberCollectionBuilder sigfileMCBuilder = null;
         if (buildMembers) {
-            b = new MemberCollectionBuilder(this);
+            sigfileMCBuilder = new MemberCollectionBuilder(this);
         }
 
         //  Reading the sigfile: main loop.
@@ -673,17 +732,18 @@ public class SignatureTest extends SigTest {
 
         try {
 
+            ClassDescription currentClass;
+
             // check that set of classes is transitively closed
             ClassSet closedSet = new ClassSet(signatureClassesHierarchy, true);
 
             in.rewind();
-            ClassDescription currentClass;
             while ((currentClass = in.nextClass()) != null) {
                 closedSet.addClass(currentClass.getQualifiedName());
             }
 
             Set missingClasses = closedSet.getMissingClasses();
-            if (!missingClasses.isEmpty()) {
+            if (!missingClasses.isEmpty() && !isAPICheckMode()) {
 
                 log.print(i18n.getString("SignatureTest.error.required_classes_missing"));
                 int count = 0;
@@ -699,8 +759,9 @@ public class SignatureTest extends SigTest {
                 return error(msg);
             }
 
-
             in.rewind();
+
+            boolean supportNSC = in.isFeatureSupported(FeaturesHolder.NonStaticConstants);
 
             while ((currentClass = in.nextClass()) != null) {
                 if (Xverbose) {
@@ -709,7 +770,10 @@ public class SignatureTest extends SigTest {
 
                 if (buildMembers) {
                     try {
-                        b.createMembers(currentClass, true, false, true);
+                        if (isAPICheckMode()) {
+                            sigfileMCBuilder.setBuildMode(MemberCollectionBuilder.BuildMode.SIGFILE);
+                        }
+                        sigfileMCBuilder.createMembers(currentClass, addInherited(), false, true);
                     } catch (ClassNotFoundException e) {
                         if (SigTest.debug)
                             e.printStackTrace();
@@ -732,7 +796,7 @@ public class SignatureTest extends SigTest {
                 if (currentClass.isPackageInfo() && isTigerFeaturesTracked) {
                     verifyPackageInfo(currentClass);
                 } else {
-                    verifyClass(currentClass);
+                    verifyClass(currentClass, supportNSC);
                 }
                 // save memory
                 currentClass.setMembers(null);
@@ -770,7 +834,6 @@ public class SignatureTest extends SigTest {
             return error(msg);
         }
 
-
         //  Finished - the sigfile closed.
 
         if (!isSupersettingEnabled)
@@ -799,6 +862,10 @@ public class SignatureTest extends SigTest {
             return failed(i18n.getString("SignatureTest.mesg.failed",
                     Integer.toString(errors)));
 
+    }
+
+    protected boolean isAPICheckMode() {
+        return false;
     }
 
     /**
@@ -834,12 +901,12 @@ public class SignatureTest extends SigTest {
     private void checkAddedClass(String name) {
         if (!trackedClassNames.contains(name) && isPackageMember(name)) {
             try {
-                ClassDescription c = classHierarchy.load(name);
+                ClassDescription c = testableHierarchy.load(name);
                 if (c.isPackageInfo()) {
                     if (isTigerFeaturesTracked)
                         checkAnnotations(null, c);
                 } else {
-                    if (classHierarchy.isAccessible(c)) {
+                    if (testableHierarchy.isAccessible(c)) {
                         exclude.check(c, c);
                         errorManager.addError(MessageType.getAddedMessageType(c.getMemberType()), c.getQualifiedName(), c.getMemberType(), null, c);
                     }
@@ -874,13 +941,36 @@ public class SignatureTest extends SigTest {
 
             if (!trackedClassNames.contains(fqn)) {
                 try {
-                    ClassDescription c = classHierarchy.load(fqn);
+                    ClassDescription c = testableHierarchy.load(fqn);
                     checkAnnotations(null, c);
                 }
                 catch (Throwable e) {
                     // ignore because .package-info may not exist!
                 }
             }
+        }
+
+    }
+
+
+    private void transformPair(ClassDescription parentReq, MemberDescription required,
+            ClassDescription parentFou, MemberDescription found) {
+        // number of simple transformations for found - required pair
+
+        // Issue 54
+        // public constructor of an abstract class and the same but protected
+        // constructor of the same abstract class are mutual compatible
+        if (required.isConstructor() && found.isConstructor() &&
+                parentReq.isAbstract() && parentFou.isAbstract() &&
+                ((required.isProtected() && found.isPublic()) ||
+                (required.isPublic() && found.isProtected()))) {
+
+                required.setModifiers(required.getModifiers() & ~Modifier.PUBLIC.getValue());
+                required.setModifiers(required.getModifiers() | Modifier.PROTECTED.getValue());
+
+                found.setModifiers(found.getModifiers() & ~Modifier.PUBLIC.getValue());
+                found.setModifiers(found.getModifiers() | Modifier.PROTECTED.getValue());
+
         }
 
     }
@@ -895,7 +985,7 @@ public class SignatureTest extends SigTest {
      *         occurred; or <code>Status.passed("")</code> otherwise.
      * @see #log
      */
-    private boolean verifyClass(ClassDescription required) {
+    private boolean verifyClass(ClassDescription required, boolean supportNSC) {
         // checks that package from tested API
 
         String name = required.getQualifiedName();
@@ -905,11 +995,16 @@ public class SignatureTest extends SigTest {
 
         try {
             exclude.check(required, required);
-            ClassDescription found = classHierarchy.load(name);
+            ClassDescription found = testableHierarchy.load(name);
 
-            if (classHierarchy.isAccessible(found)) {
+            if (testableHierarchy.isAccessible(found)) {
 
-                builder.createMembers(found, true, true, false);
+                if (isAPICheckMode()) {
+                    testableMCBuilder.setBuildMode(MemberCollectionBuilder.BuildMode.TESTABLE);
+                    testableMCBuilder.setSecondClassHierarchy(signatureClassesHierarchy);
+                }
+
+                testableMCBuilder.createMembers(found, addInherited(), true, false);
 
                 Transformer t = PluginAPI.BEFORE_TEST.getTransformer();
                 if (t != null)
@@ -927,8 +1022,12 @@ public class SignatureTest extends SigTest {
                 } else if (FORMAT_BACKWARD.equals(outFormat)) {
                     if (!hasClassParameter(required) && hasClassParameter(found)) {
                         found = erasurator.erasure(found);
-                        required = erasurator.erasure(required); 
+                        required = erasurator.erasure(required);
                     }
+                }
+
+                if (!supportNSC) {
+                    correctConstants(found);
                 }
 
                 verifyClass(required, found);
@@ -991,7 +1090,7 @@ public class SignatureTest extends SigTest {
         trackedClassNames.add(name);
         ClassDescription found = null;
         try {
-            found = classHierarchy.load(name);
+            found = testableHierarchy.load(name);
             //loader.createMembers(found);
         }
         catch (Exception e) {
@@ -1105,12 +1204,12 @@ public class SignatureTest extends SigTest {
             // below is a fix for issue 21
             try {
                 if (!member.hasModifier(Modifier.FINAL)) {
-                    if (!classHierarchy.isMethodOverriden(md)) {
+                    if (!testableHierarchy.isMethodOverriden(md)) {
                         clonedMember = (MemberDescription) member.clone();
                         clonedMember.addModifier(Modifier.FINAL);
                     }
                 } else {
-                    if (classHierarchy.isMethodOverriden(md)) {
+                    if (testableHierarchy.isMethodOverriden(md)) {
                         clonedMember = (MemberDescription) member.clone();
                         clonedMember.removeModifier(Modifier.FINAL);
                     }
@@ -1121,7 +1220,8 @@ public class SignatureTest extends SigTest {
             // end of fix
         }
 
-        if (BINARY_MODE.equals(mode) && member.isMethod() && member.hasModifier(Modifier.STATIC) && member.hasModifier(Modifier.FINAL)) {
+        if (BINARY_MODE.equals(mode) && member.isMethod() && member.hasModifier(Modifier.STATIC) && member.hasModifier(Modifier.FINAL))
+        {
             clonedMember = (MemberDescription) member.clone();
             clonedMember.removeModifier(Modifier.FINAL);
         }
@@ -1151,6 +1251,10 @@ public class SignatureTest extends SigTest {
         //       the third parameter is null in this case
         String name = parentReq.getQualifiedName();
 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("trackMember \n r:" + required + " \n f:" + found);
+        }
+
         if (required != null) {
             required = transformMember(parentReq, required);
         }
@@ -1161,6 +1265,9 @@ public class SignatureTest extends SigTest {
 
         if (required != null && found != null) {
 
+
+            transformPair(parentReq, required, parentFou, found);
+
             checkAnnotations(required, found);
 
             // element matching is basically equality of the signature.
@@ -1168,26 +1275,42 @@ public class SignatureTest extends SigTest {
             // levels of enforcement being used (e.g. include constant values
             // or not)
 
-            if (required.isCompatible(found))
+            if (required.isCompatible(found)) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("compatible! :-)");
+                }
                 return;                  // OK
+            }
 
             // one way constant checking if constant values don't match
-            if (isOneWayConstantChecking && required.isField() ) {
+            if (isOneWayConstantChecking && required.isField()) {
 
                 assert found.isField();
 
                 String constantValue = ((FieldDescr) required).getConstantValue();
                 if (constantValue == null && ((FieldDescr) found).getConstantValue() != null &&
-                        ((FieldDescr) required).isCompatible(found, true))
+                        ((FieldDescr) required).isCompatible(found, true)) {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("compatible! :-)");
+                    }
                     return;     // OK
+                }
             }
         }
 
-        if (required != null)
+        if (required != null) {
             errorManager.addError(MessageType.getMissingMessageType(required.getMemberType()), name, required.getMemberType(), required.toString(), required);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("missing :-( " + required);
+            }
+        }
 
-        if (!isSupersettingEnabled && found != null)
+        if (!isSupersettingEnabled && found != null) {
             errorManager.addError(MessageType.getAddedMessageType(found.getMemberType()), name, found.getMemberType(), found.toString(), found);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("added :-( " + found);
+            }
+        }
     }
 
 
@@ -1200,7 +1323,12 @@ public class SignatureTest extends SigTest {
                 removeUndocumentedAnnotations(base.getAnnoList(), signatureClassesHierarchy);
 
         AnnotationItem[] testAnnotList = test == null ? AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY :
-                removeUndocumentedAnnotations(test.getAnnoList(), classHierarchy);
+                removeUndocumentedAnnotations(test.getAnnoList(), testableHierarchy);
+
+        // RI JSR 308 doesn't support reflection yet
+        if (!isStatic) {
+            baseAnnotList = removeExtendedAnnotations(baseAnnotList);
+        }
 
         if (baseAnnotList.length == 0 && testAnnotList.length == 0)
             return;
@@ -1235,6 +1363,23 @@ public class SignatureTest extends SigTest {
             reportError(test, testAnnotList[tPos].toString(), true);
             tPos++;
         }
+    }
+
+    private AnnotationItem[] removeExtendedAnnotations(AnnotationItem[] baseAnnotList) {
+
+        if (baseAnnotList == null)
+            return AnnotationItem.EMPTY_ANNOTATIONITEM_ARRAY;
+
+        List list = new ArrayList(Arrays.asList(baseAnnotList));
+        Iterator it = list.iterator();
+
+        while (it.hasNext()) {
+            if (it.next() instanceof AnnotationItemEx) {
+                it.remove();
+            }
+        }
+
+        return (AnnotationItem[]) list.toArray(new AnnotationItem[] {});
     }
 
     private void reportError(MemberDescription fid, String anno, boolean added) {

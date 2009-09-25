@@ -57,7 +57,7 @@ public final class FieldDescr extends MemberDescription {
     }
 
     public boolean isConstant() {
-        return isFinal() && isStatic();
+        return isFinal() && constantValue != null/*isStatic()*/;
     }
 
 

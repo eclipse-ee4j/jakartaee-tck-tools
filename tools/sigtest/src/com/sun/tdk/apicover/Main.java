@@ -28,16 +28,9 @@
 package com.sun.tdk.apicover;
 
 import com.sun.tdk.signaturetest.SigTest;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.sun.tdk.signaturetest.Version;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
-import com.sun.tdk.signaturetest.core.ClassHierarchy;
-import com.sun.tdk.signaturetest.core.ClassHierarchyImpl;
-import com.sun.tdk.signaturetest.core.Log;
-import com.sun.tdk.signaturetest.core.MemberCollectionBuilder;
-import com.sun.tdk.signaturetest.core.PackageGroup;
+import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.loaders.BinaryClassDescrLoader;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.MemberDescription;
@@ -47,13 +40,16 @@ import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 import com.sun.tdk.signaturetest.util.OptionInfo;
+import com.sun.tdk.apicover.markup.Adapter;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 
 
 public class Main implements Log {
-
-    // TODO fix version
-    private static final String version = "API Cover Tool version 2.1";
 
     private final static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Main.class);
 
@@ -330,7 +326,7 @@ public class Main implements Log {
     }
 
     private static void version() {
-        System.err.println(version);
+        System.err.println("API Cover Tool -  SignatureTest version " + Version.Number);
     }
 
     public void usage() {
@@ -367,12 +363,15 @@ public class Main implements Log {
     void check() {
         MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE);
         ClassHierarchy apiHierarchy = new ClassHierarchyImpl(in, ClassHierarchy.ALL_PUBLIC);
+        new Adapter();
+
         try {
             if (!in.readSignatureFiles(MAIN_URI, signatureFile)) {
                 error(i18n.getString("Main.error.sigfile.invalid", signatureFile));
             }
+
             // Signature file version
-            boolean is4 = in.hasFeature(Format.BuildMembers);
+            boolean is4 = in.isFeatureSupported(Format.BuildMembers);
             MemberCollectionBuilder b = new MemberCollectionBuilder(this);
             ClassDescription cd;
             while ((cd = in.nextClass()) != null) {
@@ -460,15 +459,13 @@ public class Main implements Log {
 
 
 
-    public void storeError(String s) {
-        // TODO Auto-generated method stub
+    public void storeError(String s, Logger utilLog) {
         log.append(s);
     }
 
 
 
-    public void storeWarning(String s) {
-        // TODO Auto-generated method stub
+    public void storeWarning(String s, Logger utilLog) {
         log.append(s);
     }
 

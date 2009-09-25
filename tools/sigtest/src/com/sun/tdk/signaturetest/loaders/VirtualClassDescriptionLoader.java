@@ -29,26 +29,24 @@ package com.sun.tdk.signaturetest.loaders;
 
 import com.sun.tdk.signaturetest.core.ClassDescriptionLoader;
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.sigfile.FeaturesHolder;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
+ * An abstract class loader that stores and restores classes to/from internal cache
+ *
  * @author Roman Makarchuk
+ * @author Mikhail Ershov
  */
-public class VirtualClassDescriptionLoader implements ClassDescriptionLoader {
+public class VirtualClassDescriptionLoader extends FeaturesHolder implements ClassDescriptionLoader {
 
-    protected Map classDescriptions;
+    private Map classDescriptions;
 
     public VirtualClassDescriptionLoader() {
-        this(new TreeMap());
-    }
-
-    // allow to choose more suitable map implementation - HashMap, TreeMap or IdentityHashMap
-    protected VirtualClassDescriptionLoader(Map concreteMapImplementation) {
-        assert concreteMapImplementation.isEmpty();
-        this.classDescriptions = concreteMapImplementation;
+        this.classDescriptions = new TreeMap();
     }
 
     public ClassDescription load(String className) throws ClassNotFoundException {
@@ -72,5 +70,9 @@ public class VirtualClassDescriptionLoader implements ClassDescriptionLoader {
 
     public void remove(String clsName) {
         classDescriptions.remove(clsName);
+    }
+
+    public void cleanUp() {
+        classDescriptions.clear();
     }
 }

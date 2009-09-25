@@ -29,9 +29,8 @@ package com.sun.tdk.signaturetest.ant;
 
 import com.sun.tdk.signaturetest.SigTest;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.DataType;
+import org.apache.tools.ant.types.Path;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,14 +40,14 @@ import java.util.Iterator;
  * Base class for ant wrappers such as ASetup and ATest
  * @author Mikhail Ershov
  */
-public class ABase extends Task {
+public class ABase extends ASuperBase {
 
     Path classpath;
     ArrayList pac = new ArrayList();
     private ArrayList exclude = new ArrayList();
     String fileName;
     private String apiVersion;
-    boolean failOnError = false;
+
 
     void createBaseParameters(ArrayList params) {
         params.add(SigTest.FILENAME_OPTION);
@@ -135,10 +134,6 @@ public class ABase extends Task {
         apiVersion = s;
     }
 
-    public void setFailonerror(boolean fail) {
-        failOnError = fail;
-    }
-
     public static class AExclude extends DataType {
         String value;
 
@@ -158,4 +153,5 @@ public class ABase extends Task {
             value = p;
         }
     }
+
 }

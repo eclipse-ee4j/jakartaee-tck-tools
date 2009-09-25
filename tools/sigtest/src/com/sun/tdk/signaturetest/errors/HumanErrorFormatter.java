@@ -28,16 +28,18 @@
 package com.sun.tdk.signaturetest.errors;
 
 
-import com.sun.tdk.signaturetest.model.*;
+import com.sun.tdk.signaturetest.model.ConstructorDescr;
+import com.sun.tdk.signaturetest.model.MemberDescription;
+import com.sun.tdk.signaturetest.model.MemberType;
+import com.sun.tdk.signaturetest.model.MethodDescr;
+import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
-
-import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 public class HumanErrorFormatter extends SortedErrorFormatter {
 
