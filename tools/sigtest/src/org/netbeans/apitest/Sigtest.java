@@ -50,7 +50,6 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -380,7 +379,7 @@ public final class Sigtest extends Task {
         try {
             return factory.newDocumentBuilder().getDOMImplementation().createDocument(null, rootQName, null);
         } catch (ParserConfigurationException ex) {
-            throw (DOMException) new IOException("Cannot create parser").initCause(ex); // NOI18N
+            throw (IOException) new IOException("Cannot create parser").initCause(ex); // NOI18N
         }
     }
 }
