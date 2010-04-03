@@ -111,6 +111,23 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
+    public void testAddingStaticFieldToInterfaceIsOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface Constants {" +
+            "}";
+        String c2 =
+            "package ahoj;" +
+            "public interface Constants {" +
+            "  public final static String HIDE_WHEN_DISABLED = \"hide\";" +
+            "}";
+
+        createFile(1, "Constants.java", c1);
+        createFile(2, "Constants.java", c2);
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
     public void testProblemsWithInnerClassChanged() throws Exception {
         String c1 = 
             "package ahoj;" +
