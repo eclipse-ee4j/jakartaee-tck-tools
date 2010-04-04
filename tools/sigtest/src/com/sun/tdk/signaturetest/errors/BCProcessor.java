@@ -282,7 +282,7 @@ public class BCProcessor extends HumanErrorFormatter {
                 // see 2.3 for other case
                 if (m.className.equals(md.getDeclaringClassName()))
                     try {
-                        return clHier.isInterface(md.getDeclaringClassName());
+                        return clHier.isAnnotation(md.getDeclaringClassName());
                     } catch (ClassNotFoundException e) {
                         return false;
                     }
