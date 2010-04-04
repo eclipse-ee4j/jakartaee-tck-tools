@@ -353,7 +353,7 @@ public class MemberCollectionBuilder {
                     }
                 }
             } catch (ClassNotFoundException ex) {
-                if (mode != BuildMode.SIGFILE) {
+                if (mode != BuildMode.SIGFILE && mode != BuildMode.APICOV_REAL ) {
                     logger.log(Level.FINER, "Class not found", ex);
                     throw ex;
                 }
@@ -481,7 +481,7 @@ public class MemberCollectionBuilder {
                     }
                 }
             } catch (ClassNotFoundException ex) {
-                if (mode != BuildMode.SIGFILE) {
+                if (mode != BuildMode.SIGFILE && mode != BuildMode.APICOV_REAL) {
                     logger.log(Level.FINER, " not found class", ex);
                     throw ex;
                 }
@@ -505,7 +505,7 @@ public class MemberCollectionBuilder {
             } else {
                 if (xfCan.contains(field.getName())) {
                     // this code must be in ClassCorrector - here is wrong place !
-                    System.err.println("Artefact field found " + field.getQualifiedName());
+                    System.err.println("Phantom field found " + field.getQualifiedName());
                     if (logger.isLoggable(Level.FINER)) {
                         // this is actually very serious design error -
                         // we have to print warning or even error
@@ -523,7 +523,7 @@ public class MemberCollectionBuilder {
                 while (rvi.hasNext()) {
                     MemberDescription rm = (MemberDescription) rvi.next();
                     if (rm.isInner() && rm.getName().equals(xClass)) {
-                        System.err.println("Artefact class found " + rm.getQualifiedName());
+                        System.err.println("Phantom class found " + rm.getQualifiedName());
                         rvi.remove();
                     }
                 }
@@ -561,7 +561,7 @@ public class MemberCollectionBuilder {
                     }
                 }
             } catch (ClassNotFoundException e) {
-                if (mode != BuildMode.SIGFILE) {
+                if (mode != BuildMode.SIGFILE && mode != BuildMode.APICOV_REAL) {
                     log.storeWarning(i18n.getString("MemberCollectionBuilder.warn.returntype.notresolved", m.getType()), null);
                     logger.log(Level.FINER, " " + i18n.getString("MemberCollectionBuilder.warn.returntype.notresolved", m.getType()), e);
                 }
@@ -586,7 +586,7 @@ public class MemberCollectionBuilder {
                 ClassDescription superClass = hierarchy.load(superClassDescr.getQualifiedName());
                 findInheritableAnnotations(cl, superClass);
             } catch (ClassNotFoundException ex) {
-                if (mode != BuildMode.SIGFILE) {
+                if (mode != BuildMode.SIGFILE && mode != BuildMode.APICOV_REAL) {
                     logger.log(Level.FINER, " not found class", ex);
                     throw ex;
                 }
@@ -611,6 +611,7 @@ public class MemberCollectionBuilder {
         public static final BuildMode NORMAL = new BuildMode("NORMAL");
         public static final BuildMode SIGFILE = new BuildMode("SIGFILE");
         public static final BuildMode TESTABLE = new BuildMode("TESTABLE");
+        public static final BuildMode APICOV_REAL = new BuildMode("APICOV_REAL");
         private String name;
 
         private BuildMode(String name) {

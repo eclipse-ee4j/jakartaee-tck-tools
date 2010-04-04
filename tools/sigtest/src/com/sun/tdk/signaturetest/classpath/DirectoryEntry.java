@@ -28,6 +28,7 @@
 package com.sun.tdk.signaturetest.classpath;
 
 import com.sun.tdk.signaturetest.SigTest;
+import com.sun.tdk.signaturetest.model.ExoticCharTools;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.File;
@@ -142,6 +143,7 @@ class DirectoryEntry extends ClasspathEntry {
         if (!classes.contains(name))
             throw new ClassNotFoundException(name);
 
+        name = ExoticCharTools.decodeExotic(name);
         return new FileInputStream(new File(constructFileName(name)));
     }
 

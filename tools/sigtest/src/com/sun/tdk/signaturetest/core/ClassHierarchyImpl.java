@@ -295,6 +295,12 @@ public class ClassHierarchyImpl implements ClassHierarchy {
             if (info.superClass != null)
                 addSubClass(info.superClass, fqname);
 
+            if(info.superInterfaces != null && info.superInterfaces.length > 0) {
+                for ( int i=0; i < info.superInterfaces.length; i++) {
+                    addSubClass(info.superInterfaces[i], fqname);
+                }
+            }
+
             processedClasses.put(fqname, info);
         }
         return info;

@@ -51,13 +51,15 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
     private PrintWriter log;
     private int mode;
     private String apiVersion;
+    private FileManager fileMan;
 
-    public MultipleFileReader(PrintWriter log, int mode) {
+    public MultipleFileReader(PrintWriter log, int mode, FileManager f) {
         // Note: Merge mode is not supported yet.
         assert mode == CLASSPATH_MODE;
 
         this.log = log;
         this.mode = mode;
+        this.fileMan = f;
 
     }
 
@@ -112,7 +114,7 @@ public class MultipleFileReader extends VirtualClassDescriptionLoader {
         String msg = null;
 
         //  Open the specified sigfile and read standard headers.
-        Reader in = FileManager.getReader(fileURL);
+        Reader in = fileMan.getReader(fileURL);
 
         if (in == null) {
             return false;

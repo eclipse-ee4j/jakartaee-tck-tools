@@ -56,12 +56,21 @@ public class ClassDescription extends MemberDescription implements Serializable 
 
     private static final String PACKAGE_INFO_CLASS = ".package-info";
 
+    public static final String OUTER_PREFIX = "outer";
+
     // NOTE: Change this method carefully if you changed the code,
     // please, update the method isCompatible() in order it works as previously
     public boolean equals(Object o) {
         // == used instead of equals() because name is always assigned via String.intern() call
-        return o instanceof ClassDescription && name==((ClassDescription) o).name;
+        return o instanceof ClassDescription && name == ((ClassDescription) o).name;
     }
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
 
     public String getQualifiedName() {
         return name;
@@ -95,6 +104,9 @@ public class ClassDescription extends MemberDescription implements Serializable 
     }
 
     public boolean isAnonymousClass() {
+        if (name.charAt(name.length()-1) == CLASS_DELIMITER) {
+            return false;
+        }
         return !declaringClass.equals(NO_DECLARING_CLASS) && isAsciiDigit(name.charAt(name.lastIndexOf(CLASS_DELIMITER) +1));
     }
 
@@ -371,6 +383,9 @@ public class ClassDescription extends MemberDescription implements Serializable 
         return interfaces;
     }
 
+    public String getOuterClass() {
+        return declaringClass;
+    }
 
     public InnerDescr[] getDeclaredClasses() {
         return nestedClasses;

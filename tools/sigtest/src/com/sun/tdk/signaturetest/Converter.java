@@ -48,7 +48,7 @@ public class Converter extends Result {
     private String oldFileName;
     private String newFileName;
 
-    public static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Converter.class);
+    public static final I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(Converter.class);
 
     private static final String OLDFILE_OPTION = "-OldFile";
     private static final String NEWFILE_OPTION = "-NewFile";

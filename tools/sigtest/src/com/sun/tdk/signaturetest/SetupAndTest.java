@@ -108,13 +108,20 @@ public class SetupAndTest extends Result {
 
         parser.addOption(SigTest.HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(SigTest.QUESTIONMARK, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(SigTest.VERSION_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         try {
             parser.processArgs(args);
         } catch (CommandLineParserException e) {
-            usage();
-            log.println(e.getMessage());
-            return failed(e.getMessage());
+            if (args.length > 0 && args[0].equalsIgnoreCase(SigTest.VERSION_OPTION))  {
+                System.err.println(Version.getVersionInfo());
+                return passed();
+            } else {
+                usage();
+                log.println(e.getMessage());
+                return failed(e.getMessage());
+            }
+            
         }
 
         // Assign temporary name for the sigfile if none was specified
@@ -164,13 +171,9 @@ public class SetupAndTest extends Result {
         if (optionName.equalsIgnoreCase(SigTest.HELP_OPTION) || optionName.equals(SigTest.QUESTIONMARK)) {
             usage();
         } else if (optionName.equalsIgnoreCase(REFERENCE_OPTION)) {
-
             addOption(setupOptions, SigTest.CLASSPATH_OPTION, args[0]);
-
         } else if (optionName.equalsIgnoreCase(TEST_OPTION)) {
-
             addOption(testOptions, SigTest.CLASSPATH_OPTION, args[0]);
-
         } else if (optionName.equalsIgnoreCase(SigTest.FILENAME_OPTION) ||
                 optionName.equalsIgnoreCase(SigTest.PACKAGE_OPTION) ||
                 optionName.equalsIgnoreCase(SigTest.WITHOUTSUBPACKAGES_OPTION) ||
@@ -238,6 +241,7 @@ public class SetupAndTest extends Result {
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.formatplain", SigTest.FORMATPLAIN_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.classcachesize", new Object[]{SigTest.CLASSCACHESIZE_OPTION, new Integer(SigTest.DefaultCacheSize)}));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SetupAndTest.helpusage.version", SigTest.VERSION_OPTION));
         sb.append(nl).append(i18n.getString("SetupAndTest.usage.help", SigTest.HELP_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
 

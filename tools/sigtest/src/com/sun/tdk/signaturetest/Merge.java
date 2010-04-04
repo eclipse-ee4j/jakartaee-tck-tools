@@ -87,14 +87,17 @@ public class Merge extends SigTest implements Log {
      */
     public void run(String[] args, PrintWriter pw, PrintWriter ref) {
 
-        log = pw;
+        setLog(pw);
 
         if (parseParameters(args)) {
             perform();
-            log.flush();
+            getLog().flush();
         } else
-            usage();
-
+            if (args.length > 0 && args[0].equalsIgnoreCase(VERSION_OPTION))  {
+                System.err.println(Version.getVersionInfo());
+            } else {
+                usage();
+            }
     }
 
 
@@ -117,7 +120,7 @@ public class Merge extends SigTest implements Log {
         parser.addOption(BINARY_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(TESTURL_OPTION, OptionInfo.option(1), optionsDecoder);
-
+        parser.addOption(VERSION_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         try {
             parser.processArgs(args);
@@ -125,7 +128,7 @@ public class Merge extends SigTest implements Log {
                 checkValidWriteFile();
         }
         catch (CommandLineParserException e) {
-            log.println(e.getMessage());
+            getLog().println(e.getMessage());
             return failed(e.getMessage());
         }
 
@@ -188,7 +191,7 @@ public class Merge extends SigTest implements Log {
         FeaturesHolder fh = new FeaturesHolder();
         for (int i = 0; i < signatureFiles.length; i++) {
             String sigFiles = signatureFiles[i];
-            MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE);
+            MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE, getFileManager());
             if (!in.readSignatureFiles(testURL, sigFiles)) {
                 msg = i18n.getString("SignatureTest.error.sigfile.invalid", sigFiles);
                 in.close();
@@ -245,7 +248,7 @@ public class Merge extends SigTest implements Log {
 
         try {
             //write header to the signature file
-            Writer writer = FileManager.getWriter(merger.getSupportedFeatures());
+            Writer writer = getFileManager().getWriter(merger.getSupportedFeatures());
             if (writer == null) {
                 failed("Could not find a writer for given sigtest file formats.");
                 return;
@@ -293,6 +296,7 @@ public class Merge extends SigTest implements Log {
         sb.append(nl).append(i18n.getString("Merge.usage.write", WRITE_OPTION));
         sb.append(nl).append(i18n.getString("Merge.usage.binary", BINARY_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SetupAndTest.helpusage.version", VERSION_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.help", HELP_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.end"));

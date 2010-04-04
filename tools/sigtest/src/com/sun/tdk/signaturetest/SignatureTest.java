@@ -47,6 +47,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -265,9 +266,9 @@ public class SignatureTest extends SigTest {
      */
     public void run(String[] args, PrintWriter log, PrintWriter ref) {
 
-        long startTime = System.currentTimeMillis();
+//        long startTime = System.currentTimeMillis();
 
-        SigTest.log = log;
+        setLog(log);
         mode = null;
         try {
             ClassLoader cl = SignatureTest.class.getClassLoader();
@@ -281,19 +282,23 @@ public class SignatureTest extends SigTest {
         if (parseParameters(args)) {
             check();
             if (logFile)
-                SigTest.log.println(toString());
-        } else
-            usage();
-
+                getLog().println(toString());
+        } else {
+            if (args.length > 0 && args[0].equalsIgnoreCase(VERSION_OPTION))  {
+                System.err.println(Version.getVersionInfo());
+            } else {
+                usage();
+            }
+        }
         if (classpath != null)
             classpath.close();
 
-        long runTime = System.currentTimeMillis() - startTime;
+//        long runTime = System.currentTimeMillis() - startTime;
 //        SigTest.log.println("Execution time: " + ((double) runTime) / 1000 + " second(s)");
 
         // don't close logfile if it was readSignatureFile in test harness
         if (logFile) {
-            SigTest.log.close();
+            getLog().close();
             System.out.println(i18n.getString("SignatureTest.mesg.see_log", logName));
         }
     }
@@ -351,6 +356,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(OUT_OPTION, OptionInfo.option(1), optionsDecoder);
 
         parser.addOption(STATIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
         parser.addOption(CLASSCACHESIZE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(FORMATPLAIN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(FORMATHUMAN_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -372,6 +378,7 @@ public class SignatureTest extends SigTest {
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(QUESTIONMARK, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(VERSION_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(PLUGIN_OPTION, OptionInfo.option(1), optionsDecoder);
 
@@ -383,7 +390,7 @@ public class SignatureTest extends SigTest {
         try {
             parser.processArgs(args);
         } catch (CommandLineParserException e) {
-            log.println(e.getMessage());
+            getLog().println(e.getMessage());
             return failed(e.getMessage());
         }
 
@@ -415,7 +422,7 @@ public class SignatureTest extends SigTest {
         if (logName != null) {
 
             try {
-                log = new PrintWriter(new FileWriter(logName), true);
+                setLog(new PrintWriter(new FileWriter(logName), true));
                 logFile = true;
             } catch (IOException x) {
                 if (SigTest.debug)
@@ -430,7 +437,7 @@ public class SignatureTest extends SigTest {
         } catch (SecurityException e) {
             if (SigTest.debug)
                 e.printStackTrace();
-            log.println(i18n.getString("SignatureTest.error.sec.newclasses"));
+            getLog().println(i18n.getString("SignatureTest.error.sec.newclasses"));
         }
 
         if (isStatic && classpath.isEmpty())
@@ -528,6 +535,7 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.debug", DEBUG_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.error_all", ERRORALL_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("SignatureTest.helpusage.version", VERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.help", HELP_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.end"));
@@ -574,7 +582,7 @@ public class SignatureTest extends SigTest {
                     args = new String[]{"-Files", sigFileNameList, "-Write", writeFileName, "-Binary"};
                 }
                 m.testURL = this.testURL;
-                m.run(args, log, null);
+                m.run(args,getLog(), null);
                 if (!m.isPassed()) {
                     error(m.getReason());
                     return false;
@@ -585,7 +593,7 @@ public class SignatureTest extends SigTest {
                 testURL = "";
 
             } catch (IOException ex) {
-                ex.printStackTrace(log);
+                ex.printStackTrace(getLog());
                 msg = i18n.getString("SignatureTest.error.tmpsigfile");
                 return error(msg);
             }
@@ -598,7 +606,7 @@ public class SignatureTest extends SigTest {
                 File res = File.createTempFile("sigtest", "sig");
                 String resFileName = res.getAbsolutePath();
                 res.deleteOnExit();
-                up.perform(updateFileName, sigFileName, resFileName, SigTest.log);
+                up.perform(updateFileName, sigFileName, resFileName, getLog());
                 sigFileName = resFileName;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -606,7 +614,7 @@ public class SignatureTest extends SigTest {
 
         }
 
-        MultipleFileReader in = new MultipleFileReader(log, readMode);
+        MultipleFileReader in = new MultipleFileReader(getLog(),readMode, getFileManager());
         String linesep = System.getProperty("line.separator");
         boolean result;
 
@@ -619,14 +627,14 @@ public class SignatureTest extends SigTest {
             if (in != null)
                 in.close();
             msg = i18n.getString("SignatureTest.error.sigfile.invalid", sigFileNameList == null ? sigFileName : sigFileNameList);
-            log.println(msg);
+            getLog().println(msg);
             return error(msg);
 
         }
 
 
         if (isValueTracked == null) {
-            isValueTracked = isStatic ? Boolean.TRUE : Boolean.FALSE;
+            isValueTracked = Boolean.TRUE;
         }
 
         if (mode == null) {
@@ -649,7 +657,7 @@ public class SignatureTest extends SigTest {
 
         if (isValueTracked.booleanValue() && !in.isFeatureSupported(FeaturesHolder.ConstInfo)) {
             String errmsg = i18n.getString("SignatureTest.mesg.sigfile.noconst");
-            log.println(errmsg);
+            getLog().println(errmsg);
             return failed(errmsg);
         }
 
@@ -664,30 +672,30 @@ public class SignatureTest extends SigTest {
 
         if (msg.length() != 0) {
             in.close();
-            log.println(msg);
+            getLog().println(msg);
             return error(msg);
         }
-        log.println(i18n.getString("SignatureTest.mesg.sigtest.report"));
-        log.println(i18n.getString("SignatureTest.mesg.sigtest.basevers", in.getApiVersion()));
-        log.println(i18n.getString("SignatureTest.mesg.sigtest.testvers", apiVersion));
+        getLog().println(i18n.getString("SignatureTest.mesg.sigtest.report"));
+        getLog().println(i18n.getString("SignatureTest.mesg.sigtest.basevers", in.getApiVersion()));
+        getLog().println(i18n.getString("SignatureTest.mesg.sigtest.testvers", apiVersion));
 
         if (!isThrowsRemoved)
-            log.println(i18n.getString("SignatureTest.mesg.sigtest.checkmode.norm", mode));
+            getLog().println(i18n.getString("SignatureTest.mesg.sigtest.checkmode.norm", mode));
         else
-            log.println(i18n.getString("SignatureTest.mesg.sigtest.checkmode.removed", mode));
+            getLog().println(i18n.getString("SignatureTest.mesg.sigtest.checkmode.removed", mode));
 
 
         if (isValueTracked.booleanValue())
-            log.println(i18n.getString("SignatureTest.mesg.sigtest.constcheck", i18n.getString("SignatureTest.mesg.sigtest.constcheck.on")));
+            getLog().println(i18n.getString("SignatureTest.mesg.sigtest.constcheck", i18n.getString("SignatureTest.mesg.sigtest.constcheck.on")));
         else
-            log.println(i18n.getString("SignatureTest.mesg.sigtest.constcheck", i18n.getString("SignatureTest.mesg.sigtest.constcheck.off")));
+            getLog().println(i18n.getString("SignatureTest.mesg.sigtest.constcheck", i18n.getString("SignatureTest.mesg.sigtest.constcheck.off")));
 
         if (!isTigerFeaturesTracked)
-            log.println(i18n.getString("SignatureTest.mesg.sigtest.tigercheck"));
+            getLog().println(i18n.getString("SignatureTest.mesg.sigtest.tigercheck"));
 
-        log.println();
+        getLog().println();
 
-        classpath.printErrors(log);
+        classpath.printErrors(getLog());
 
 
         trackedClassNames = new HashSet();
@@ -706,16 +714,16 @@ public class SignatureTest extends SigTest {
 
         // creates ErrorFormatter.
         if ((outFormat != null) && FORMAT_PLAIN.equals(outFormat))
-            errorManager = new ErrorFormatter(log);
+            errorManager = new ErrorFormatter(getLog());
         else if ((outFormat != null) && FORMAT_HUMAN.equals(outFormat))
-            errorManager = new HumanErrorFormatter(log, isVerbose,
+            errorManager = new HumanErrorFormatter(getLog(),isVerbose,
                     reportWarningAsError ? Level.WARNING : Level.SEVERE);
         else if ((outFormat != null) && FORMAT_BACKWARD.equals(outFormat))
-            errorManager = new BCProcessor(log, isVerbose, BINARY_MODE.equals(mode),
+            errorManager = new BCProcessor(getLog(),isVerbose, BINARY_MODE.equals(mode),
                     testableHierarchy, signatureClassesHierarchy,
                     reportWarningAsError ? Level.WARNING : Level.SEVERE, extensibleInterfaces);
         else
-            errorManager = new SortedErrorFormatter(log, isVerbose);
+            errorManager = new SortedErrorFormatter(getLog(),isVerbose);
 
 
         boolean buildMembers = in.isFeatureSupported(FeaturesHolder.BuildMembers);
@@ -728,7 +736,7 @@ public class SignatureTest extends SigTest {
 
         msg = null;
 
-        Erasurator erasurator = new Erasurator();
+        Erasurator localErasurator = new Erasurator();
 
         try {
 
@@ -745,15 +753,15 @@ public class SignatureTest extends SigTest {
             Set missingClasses = closedSet.getMissingClasses();
             if (!missingClasses.isEmpty() && !isAPICheckMode()) {
 
-                log.print(i18n.getString("SignatureTest.error.required_classes_missing"));
+                getLog().print(i18n.getString("SignatureTest.error.required_classes_missing"));
                 int count = 0;
                 for (Iterator it = missingClasses.iterator(); it.hasNext();) {
                     if (count != 0)
-                        log.print(", ");
-                    log.print(it.next());
+                        getLog().print(", ");
+                    getLog().print(it.next());
                     ++count;
                 }
-                log.println();
+                getLog().println();
 
                 msg = i18n.getString("SignatureTest.error.non_transitively_closed_set");
                 return error(msg);
@@ -765,7 +773,7 @@ public class SignatureTest extends SigTest {
 
             while ((currentClass = in.nextClass()) != null) {
                 if (Xverbose) {
-                    log.println(i18n.getString("SignatureTest.mesg.verbose.check", currentClass.getQualifiedName()));
+                    getLog().println(i18n.getString("SignatureTest.mesg.verbose.check", currentClass.getQualifiedName()));
                 }
 
                 if (buildMembers) {
@@ -781,7 +789,7 @@ public class SignatureTest extends SigTest {
                 }
 
                 if (useErasurator())
-                    currentClass = erasurator.erasure(currentClass);
+                    currentClass = localErasurator.erasure(currentClass);
 
                 Transformer t = PluginAPI.BEFORE_TEST.getTransformer();
                 if (t != null) {
@@ -830,7 +838,7 @@ public class SignatureTest extends SigTest {
 
         if (msg != null) {
             in.close();
-            log.println(msg);
+            getLog().println(msg);
             return error(msg);
         }
 
@@ -849,18 +857,18 @@ public class SignatureTest extends SigTest {
             auxErrorCount = errorMessages.size();
             printErrors();
         }
-        log.println("");
+        getLog().println("");
 
         String repmsg = exclude.report();
         if (isVerbose) System.out.println(repmsg);
 
-        int errors = errorManager.getNumErrors() + auxErrorCount;
+        int numErrors = errorManager.getNumErrors() + auxErrorCount;
         in.close();
-        if (errors == 0)
+        if (numErrors == 0)
             return passed();
         else
             return failed(i18n.getString("SignatureTest.mesg.failed",
-                    Integer.toString(errors)));
+                    Integer.toString(numErrors)));
 
     }
 
@@ -885,7 +893,7 @@ public class SignatureTest extends SigTest {
         try {
             String name;
             while (classpath.hasNext()) {
-                name = classpath.nextClassName();
+                name = ExoticCharTools.encodeExotic(classpath.nextClassName());
                 // Check that class isn't tracked and this class is
                 // accessible in the current tested mode
                 checkAddedClass(name);
@@ -893,8 +901,8 @@ public class SignatureTest extends SigTest {
         } catch (SecurityException ex) {
             if (SigTest.debug)
                 ex.printStackTrace();
-            log.println(i18n.getString("SignatureTest.mesg.classpath.sec"));
-            log.println(ex);
+            getLog().println(i18n.getString("SignatureTest.mesg.classpath.sec"));
+            getLog().println(ex);
         }
     }
 
@@ -908,6 +916,7 @@ public class SignatureTest extends SigTest {
                 } else {
                     if (testableHierarchy.isAccessible(c)) {
                         exclude.check(c, c);
+                        checkSupers(c);  // Issue 42 - avoid dummy "added class" message 
                         errorManager.addError(MessageType.getAddedMessageType(c.getMemberType()), c.getQualifiedName(), c.getMemberType(), null, c);
                     }
                 }
@@ -919,7 +928,7 @@ public class SignatureTest extends SigTest {
                     ex1.printStackTrace();
             } catch (ExcludeException e) {
                 if (isVerbose)
-                    SigTest.log.println(i18n.getString("SignatureTest.mesg.verbose.checkAddedClass", new Object[]{name, e.getMessage()}));
+                    getLog().println(i18n.getString("SignatureTest.mesg.verbose.checkAddedClass", new Object[]{name, e.getMessage()}));
             }
 
         }
@@ -997,6 +1006,8 @@ public class SignatureTest extends SigTest {
             exclude.check(required, required);
             ClassDescription found = testableHierarchy.load(name);
 
+            checkSupers(found);
+
             if (testableHierarchy.isAccessible(found)) {
 
                 if (isAPICheckMode()) {
@@ -1035,8 +1046,14 @@ public class SignatureTest extends SigTest {
             } else
                 errorManager.addError(MessageType.MISS_CLASSES, name, MemberType.CLASS, null, required);
         }
-
-        catch (ClassNotFoundException ex) {
+        catch (SuperClassesNotFoundException ex) {
+            if (SigTest.debug)
+                ex.printStackTrace();
+            String [] names = ex.getMissedClasses();
+            for (int i = 0; i < names.length; i++) {
+                errorManager.addError(MessageType.MISS_SUPERCLASSES, names[i], MemberType.CLASS, ex.getClassName() , required);
+            }
+        } catch (ClassNotFoundException ex) {
             if (SigTest.debug)
                 ex.printStackTrace();
             errorManager.addError(MessageType.MISS_CLASSES, name, MemberType.CLASS, null, required);
@@ -1055,10 +1072,40 @@ public class SignatureTest extends SigTest {
         catch (ExcludeException e) {
             trackedClassNames.add(name);
             if (isVerbose)
-                SigTest.log.println(i18n.getString("SignatureTest.mesg.verbose.verifyClass", new Object[]{name, e.getMessage()}));
+                getLog().println(i18n.getString("SignatureTest.mesg.verbose.verifyClass", new Object[]{name, e.getMessage()}));
         }
         return passed();
     }
+
+
+    private void checkSupers(ClassDescription cl)  throws SuperClassesNotFoundException {
+        ArrayList fNotFound = new ArrayList();
+        SuperClass sc = cl.getSuperClass();
+        ClassHierarchy hi = cl.getClassHierarchy();
+        if (sc != null) {
+            try {
+                hi.load(sc.getQualifiedName());
+            } catch (ClassNotFoundException ex) {
+                fNotFound.add(ex.getMessage());
+            }
+        }
+        SuperInterface[] sif = cl.getInterfaces();
+        if (sif != null) {
+            for (int i = 0; i < sif.length; i++) {
+                try {
+                    hi.load(sif[i].getQualifiedName());
+                } catch (ClassNotFoundException ex) {
+                    fNotFound.add(ex.getMessage());
+                }
+            }
+        }
+        String[] fProblems = (String[]) fNotFound.toArray(new String [] {});
+        if (fProblems.length > 0) {
+            throw new SuperClassesNotFoundException(fProblems, cl.getQualifiedName());
+        }
+    }
+
+
 
     private boolean hasClassParameter(ClassDescription cl) {
         String tp = cl.getTypeParameters();
@@ -1129,7 +1176,7 @@ public class SignatureTest extends SigTest {
         trackedClassNames.add(found.getQualifiedName());
 
         if (errorManager instanceof SortedErrorFormatter)
-            ((SortedErrorFormatter) errorManager).Tested(found);
+            ((SortedErrorFormatter) errorManager).tested(found);
 
         // track class modifiers
         checkClassDescription(required, found);
@@ -1142,7 +1189,7 @@ public class SignatureTest extends SigTest {
                 trackMember(required, found, requiredMember, found.findMember(requiredMember));
             } catch (ExcludeException e1) {
                 if (isVerbose)
-                    SigTest.log.println(i18n.getString("SignatureTest.mesg.verbose.verifyMember",
+                    getLog().println(i18n.getString("SignatureTest.mesg.verbose.verifyMember",
                             new Object[]{required.getQualifiedName(),
                                     requiredMember.toString(),
                                     e1.getMessage()}));
@@ -1159,7 +1206,7 @@ public class SignatureTest extends SigTest {
                         trackMember(required, found, null, foundMember);
                     } catch (ExcludeException e1) {
                         if (isVerbose)
-                            SigTest.log.println(i18n.getString("SignatureTest.mesg.verbose.verifyMember2",
+                            getLog().println(i18n.getString("SignatureTest.mesg.verbose.verifyMember2",
                                     new Object[]{found.getQualifiedName(),
                                             foundMember.toString(),
                                             e1.getMessage()}));
@@ -1287,14 +1334,27 @@ public class SignatureTest extends SigTest {
 
                 assert found.isField();
 
-                String constantValue = ((FieldDescr) required).getConstantValue();
-                if (constantValue == null && ((FieldDescr) found).getConstantValue() != null &&
-                        ((FieldDescr) required).isCompatible(found, true)) {
+                String rConstValue = ((FieldDescr) required).getConstantValue();
+                String fConstValue = ((FieldDescr) found).getConstantValue();
+                if (rConstValue == null && fConstValue != null &&
+                    ((FieldDescr) required).isCompatible(found, true)) {
                     if (logger.isLoggable(Level.FINE)) {
                         logger.fine("compatible! :-)");
                     }
                     return;     // OK
                 }
+
+                // reflection can't read non-static values
+                // is it bug or according to the sepc?
+                if (fConstValue == null && rConstValue != null && !found.isStatic()) {
+                    if (((FieldDescr) required).isCompatible(found, true)) {
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("compatible! :-)");
+                        }
+                    return;     // OK
+                    }
+                }
+
             }
         }
 
@@ -1385,6 +1445,43 @@ public class SignatureTest extends SigTest {
     private void reportError(MemberDescription fid, String anno, boolean added) {
         if (fid != null)
             errorManager.addError(added ? MessageType.ADD_ANNO : MessageType.MISS_ANNO, fid.getQualifiedName(), fid.getMemberType(), anno, fid);
+    }
+
+    static class SuperClassesNotFoundException extends ClassNotFoundException {
+        private String[] scNames;
+        private String clName;
+
+        private SuperClassesNotFoundException(String[] scNames, String clName) {
+            if (scNames == null || scNames.length == 0) {
+                throw new IllegalArgumentException("Superclass list can not be empty");
+            }
+            this.clName = clName;
+            this.scNames = scNames;
+        }
+
+        public String getMessage() {
+            if (scNames.length == 1 ) {
+                return("Superclass " + scNames[0] + " of class " + clName +" not found");
+            } else {
+                StringBuffer sb = new StringBuffer("[");
+                for (int i = 0; i < scNames.length; i++) {
+                    sb.append(scNames[i]);
+                    if (i != scNames.length -1) {
+                        sb.append(", ");
+                    }
+                }
+                sb.append("]");
+                return("Superclasses " + sb.toString() + " of class " + clName +" not found");
+            }
+        }
+
+        private String getClassName() {
+            return clName;
+        }
+
+        private String [] getMissedClasses() {
+            return scNames;
+        }
     }
 
     /**

@@ -32,7 +32,7 @@ package com.sun.tdk.signaturetest.sigfile;
  */
 public abstract class Format extends FeaturesHolder {
 
-    public static String VERSION = "#Version ";
+    public static final String VERSION = "#Version ";
 
     public abstract String getVersion();
 

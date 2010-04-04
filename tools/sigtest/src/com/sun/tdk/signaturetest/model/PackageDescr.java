@@ -93,11 +93,15 @@ public class PackageDescr {
         return fqname;
     }
 
-
     public boolean equals(Object arg) {
         return arg instanceof PackageDescr && this.fqname.equals(((PackageDescr) arg).getQualifiedName());
     }
 
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.fqname != null ? this.fqname.hashCode() : 0);
+        return hash;
+    }
 
     public boolean isCompatible(MemberDescription m) {
         return this.equals(m);

@@ -151,7 +151,7 @@ public class F40Writer implements Writer {
     }
 
 
-    private void write(StringBuffer buf, ClassDescription m) {
+    protected void write(StringBuffer buf, ClassDescription m) {
 
         MemberType memberType = m.getMemberType();
 

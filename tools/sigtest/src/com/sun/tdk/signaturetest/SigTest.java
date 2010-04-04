@@ -36,11 +36,13 @@ import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.plugin.*;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
 import com.sun.tdk.signaturetest.sigfile.Format;
+import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -80,6 +82,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String EXCLUDE_OPTION = "-Exclude";
     public static final String STATIC_OPTION = "-Static";
     public static final String APIVERSION_OPTION = "-ApiVersion";
+    public static final String VERSION_OPTION = "-Version";
     public static final String DEBUG_OPTION = "-Debug";
     public static final String HELP_OPTION = "-Help";
     public static final String QUESTIONMARK = "-?";
@@ -106,6 +109,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
     protected String sigFileNameList = null;  // value of -Files option
     protected String sigFileName = null;   // value of -FileName option
+
+    private FileManager fm = new FileManager();
 
 
     /**
@@ -169,7 +174,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     /**
      * prints error messages.
      */
-    public static PrintWriter log;
+    private PrintWriter log;
 
     //  Debug mode (printing stack trace)
     public static boolean debug = false;
@@ -256,6 +261,10 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         log = w;
     }
 
+    public PrintWriter getLog() {
+        return log;
+    }
+
     protected void decodeCommonOptions(String optionName, String[] args) throws CommandLineParserException {
 
         if (optionName.equalsIgnoreCase(TESTURL_OPTION)) {
@@ -263,23 +272,17 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(FILENAME_OPTION)) {
             sigFileName = args[0];
         } else if (optionName.equalsIgnoreCase(PACKAGE_OPTION)) {
-            packages.addPackages(args);
+            packages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(WITHOUTSUBPACKAGES_OPTION)) {
-            purePackages.addPackages(args);
-
+            purePackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(EXCLUDE_OPTION)) {
-            excludedPackages.addPackages(args);
-
-            //specification of the tested class path
+            excludedPackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
-
         } else if (optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
             apiVersion = args[0];
-
         } else if (optionName.equalsIgnoreCase(STATIC_OPTION)) {
             isStatic = true;
-
         } else if (optionName.equalsIgnoreCase(CLASSCACHESIZE_OPTION)) {
             cacheSize = 0;
             try {
@@ -310,6 +313,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
         } else if (optionName.equalsIgnoreCase(HELP_OPTION) || optionName.equalsIgnoreCase(QUESTIONMARK)) {
             usage();
+        } else if (optionName.equalsIgnoreCase(VERSION_OPTION)) {
+             System.err.println(Version.getVersionInfo());
         }
     }
 
@@ -358,7 +363,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             //  static mode
 
             loader = getLoader("com.sun.tdk.signaturetest.loaders.BinaryClassDescrLoader", new Class[]{Classpath.class, Integer.class},
-                    new Object[]{classpath, new Integer(cacheSize)});
+                    new Object[]{classpath, new Integer(cacheSize)}, getLog());
 
             if (loader == null)
                 throw new LinkageError(i18n.getString("SigTest.error.mgr.linkerr.loadstatic"));
@@ -367,14 +372,14 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
             if (isTigerFeaturesTracked) {
 
-                loader = getLoader("com.sun.tdk.signaturetest.loaders.TigerRefgClassDescrLoader", new Class[]{}, new Object[]{});
+                loader = getLoader("com.sun.tdk.signaturetest.loaders.TigerRefgClassDescrLoader", new Class[]{}, new Object[]{}, getLog());
                 if (loader != null)
                     return loader;
 
                 isTigerFeaturesTracked = false; // sorry ...
             }
 
-            loader = getLoader("com.sun.tdk.signaturetest.loaders.ReflClassDescrLoader", new Class[]{}, new Object[]{});
+            loader = getLoader("com.sun.tdk.signaturetest.loaders.ReflClassDescrLoader", new Class[]{}, new Object[]{}, getLog());
 
             if (loader == null)
                 throw new LinkageError(i18n.getString("SigTest.error.mgr.linkerr.loadreflect"));
@@ -401,13 +406,20 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     }
 
 
-    private static ClassDescriptionLoader getLoader(String name, Class[] pars, Object[] args) {
+    private static ClassDescriptionLoader getLoader(String name, Class[] pars, Object[] args, PrintWriter log) {
 
 //        assert pars.length == args.length;
 
         try {
             Constructor ctor = Class.forName(name).getConstructor(pars);
-            return (ClassDescriptionLoader) ctor.newInstance(args);
+            ClassDescriptionLoader cl = (ClassDescriptionLoader) ctor.newInstance(args);
+            try {
+                Method setLog = cl.getClass().getDeclaredMethod("setLog", new Class[] {PrintWriter.class});
+                setLog.invoke(cl, new Object[] {log});
+            } catch (NoSuchMethodException e) {
+
+            }
+            return cl;
         }
         catch (Throwable t) {
             if (debug)
@@ -463,11 +475,11 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     }
 
     public void addFormat(Format format, boolean useByDefault) {
-        FileManager.addFormat(format, useByDefault);
+        getFileManager().addFormat(format, useByDefault);
     }
 
     public void setFormat(Format format) {
-        FileManager.setFormat(format);
+        getFileManager().setFormat(format);
     }
 
     protected AnnotationItem[] removeUndocumentedAnnotations(AnnotationItem[] annotations, ClassHierarchy h) {
@@ -512,5 +524,10 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
 
         return documentedAnnotations;
     }
+
+    protected FileManager getFileManager() {
+        return fm;
+    }
+
 }
 

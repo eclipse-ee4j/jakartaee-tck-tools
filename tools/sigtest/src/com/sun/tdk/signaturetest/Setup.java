@@ -150,7 +150,7 @@ public class Setup extends SigTest {
     public void run(String[] args, PrintWriter pw, PrintWriter ref) {
 
 //        assert( pw != null );
-        log = pw;
+        setLog(pw);
 
         outerClassesNumber = 0;
         innerClassesNumber = 0;
@@ -162,9 +162,13 @@ public class Setup extends SigTest {
         if (parseParameters(args)) {
             afterParseParameters();
             create(signatureFile);
-            log.flush();
+            getLog().flush();
         } else
-            usage();
+            if (args.length > 0 && args[0].equalsIgnoreCase(VERSION_OPTION))  {
+                pw.println(Version.getVersionInfo());
+            } else {
+                usage();
+            }
     }
 
     /**
@@ -178,7 +182,9 @@ public class Setup extends SigTest {
 
         // Print help text only and exit.
         if (args == null || args.length == 0 ||
-                (args.length == 1 && (parser.isOptionSpecified(args[0], HELP_OPTION) || parser.isOptionSpecified(args[0], QUESTIONMARK)))) {
+                (args.length == 1 && (parser.isOptionSpecified(args[0], HELP_OPTION) 
+                || parser.isOptionSpecified(args[0], QUESTIONMARK)
+                || parser.isOptionSpecified(args[0], VERSION_OPTION) ))) {
             return false;
         }
 
@@ -215,6 +221,7 @@ public class Setup extends SigTest {
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(QUESTIONMARK, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(VERSION_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(PLUGIN_OPTION, OptionInfo.option(1), optionsDecoder);
 
@@ -224,7 +231,7 @@ public class Setup extends SigTest {
             parser.processArgs(args);
         }
         catch (CommandLineParserException e) {
-            log.println(e.getMessage());
+            getLog().println(e.getMessage());
             return failed(e.getMessage());
         }
 
@@ -331,6 +338,7 @@ public class Setup extends SigTest {
         sb.append(nl).append(i18n.getString("Setup.usage.verbose", VERBOSE_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.debug", DEBUG_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
+        sb.append(nl).append(i18n.getString("Setup.helpusage.version", VERSION_OPTION));
         sb.append(nl).append(i18n.getString("Setup.usage.help", HELP_OPTION));
         sb.append(nl).append(i18n.getString("Sigtest.usage.delimiter"));
         sb.append(nl).append(i18n.getString("Setup.usage.end"));
@@ -361,25 +369,25 @@ public class Setup extends SigTest {
 
         HashSet allClasses = new HashSet();
 
-        log.println(i18n.getString("Setup.log.classpath", classpathStr));
+        getLog().println(i18n.getString("Setup.log.classpath", classpathStr));
 
         try {
             classpath = new ClasspathImpl(classpathStr);
         } catch (SecurityException e) {
             if (SigTest.debug)
                 e.printStackTrace();
-            log.println(i18n.getString("Setup.log.invalid.security.classpath"));
-            log.println(e);
+            getLog().println(i18n.getString("Setup.log.invalid.security.classpath"));
+            getLog().println(e);
             return error(i18n.getString("Setup.log.invalid.security.classpath"));
         }
 
-        classpath.printErrors(log);
+        classpath.printErrors(getLog());
 
         String name;
         while (classpath.hasNext()) {
             name = classpath.nextClassName();
             if (!allClasses.add(name))
-                log.println(i18n.getString("Setup.log.duplicate.class", name));
+                getLog().println(i18n.getString("Setup.log.duplicate.class", name));
         }
 
         classpath.setListToBegin();
@@ -390,10 +398,10 @@ public class Setup extends SigTest {
 
         // adds classes which are member of classes from tracked package
         // and sorts class names
-        log.println(i18n.getString("Setup.log.constantchecking",
+        getLog().println(i18n.getString("Setup.log.constantchecking",
                 (SigTest.isConstantValuesTracked ? i18n.getString("Setup.msg.ConstantValuesTracked.on")
                         : i18n.getString("Setup.msg.ConstantValuesTracked.off"))));
-        log.println(i18n.getString("Setup.log.message.numclasses", Integer.toString(allClasses.size())));
+        getLog().println(i18n.getString("Setup.log.message.numclasses", Integer.toString(allClasses.size())));
 
 
         List sortedClasses;
@@ -435,7 +443,7 @@ public class Setup extends SigTest {
 
         try {
             //write header to the signature file
-            Writer writer = FileManager.getDefaultFormat().getWriter();
+            Writer writer = getFileManager().getDefaultFormat().getWriter();
             writer.init(new PrintWriter(new OutputStreamWriter(new FileOutputStream(sigFile.getFile()), "UTF8")));
 
             writer.setApiVersion(apiVersion);
@@ -464,6 +472,7 @@ public class Setup extends SigTest {
                     continue;
                 }
 
+                // TODO - ersh - change this!!!
                 if (name.indexOf('$') < 0)
                     outerClassesNumber++;
                 else
@@ -474,6 +483,9 @@ public class Setup extends SigTest {
                     normalizer.normThrows(c, true);
                     removeUndocumentedAnnotations(c, testableHierarchy);
                 } catch (ClassNotFoundException e) {
+                    if (SigTest.debug) {
+                        e.printStackTrace();
+                    }
                     setupProblem(i18n.getString("Setup.error.message.classnotfound", e.getMessage()));
                 }
 
@@ -488,8 +500,8 @@ public class Setup extends SigTest {
         catch (IOException e) {
             if (SigTest.debug)
                 e.printStackTrace();
-            log.println(i18n.getString("Setup.error.message.cantcreatesigfile"));
-            log.println(e);
+            getLog().println(i18n.getString("Setup.error.message.cantcreatesigfile"));
+            getLog().println(e);
             return error(i18n.getString("Setup.error.message.cantcreatesigfile"));
         }
 
@@ -497,11 +509,11 @@ public class Setup extends SigTest {
 
         // prints report
 
-        log.println(i18n.getString("Setup.report.message.selectedbypackageclasses",
+        getLog().println(i18n.getString("Setup.report.message.selectedbypackageclasses",
                 Integer.toString(includedClassesNumber + excludedClassesNumber)));
 
         if (!excludedPackages.isEmpty())
-            log.println(i18n.getString("Setup.report.message.excludedbypackageclasses",
+            getLog().println(i18n.getString("Setup.report.message.excludedbypackageclasses",
                     Integer.toString(excludedClassesNumber)));
 
         // print warnings
@@ -522,30 +534,30 @@ public class Setup extends SigTest {
                         if (!excludedClasses.contains(subClasses[idx])) {
 
                             if (count != 0)
-                                log.print(", ");
+                                getLog().print(", ");
                             else {
                                 if (printHeader) {
-                                    log.println(i18n.getString("Setup.log.message.exclude_warning_header"));
+                                    getLog().println(i18n.getString("Setup.log.message.exclude_warning_header"));
                                     printHeader = false;
                                 }
-                                log.println(i18n.getString("Setup.log.message.exclude_warning", clsName));
+                                getLog().println(i18n.getString("Setup.log.message.exclude_warning", clsName));
                             }
 
-                            log.print(subClasses[idx]);
+                            getLog().print(subClasses[idx]);
                             ++count;
                         }
                     }
-                    log.println();
+                    getLog().println();
                 }
             }
         }
 
 
-        log.print(i18n.getString("Setup.report.message.outerclasses", Integer.toString(outerClassesNumber)));
+        getLog().print(i18n.getString("Setup.report.message.outerclasses", Integer.toString(outerClassesNumber)));
         if (innerClassesNumber != 0)
-            log.println(i18n.getString("Setup.report.message.innerclasses", Integer.toString(innerClassesNumber)));
+            getLog().println(i18n.getString("Setup.report.message.innerclasses", Integer.toString(innerClassesNumber)));
         else
-            log.println();
+            getLog().println();
 
         if (errors == 0)
             return passed(outerClassesNumber == 0 ? i18n.getString("Setup.report.message.emptysigfile") : "");
@@ -585,7 +597,7 @@ public class Setup extends SigTest {
                         if (!c.isTiger()) {
                             nonTigerCount++;
                             if (Xverbose && isTigerFeaturesTracked)
-                                log.println(i18n.getString("Setup.report.message.nontigerclass", name));
+                                getLog().println(i18n.getString("Setup.report.message.nontigerclass", name));
                         }
                     } else
                         ignore(i18n.getString("Setup.report.ignore.protect", name));
@@ -631,7 +643,7 @@ public class Setup extends SigTest {
      */
     protected void ignore(String message) {
         if (isIgnorableReported)
-            log.println(message);
+            getLog().println(message);
     }
 
 

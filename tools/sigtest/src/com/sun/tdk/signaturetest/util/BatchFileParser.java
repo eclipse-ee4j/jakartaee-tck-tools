@@ -51,7 +51,7 @@ public class BatchFileParser {
                 break;
             }
         }
-        if (args == null || args.length < 2 || filePos == -1 ) {
+        if (args == null || filePos == -1 ) {
             return args;
         }
         String fName = args[filePos].substring(1).trim();
@@ -151,15 +151,6 @@ public class BatchFileParser {
                     options.set(i, newVal);
                 } else throw new CommandLineParserException("Can't resolve " + o + " property");
             }
-        }
-    }
-
-    // this is entry just for testing
-    public static void main(String [] args) {
-        try {
-            System.out.println(Arrays.toString(processParameters(args)));
-        } catch (CommandLineParserException ex) {
-            ex.printStackTrace();
         }
     }
 

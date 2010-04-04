@@ -229,10 +229,24 @@ public class Erasurator {
         String type = cloned_m.getType();
         if (!MemberDescription.NO_TYPE.equals(type))
             cloned_m.setType(convert(type, globalParameters, localParameters));
+        
+        String ths = cloned_m.getThrowables();
+        if (!MemberDescription.EMPTY_THROW_LIST.equals(ths))
+            cloned_m.setThrowables(convert(ths, globalParameters, localParameters));
 
-        // TODO (Roman Makarchuk) just for debugging
+
+        // just for debugging
         if (SigTest.debug) {
             String s = cloned_m.toString();
+            /*
+             *annotation value can be parametrized class
+             *but we should NOT (I'm not 100% sure) erasure this.
+             *so just skip annotation for this checkings
+             */
+            int fl = s.indexOf('\n');
+            if (fl > 0) {
+                s = s.substring(0, fl);
+            }
             assert s.indexOf('<') == -1 && s.indexOf('?') == -1 && s.indexOf('{') == -1 : s;
         }
 

@@ -27,7 +27,11 @@
 
 package com.sun.tdk.signaturetest.sigfile;
 
+import com.sun.tdk.signaturetest.model.AnnotationItem;
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MemberDescription;
+import com.sun.tdk.signaturetest.model.MemberType;
+import com.sun.tdk.signaturetest.model.Modifier;
 
 public class F41Writer extends F40Writer {
 
@@ -40,5 +44,40 @@ public class F41Writer extends F40Writer {
         writeInternalMembers(buf, F41Format.X_FIELDS, classDescription.getXFields());
         writeInternalMembers(buf, F41Format.X_CLASSES, classDescription.getXClasses());
     }
+
+
+   protected void write(StringBuffer buf, ClassDescription m) {
+
+       MemberType memberType = m.getMemberType();
+
+       buf.append(memberType);
+
+       String modifiers = Modifier.toString(memberType, m.getModifiers(), true);
+       if (modifiers.length() != 0) {
+           buf.append(' ');
+           buf.append(modifiers);
+       }
+
+       buf.append(' ');
+       buf.append(m.getQualifiedName());
+
+       String typeParameters = m.getTypeParameters();
+
+       if (typeParameters != null)
+           buf.append(typeParameters);
+
+       if (m.getOuterClass() != null &&
+               !m.getOuterClass().equals(MemberDescription.NO_DECLARING_CLASS)) {
+           buf.append("\n " + ClassDescription.OUTER_PREFIX + " ");
+           buf.append(m.getOuterClass());
+       }
+
+       AnnotationItem[] annoList = m.getAnnoList();
+       for (int i = 0; i < annoList.length; ++i) {
+           buf.append("\n ");
+           buf.append(annoList[i]);
+       }
+   }
+
 
 }

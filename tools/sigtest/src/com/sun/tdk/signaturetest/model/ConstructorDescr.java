@@ -40,23 +40,23 @@ public final class ConstructorDescr extends MemberDescription {
         super(MemberType.CONSTRUCTOR, MEMBER_DELIMITER);
     }
 
-    public ConstructorDescr(String className, int modifiers) {
+    public ConstructorDescr(ClassDescription clazz, int modifiers) {
         super(MemberType.CONSTRUCTOR, MEMBER_DELIMITER);
-        setupConstuctorName(className);
+        setupConstuctorName(clazz.getQualifiedName());
         setModifiers(modifiers);
     }
 
-    public void setupConstuctorName(String fqn) {
-        int pos = Math.max(fqn.lastIndexOf('.'), fqn.lastIndexOf('$'));
-
-        declaringClass = fqn.intern();
-        name = fqn.substring(pos + 1).intern();
+    // for reflection
+    public ConstructorDescr(Class clazz, int modifiers) {
+        super(MemberType.CONSTRUCTOR, MEMBER_DELIMITER);
+        setupConstuctorName(clazz.getName());
+        setModifiers(modifiers);
     }
 
-    public void setupConstuctorName(String name, String declaringClassName) {
+    public void setupConstuctorName(String clName) {
 
-        this.declaringClass = declaringClassName.intern();
-        this.name = name.intern();
+        this.declaringClass = clName.intern();
+        this.name = "init";
     }
 
 
@@ -109,8 +109,10 @@ public final class ConstructorDescr extends MemberDescription {
         }
 
         buf.append(' ');
-        buf.append(declaringClass);
-        buf.append(delimiter);
+        if (!NO_DECLARING_CLASS.equals(declaringClass)) {
+            buf.append(declaringClass);
+            buf.append(delimiter);
+        }
         buf.append(name);
         buf.append('(');
         buf.append(args);

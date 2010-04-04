@@ -28,10 +28,15 @@
 package com.sun.tdk.signaturetest.sigfile;
 
 import com.sun.tdk.signaturetest.model.ClassDescription;
+import com.sun.tdk.signaturetest.model.MemberDescription;
+import com.sun.tdk.signaturetest.model.MemberType;
 import java.util.Set;
 
 /**
- * Parse string representation used in sigfile v4.1 and create corresponding member object
+ * Parse string representation used in sigfile v4.1 and create corresponding 
+ * member object
+ *
+ * @author Mikhail Ershov
  */
 class F41Parser extends F40Parser {
 
@@ -47,6 +52,40 @@ class F41Parser extends F40Parser {
             return true;
         }
         return false;
+    }
+
+    protected String convertFutureSpecific(String str, ClassDescription classDescription) {
+        if (str.startsWith(MemberType.CONSTRUCTOR.toString() /*  toString returns prefix here */)) {
+            // is it "old-style" ?
+            if (str.indexOf("init(") == -1) {
+                String name = '.' + classDescription.getName() +'(';
+                int i = str.indexOf(name);
+                // String.replace can not be used here - it appeared in 1.5
+                if (i >=0) {
+                    String first = str.substring(0, i);
+                    String last = str.substring(i + name.length());
+                    str = first + ".init(" + last;
+                } 
+            }
+        } 
+        return str;
+    }
+
+    protected ClassDescription processClassDescription(String classDefinition) {
+        ClassDescription classDescription = (ClassDescription) parse(classDefinition);
+        classDescription.setupClassName(classDescription.getQualifiedName(),
+                MemberDescription.NO_DECLARING_CLASS);
+        return classDescription;
+    }
+
+    protected void processOuter(ClassDescription classDescription, String str) {
+                classDescription.setDeclaringClass(parseOuter(str));
+                classDescription.setupClassName(classDescription.getQualifiedName(),
+                        classDescription.getDeclaringClassName());
+    }
+
+    protected String parseOuter(String str) {
+        return str.substring(ClassDescription.OUTER_PREFIX.length()+1);
     }
 
 }

@@ -32,6 +32,7 @@ public class F41Format extends F40Format {
     public F41Format() {
         addSupportedFeature(FeaturesHolder.NonStaticConstants);
         addSupportedFeature(FeaturesHolder.XHiders);
+        addSupportedFeature(FeaturesHolder.OuterClasses);
     }
 
     public String getVersion() {

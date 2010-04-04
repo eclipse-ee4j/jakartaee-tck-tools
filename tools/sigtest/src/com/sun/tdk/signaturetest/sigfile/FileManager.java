@@ -63,7 +63,7 @@ public class FileManager {
         return result;
     }
 
-    private static String getFormat(URL fileURL) {
+    private String getFormat(URL fileURL) {
         String currentLine;
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(fileURL.openStream(), "UTF8"));
@@ -80,7 +80,7 @@ public class FileManager {
     /**
      * Returns the latest Writer for format supported given set of features
      */
-    public static Writer getWriter(Set features) {
+    public Writer getWriter(Set features) {
 
         List applicableFormats = new ArrayList(formats.size());
 
@@ -109,7 +109,7 @@ public class FileManager {
     }
 
 
-    public static Reader getReader(URL fileURL) {
+    public Reader getReader(URL fileURL) {
         String format = getFormat(fileURL);
         if (format != null) {
             Iterator it = formats.iterator();
@@ -123,26 +123,26 @@ public class FileManager {
         return null;
     }
 
-    public static Format getDefaultFormat() {
+    public Format getDefaultFormat() {
         return defaultFormat;
     }
 
-    public static void addFormat(Format frm, boolean useByDefault) {
+    public void addFormat(Format frm, boolean useByDefault) {
         formats.add(frm);
         if (useByDefault)
             defaultFormat = frm;
     }
 
-    public static void setFormat(Format frm) {
+    public void setFormat(Format frm) {
         formats.clear();
         formats.add(frm);
         defaultFormat = frm;
     }
 
-    private static Format defaultFormat = new F41Format();
-    private static List formats = new ArrayList();
+    private Format defaultFormat = new F41Format();
+    private List formats = new ArrayList();
 
-    static {
+    public FileManager() {
         formats.add(defaultFormat);
         formats.add(new F21Format());
         formats.add(new F31Format());

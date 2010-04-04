@@ -79,6 +79,27 @@ public class AnnotationItem implements Comparable {
         return diff;
     }
 
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AnnotationItem other = (AnnotationItem) obj;
+        return compareTo(other) == 0;
+    }
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.target;
+        hash = 79 * hash + (this.inheritable ? 1 : 0);
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 79 * hash + (this.members != null ? this.members.hashCode() : 0);
+        return hash;
+    }
+
+
     public final static AnnotationItem[] EMPTY_ANNOTATIONITEM_ARRAY = new AnnotationItem[0];
 
     // If this annotation imposed on a method/constructor parameter, then target

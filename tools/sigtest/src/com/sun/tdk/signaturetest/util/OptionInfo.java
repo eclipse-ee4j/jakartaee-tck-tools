@@ -29,7 +29,7 @@ package com.sun.tdk.signaturetest.util;
 
 public final class OptionInfo {
 
-    public static boolean DEFAULT_SENSITIVITY = false;
+    public static final boolean DEFAULT_SENSITIVITY = false;
     public static final int UNLIMITED = Integer.MAX_VALUE;
 
     private boolean required; // the option must be always specified in the command line

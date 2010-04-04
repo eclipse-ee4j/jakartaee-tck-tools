@@ -41,7 +41,7 @@ public class Version {
     public static final String build_user="";
 
     public static String getVersionInfo() {
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         sb.append(i18n.getString("Main.usage.version", Version.Number) + '\n');
         sb.append("=========================\n");
         sb.append(i18n.getString("Version.version.build", Version.build_time) + '\n');

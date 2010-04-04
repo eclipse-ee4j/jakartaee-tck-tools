@@ -208,6 +208,17 @@ public class CommandLineParser {
         return null;
     }
 
+    public static String [] parseListOption(String[] args) {
+        ArrayList ar = new ArrayList();
+        for (int i = 0; i < args.length; i++) {
+            StringTokenizer st = new StringTokenizer(args[i], System.getProperty("path.separator"));
+            while (st.hasMoreTokens()) {
+                ar.add(st.nextToken());
+            }
+        }
+        return (String[]) ar.toArray(new String[] {});
+    }
+
     private static class KnownOptions {
         private Map data = new HashMap();
 

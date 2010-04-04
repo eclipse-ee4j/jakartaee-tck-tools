@@ -32,9 +32,11 @@ import com.sun.tdk.signaturetest.model.*;
 import java.util.*;
 
 /**
- * Parse string representation used in sigfile v3.1 and create corresponding member object
+ * Parse string representation used in sigfile v4.0 and create corresponding
+ * member object
  *
  * @author Roman Makarchuk
+ * @author Mikhail Ershov
  */
 class F40Parser implements Parser {
 
@@ -48,7 +50,7 @@ class F40Parser implements Parser {
 
     public ClassDescription parseClassDescription(String classDefinition, List /*String*/ members) {
 
-        ClassDescription classDescription = (ClassDescription) parse(classDefinition);
+        ClassDescription classDescription = processClassDescription(classDefinition);
 
         MemberDescription m = classDescription;
         List alist = new ArrayList();
@@ -64,8 +66,12 @@ class F40Parser implements Parser {
                 continue;
             }
 
+            str = convertFutureSpecific(str, classDescription);
+
             if (str.startsWith(AnnotationItem.ANNOTATION_PREFIX)) {
                 alist.add(str);
+            } else if (str.startsWith(ClassDescription.OUTER_PREFIX)) {
+                processOuter(classDescription, str);
             } else if (str.startsWith(F40Format.HIDDEN_FIELDS)) {
                 Set internalFields = parseInternals(str);
                 classDescription.setInternalFields(internalFields);
@@ -126,6 +132,7 @@ class F40Parser implements Parser {
                 field_count++;
             } else if (mt == MemberType.CONSTRUCTOR) {
                 classDescription.setConstructor(constructor_count, (ConstructorDescr) m);
+                ((ConstructorDescr) m).setupConstuctorName(classDescription.getQualifiedName());
                 constructor_count++;
             } else if (mt == MemberType.INNER) {
                 classDescription.setNested(inner_count, (InnerDescr) m);
@@ -151,6 +158,20 @@ class F40Parser implements Parser {
         return false;
     }
 
+    /*
+     * This method can be overriden in subclasses
+     */
+    protected String convertFutureSpecific(String str, ClassDescription classDescription) {
+        return str;
+    }
+
+
+
+
+    protected void processOuter(ClassDescription classDescription, String str) {
+
+    }
+
     protected Set parseInternals(String str) {
 
         Set result = new HashSet();
@@ -173,7 +194,7 @@ class F40Parser implements Parser {
         return result;
     }
 
-    private void appendAnnotations(MemberDescription fid, List/*String*/ alist) {
+    protected void appendAnnotations(MemberDescription fid, List/*String*/ alist) {
         if (alist.size() != 0) {
 
             AnnotationItem[] tmp = new AnnotationItem[alist.size()];
@@ -187,7 +208,7 @@ class F40Parser implements Parser {
         }
     }
 
-    private MemberDescription parse(String definition) {
+    protected MemberDescription parse(String definition) {
         MemberDescription member = null;
 
         MemberType type = MemberType.getItemType(definition);
@@ -213,6 +234,11 @@ class F40Parser implements Parser {
         return member;
     }
 
+    protected ClassDescription processClassDescription(String classDefinition) {
+        ClassDescription classDescription = (ClassDescription) parse(classDefinition);
+        return classDescription;
+    }
+
 
     private void init(MemberDescription m, String def) {
         //System.out.println(def);
@@ -225,7 +251,7 @@ class F40Parser implements Parser {
         scanElems();
     }
 
-    private MemberDescription parse(ClassDescription cls, String def) {
+    protected MemberDescription parse(ClassDescription cls, String def) {
 
         init(cls, def);
 
@@ -250,7 +276,7 @@ class F40Parser implements Parser {
             s = getElem();
         }
 
-        ctor.setupConstuctorName(s, currentClassName);
+        ctor.setupConstuctorName(s);
 
         s = getElem();
         if (s.charAt(0) != '(')
@@ -469,4 +495,5 @@ class F40Parser implements Parser {
     private void err() {
         throw new Error(line);
     }
+
 }

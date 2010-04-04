@@ -142,9 +142,21 @@ public class JSR68Merger extends FeaturesHolder {
                             while (true) {
                                 try {
                                     parent = result.load(parent.getSuperClass().getQualifiedName());
-                                    if (similarInner.getDeclaringClassName().equals(parent.getQualifiedName())) {
-                                        innersToRemove.add(cd);
-                                        continue nextClass;
+                                    if (similarInner.getDeclaringClassName().equals(parent.getQualifiedName()) ) {
+                                        for (int i = 0; i < files.length; i++) {
+                                            if (files[i].getClassSet().containsKey(cd.getQualifiedName())) {
+                                                for (int j = 0; j < files.length; j++) {
+                                                    if (files[j].getClassSet().containsKey(similarInner.getQualifiedName())) {
+                                                       if (j == i) {
+                                                            continue nextClass;
+                                                        }
+                                                    }
+                                                }
+                                                innersToRemove.add(cd);
+                                                continue nextClass;
+                                            }
+                                        }
+
                                     }
                                 } catch (Exception e) {
                                     // no parents

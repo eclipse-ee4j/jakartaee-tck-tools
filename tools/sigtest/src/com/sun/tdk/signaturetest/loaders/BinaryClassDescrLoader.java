@@ -50,7 +50,7 @@ import java.util.*;
  */
 public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHints {
 
-    public static boolean ANNOTATION_DEFAULT_VALUES_ON = true;
+    public static final boolean ANNOTATION_DEFAULT_VALUES_ON = true;
 
     private class BinaryClassDescription extends ClassDescription {
 
@@ -76,7 +76,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
         }
 
         List getMethodRefs() {
-            ArrayList members = new ArrayList();
+            ArrayList memberList = new ArrayList();
             int n = constants.length;
             for (int i = 1; i < n; i++) {
                 if (constants[i].tag == CONSTANT_Long || constants[i].tag == CONSTANT_Double) {
@@ -100,10 +100,12 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
                 if (constants[i].tag == CONSTANT_Fieldref) {
                     fid = new FieldDescr(methodName, className, 1);
                 } else {
-                    if (isConstructor)
-                        fid = new ConstructorDescr(className, 1);
-                    else
+                    if (isConstructor) {
+                        fid = new ConstructorDescr(this, 1);
+                        fid.setDeclaringClass(className);
+                    } else {
                         fid = new MethodDescr(methodName, className, 1);
+                    }
 
                     String descr = getMethodType(nameAndType);
                     int pos = descr.indexOf(')');
@@ -114,9 +116,9 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
                         err(i18n.getString("BinaryClassDescrLoader.message.incorrectformat", Short.toString(decl)));
                     }
                 }
-                members.add(fid);
+                memberList.add(fid);
             }
-            return members;
+            return memberList;
         }
 
         private Constant getConstant(int i) {
@@ -218,6 +220,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
      * @param className className of the class required to be found.
      */
     public ClassDescription load(String className) throws ClassNotFoundException {
+        className = ExoticCharTools.decodeExotic(className);
 
         assert className.indexOf('<') == -1 : className;
 
@@ -376,7 +379,8 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
 
         //  for nested class, name of the declaring class can be obtained from
         //  the 'InnerClasses' attribute only.
-        c.setupClassName(c.getClassName(classData.readUnsignedShort()));   // can be reassigned later
+        String clName = c.getClassName(classData.readUnsignedShort());
+        c.setupClassName(clName, MemberDescription.NO_DECLARING_CLASS);   // can be reassigned later
 
         String s = c.getClassName(classData.readUnsignedShort());
         if (s != null && (!c.hasModifier(Modifier.INTERFACE))) {
@@ -522,6 +526,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
                             err(null);
                         access = x;
                         c.setModifiers(x);
+                        c.setupClassName(fqname, outer);
                     }
 
                     if (!hasHint(LoadingHints.READ_SYNTETHIC)) {
@@ -537,7 +542,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
                         if (tmp == null)
                             tmp = new ArrayList();
 
-                        tmp.add(new InnerDescr(inner, x));
+                        tmp.add(new InnerDescr(inner, outer, x));
                     }
                 }
 
@@ -657,7 +662,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
             MemberDescription fid;
 
             if (isConstructor) {
-                fid = new ConstructorDescr(c.getQualifiedName(), modif);
+                fid = new ConstructorDescr(c, modif);
             } else
                 fid = new MethodDescr(methodName, c.getQualifiedName(), modif);
 
@@ -1187,7 +1192,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
         void checkVersion(BinaryClassDescription c, String name, int vnbr) {
             String[] args = {name, c.getQualifiedName(), Integer.toString(c.major_version), Integer.toString(c.minor_version)};
             if (c.major_version < vnbr)
-                SigTest.log.println(i18n.getString("BinaryClassDescrLoader.message.attribute", args));
+                getLog().println(i18n.getString("BinaryClassDescrLoader.message.attribute", args));
         }
 
 
@@ -1522,20 +1527,20 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
     }
 
 
-    static void err(String s) {
+    private void err(String s) {
         throw new ClassFormatError(s == null ? "???" : s);
     }
 
 
-    static class SigAttrError extends Error {
+    private static class SigAttrError extends Error {
         SigAttrError(String msg) {
             super(msg);
         }
     }
 
 
-    public static void warning(String msg) {
-        SigTest.log.println(msg);
+    public void warning(String msg) {
+        getLog().println(msg);
     }
 
     public void setIgnoreAnnotations(boolean value) {
@@ -1551,5 +1556,15 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
     private boolean hasHint(Hint hint) {
         return hints.contains(hint);
     }
+
+    private PrintWriter getLog() {
+        return log;
+    }
+
+    public void setLog(PrintWriter log) {
+        this.log = log;
+    }
+    
+    private PrintWriter log;
 
 }

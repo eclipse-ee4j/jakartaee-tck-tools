@@ -214,7 +214,7 @@ public class BCProcessor extends HumanErrorFormatter {
     from public to protected
 
     */
-    class Rule1_3 extends PairedHandler {
+    static class Rule1_3 extends PairedHandler {
 
         protected boolean proc() {
             boolean problem = m1.hasModifier(Modifier.PUBLIC) && !m2.hasModifier(Modifier.PUBLIC);
@@ -338,9 +338,8 @@ public class BCProcessor extends HumanErrorFormatter {
     2.4 Contracting superinterface set (direct or inherited)
     breaks - both
     */
-    class Rule2_4 extends Handler {
+    static class Rule2_4 extends Handler {
         private ErrorFormatter.Message m;
-        private MemberDescription md;
 
         boolean acceptMessageList(List l) {
             if (l.size() != 1) {
@@ -421,7 +420,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule2_8 extends MethodPairedHandler {
+    static class Rule2_8 extends MethodPairedHandler {
         protected boolean proc() {
             if (me1.messageType == MessageType.MISS_METHS && me2.messageType == MessageType.ADD_METHS) {
                 if (meth1.getSignature().equals(meth2.getSignature())
@@ -527,7 +526,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule3_11 extends MethodPairedHandler {
+    static class Rule3_11 extends MethodPairedHandler {
         protected boolean proc() {
             if (meth1.isStatic() && !meth2.isStatic()) {
                 newM.definition = i18n.getString("BCProcessor.error.3_11"); // "E3.11 - Changing method from static to non-static";
@@ -538,7 +537,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule3_12 extends MethodPairedHandler {
+    static class Rule3_12 extends MethodPairedHandler {
         protected boolean proc() {
             if (!meth1.isStatic() && meth2.isStatic()) {
                 newM.definition = i18n.getString("BCProcessor.error.3_12"); //"E3.12 - Changing method from non-static to static";
@@ -553,7 +552,7 @@ public class BCProcessor extends HumanErrorFormatter {
      4.1 Interface and class fields - Changing type
      Breaks - Both
     */
-    class Rule4_1 extends PairedHandler {
+    static class Rule4_1 extends PairedHandler {
         protected boolean proc() {
             if (m1 instanceof FieldDescr && m2 instanceof FieldDescr) {
                 String t1 = m1.getType();
@@ -568,7 +567,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule4_2 extends FieldPairedHandler {
+    static class Rule4_2 extends FieldPairedHandler {
         Handler r46 = new Rule4_6();
         Handler r47 = new Rule4_7();
         Handler r48 = new Rule4_8();
@@ -604,7 +603,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule4_6 extends FieldPairedHandler {
+    static class Rule4_6 extends FieldPairedHandler {
 
         boolean acceptMessageList(List l) {
             if (!super.acceptMessageList(l)) return false;
@@ -619,7 +618,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule4_7 extends FieldPairedHandler {
+    static class Rule4_7 extends FieldPairedHandler {
 
         boolean acceptMessageList(List l) {
             if (!super.acceptMessageList(l)) return false;
@@ -634,7 +633,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule4_8 extends FieldPairedHandler {
+    static class Rule4_8 extends FieldPairedHandler {
 
         boolean acceptMessageList(List l) {
             if (!super.acceptMessageList(l)) return false;
@@ -747,7 +746,7 @@ public class BCProcessor extends HumanErrorFormatter {
      5.4 Removing constructors
      Breaks - Both
     */
-    class Rule5_4 extends Handler {
+    static class Rule5_4 extends Handler {
         private ErrorFormatter.Message m;
 
         boolean acceptMessageList(List l) {
@@ -817,7 +816,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Rule5_14 extends ClassPairedHandler {
+    static class Rule5_14 extends ClassPairedHandler {
         protected boolean proc() {
             if (!c1.isFinal() && c2.isFinal()) {
                 newM.definition = i18n.getString("BCProcessor.error.5_14"); // "E5.14 - Changing class from non-final to final";
@@ -828,7 +827,7 @@ public class BCProcessor extends HumanErrorFormatter {
         }
     }
 
-    class Terminator extends Handler {
+    static class Terminator extends Handler {
         boolean acceptMessageList(List l) {
             return true;
         }

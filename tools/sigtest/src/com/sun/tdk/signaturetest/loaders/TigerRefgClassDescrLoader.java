@@ -51,7 +51,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
 
     private static final String object = "java.lang.Object";
 
-    public static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(TigerRefgClassDescrLoader.class);
+    public static final I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(TigerRefgClassDescrLoader.class);
 
 
     private ClassLoader ldr;
@@ -70,7 +70,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
 
     public ClassDescription load(String name) throws ClassNotFoundException {
         ClassDescription cd = new ClassDescription();
-
+        name = ExoticCharTools.decodeExotic(name);
         try {
             readClass(cd, Class.forName(name, false, ldr));
         }
@@ -91,7 +91,8 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
         c.setModifiers(x);
 
         Class dclObject = classObject.getDeclaringClass();
-        c.setupClassName(classObject.getName());
+        c.setupClassName(classObject.getName(),
+                (dclObject == null) ? MemberDescription.NO_DECLARING_CLASS : dclObject.getName());
         c.setTiger(true);
         //System.out.println("\nCLASS " + fqname);
 
@@ -196,7 +197,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
                 continue;
             }
 
-            ConstructorDescr fid = new ConstructorDescr(fqname, ctor.getModifiers());
+            ConstructorDescr fid = new ConstructorDescr(c, ctor.getModifiers());
             c.setConstructor(++j, fid);
 
             if (ctor.isVarArgs())
@@ -312,7 +313,7 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
                 if (nc.isSynthetic())
                     continue;
 
-                c.setNested(++j, new InnerDescr(nc.getName(), nc.getModifiers()));
+                c.setNested(++j, new InnerDescr(nc.getName(), classObject.getName(), nc.getModifiers()));
             }
         }
     }

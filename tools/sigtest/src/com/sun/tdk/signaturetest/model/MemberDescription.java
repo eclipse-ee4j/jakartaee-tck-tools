@@ -235,6 +235,19 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     }
 
     // SuperInterface, SuperClass, ClassDescription,   
+    public void setupGenericClassName(String superClassName, String outer) {
+
+        int pos = superClassName.indexOf('<');
+        String tmp = superClassName;
+        if (pos != -1) {
+            tmp = superClassName.substring(0, pos);
+            typeParameters = superClassName.substring(pos);
+        } else typeParameters = null;
+
+        setupClassName(tmp, outer);
+    }
+
+    // old-style version for old formats
     public void setupGenericClassName(String superClassName) {
 
         int pos = superClassName.indexOf('<');
@@ -248,8 +261,44 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     }
 
 
+    public void setupClassName(String fqn, String outerName) {
+
+        fqn = ExoticCharTools.encodeExotic(fqn);
+        outerName = ExoticCharTools.encodeExotic(outerName);
+
+        if (memberType == MemberType.CLASS || memberType == MemberType.SUPERCLASS ||
+                memberType == MemberType.SUPERINTERFACE) {
+
+            name = fqn.intern();
+
+        } else {
+
+            if (! outerName.equals(NO_DECLARING_CLASS) 
+                    && fqn.startsWith(outerName)
+                    && !outerName.equals(fqn)) {
+                name = fqn.substring(outerName.length());
+                if (name.charAt(0) ==  delimiter) {
+                    name = name.substring(1);
+                }
+            } else {
+                name = fqn;
+            }
+            name = name.intern();
+        }
+
+        if (!outerName.equals(NO_DECLARING_CLASS) && !outerName.equals(fqn)) {
+            declaringClass = outerName.intern();
+        } else {
+            declaringClass = NO_DECLARING_CLASS;
+        }
+
+    }
+
     // ClassDescription, InnerDescr and all members.
+    // old-style version for old formats
     public void setupClassName(String fqn) {
+
+        fqn=ExoticCharTools.encodeExotic(fqn);
 
         int delimPos = fqn.lastIndexOf(delimiter);
 
@@ -281,6 +330,7 @@ public abstract class MemberDescription implements Cloneable, Serializable {
     // only field and method
     public void setupMemberName(String own, String dcl) {
         declaringClass = dcl.intern();
+        own = ExoticCharTools.encodeExotic(own);
         name = own.intern();
     }
 

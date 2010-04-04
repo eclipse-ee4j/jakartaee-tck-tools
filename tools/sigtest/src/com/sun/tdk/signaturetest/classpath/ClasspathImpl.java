@@ -28,6 +28,7 @@
 package com.sun.tdk.signaturetest.classpath;
 
 import com.sun.tdk.signaturetest.SigTest;
+import com.sun.tdk.signaturetest.model.ExoticCharTools;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.File;
@@ -320,6 +321,7 @@ public class ClasspathImpl implements Classpath {
      * @see java.io.FileInputStream
      */
     public InputStream findClass(String name) throws IOException, ClassNotFoundException {
+        name = ExoticCharTools.decodeExotic(name);
 
         // generic names are no allowed here
         assert(name.indexOf('<') == -1 && name.indexOf('>') == -1);

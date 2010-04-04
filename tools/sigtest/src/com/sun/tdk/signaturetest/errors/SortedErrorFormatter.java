@@ -79,7 +79,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
         verbose = isv;
     }
 
-    public void Tested(ClassDescription tested) {
+    public void tested(ClassDescription tested) {
 
         if (!getTestedsuper().containsKey(tested.getQualifiedName())) {
             if (tested.getSuperClass() != null)
@@ -113,7 +113,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
      */
     public void printErrors() {
 
-        int exmsgs = MsgExclude(getTestedsuper());
+        int exmsgs = msgExclude(getTestedsuper());
         String nl = System.getProperty("line.separator");
         
         sortErrors();
@@ -199,7 +199,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
     }
 
 
-    public int MsgExclude(Map supernames) {
+    public int msgExclude(Map supernames) {
 
         int excludedMessages = 0;
 
@@ -213,7 +213,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
 
             for (n = 0; n < vv.size(); n++) {
                 List x = (ArrayList) vv.get(n);
-                if (MsgCompare((Message) x.get(0), msgi)) {
+                if (msgCompare((Message) x.get(0), msgi)) {
                     v = (ArrayList) vv.get(n);
                     break;
                 }
@@ -223,7 +223,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
                 for (k = i + 1; k < failedMessages.size(); k++) {
                     Message msgk = (Message) failedMessages.get(k);
 
-                    if (MsgCompare(msgk, msgi)) {
+                    if (msgCompare(msgk, msgi)) {
                         if (v == null) {
                             v = new ArrayList();
                             vv.add(v);
@@ -302,7 +302,7 @@ public class SortedErrorFormatter extends ErrorFormatter {
     }
 
 
-    protected boolean MsgCompare(Message m1, Message m2) {
+    protected boolean msgCompare(Message m1, Message m2) {
         return m1.messageType == m2.messageType
                 && m1.definition.equals(m2.definition);
     }

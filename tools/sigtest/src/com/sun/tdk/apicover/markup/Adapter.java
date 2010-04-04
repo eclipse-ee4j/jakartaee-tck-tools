@@ -40,7 +40,7 @@ import com.sun.tdk.signaturetest.sigfile.FileManager;
  */
 public class Adapter {
 
-    public Adapter() {
+    public Adapter(FileManager fm) {
 
         // add pseudo-modifier
         coverIgnore = new Modifier("!cover-ignore", true);
@@ -73,7 +73,7 @@ public class Adapter {
                 return super.preprocessLine(currentLine);
             }
         });
-        FileManager.addFormat(f, false);
+        fm.addFormat(f, false);
     }
 
     public static Modifier coverIgnore;

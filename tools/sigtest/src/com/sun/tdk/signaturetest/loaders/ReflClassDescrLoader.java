@@ -108,7 +108,7 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader, LoadingHint
      * @see Class#forName(String)
      */
     public ClassDescription load(String name) throws ClassNotFoundException {
-
+        name = ExoticCharTools.decodeExotic(name);
         if (forName == null)
             return loadClass(Class.forName(name));
 
@@ -267,7 +267,7 @@ public class ReflClassDescrLoader implements ClassDescriptionLoader, LoadingHint
      */
     private static ConstructorDescr createMember(Constructor ctor) {
 
-        ConstructorDescr member = new ConstructorDescr(ctor.getDeclaringClass().getName(),
+        ConstructorDescr member = new ConstructorDescr(ctor.getDeclaringClass(),
                 ctor.getModifiers());
 
         // create args

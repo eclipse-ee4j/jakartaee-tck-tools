@@ -38,6 +38,7 @@ public class FeaturesHolder {
     public static final Feature NonStaticConstants = new Feature("#NonStaticConstants");
     public static final Feature ListOfHiders = new Feature("#ListOfHiders");
     public static final Feature XHiders = new Feature("#XHiders");
+    public static final Feature OuterClasses  = new Feature("#OuterClasses");
 
     public void addSupportedFeature(Feature feature) {
         ensureInitialized();

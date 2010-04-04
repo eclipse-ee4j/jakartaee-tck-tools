@@ -39,9 +39,9 @@ public final class InnerDescr extends MemberDescription {
         super(MemberType.INNER, CLASS_DELIMITER);
     }
 
-    public InnerDescr(String fullQualifiedName, int modif) {
+    public InnerDescr(String fullQualifiedName, String outerName, int modif) {
         this();
-        setupClassName(fullQualifiedName);
+        setupClassName(fullQualifiedName, outerName);
         setModifiers(modif);
     }
 

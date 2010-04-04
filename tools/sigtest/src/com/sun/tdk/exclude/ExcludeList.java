@@ -27,7 +27,6 @@
 
 package com.sun.tdk.exclude;
 
-import com.sun.tdk.signaturetest.SignatureTest;
 import com.sun.tdk.signaturetest.core.Exclude;
 import com.sun.tdk.signaturetest.core.ExcludeException;
 import com.sun.tdk.signaturetest.model.ClassDescription;
@@ -61,7 +60,7 @@ public class ExcludeList implements Exclude {
         try {
             excludeList.add(Pattern.compile(regpack));
         } catch (PatternSyntaxException e) {
-            SignatureTest.log.println("Error in -ExcludeSig: " + e.getMessage());
+            System.err.println("Error in -ExcludeSig: " + e.getMessage());
         }
     }
 

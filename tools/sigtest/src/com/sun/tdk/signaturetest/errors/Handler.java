@@ -297,10 +297,10 @@ class TypeParametersHandler extends PairedHandler {
             c2.removeAll(c1);
             c1.removeAll(c3);
 
-            if ((c1 != null) && (c1.size() != 0)) {
+            if (c1.size() != 0) {
                 addDef("    - Type parameters: " + c1.toString().trim());
             }
-            if ((c2 != null) && (c2.size() != 0)) {
+            if (c2.size() != 0) {
                 addDef("    + Type parameters: " + c2.toString().trim());
             }
             return true;
@@ -362,10 +362,10 @@ class AnnotationHandler extends PairedHandler {
             c2.removeAll(c1);
             c1.removeAll(c3);
 
-            if ((c1 != null) && (c1.size() != 0)) {
+            if (c1.size() != 0) {
                 addDef("    - Anno: " + c1.toString());
             }
-            if ((c2 != null) && (c2.size() != 0)) {
+            if (c2.size() != 0) {
                 addDef("    + Anno: " + c2.toString());
             }
             return true;

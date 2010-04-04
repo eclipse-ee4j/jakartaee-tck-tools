@@ -47,8 +47,17 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
 
+
+// Plain report generator
+
 public abstract class ReportGenerator extends APIVisitor {
     protected RefCounter refCounter;
+    private PrintWriter log;
+
+    public void setLog(PrintWriter log) {
+        this.log = log;
+    }
+
 
     enum FIELD_MODE {
         NOCONST, ALL }
@@ -115,14 +124,14 @@ public abstract class ReportGenerator extends APIVisitor {
                 }
                 this.addConfig(Main.EXCLUDELIST_OPTION, name);
             } catch (IOException e) {
-                Main.log.println(e.getMessage());
+                log.println(e.getMessage());
                 //Main.debug(e);
             } finally {
                 if (in != null) {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        Main.log.println(e.getMessage());
+                        log.println(e.getMessage());
                         //Main.debug(e);
                     }
                 }
@@ -132,7 +141,7 @@ public abstract class ReportGenerator extends APIVisitor {
 
     public abstract void print();
 
-    public ReportGenerator createReportGenerator(String type) {
+    ReportGenerator createReportGenerator(String type, PrintWriter log) {
         ReportGenerator newReportGenerator;
         if (type.equals(Main.FORMAT_VALUE_PLAIN)) {
             newReportGenerator = new ReportPlain(this.refCounter);
@@ -147,11 +156,14 @@ public abstract class ReportGenerator extends APIVisitor {
         newReportGenerator.results = this.results;
         newReportGenerator.top = this.top;
         newReportGenerator.xList = this.xList;
+        newReportGenerator.setLog(log);
         return newReportGenerator;
     }
 
-    public static ReportGenerator createReportGenerator(RefCounter ref) {
-        return new ReportPlain(ref);
+    static ReportGenerator createReportGenerator(RefCounter ref, PrintWriter log) {
+        ReportGenerator rg = new ReportPlain(ref);
+        rg.setLog(log);
+        return rg;
     }
 
     protected static String classRepr(ClassDescription cd) {
@@ -214,7 +226,7 @@ public abstract class ReportGenerator extends APIVisitor {
             }
         }
         catch (FileNotFoundException e) {
-            Main.log.println(e);
+            log.println(e);
         }
     }
 
@@ -322,9 +334,6 @@ public abstract class ReportGenerator extends APIVisitor {
     }
 
 }
-
-// Plain report generator
-
 class ReportPlain extends ReportGenerator {
     private final static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(ReportPlain.class);
     final int p0 = 0,

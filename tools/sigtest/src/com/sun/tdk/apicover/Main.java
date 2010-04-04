@@ -27,7 +27,6 @@
 
 package com.sun.tdk.apicover;
 
-import com.sun.tdk.signaturetest.SigTest;
 import com.sun.tdk.signaturetest.Version;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
 import com.sun.tdk.signaturetest.core.*;
@@ -36,17 +35,19 @@ import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.MemberDescription;
 import com.sun.tdk.signaturetest.sigfile.Format;
 import com.sun.tdk.signaturetest.sigfile.MultipleFileReader;
+import com.sun.tdk.signaturetest.util.BatchFileParser;
 import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 import com.sun.tdk.signaturetest.util.OptionInfo;
 import com.sun.tdk.apicover.markup.Adapter;
 
+import com.sun.tdk.signaturetest.core.MemberCollectionBuilder.BuildMode;
+import com.sun.tdk.signaturetest.sigfile.FileManager;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-
 
 
 public class Main implements Log {
@@ -94,9 +95,10 @@ public class Main implements Log {
     public static final String VALIDATE_OPTION = "-validate";
 
     static final String MAIN_URI = "file:";
-    public static PrintWriter log;
+    private PrintWriter log;
     static protected boolean debug = false;
     public final static int DefaultCacheSize = 4096;
+    private boolean isWorstCaseMode = true; // worst case is default
 
     protected ClasspathImpl classpath;
     //protected String classpathStr = null;
@@ -107,7 +109,7 @@ public class Main implements Log {
     protected String signatureFile;
 
     RefCounter refCounter = new RefCounter();
-    ReportGenerator reporter = ReportGenerator.createReportGenerator(refCounter);
+    ReportGenerator reporter;
     String ts;
 
     private PackageGroup packagesTS = new PackageGroup(true);
@@ -136,8 +138,8 @@ public class Main implements Log {
      * @see #main(String[])
      */
     public void run(String[] args, PrintWriter log, PrintWriter ref) {
-        Main.log = log;
-        SigTest.log = log;
+        this.log = log;
+        reporter = ReportGenerator.createReportGenerator(refCounter, log);
         try {
             parseParameters(args);
             check();
@@ -159,13 +161,22 @@ public class Main implements Log {
      * @throws Exception
      */
     protected void parseParameters(String[] args) throws Exception {
+
+        try {
+            args = BatchFileParser.processParameters(args);
+        } catch (CommandLineParserException ex) {
+            ex.printStackTrace();
+        }
+
         CommandLineParser parser = new CommandLineParser(this, "-");
 
         // Print help text only and exit.
-        if (args == null || args.length == 0 || (args.length == 1
+        if (args != null && args.length == 1 && (parser.isOptionSpecified(args[0], VERSION_OPTION))) {
+            System.err.println(Version.getVersionInfo());
+            passed();
+        } else if (args == null || args.length == 0 || (args.length == 1
                 && (parser.isOptionSpecified(args[0], HELP_OPTION)
-                        || parser.isOptionSpecified(args[0], QUESTIONMARK)
-                        || parser.isOptionSpecified(args[0], VERSION_OPTION)))) {
+                        || parser.isOptionSpecified(args[0], QUESTIONMARK)))) {
             version();
             usage();
             passed();
@@ -248,26 +259,27 @@ public class Main implements Log {
                     && !MODE_VALUE_REAL.equalsIgnoreCase(args[0])) {
                 error(i18n.getString("Main.error.arg.invalid", MODE_OPTION));
             }
+            isWorstCaseMode = MODE_VALUE_WORST.equalsIgnoreCase(args[0]);
             refCounter.setMode(args[0]);
             reporter.addConfig(MODE_OPTION, args[0].toLowerCase());
         } else if (optionName.equalsIgnoreCase(APIINCLUDE_OPTION)) {
-            packages.addPackages(args);
+            packages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(APIEXCLUDE_OPTION)) {
-            excludedPackages.addPackages(args);
+            excludedPackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(APIINCLUDEW_OPTION)) {
-            purePackages.addPackages(args);
+            purePackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(TSICNLUDE_OPTION)) {
-            packagesTS.addPackages(args);
+            packagesTS.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(TSEXCLUDE_OPTION)) {
-            excludedPackagesTS.addPackages(args);
+            excludedPackagesTS.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(TSICNLUDEW_OPTION)) {
-            purePackagesTS.addPackages(args);
+            purePackagesTS.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(FORMAT_OPTION)) {
             if (!FORMAT_VALUE_PLAIN.equalsIgnoreCase(args[0])
                     && !FORMAT_VALUE_XML.equalsIgnoreCase(args[0])) {
                 error(i18n.getString("Main.error.arg.invalid", FORMAT_OPTION));
             }
-            reporter = reporter.createReportGenerator(args[0]);
+            reporter = reporter.createReportGenerator(args[0], log);
         } else if (optionName.equalsIgnoreCase(DETAIL_OPTION)) {
             try {
                 int detail = Integer.parseInt(args[0]);
@@ -361,9 +373,10 @@ public class Main implements Log {
 
 
     void check() {
-        MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE);
+        FileManager f = new FileManager();
+        MultipleFileReader in = new MultipleFileReader(log, MultipleFileReader.CLASSPATH_MODE, f);
         ClassHierarchy apiHierarchy = new ClassHierarchyImpl(in, ClassHierarchy.ALL_PUBLIC);
-        new Adapter();
+        new Adapter(f);
 
         try {
             if (!in.readSignatureFiles(MAIN_URI, signatureFile)) {
@@ -378,6 +391,9 @@ public class Main implements Log {
                 try {
                     if (is4) {
                         cd.setHierarchy(apiHierarchy);
+                        if (!isWorstCaseMode) {
+                            b.setBuildMode(BuildMode.APICOV_REAL);
+                        }
                         b.createMembers(cd, true, false, true );
                     }
                 } catch (Exception e) {
@@ -395,6 +411,8 @@ public class Main implements Log {
              */
             BinaryClassDescrLoader tsLoader = new BinaryClassDescrLoader(classpath,
                     DefaultCacheSize);
+
+            tsLoader.setLog(log);
             tsLoader.setIgnoreAnnotations(true);
             ClassHierarchy tsHierarchy = new ClassHierarchyImpl(tsLoader,
                     ClassHierarchy.ALL_PUBLIC);
@@ -443,27 +461,23 @@ public class Main implements Log {
         }
     }
 
-    static void error(String s) {
-        System.err.println(s);
+    private void error(String s) {
+        log.println(s);
         System.exit(1);
     }
-    static void passed() {
+    private void passed() {
         System.exit(0);
     }
 
-    static void debug(Throwable t) {
+    private void debug(Throwable t) {
         if (debug) {
             t.printStackTrace(log);
         }
     }
 
-
-
     public void storeError(String s, Logger utilLog) {
         log.append(s);
     }
-
-
 
     public void storeWarning(String s, Logger utilLog) {
         log.append(s);

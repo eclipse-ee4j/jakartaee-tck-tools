@@ -88,7 +88,10 @@ public class MessageType implements Comparable {
     final public static MessageType CHNG_CLASSES_MEMBERS    = new MessageType(i18n.getString("HumanErrorFormatter.error.change.clss.or.memb"), 24); // 24
 
     public static MessageType getMissingMessageType(MemberType type) {
-        if (type == MemberType.CLASS || type == MemberType.INNER) return MISS_CLASSES;
+        if (type == MemberType.CLASS)
+            return MISS_CLASSES;
+        if (type == MemberType.INNER)
+            return MISS_NESTED_CLASSES;
         if (type == MemberType.SUPERCLASS || type == MemberType.SUPERINTERFACE)
             return MISS_SUPERCLASSES;
         if (type == MemberType.FIELD) return MISS_FIELDS;

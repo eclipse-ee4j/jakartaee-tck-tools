@@ -29,6 +29,7 @@ package com.sun.tdk.signaturetest.classpath;
 
 import com.sun.tdk.signaturetest.SigTest;
 
+import com.sun.tdk.signaturetest.model.ExoticCharTools;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -96,6 +97,8 @@ class JarFileEntry extends ClasspathEntry {
      * @throws ClassNotFoundException if the class was not found inside this <code>JarFileEntry</code>.
      */
     public InputStream findClass(String name) throws IOException, ClassNotFoundException {
+
+        name = ExoticCharTools.decodeExotic(name);
 
         JarEntry jarEntry = jarfile.getJarEntry(name.replace('.', '/') + JAVA_CLASSFILE_EXTENSION);
         if (jarEntry == null)

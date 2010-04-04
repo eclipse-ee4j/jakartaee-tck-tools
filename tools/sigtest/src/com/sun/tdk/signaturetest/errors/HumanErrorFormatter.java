@@ -35,6 +35,7 @@ import com.sun.tdk.signaturetest.model.MethodDescr;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -89,6 +90,9 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
         }
 
         ch.finishProcessing();
+
+        supressExtraErrors();
+
         Iterator it = failedMessages.iterator();
         numErrors = 0;
         numWarnings = 0;
@@ -119,6 +123,10 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
                 continue;
 
             String ccl = current.className;
+            // issue 33
+            if (current.errorObject != null && current.errorObject.isInner()) {
+                ccl = current.errorObject.getQualifiedName();
+            }
 
             if (current.messageType == MessageType.ADD_CLASSES) {
                 lastType = current.messageType;
@@ -236,6 +244,67 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
         );
     }
 
+    // Issue 39 - Supress similar messages in human-readable formatter
+    private void supressExtraErrors() {
+        Collections.sort(failedMessages, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                Message m1 = (Message) o1;
+                Message m2 = (Message) o2;
+                if (!isSameKind(m1, m2)) return -1;  //bad practice, but...
+                return m1.className.compareTo(m2.className);
+            }
+        }
+        );
+
+        ArrayList toRemove = new ArrayList();
+
+        loop:
+        for (int i=0; i < failedMessages.size(); i++) {
+            Message m1 = (Message) failedMessages.get(i);
+            int last = i;
+            for(int j=i+1; j < failedMessages.size(); j++) {
+                Message m2 = (Message) failedMessages.get(j);
+                if (!isSameKind(m1, m2)) {
+                    if (last == i) {
+                        i=j;
+                        continue loop;
+                    } else {
+                        break;
+                    }
+                } else {
+                    last = j;
+                }
+            }
+            boolean found = false;
+            ArrayList rem = new ArrayList();
+            for (int k=i ; k <=last; k++) {
+                Message m = (Message) failedMessages.get(k);
+                if (m.className.equals(m.errorObject.getDeclaringClassName())) {
+                    found = true;
+                } else {
+                    rem.add(m);
+                }
+            }
+
+            if (found) {
+                toRemove.addAll(rem);
+            }
+
+            i = last;
+        }
+
+        failedMessages.removeAll(toRemove);
+        
+    }
+
+    private boolean isSameKind(Message m1, Message m2) {
+        if (m1 == null || m2 == null) return false;
+        return m1.errorObject.equals(m2.errorObject) &&
+                m1.definition.equals(m2.definition) &&
+                m1.tail.equals(m2.tail) &&
+                m1.messageType.equals(m2.messageType);
+    }
+
     private static class ErrorComparator implements Comparator {
         public int compare(Object o1, Object o2) {
             Message msg1 = (Message) o1;
@@ -263,13 +332,10 @@ public class HumanErrorFormatter extends SortedErrorFormatter {
 
                     }
                 }
-
                 if (comp == 0) {
                     comp = msg1.className.compareTo(msg2.className);
                 }
-
             }
-
             return comp;
         }
     }
