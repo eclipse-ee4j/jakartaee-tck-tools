@@ -66,6 +66,7 @@ public class APITest extends NbTestCase {
         String c1 =
             "package ahoj;" +
             "public interface I {" +
+            "  public static final class ObjSub {}" +
             "}";
         createFile(1, "I.java", c1);
         
@@ -73,6 +74,7 @@ public class APITest extends NbTestCase {
         String c2 =
             "package ahoj;" +
             "public interface I {" +
+            "  public static final class ObjSub {}" +
             "  String toString(); " + 
             "}";
         createFile(2, "I.java", c2);

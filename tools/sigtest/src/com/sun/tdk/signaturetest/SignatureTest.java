@@ -1201,15 +1201,33 @@ public class SignatureTest extends SigTest {
             for (Iterator e = found.getMembersIterator(); e.hasNext();) {
                 MemberDescription foundMember = (MemberDescription) e.next();
                 if (!required.containsMember(foundMember)) {
-                    try {
-                        excluded(found, foundMember);
-                        trackMember(required, found, null, foundMember);
-                    } catch (ExcludeException e1) {
-                        if (isVerbose)
-                            getLog().println(i18n.getString("SignatureTest.mesg.verbose.verifyMember2",
-                                    new Object[]{found.getQualifiedName(),
-                                            foundMember.toString(),
-                                            e1.getMessage()}));
+                    boolean inheritedFromObject = false;
+                    if (required.isInterface()) {
+                        try {
+                            ClassDescription obj = required.getClassHierarchy().load("java.lang.Object");
+                            for (MethodDescr m : obj.getDeclaredMethods()) {
+                                if (
+                                    m.getName().equals(foundMember.getName()) &&
+                                    m.getType().equals(foundMember.getType())
+                                ) {
+                                    inheritedFromObject = true;
+                                }
+                            }
+                        } catch (ClassNotFoundException classNotFoundException) {
+                            // java.lang.Object not found, too bad
+                        }
+                    }
+                    if (!inheritedFromObject) {
+                        try {
+                            excluded(found, foundMember);
+                            trackMember(required, found, null, foundMember);
+                        } catch (ExcludeException e1) {
+                            if (isVerbose)
+                                getLog().println(i18n.getString("SignatureTest.mesg.verbose.verifyMember2",
+                                        new Object[]{found.getQualifiedName(),
+                                                foundMember.toString(),
+                                                e1.getMessage()}));
+                        }
                     }
                 }
             }
