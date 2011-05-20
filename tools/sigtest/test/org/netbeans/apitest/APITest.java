@@ -62,6 +62,24 @@ public class APITest extends NbTestCase {
         clearWorkDir();
     }
 
+    public void testAddingObjectMethodToAnInterfaceIsOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface I {" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public interface I {" +
+            "  String toString(); " + 
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    
     public void testMissingMethodInAnInterfaceIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +
