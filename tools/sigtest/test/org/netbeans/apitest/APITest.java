@@ -82,6 +82,26 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
+    public void testAddingMethodToEnumIsOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public enum E {" +
+            "  A;" +
+            "}";
+        createFile(1, "E.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public enum E {" +
+            "  A;" +
+            "  public void get() {};" +
+            "}";
+        createFile(2, "E.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+    
     public void testMissingMethodInAnInterfaceIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +
