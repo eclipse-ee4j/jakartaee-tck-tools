@@ -246,13 +246,16 @@ public class BCProcessor extends HumanErrorFormatter {
                 MethodDescr md = (MethodDescr) m.errorObject;
                 try {
                     String dcn = md.getDeclaringClassName();
-                    return !extensibleInterfaces && clHier.isInterface(dcn) && !clHier.isAnnotation(dcn);
+                    if (!extensibleInterfaces && clHier.isInterface(dcn) && !clHier.isAnnotation(dcn)) {
+                        if (!clHier.isInterface(m.className) && !canBeSubclassed(m.className, clHier)) {
+                            return false;
+                        }
+                        return true;
+                    }
                 } catch (ClassNotFoundException e) {
-                    return false;
                 }
-
-            } else
-                return false;
+            } 
+            return false;
         }
 
         protected void writeMessage(List l, Chain ch) {

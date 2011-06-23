@@ -102,6 +102,44 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
     
+    public void testAddingInterfaceMethodToEnumIsOK() throws Exception {
+        String c1 =
+                "package ahoj;"
+                + "public enum E {"
+                + "  A;"
+                + "}";
+        createFile(1, "E.java", c1);
+
+
+        String c2 =
+                "package ahoj;"
+                + "public enum E implements Runnable {"
+                + "  A {public void run() {} };"
+                + "}";
+        createFile(2, "E.java", c2);
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testAddingInterfaceMethodToFinalClassIsOK() throws Exception {
+        String c1 =
+                "package ahoj;"
+                + "public abstract class C {"
+                + "  private C() {}"
+                + "}";
+        createFile(1, "C.java", c1);
+
+
+        String c2 =
+                "package ahoj;"
+                + "public abstract class C implements Runnable {"
+                + "  private C(){} "
+                + "}";
+        createFile(2, "C.java", c2);
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+   
     public void testMissingMethodInAnInterfaceIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +
