@@ -276,7 +276,10 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
             CONSTANT_Long = 5,
             CONSTANT_Double = 6,
             CONSTANT_NameAndType = 12,
-            CONSTANT_Utf8 = 1;
+            CONSTANT_Utf8 = 1,
+            CONSTANT_MethodHandle = 15,
+            CONSTANT_MethodType = 16,
+            CONSTANT_InvokeDynamic = 18;
 
 //  Constant pool entry
 
@@ -335,6 +338,17 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
 
                 case CONSTANT_Utf8:
                     info = classData.readUTF();
+                    break;
+                case CONSTANT_MethodHandle:
+                    byte kind = classData.readByte();
+                    short index = classData.readShort();
+                    info = new Integer(kind << 16 | index);
+                    break;
+                case CONSTANT_MethodType:
+                    info = new Short(classData.readShort());
+                    break;
+                case CONSTANT_InvokeDynamic:
+                    info = new Integer(classData.readInt());
                     break;
 
                 default:
