@@ -68,7 +68,8 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
             getName().equals("testMissingFieldInAbstractClassIsDetected") ||
             getName().equals("testMissingStaticFieldDetected") ||
             getName().equals("testMissingConstructorInAbstractClassIsDetected") ||
-            getName().equals("testConvertingNonFinalClassToAbstract")
+            getName().equals("testConvertingNonFinalClassToAbstract") ||
+            getName().equals("testAddInterfaceMethod")
         ) {
             // do the test of signatures for these special tests
             args.add("-Dv2=1.0");

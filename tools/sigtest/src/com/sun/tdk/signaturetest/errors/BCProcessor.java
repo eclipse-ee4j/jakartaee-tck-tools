@@ -250,6 +250,10 @@ public class BCProcessor extends HumanErrorFormatter {
                         if (!clHier.isInterface(m.className) && !canBeSubclassed(m.className, clHier)) {
                             return false;
                         }
+                        if (!md.hasModifier(Modifier.ABSTRACT)) {
+                            //JDK 8 Default interface method
+                            return false;
+                        }
                         return true;
                     }
                 } catch (ClassNotFoundException e) {

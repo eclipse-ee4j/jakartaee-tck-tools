@@ -444,7 +444,54 @@ public class CheckNewSigtestTest extends NbTestCase {
             // ok
         }
     }
-   
+
+    public void testDefaultMethod() throws Exception {
+        String i1 =
+            "package libka;" +
+            "public interface Iface {" +
+            "}";
+        String c1 =
+            "package ahoj;" +
+            "public abstract class Clz implements libka.Iface {" +
+            "}";
+        String i2 =
+            "package libka;" +
+            "public interface Iface {" +
+                "public default void doNothing() {}" +
+            "}";
+        createFile(1, "Iface.java", i1);
+        createFile(1, "Clz.java", c1);
+        createFile(2, "Iface.java", i2);
+        createFile(2, "Clz.java", c1);
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
+    public void testAddInterfaceMethod() throws Exception {
+        String i1 =
+            "package libka;" +
+            "public interface Iface {" +
+            "}";
+        String c1 =
+            "package ahoj;" +
+            "public abstract class Clz implements libka.Iface {" +
+            "}";
+        String i2 =
+            "package libka;" +
+            "public interface Iface {" +
+                "public void doNothing();" +
+            "}";
+        createFile(1, "Iface.java", i1);
+        createFile(1, "Clz.java", c1);
+        createFile(2, "Iface.java", i2);
+        createFile(2, "Clz.java", c1);
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Added method into interface");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+
     protected final void createFile(int slot, String name, String content) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slot);
         File c1 = new File(d1, name);
