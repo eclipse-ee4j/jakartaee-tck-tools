@@ -436,6 +436,24 @@ public class APITest extends NbTestCase {
             // ok
         }
     }
+    
+    public void testAbstractPackagePrivateMethodIsOK() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "  abstract void get();" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public abstract class I {" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
 
     public void testAddMethodInAbstractClassIsDetected() throws Exception {
         String c1 =
