@@ -441,6 +441,7 @@ public class APITest extends NbTestCase {
         String c1 =
             "package ahoj;" +
             "public abstract class I {" +
+            "  I() {}" +
             "  abstract void get();" +
             "}";
         createFile(1, "I.java", c1);
@@ -449,6 +450,7 @@ public class APITest extends NbTestCase {
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
+            "  I() {}" +
             "}";
         createFile(2, "I.java", c2);
         
