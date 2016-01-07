@@ -7,7 +7,7 @@
         <version>3</version>
     </parent>
     <groupId>org.netbeans.tools</groupId>
-    <artifactId>apitest-maven-plugin</artifactId>
+    <artifactId>sigtest-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
