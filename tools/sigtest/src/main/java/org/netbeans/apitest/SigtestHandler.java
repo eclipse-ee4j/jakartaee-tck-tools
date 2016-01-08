@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 abstract class SigtestHandler {
-    private static final int MSG_VERBOSE = 0;
+    static String[] ACTIONS = new String[] {
+        "generate",
+        "check",
+        "strictcheck",
+        "versioncheck",
+        "binarycheck",
+    };
 
     public final int execute() throws IOException {
         if (getPackages().equals("-")) {
@@ -84,7 +91,7 @@ abstract class SigtestHandler {
             arg.add("-static");
             onlySameVersion = true;
         } else {
-            throw new IOException("Unknown action: " + getAction());
+            throw new IOException("Unknown action: " + getAction() + " available actions are " + Arrays.toString(ACTIONS));
         }
         if (getVersion() != null) {
             arg.add("-ApiVersion");
@@ -248,6 +255,7 @@ abstract class SigtestHandler {
             Element systemerr = reportDoc.createElement("system-err");
             systemerr.appendChild(reportDoc.createCDATASection(msg));
             testsuite.appendChild(systemerr);
+            reportFile.getParentFile().mkdirs();
             OutputStream os = new FileOutputStream(reportFile);
             try {
                 DOMSource dom = new DOMSource(reportDoc);

@@ -189,15 +189,8 @@ public final class Sigtest extends Task {
     }
 
     public static final class ActionType extends EnumeratedAttribute {
-
         public String[] getValues() {
-            return new String[]{
-                        "generate",
-                        "check",
-                        "strictcheck",
-                        "versioncheck",
-                        "binarycheck",
-                    };
+            return SigtestHandler.ACTIONS;
         }
     }
 }
