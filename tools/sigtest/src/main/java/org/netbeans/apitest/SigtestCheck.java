@@ -60,7 +60,7 @@ public final class SigtestCheck extends AbstractMojo {
     private String action;
     @Parameter(defaultValue = "")
     private String packages;
-    @Parameter(defaultValue = "${project.build.directory}/test-report/signature-check.xml")
+    @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
