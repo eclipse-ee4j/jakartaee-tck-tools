@@ -26,8 +26,8 @@ package org.netbeans.apitest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -96,14 +96,7 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected String[] getClasspath() {
-                List<String> path = new ArrayList<String>();
-                path.add(classes.getAbsolutePath());
-                for (Artifact a : prj.getArtifacts()) {
-                    if (a.getFile() != null && a.getFile().exists()) {
-                        path.add(a.getFile().getAbsolutePath());
-                    }
-                }
-                return path.toArray(new String[0]);
+                return projectClassPath(prj, classes);
             }
 
             @Override
@@ -140,4 +133,17 @@ public final class SigtestCheck extends AbstractMojo {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }
     }
+
+    static String[] projectClassPath(MavenProject project, File classes) {
+        Set<String> path = new LinkedHashSet<String>();
+        path.add(classes.getAbsolutePath());
+        path.add(project.getBuild().getOutputDirectory());
+        for (Artifact a : project.getArtifacts()) {
+            if (a.getFile() != null && a.getFile().exists()) {
+                path.add(a.getFile().getAbsolutePath());
+            }
+        }
+        return path.toArray(new String[0]);
+    }
+
 }

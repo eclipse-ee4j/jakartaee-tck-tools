@@ -26,9 +26,6 @@ package org.netbeans.apitest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -92,14 +89,7 @@ public final class SigtestGenerate extends AbstractMojo {
 
             @Override
             protected String[] getClasspath() {
-                List<String> path = new ArrayList<String>();
-                path.add(classes.getAbsolutePath());
-                for (Artifact a : prj.getArtifacts()) {
-                    if (a.getFile() != null && a.getFile().exists()) {
-                        path.add(a.getFile().getAbsolutePath());
-                    }
-                }
-                return path.toArray(new String[0]);
+                return SigtestCheck.projectClassPath(prj, classes);
             }
 
             @Override
