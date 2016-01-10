@@ -44,24 +44,20 @@ import org.apache.maven.project.MavenProject;
  * @author Jaroslav Tulach
  */
 @Mojo(
-    name="check",
+    name="generate",
     requiresDependencyResolution = ResolutionScope.TEST,
-    defaultPhase= LifecyclePhase.TEST
+    defaultPhase= LifecyclePhase.PACKAGE
 )
-public final class SigtestCheck extends AbstractMojo {
+public final class SigtestGenerate extends AbstractMojo {
     @Component
     private MavenProject prj;
 
     @Parameter(defaultValue = "${project.build.directory}/classes")
     private File classes;
-    @Parameter()
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sigfile")
     private File sigfile;
-    @Parameter(defaultValue = "check", property = "sigtest.check")
-    private String action;
     @Parameter(defaultValue = "")
     private String packages;
-    @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
-    private File report;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
@@ -86,7 +82,7 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected String getAction() {
-                return action;
+                return "generate";
             }
 
             @Override
@@ -108,7 +104,7 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected File getReport() {
-                return report;
+                return null;
             }
 
             @Override
@@ -136,6 +132,7 @@ public final class SigtestCheck extends AbstractMojo {
             if (returnCode != 0) {
                 throw new MojoFailureException("Signature check for " + sigfile + " failed with " + returnCode);
             }
+            getLog().info("Signature snapshot generated at " + sigfile);
         } catch (IOException ex) {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }

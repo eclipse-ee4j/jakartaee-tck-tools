@@ -289,6 +289,6 @@ abstract class SigtestHandler {
     protected abstract File getReport();
     protected abstract String getMail();
     protected abstract Boolean isFailOnError();
-    protected abstract void logInfo(String no_public_packages_skipping);
+    protected abstract void logInfo(String message);
     protected abstract void logError(String message);
 }
