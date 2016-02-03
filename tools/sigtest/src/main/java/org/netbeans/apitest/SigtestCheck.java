@@ -62,6 +62,8 @@ public final class SigtestCheck extends AbstractMojo {
     private String packages;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
+    @Parameter(defaultValue = "true")
+    private boolean failOnError;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
@@ -111,7 +113,7 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected Boolean isFailOnError() {
-                return null;
+                return failOnError;
             }
 
             @Override

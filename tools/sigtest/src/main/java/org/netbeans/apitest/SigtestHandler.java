@@ -212,7 +212,7 @@ abstract class SigtestHandler {
         } else {
             fail = !Boolean.FALSE.equals(isFailOnError());
         }
-        return returnCode;
+        return fail ? returnCode : 0;
     }
 
     //
