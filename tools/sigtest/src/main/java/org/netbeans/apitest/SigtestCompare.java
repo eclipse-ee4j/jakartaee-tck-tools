@@ -25,11 +25,11 @@
 package org.netbeans.apitest;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import org.apache.maven.artifact.Artifact;
+import java.util.List;
+import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -38,51 +38,55 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 /**
  *
  * @author Jaroslav Tulach
  */
 @Mojo(
-    name="check",
+    name="compare",
     requiresDependencyResolution = ResolutionScope.TEST,
-    defaultPhase= LifecyclePhase.TEST
+    defaultPhase= LifecyclePhase.PACKAGE
 )
-public final class SigtestCheck extends AbstractMojo {
+public final class SigtestCompare extends AbstractMojo {
     @Component
     private MavenProject prj;
+    @Component
+    private LegacySupport legacySupport;
+    @Component
+    private RepositorySystem repoSystem;
 
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
+    private List<ArtifactRepository> remoteRepos;
     @Parameter(defaultValue = "${project.build.directory}/classes")
     private File classes;
-    @Parameter()
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sigfile")
     private File sigfile;
-    @Parameter(defaultValue = "check", property = "sigtest.check")
-    private String action;
     @Parameter(defaultValue = "")
     private String packages;
+
+    @Parameter(property = "sigtest.releaseVersion")
+    private String releaseVersion;
+    @Parameter(defaultValue = "check", property = "sigtest.check")
+    private String action;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
     @Parameter(defaultValue = "true")
     private boolean failOnError;
 
-    public SigtestCheck() {
-    }
-
-    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError) {
-        this.prj = prj;
-        this.classes = classes;
-        this.sigfile = sigfile;
-        this.action = action;
-        this.packages = packages;
-        this.report = report;
-        this.failOnError = failOnError;
-    }
-
-
-
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
             throw new MojoExecutionException("Specify <packages>your.pkg1:your.pkg2</packages> in plugin config section!");
+        }
+        if (releaseVersion == null) {
+            throw new MojoExecutionException("Specify <releaseVersion in plugin config section or use -Dsigtest.releaseVersion!");
         }
         if (sigfile == null) {
             throw new MojoExecutionException("Specify <sigfile>path-to-file-generated-before</sigfile> in plugin config section!");
@@ -90,77 +94,24 @@ public final class SigtestCheck extends AbstractMojo {
         if (classes == null || !classes.exists()) {
             throw new MojoExecutionException("Point <classes>to-directory-with-classfiles-to-test</classes> in plugin config section!");
         }
-        SigtestHandler handler = new SigtestHandler() {
-            @Override
-            protected String getPackages() {
-                return packages;
-            }
 
-            @Override
-            protected File getFileName() {
-                return sigfile;
-            }
-
-            @Override
-            protected String getAction() {
-                return action;
-            }
-
-            @Override
-            protected String getVersion() {
-                return prj.getVersion();
-            }
-
-            @Override
-            protected String[] getClasspath() {
-                return projectClassPath(prj, classes);
-            }
-
-            @Override
-            protected File getReport() {
-                return report;
-            }
-
-            @Override
-            protected String getMail() {
-                return null;
-            }
-
-            @Override
-            protected Boolean isFailOnError() {
-                return failOnError;
-            }
-
-            @Override
-            protected void logInfo(String message) {
-                getLog().info(message);
-            }
-
-            @Override
-            protected void logError(String message) {
-                getLog().error(message);
-            }
-        };
+        ArtifactRequest artifactRequest = new ArtifactRequest();
+        final DefaultArtifact defaultArtifact = new DefaultArtifact(prj.getGroupId(), prj.getArtifactId(), "jar", releaseVersion);
+        artifactRequest.setArtifact(defaultArtifact);
+        List<RemoteRepository> repositories = RepositoryUtils.toRepos(remoteRepos);
+        artifactRequest.setRepositories(repositories);
+        Artifact artifact;
         try {
-            int returnCode = handler.execute();
-            if (returnCode != 0) {
-                throw new MojoFailureException("Signature check for " + sigfile + " failed with " + returnCode);
-            }
-        } catch (IOException ex) {
-            throw new MojoExecutionException(ex.getMessage(), ex);
+            ArtifactResult result = repoSystem.resolveArtifact(legacySupport.getSession().getRepositorySession(), artifactRequest);
+            artifact = result.getArtifact();
+        } catch (ArtifactResolutionException ex) {
+            throw new MojoExecutionException("Cannot resolve artifact" + defaultArtifact, ex);
         }
-    }
 
-    static String[] projectClassPath(MavenProject project, File classes) {
-        Set<String> path = new LinkedHashSet<String>();
-        path.add(classes.getAbsolutePath());
-        path.add(project.getBuild().getOutputDirectory());
-        for (Artifact a : project.getArtifacts()) {
-            if (a.getFile() != null && a.getFile().exists()) {
-                path.add(a.getFile().getAbsolutePath());
-            }
-        }
-        return path.toArray(new String[0]);
-    }
+        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion);
+        generate.execute();
 
+        SigtestCheck check = new SigtestCheck(prj, classes, sigfile, action, packages, report, failOnError);
+        check.execute();
+    }
 }

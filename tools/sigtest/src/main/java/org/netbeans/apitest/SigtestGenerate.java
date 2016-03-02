@@ -55,6 +55,18 @@ public final class SigtestGenerate extends AbstractMojo {
     private File sigfile;
     @Parameter(defaultValue = "")
     private String packages;
+    private String version;
+
+    public SigtestGenerate() {
+    }
+
+    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version) {
+        this.prj = prj;
+        this.classes = classes;
+        this.sigfile = sigfile;
+        this.packages = packages;
+        this.version = version;
+    }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
@@ -84,7 +96,7 @@ public final class SigtestGenerate extends AbstractMojo {
 
             @Override
             protected String getVersion() {
-                return prj.getVersion();
+                return version == null ? prj.getVersion() : version;
             }
 
             @Override
