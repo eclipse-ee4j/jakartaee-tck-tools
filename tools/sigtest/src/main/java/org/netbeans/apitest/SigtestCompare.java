@@ -74,16 +74,17 @@ public final class SigtestCompare extends AbstractMojo {
 
     @Parameter(property = "sigtest.releaseVersion")
     private String releaseVersion;
-    @Parameter(defaultValue = "check", property = "sigtest.check")
+    @Parameter(defaultValue = "versioncheck", property = "sigtest.check")
     private String action;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
-    @Parameter(defaultValue = "true")
+    @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
-            throw new MojoExecutionException("Specify <packages>your.pkg1:your.pkg2</packages> in plugin config section!");
+            getLog().info("No packages specified, skipping sigtest:compare " + action);
+            return;
         }
         if (releaseVersion == null) {
             throw new MojoExecutionException("Specify <releaseVersion in plugin config section or use -Dsigtest.releaseVersion!");

@@ -62,7 +62,7 @@ public final class SigtestCheck extends AbstractMojo {
     private String packages;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
-    @Parameter(defaultValue = "true")
+    @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
 
     public SigtestCheck() {
