@@ -98,7 +98,7 @@ abstract class SigtestHandler {
             arg.add(getVersion());
         }
         logInfo("Packages: " + getPackages());
-        StringTokenizer packagesTokenizer = new StringTokenizer(getPackages(), ",");
+        StringTokenizer packagesTokenizer = new StringTokenizer(getPackages(), ",:;");
         while (packagesTokenizer.hasMoreTokens()) {
             String p = packagesTokenizer.nextToken().trim();
             String prefix = "-PackageWithoutSubpackages "; // NOI18N
