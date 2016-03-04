@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 
 /**
  *
@@ -42,19 +43,26 @@ import org.apache.maven.project.MavenProject;
  */
 @Mojo(
     name="generate",
-    requiresDependencyResolution = ResolutionScope.TEST,
-    defaultPhase= LifecyclePhase.PACKAGE
+    requiresDependencyResolution = ResolutionScope.COMPILE,
+    defaultPhase= LifecyclePhase.PROCESS_CLASSES
 )
 public final class SigtestGenerate extends AbstractMojo {
     @Component
     private MavenProject prj;
+    @Component 
+    private MavenProjectHelper helper;
 
-    @Parameter(defaultValue = "${project.build.directory}/classes")
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
     private File classes;
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sigfile")
     private File sigfile;
     @Parameter(defaultValue = "")
     private String packages;
+    /**
+     * attach the generated file with extension .sigfile to the main artifact for deployment
+     */
+    @Parameter(defaultValue = "true")
+    private boolean attach;
     private String version;
 
     public SigtestGenerate() {
@@ -96,7 +104,7 @@ public final class SigtestGenerate extends AbstractMojo {
 
             @Override
             protected String getVersion() {
-                return version == null ? prj.getVersion() : version;
+                return prj.getVersion();
             }
 
             @Override
@@ -135,6 +143,9 @@ public final class SigtestGenerate extends AbstractMojo {
                 throw new MojoFailureException("Signature check for " + sigfile + " failed with " + returnCode);
             }
             getLog().info("Signature snapshot generated at " + sigfile);
+            if (sigfile.exists() && attach) {
+                helper.attachArtifact(prj, "sigfile", sigfile);
+            }
         } catch (IOException ex) {
             throw new MojoExecutionException(ex.getMessage(), ex);
         }

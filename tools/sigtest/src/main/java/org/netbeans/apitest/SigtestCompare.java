@@ -55,7 +55,7 @@ public final class SigtestCompare extends AbstractMojo {
     @Component
     private MavenSession session;
     @Component
-    ArtifactResolver artifactResolver;
+    private ArtifactResolver artifactResolver;
     @Parameter(defaultValue = "${project.build.outputDirectory}")
     private File classes;
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sigfile")

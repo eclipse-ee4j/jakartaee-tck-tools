@@ -29,6 +29,11 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -51,11 +56,17 @@ import org.apache.maven.project.MavenProject;
 public final class SigtestCheck extends AbstractMojo {
     @Component
     private MavenProject prj;
+    @Component
+    private MavenSession session;
+    @Component
+    private ArtifactResolver artifactResolver;
 
     @Parameter(defaultValue = "${project.build.directory}/classes")
     private File classes;
     @Parameter()
     private File sigfile;
+    @Parameter(property = "sigtest.releaseVersion")
+    private String releaseVersion;
     @Parameter(defaultValue = "check", property = "sigtest.check")
     private String action;
     @Parameter(defaultValue = "")
@@ -85,7 +96,12 @@ public final class SigtestCheck extends AbstractMojo {
             throw new MojoExecutionException("Specify <packages>your.pkg1:your.pkg2</packages> in plugin config section!");
         }
         if (sigfile == null) {
-            throw new MojoExecutionException("Specify <sigfile>path-to-file-generated-before</sigfile> in plugin config section!");
+            if (releaseVersion == null) {
+                throw new MojoExecutionException(
+                    "Specify <sigfile>path-to-file-generated-before</sigfile> in plugin config section!\n"
+                  + "Or specify <releaseVersion>version-to-compare to</releaseVersion> to download sigfile generated and attached by 'generate' target previously"
+                );
+            }
         }
         if (classes == null || !classes.exists()) {
             throw new MojoExecutionException("Point <classes>to-directory-with-classfiles-to-test</classes> in plugin config section!");
@@ -142,6 +158,16 @@ public final class SigtestCheck extends AbstractMojo {
             }
         };
         try {
+            if (sigfile == null) {
+                Artifact artifact = new DefaultArtifact(prj.getGroupId(), prj.getArtifactId(), releaseVersion, null, "sigfile", "", new DefaultArtifactHandler("sigfile"));
+                try {
+                    artifactResolver.resolve(artifact, session.getProjectBuildingRequest().getRemoteRepositories(), session.getLocalRepository());
+                    sigfile = artifact.getFile();
+                } catch (AbstractArtifactResolutionException ex) {
+                    throw new MojoExecutionException("Cannot download " + artifact, ex);
+                }
+            }
+
             int returnCode = handler.execute();
             if (returnCode != 0) {
                 throw new MojoFailureException("Signature check for " + sigfile + " failed with " + returnCode);
