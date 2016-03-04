@@ -78,7 +78,8 @@ public final class SigtestGenerate extends AbstractMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
-            throw new MojoExecutionException("Specify <packages>your.pkg1:your.pkg2</packages> in plugin config section!");
+            getLog().info("No packages specified, skipping sigtest:generate");
+            return;
         }
         if (sigfile == null) {
             throw new MojoExecutionException("Specify <sigfile>path-to-file-generated-before</sigfile> in plugin config section!");

@@ -93,7 +93,8 @@ public final class SigtestCheck extends AbstractMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (packages == null) {
-            throw new MojoExecutionException("Specify <packages>your.pkg1:your.pkg2</packages> in plugin config section!");
+            getLog().info("No packages specified, skipping sigtest:check " + action);
+            return;
         }
         if (sigfile == null) {
             if (releaseVersion == null) {
