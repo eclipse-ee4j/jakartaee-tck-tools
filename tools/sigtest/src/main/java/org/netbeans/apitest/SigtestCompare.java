@@ -65,7 +65,7 @@ public final class SigtestCompare extends AbstractMojo {
 
     @Parameter(property = "sigtest.releaseVersion")
     private String releaseVersion;
-    @Parameter(defaultValue = "versioncheck", property = "sigtest.check")
+    @Parameter(defaultValue = "check", property = "sigtest.check")
     private String action;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
