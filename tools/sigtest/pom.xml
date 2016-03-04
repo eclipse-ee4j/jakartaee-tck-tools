@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.netbeans.tools</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>http://wiki.netbeans.org/APITest</url>
@@ -16,7 +16,7 @@
         <connection>scm:hg:https://hg.netbeans.org/apitest</connection>
         <developerConnection>scm:hg:https://hg.netbeans.org/apitest</developerConnection>
         <url>https://hg.netbeans.org/apitest</url>
-        <tag>default</tag>
+        <tag>release-1.0</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
