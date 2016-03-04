@@ -25,11 +25,12 @@
 package org.netbeans.apitest;
 
 import java.io.File;
-import java.util.List;
-import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -38,13 +39,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 /**
  *
@@ -59,13 +53,10 @@ public final class SigtestCompare extends AbstractMojo {
     @Component
     private MavenProject prj;
     @Component
-    private LegacySupport legacySupport;
+    private MavenSession session;
     @Component
-    private RepositorySystem repoSystem;
-
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> remoteRepos;
-    @Parameter(defaultValue = "${project.build.directory}/classes")
+    ArtifactResolver artifactResolver;
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
     private File classes;
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sigfile")
     private File sigfile;
@@ -89,24 +80,15 @@ public final class SigtestCompare extends AbstractMojo {
         if (releaseVersion == null) {
             throw new MojoExecutionException("Specify <releaseVersion in plugin config section or use -Dsigtest.releaseVersion!");
         }
-        if (sigfile == null) {
-            throw new MojoExecutionException("Specify <sigfile>path-to-file-generated-before</sigfile> in plugin config section!");
-        }
         if (classes == null || !classes.exists()) {
             throw new MojoExecutionException("Point <classes>to-directory-with-classfiles-to-test</classes> in plugin config section!");
         }
 
-        ArtifactRequest artifactRequest = new ArtifactRequest();
-        final DefaultArtifact defaultArtifact = new DefaultArtifact(prj.getGroupId(), prj.getArtifactId(), "jar", releaseVersion);
-        artifactRequest.setArtifact(defaultArtifact);
-        List<RemoteRepository> repositories = RepositoryUtils.toRepos(remoteRepos);
-        artifactRequest.setRepositories(repositories);
-        Artifact artifact;
+        final DefaultArtifact artifact = new DefaultArtifact(prj.getGroupId(), prj.getArtifactId(), releaseVersion, null, "jar", "", new DefaultArtifactHandler("jar"));
         try {
-            ArtifactResult result = repoSystem.resolveArtifact(legacySupport.getSession().getRepositorySession(), artifactRequest);
-            artifact = result.getArtifact();
-        } catch (ArtifactResolutionException ex) {
-            throw new MojoExecutionException("Cannot resolve artifact" + defaultArtifact, ex);
+            artifactResolver.resolve(artifact, session.getProjectBuildingRequest().getRemoteRepositories(), session.getLocalRepository());
+        } catch (AbstractArtifactResolutionException ex) {
+            throw new MojoExecutionException("Cannot resolve " + artifact, ex);
         }
 
         SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion);
