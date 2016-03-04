@@ -12,6 +12,12 @@
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>http://wiki.netbeans.org/APITest</url>
+    <scm>
+        <connection>scm:hg:https://hg.netbeans.org/apitest</connection>
+        <developerConnection>scm:hg:https://hg.netbeans.org/apitest</developerConnection>
+        <url>https://hg.netbeans.org/apitest</url>
+        <tag>default</tag>
+    </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
