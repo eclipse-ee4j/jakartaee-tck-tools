@@ -153,6 +153,19 @@ public class ClassDescription extends MemberDescription implements Serializable 
         return packageName + PACKAGE_INFO_CLASS;
     }
 
+    public boolean isSubclassable() {
+        ConstructorDescr[] constructors = getDeclaredConstructors();
+        if (constructors.length == 0) {
+            return false;
+        }
+        for (ConstructorDescr c : constructors) {
+            if (c.isPublic() && c.isProtected()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static class TypeParam {
 
 

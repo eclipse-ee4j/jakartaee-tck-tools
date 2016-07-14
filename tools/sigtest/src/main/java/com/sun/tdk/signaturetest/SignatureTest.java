@@ -1250,6 +1250,10 @@ public class SignatureTest extends SigTest {
 
         checkAnnotations(required, found);
 
+        if (!required.isSubclassable()) {
+            return;
+        }
+
         if (!required.isCompatible(found)) {
             errorManager.addError(MessageType.MISS_CLASSES,
                     required.getQualifiedName(), MemberType.CLASS, required.toString(), required);

@@ -332,6 +332,21 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
+    public void testMakingNonSubclassableClassFinalIsNotIncompatibleChange() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public abstract class C {" +
+            "  private C() {}" +
+            "  public abstract int get() BODY" +
+            "}";
+        createFile(1, "C.java", c1.replace("BODY", ";"));
+
+        String c2 = c1.replaceAll("abstract", "final");
+        createFile(2, "C.java", c2.replace("BODY", "{ return 0; }"));
+
+        compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+    }
+
     public void testMakingNonSubclassableInnerClassNonFinalIsNotIncompatibleChange() throws Exception {
         String c1 =
             "package ahoj;" +
