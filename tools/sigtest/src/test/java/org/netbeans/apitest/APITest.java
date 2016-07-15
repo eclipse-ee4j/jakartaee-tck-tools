@@ -347,6 +347,31 @@ public class APITest extends NbTestCase {
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
+    public void testMakingNonSubclassableClassPackagePrivateIsIncompatibleChange() throws Exception {
+        String template =
+            "package ahoj;" +
+            "VIS abstract class C {" +
+            "  private C() {}" +
+            "  public abstract int get() BODY" +
+            "}";
+        final String c1 = template.replace("BODY", ";").replace("VIS", "public");
+        createFile(1, "C.java", c1);
+
+        String c2tmp = template.replaceAll("abstract", "final");
+        final String c2 = c2tmp.replace("BODY", "{ return 0; }").replace("VIS", "");
+        createFile(2, "C.java", c2);
+
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Class cannot become invisible");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+            if (!ex.getMessage().contains("API type removed")) {
+                throw ex;
+            }
+        }
+    }
+
     public void testMakingNonSubclassableInnerClassNonFinalIsNotIncompatibleChange() throws Exception {
         String c1 =
             "package ahoj;" +
