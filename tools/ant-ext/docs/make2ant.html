@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML	4.01 Transitional//EN">
+<html>
+<head>
+  <meta	http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <title>make2ant</title>
+</head>
+<body>
+<h2>Make2ant</h2>
+<br>
+A custom task and tool to convert Makefiles to ant build file.<br>
+<ul>
+  <li>For service tests</li>
+  <ul>
+    <li>extract	data from all Makefiles	in a non-leaf dir</li>
+    <li>populate template build	file.</li>
+    <li>conditionally sccs edit	build.xml</li>
+    <li>conditionallly sccs create build.xml or	sccs delget build.xml<br>
+    </li>
+  </ul>
+  <li>For non-service tests</li>
+  <ul>
+    <li>extract	data from all Makefiles	in a non-leaf dir</li>
+    <li>extract	ejb classes, interfaces, servlet classes from *props file</li>
+    <li>inspect	ear's generated	by tsmake for the content</li>
+    <li>inspect	war's and jar's	inside each ear	to determine which classes
+need to	be included using support</li>
+    <li>populate template build	file.</li>
+    <li>conditionally sccs edit	build.xml</li>
+    <li>conditionallly sccs create build.xml or	sccs delget build.xml</li>
+  </ul>
+</ul>
+<br>
+</body>
+</html>

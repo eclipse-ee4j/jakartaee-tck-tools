@@ -1,0 +1,110 @@
+This directory contains a tool that reports the differences between two
+specification assertion documents.  The results are written to an XML
+output file that enumerates the removed assertion IDs, the content
+differences and IDs of modified assertions, and new assertions IDs.
+
+This tool can be used to help CTS developers understand what has changed
+from one version of their spec assertion document to the next version.
+
+Basic tool hueristics.  The first spec assertion document specified (the 
+prev-assertion-file property when run from ant) is considered to be the
+original assertion document.  The tool first looks to ensure all the assertion
+IDs in this document are also in the new spec document (the second spec
+document specified or the new-assertion-file property when run from ant).
+If the ID only appears in the first spec doc the ID is added to the list
+of removed assertions.  Next the tool looks for assertions that exist in
+both docs (using the IDs as the matching criteria) and determines if any
+of the elements have different content.  If elements are found with
+different content the tool adds these assertions to a list of modified
+assertions.  Each modified assertion lists its ID and the names of the
+lements that have been modified with the element's old value and new value.
+Finally, the tool looks at each spec assertion ID in the new (2nd) document to
+ensure the assertion IDs in that document are also in the first document.
+If an ID only appears in the new document that ID is added to the list of
+new assertions.
+
+
+Here is a sample output file:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<diffs description="JSTL version: Public Draft diffed against JSTL version: Proposed Final Draft">
+  <!--
+*********************************************************************
+*********************************************************************
+*********************************************************************
+This section lists all the removed assertions.  This means
+that an assertion ID listed in this section was part of the
+previous assertion document but no longer exists in the new
+assertions document.  This section should never have any assertion
+IDs listed since users should use the removed element to denote
+a deleted assertion.
+-->
+  <removed-assertions>
+    <assertion id="75.1.1" />
+    <assertion id="75.1.2" />
+    <assertion id="75.4" />
+    <assertion id="75.5" />
+  </removed-assertions>
+  <!--
+*********************************************************************
+*********************************************************************
+*********************************************************************
+This section lists all the assertions that have different element
+content between the previous assertion document and the new assertion
+document.  Only the elements with different content are listed all other
+element content should be assumed to the same in both assertion documents.
+-->
+  <diff-assertions>
+    <assertion id="5">
+      <diff-element name="location">
+        <old-content>Chapter 2  Section 2.2.2</old-content>
+        <new-content>Chapter 2  Section 2.1.1</new-content>
+      </diff-element>
+    </assertion>
+    <assertion id="6">
+      <diff-element name="location">
+        <old-content>Chapter 2  Section 2.2.2</old-content>
+        <new-content>Chapter 2  Section 2.1.1</new-content>
+      </diff-element>
+      <diff-element name="testable">
+        <old-content>false</old-content>
+        <new-content>true</new-content>
+      </diff-element>
+    </assertion>
+    <assertion id="63.6">
+      <diff-element name="location">
+        <old-content>Chapter 10  Section 10.6</old-content>
+        <new-content>Chapter 10  Section 10.7</new-content>
+      </diff-element>
+    </assertion>
+    <assertion id="63.7">
+      <diff-element name="location">
+        <old-content>Chapter 10  Section 10.6</old-content>
+        <new-content>Chapter 10  Section 10.7</new-content>
+      </diff-element>
+    </assertion>
+  </diff-assertions>
+  <!--
+*********************************************************************
+*********************************************************************
+*********************************************************************
+This section lists all the new assertions.  This means
+that an assertion ID listed in this section is listed in the
+new assertion document but does not exist in the previous
+assertion document.
+-->
+  <new-assertions>
+    <assertion id="33.9" />
+    <assertion id="38.7" />
+    <assertion id="38.7.1" />
+    <assertion id="38.7.2" />
+  </new-assertions>
+</diffs>
+EOF
+
+
+Example Usage:
+
+ant -Dprev-assertion-file=data/JSTLSpecAssertions-old.xml \
+    -Dnew-assertion-file=data/JSTLSpecAssertions-new.xml \
+    -Ddiff-file=data/diff-file.xml run

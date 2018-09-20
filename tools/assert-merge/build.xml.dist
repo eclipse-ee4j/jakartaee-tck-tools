@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Assertion Merge Tool" default="compile" basedir=".">
+
+  <property name="src"       value="${basedir}/src"/>
+  <property name="bin"      value="${basedir}/bin"/>
+  <property name="classes"   value="${basedir}/classes"/>
+  <property name="dist"      value="${basedir}/dist"/>
+  <property name="dist-file" value="assert-merge"/>
+  <!--property name="junit-jar" value="../master-libs/junit.jar"/-->
+  <property name="class"     value="com.sun.cts.util.MergeAssert"/>
+
+
+<!--*****
+    ** The following property elements define all the possible command line
+    ** options accepted by the com.sun.cts.util.MergeAssert.  All input
+    ** parameters are required.  The reason all the options have been
+    ** enumerated is to allow people to override the default values by
+    ** using the -D option when invoking ant.
+    *****-->
+  <property name="verfile" value=""/>
+  <property name="newfile" value=""/>
+  <property name="outfile" value=""/>
+
+
+  <path id="classpath">
+    <!--pathelement location="${junit-jar}"/-->
+    <pathelement path="${classes}"/>
+  </path>
+
+
+  <target name="clean" depends="delete-scripts">
+      <delete dir="${classes}"/>
+      <delete dir="${dist}"/>
+  </target>
+
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+  </target>
+
+
+  <target name="build-scripts">
+    <copy todir="${bin}">
+      <fileset dir="${bin}" />
+      <mapper type="glob" from="*.sh" to="*"/>
+    </copy>
+    <chmod perm="ugo+rx"> 
+      <fileset dir="${bin}">
+        <exclude name="README"/>
+        <exclude name="*.sh"/>
+        <exclude name="*.bat"/>
+        <exclude name="*.xml"/>
+      </fileset>
+    </chmod>
+  </target>
+
+
+  <target name="delete-scripts">
+    <delete>
+      <fileset dir="${bin}">
+        <exclude name="README"/>
+        <exclude name="*.sh"/>
+        <exclude name="*.bat"/>
+        <exclude name="*.xml"/>
+      </fileset>
+    </delete>
+  </target>
+
+
+  <target name="compile" depends="prepare,build-scripts">
+    <javac srcdir="${src}" classpath="classpath" destdir="${classes}"/>
+  </target>
+
+
+  <target name="dist" depends="compile">
+    </tstamp>
+    <mkdir dir="${dist}"/>
+    <!--copy file="${junit-jar}" todir="${dist}"/-->
+    <tar longfile="gnu" tarfile="${dist}/${dist-file}.tar"
+         basedir="${basedir}" excludes="**/*.zip,**/*.tar,**/*.gz"/>
+    <gzip zipfile="${dist}/${dist-file}.tar.gz"
+          src="${dist}/${dist-file}.tar"/>
+    <zip zipfile="${dist}/${dist-file}.zip" 
+         basedir="${basedir}" excludes="**/*.zip,**/*.tar,**/*.gz"/>
+  </target>
+
+
+  <target name="run" classpath="classpath" depends="compile">
+    <java classname="${class}">
+      <arg value="-verfile"/>
+      <arg value="${verfile}"/>
+      <arg value="-newfile"/>
+      <arg value="${newfile}"/>
+      <arg value="-outfile"/>
+      <arg value="${outfile}"/>
+    </java>
+  </target>
+
+
+<!-- UNIT TESTING - We'll get to this later
+  <target name="test" depends="compile">
+    <junit></junit>
+    <junitreport></junitreport>
+  </test>
+-->
+
+</project>

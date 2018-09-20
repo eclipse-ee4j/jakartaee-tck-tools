@@ -1,0 +1,533 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79C-CCK-MCD  [en] (X11; U; SunOS 5.8 sun4u) [Netscape]">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+   <title>tsant overview</title>
+</head>
+<body>
+
+<center>
+<h1>
+Tsant Overview</h1></center>
+
+<ul>
+<li>
+<a href="quickstart.html">Quick Start</a></li>
+
+<li>
+Ts custom tasks</li>
+
+<ul>
+<li>
+<a href="dosubdirs.html">dosubdirs</a></li>
+
+<li>
+<a href="dotarget.html">dotarget</a></li>
+
+<li>
+<a href="AppendAfter.html">appendafter</a></li>
+
+<li>
+<a href="InsertBefore.html">insertbefore</a></li>
+
+<li>
+<a href="webwar.html">webwar</a></li>
+
+<li>
+<a href="clientjar.html">clientjar</a></li>
+
+<li>
+<a href="appear.html">appear</a></li>
+
+<li>
+<a href="resrar.html">resrar</a></li>
+
+<li>
+<a href="ejbjar.html">ejb-jar</a></li>
+
+<li>
+<a href="vehicles.html">vehicles</a></li>
+
+<li>
+<a href="verify.html">verify</a></li>
+
+<li>
+<a href="package.html">package</a></li>
+
+<li>
+<a href="getclient.html">getclient</a></li>
+
+<li>
+<a href="elementappend.html">elementappend</a></li>
+
+<li>
+<a href="string.html">string</a></li>
+
+<li>
+<a href="compathelper.html">compathelper</a></li>
+
+<li>
+<a href="/net/jse/disk1/releng/integration/cts-tools/tools/ant-ext/src/com/sun/ant/taskdefs/common/ChangeCase.java">com.sun.ant.taskdefs.common.ChangeCase</a></li>
+
+<li>
+<a href="/net/jse/disk1/releng/integration/cts-tools/tools/ant-ext/src/com/sun/ant/taskdefs/common/GenerateBOM.java">com.sun.ant.taskdefs.common.GenerateBOM</a></li>
+
+<li>
+<a href="/net/jse/disk1/releng/integration/cts-tools/tools/ant-ext/src/com/sun/ant/taskdefs/common/BOMVerifier.java">com.sun.ant.taskdefs.common.BOMVerifier</a></li>
+</ul>
+
+<li>
+Ts custom types</li>
+
+<ul>
+<li>
+<a href="support.html">support</a></li>
+</ul>
+
+<li>
+Others</li>
+
+<ul>
+<li>
+<a href="TSListener.html">TSBuildListener</a></li>
+
+<li>
+<a href="TSLogger.html">TSLogger</a></li>
+
+<li>
+<a href="make2ant.html">make2ant</a></li>
+
+<li>
+<a href="#ld">ld, lld, lc, llc</a></li>
+
+<li>
+<a href="RunCTS.html">RunCTS</a></li>
+</ul>
+
+<li>
+<a href="#FAQ">FAQ</a></li>
+</ul>
+
+<center>
+<h2>
+Minimum Requirement for a Build File</h2></center>
+<tt>&lt;?xml version="1.0"?></tt>
+<br><tt>&lt;project name="jms_ee_mdb_mdb_synchrec" basedir="." default="usage"></tt>
+<br><tt>&nbsp; &lt;property name="pkg.dir" value="com/sun/ts/tests/jms/ee/mdb/mdb_synchrec"/></tt>
+<p><tt>&nbsp; &lt;target name="compile"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="compile"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p><tt>&nbsp; &lt;target name="package"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;package></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- include tasks like ejb-jar,
+webwar, clientjar, appear, etc --></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/package></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p><tt>&nbsp; &lt;target name="runclient"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="runclient"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p><tt>&nbsp; &lt;target name="build" depends="compile, package"/></tt>
+<p><tt>&nbsp; &lt;target name="clean" ></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="clean"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p><tt>&nbsp; &lt;target name="usage"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="usage"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<br><tt>&lt;/project></tt>
+<br>&nbsp;
+<ul>
+<li>
+pkg.dir is packge name with . replaced with /. It is used by bin/build.xml
+to figure out the current source dir, class dir, dist dir in targets compile,
+clean, package, etc.&nbsp; Note that pkg.dir is NOT a full path.</li>
+</ul>
+
+<ul>
+<li>
+build target should be: <tt>&lt;target name="build" depends="compile, package"/></tt></li>
+</ul>
+
+<ul>
+<li>
+package target should NOT depends on compile target.&nbsp; Package is intended
+to be an internal target, and should NOT be used in command line.&nbsp;
+Always use "<tt>tsant build</tt>" to compile and packge tests.</li>
+</ul>
+
+<ul>
+<li>
+The outter package element is an ant target, and the inner package is a
+tsant custom task.&nbsp; It is a container task with nested tasks, such
+as ejb-jar, webwar, clientjar, appear, vehicles.</li>
+</ul>
+
+<ul>
+<li>
+Always have a package target even if in a util/common directory, where
+there is nothing to package.&nbsp; In this case, use an empty package target<tt>
+&lt;target name="package"/>. </tt>Because "tsant build" looks for a package
+target in all build files under the directory where you run it.</li>
+</ul>
+
+<ul>
+<li>
+If you want to execute a target in another leaf directory's build file,
+set<tt> inheritAll=false</tt>.&nbsp; Otherwise the new build file will
+use the old <tt>pkg.dir</tt>.&nbsp; If you want to pass some properties,
+use <tt>property </tt>sub-element.</li>
+
+<ul>
+<li>
+<tt>&lt;ant antfile="../subproject/build.xml" target="do.something.else"
+inheritAll="false"></tt></li>
+
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;property name="param1" value="version 1.x"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;property file="config/subproject/default.properties"/></tt>
+<br><tt>&nbsp; &lt;/ant></tt></ul>
+
+<li>
+compile target should NOT attempt to compile classes in util/common directories.&nbsp;
+See <a href="#compilation">explanation</a> .</li>
+</ul>
+
+<ul>
+<li>
+Why not abstract the common part out?&nbsp;&nbsp;<a href="TSListener.html">
+TSBuildListener </a>already performs a certain amount of common work.&nbsp;
+Any targets defined by TSBuildListener can no longer be overridden.&nbsp;
+We chose to keep them in each build file for the sake of flexibility.</li>
+</ul>
+
+<center>
+<h2>
+Concepts and Terms</h2></center>
+
+<h3>
+Build level</h3>
+3 build levels are defined in ${ts.home}/bin/build.properties:
+<ul>
+<li>
+1: compile only</li>
+
+<li>
+2: compile and build component archives (e.g., jar's, war's)</li>
+
+<li>
+3: compile and build component and application archives</li>
+</ul>
+default is set to 3.&nbsp; <a href="package.html">Package </a>task checks
+the build.level and does the necessary compilation and packaging.&nbsp;
+Tsant can package at various level using the same build file, depending
+on the build.level set in bin/build.properties.
+<br>&nbsp;
+<h3>
+Leaf dir vs non-leaf dir</h3>
+Non-leaf dirs do not contain build file directly.&nbsp; For building tests
+at a non-leaf dir, <a href="dosubdirs.html">dosubdirs </a>task traverses
+the source tree, compiling and packaging all tests under this non-leaf
+dir recusively.&nbsp; For running testing, javatest, batch mode or gui
+mode, handles the traversal.&nbsp; All clean target deletes the dist.dir
+and class.dir corresponding to the source dir.
+<br>&nbsp;
+<h3>
+Dist.dir</h3>
+The source directory will not be modified during building and running tests.&nbsp;
+All generated archives will be saved in dist.dir, defined as ${ts.home}/dist.&nbsp;
+This enforces a clean separation, and a more efficient clean target, which
+does not need to traverse the source tree to delete generated files.&nbsp;
+Dist.dir, along with class.dir, vehicle.dir, ts.home, are ts <a href="TSListener.html#implicit">implicit
+properties</a> .
+<br>&nbsp;
+<h3>
+Support vs {common.dir, util.dir, shared.dir, dependent.dir}</h3>
+Tsant uses <a href="support.html">support </a>custom type to handle what
+have been termed as common.dir, util.dir, shared.dir, dependent.dir, etc.&nbsp;
+Tsant discourage the use of the latter in build files.
+<h4>
+<u>For&nbsp;<a NAME="compilation"></a> compilation</u></h4>
+The target should be (is strongly recommended):
+<p>&nbsp; <tt>&lt;target name="compile"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="compile"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p>Dependent classes (or util classes, common classes, etc) in other directories
+that are referenced by java file in current source directory will be compiled
+automatically.&nbsp; Those dependent classes that are not referenced from
+the current directory (e.g., ejb implementation class) will be compiled
+by package tasks, if they haven't been compiled or are outdated.
+<p>When you run "tsant build" at a non-leaf dir, tsant invokes the build
+target in bin/build.xml.&nbsp; The build target in turn invokes the compile
+and package targets in bin/build.xml.&nbsp; The compile target in each
+leaf dir build file will NOT be used.&nbsp; The packge target in each leaf
+dir build file will be invoked sequentially by dosubdirs task.
+<br>&nbsp;
+<h4>
+<u>For packaging</u></h4>
+Use support element to specify any additional classes that war's, jar's
+rar's need, or any archives that ear's need. <a href="support.html#exclude">DO
+NOT include these</a> .
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<a NAME="ld"></a>ld, lld, lc, llc</h3>
+They are used to list the content of corresponding dist/class dir from
+src dir, without leaving src dir.&nbsp; All listings are sorted by modification
+time, most recent first.&nbsp; Output is redirected to more.&nbsp; Format
+may vary&nbsp; on Windows and Unix.&nbsp;&nbsp; Tsant does not support
+cd into dist/class dir.&nbsp; But you can copy and paste the first line
+of the output, which is the target path.
+<ul>
+<li>
+<tt>tsant ld</tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+list the content of dist dir</li>
+
+<li>
+<tt>tsant lld</tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+long list the content of dist dir</li>
+
+<li>
+<tt>tsant lc</tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+list the content of classes dir</li>
+
+<li>
+<tt>tsant llc&nbsp;</tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+long list the content of classes dir</li>
+</ul>
+When run in a directory that is not under src, they list the content of
+current directory.&nbsp; Do not combine targets when using ld, lld, lc,
+llc.
+<br>&nbsp;
+<center>
+<h2>
+Resources</h2></center>
+tsant source code: tools workspace /net/invalid.domain.com/disk1/releng/integration/cts-tools/tools/ant-ext
+<p>ant_sun.jar in spider workspace: ts.home/lib/ant_sun.jar
+<br>&nbsp;
+<br>&nbsp;
+<center>
+<h2>
+Known Issues</h2></center>
+1. Sometimes while compiling a test directory, tsant tries to compile some
+harness classes that are already in harness.jar.&nbsp; It happens if the
+harness.jar has been compiled using j2se 1.3.x, or the current j2se is
+version 1.3.x.
+<center>
+<h2>
+<a NAME="FAQ"></a>FAQ</h2></center>
+<u>0. Check Ant version.&nbsp; <i>Use Ant <font color="#FF6666">1.4.1</font>
+with tsant.</i></u>
+<br><tt>tsant -version</tt>.&nbsp; It displays the version of apache jakarta
+Ant:
+<br><tt>[C:/] tsant -version</tt>
+<br><tt>Ant version 1.4.1 compiled on October 11 200</tt>
+<p><u>1. Build failed with no stack trace.</u>
+<br>Use <tt>tsant -verbose.&nbsp; </tt>For even more ouput, use <tt>tsant
+-debug</tt> and redirect output to a file.
+<p><u>2. Build failed with NoClassDefFoundError or ClassNotFoundException,
+but the class in question is there.</u>
+<br>First, check the class name in build.xml and make sure it has no leading
+or trailing spaces (that is, space inside quotes).&nbsp; Secondly, check
+the case of class name in build.xml.
+<p><u>3. TaskUtil cannot infer pkg.dir from path.</u>
+<br>If you define your ts.home as <tt>/net/jse/home8/js123456/tsws</tt>
+and your pwd is <tt>/home/js123456/tsws</tt>, this error is for you.&nbsp;
+They do not denote the same Java File object, and have different canonical
+path.&nbsp; Make them consistent.
+<p><u>4. Why ejb-jar, appear</u>
+<br>For lack of better names.&nbsp; We cannot override built-in tasks just
+as we cannot name our class as java.lang.String.&nbsp; appear stands for
+APPlication EAR, and the string j2ee is avoided to make it generic.&nbsp;
+It was suggested that a disappear task be added.
+<p><u>5. It says ear/jar/war are up to date, but I really want to rebuild
+it.</u>
+<br><tt>tsant clean build.</tt>
+<p><u>6. FileNotFoundException: /home/js123456/tsws/src/com/sun/ts/tests/.../ejb_vehicle_client.xml.</u>
+<br>Bringover src/com/sun/ts/tests/common/vehicle
+<p><u>7. Need to specify custom manifest file.</u>
+<br><tt>&lt;ejb-jar descriptor="simpleHello.xml" name="simpleHello" manifest="MY_MANIFEST.MF"/></tt>
+<p><u>8. My war has no web content, or multiple content dirs.</u>
+<br><tt>&lt;webwar descriptor="simpleHello.xml" name="simpleHello"></tt>
+<br><tt>&nbsp; &lt;support include="com/sun/ts/tests/integration/session/jspejb/AccessJSPBean.class"/></tt>
+<br><tt>&lt;/webwar></tt>
+<p><tt>&lt;webwar descriptor="simpleHello.xml" name="simpleHello"></tt>
+<br><tt>&nbsp; &lt;content dir="contentRoot"/></tt>
+<br><tt>&nbsp; &lt;content dir="${ts.home}/src/web/jsp/simpleTest.jsp"/></tt>
+<br><tt>&lt;/webwar></tt>
+<p><u>9. Need to put a ejb jar or web war into all vehicle ear's in a leaf
+dir.&nbsp; &lt;property name="extra.jar1" value="jta_ee_txpropagate1"/></u>
+<br>&nbsp; <tt>&lt;property name="extra.jar2" value="jta_ee_txpropagate2"/></tt>
+<br><tt>&nbsp; &lt;property name="extra.jar3" value="jta_ee_txpropagate3"/></tt>
+<br><tt>&nbsp; &lt;property name="extra.jar.classes"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; value="${pkg.dir}/AppException.class, ${pkg.dir}/SysException.class"/></tt>
+<p><tt>&nbsp; &lt;target name="compile"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="compile"/></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<p><tt>&nbsp; &lt;target name="package"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;package></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ejb-jar name="${extra.jar1}"
+descriptor="${extra.jar1}_ejb.xml"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="${extra.jar.classes}"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/ejb-jar></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ejb-jar name="${extra.jar2}"
+descriptor="${extra.jar2}_ejb.xml"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="${extra.jar.classes}"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/ejb-jar></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ejb-jar name="${extra.jar3}"
+descriptor="${extra.jar3}_ejb.xml"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="${extra.jar.classes}"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/ejb-jar></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;vehicles name="jta" mainclass="com.sun.ts.tests.jta.ee.txpropagationtest.Client"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="com/sun/ts/tests/jta/ee/txpropagationtest/DBAppException.class,
+com/sun/ts/tests/jta/ee/txpropagationtest/DBSysException.class, com/sun/ts/tests/jta/ee/txpropagationtest/DBSupport.class"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support tovehicle="ejb"
+dir="${dist.dir}/${pkg.dir}" includes="${extra.jar1}_ejb.jar"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support tovehicle="servlet"
+dir="${dist.dir}/${pkg.dir}" includes="${extra.jar2}_ejb.jar"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support tovehicle="jsp"
+dir="${dist.dir}/${pkg.dir}" includes="${extra.jar3}_ejb.jar"/></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/vehicles></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/package></tt>
+<br><tt>&nbsp; &lt;/target></tt>
+<br>&nbsp;
+<p><u>10. Need to generate a separate ear, say test_j2ee2.ear, besides
+all vehicle ears in a leaf dir.</u>
+<pre style="margin-bottom: 0.5cm; ">&lt;target name="package">
+&nbsp; &lt;package>
+&nbsp;&nbsp;&nbsp; &lt;vehicles name="dateTime2"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mainclass="com.sun.ts.tests.jdbc.ee.dateTime.dateTime2.dateTimeClient2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="com/sun/ts/tests/jdbc/ee/common/csSchema.class,&nbsp;&nbsp;&nbsp; com/sun/ts/tests/jdbc/ee/common/DataSourceConnection.class, com/sun/ts/tests/jdbc/ee/common/dbSchema.class, com/sun/ts/tests/jdbc/ee/common/rsSchema.class, com/sun/ts/tests/jdbc/ee/common/DriverManagerConnection.class,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; com/sun/ts/tests/jdbc/ee/common/JDBCTestConnectionManager.class"/>
+&nbsp;&nbsp;&nbsp; &lt;/vehicles>
+
+&nbsp;&nbsp;&nbsp; &lt;ejb-jar name="testbean2" descriptor="testbean2.xml"/>
+&nbsp;&nbsp;&nbsp; &lt;appear name="j2ee2">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="testbean2_ejb.jar"/>
+&nbsp;&nbsp;&nbsp; &lt;/appear>
+&nbsp; &lt;/package>
+&lt;/target>
+
+</pre>
+<u>11. tsant failed with error: Could not resolve (publicId: -//Sun Microsystems,
+Inc.//DTD Enterprise JavaBeans</u> 2.0//EN, systemId: http://java.sun.com/dtd/ejb-jar_2_0.dtd
+to a local entity.
+<br>It happened because your ${j2ee.home.ri}/lib/dtds/ does not exist or
+not accessible to tsant. Make sure j2ee.home.ri is set correctly in bin/build.properties.&nbsp;
+To verify, run tsant -debug to view the value of j2ee.home.ri.
+<p><u>12. How to run a single test</u>
+<br><tt>tsant -Dtest=twobeanTest1 runclient</tt> to run a single test.&nbsp;
+If your test cannot be found by javatest, make sure test name is correct.&nbsp;
+This could happen if there are more than one java files in the test directory
+that contains the string "client" or "Client".&nbsp; tsant might have used
+the wrong one as client class.&nbsp; Use <tt>tsant -Dtest=twobeanTest1
+-Dtest.client=FooClient.java runclient</tt>
+<br><u>13. How to run multiple tests in discrete directories</u>
+<br><tt>tsant -Dmultiple.tests="com/sun/ts/tests/samples/ejb/ee/simpleHello com/sun/ts/tests/ejb/ee/bb com/sun/ts/tests/jdbc/ee/dateTime"
+runclient</tt>
+<p><u>14. How to build an entire TCK within the master workspace</u>
+<br>build.all target is used by cts to build all tests for cts.&nbsp; all.test.dir
+is a comma-separated list of all test directories that must be included
+in cts.&nbsp; It can also include subdirectoires.&nbsp; For example, <tt>all.test.dir="samples/ejb/ee/simpleHello,
+jdbd/ee/dateTime, ejb/ee/deploy".</tt>
+<p>If you want to build a different set of tests without modifying bin/build.xml,
+use the following command:
+<br><tt>tsant -Dall.test.dir="samples/ejb/ee/simpleHello, jdbd/ee/dateTime,
+ejb/ee/deploy" build.all.</tt>
+<p>all.test.dir defined as a system property will override the setting
+in bin/build.xml.
+<p>&nbsp;&nbsp;&nbsp; <tt>&lt;target name="build.all" depends="tslib"></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;property name="all.test.dir"
+value="signaturetest, interop, integration, ejb, common, jdbc, connector,
+jms, jaxp, xa, servlet, jsp, appclient, javamail, rmiiiop, assembly, jta,
+samples"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;elementappend original="${all.test.dir}"
+prefix="com/sun/ts/tests" suffix="**/*.java" property="all.java.file"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;echo message="Compiling:${all.java.file}"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;javac fork="true" srcdir="${ts.home}/src"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+destdir="${class.dir}"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+includes="${all.java.file}"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+memoryInitialSize="100m"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+memoryMaximumSize="200m"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; debug="on"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+deprecation="on" ></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;classpath></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;pathelement path="${ts.classpath}:${local.classes}" /></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/classpath></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/javac></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;dosubdirs srcdir="${ts.home}/src/com/sun/ts/tests"
+todo="package" includes="${all.test.dir}"/></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; &lt;/target></tt>
+<p><u>15. How to build the entire TCK without building harness?</u>
+<br><font face="Courier New, Courier, monospace">cd ${ts.home}/bin</font>
+<br><font face="Courier New, Courier, monospace">tsant build.all.tests</font>
+<p><u>16. initdb failed with error: CS_Procs not public or not accessible.</u>
+<br>Make sure you have cts.jar in server's classpath (j2ee/bin/userconfig.sh).
+<p><u>17. tsant cannot find war files whileing doing a move task.</u>
+<br>If the build.level is 3, all intermediate jar's and war's will be removed
+after the ear that contains them is generated successfully.&nbsp; The deletion
+is always performed as the last step of package task, just prior to terminating
+package task.&nbsp; So if you want to operate on these intermediate war/jar's,
+enclose the task inside the package as a nested task.&nbsp; Package task
+can accept any legal task.&nbsp; For examples,
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp; &lt;target
+name="package"></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;package></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;webwar name="${app.name}" descriptor="${app.name}_web.xml" /></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;appear name="${app.name}"/></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;move file="${dist.dir}/${pkg.dir}/${app.name}_web.war" tofile="${dist.dir}/${pkg.dir}/${app.name}.war"
+/></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/package></font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp; &lt;/target></font>
+<p>The delete will not occur if the build.level is 1 or 2.
+<br>&nbsp;
+<p>18. How to exclude certain files from being automatically included by
+tsant?
+<br>use optional autocheckexcludes attribute for vehicles, webwar, ejb-jar,
+clientjar tasks. If autocheckexcludes attribute is not specified, tsant
+checks for class files in descriptor and included them automatically.&nbsp;
+Those classes files include: ejb interfaces and classes, servlet class,
+servlet filters.&nbsp; For example:
+<br><font face="Courier New, Courier, monospace">&lt;webwar name="provisioning_test"
+descriptor="provisioning_test.xml"</font>
+<br><font face="Courier New, Courier, monospace">&nbsp;&nbsp;&nbsp;&nbsp;
+autocheckexcludes="com/sun/provisioning/util/ProvisioningServletFilter.class,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+com/sun/enterprise/FooServlet.class"></font>
+<br><font face="Courier New, Courier, monospace">...</font>
+<br><font face="Courier New, Courier, monospace">&lt;/webwar></font>
+</body>
+</html>

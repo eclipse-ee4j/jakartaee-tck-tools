@@ -1,0 +1,15 @@
+Create a new file in this directory named like cts7_master_testlist.txt for version 7
+
+To generate a master list
+-------------------------
+- Grab a released bundle and unzip it.
+- set the harness.executeMode to 2 in ts.jte (if set to 5 same as list.tests)
+- cd $TS_HOME/src/com/sun/ts/tests
+- ant runclient | grep "Beginning Test:" | cut -d " " -f 5 > master.list.file
+
+Using list.tests target (faster option by quite a bit)
+------------------------------------------------------
+- Grab a released bundle and unzip it.
+- cd $TS_HOME/src/com/sun/ts/tests
+- ant list.tests | grep "Finished Test:" | cut -d . -f 10-11 > master.list.file
+

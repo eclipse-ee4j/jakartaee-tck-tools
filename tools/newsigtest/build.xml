@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="New SIgnature Test Tool" default="usage" basedir=".">
+
+  <property environment="env"/>
+  <property name="src"      value="${basedir}/src"/>
+  <property name="classes"  value="${basedir}/classes"/>
+  <property name="dist"     value="${basedir}/dist"/>
+  <property name="dist.jar" value="${dist}/sigtest.jar"/>
+
+  <!-- ${ts.home}/lib/tsharness.jar is included to allow the API check       -->
+  <!-- utility access to the SigLogIntf interface and SigLogAdapter class    -->
+  <!-- used to log messages from the API check utility to the CTS framework. -->
+  <path id="cpath">
+    <pathelement path="${classes}"/>
+    <pathelement location="${env.TS_HOME}/lib/tsharness.jar"/>
+  </path>
+
+  <target name="check.ts.home" unless="env.TS_HOME">
+    <fail message="Please set the &quot;TS_HOME&quot; environment variable."/>    
+  </target>
+
+  <target name="print.ts.home">
+    <echo message="TS_HOME = ${env.TS_HOME}"/>    
+  </target>
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+      <delete dir="${dist}"/>
+   </target>
+
+  <target name="prepare" depends="check.ts.home,print.ts.home">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+   </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+  <target name="build" depends="compile">
+    <tstamp/>
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist.jar}" basedir="${classes}">
+      <manifest>
+          <attribute name="Manifest-Version"       value="1.0"/>
+          <attribute name="Extension-Name"         value="sigtest"/>
+          <attribute name="Specification-Title"    value="TS Signature Test"/>
+          <attribute name="Specification-Version"  value="1.4"/>
+          <attribute name="Implementation-Version" value="1.1 build 25"/> 
+          <attribute name="Specification-Vendor"   value="Sun Microsystems, Inc."/>
+          <attribute name="Main-Class"             value="com.sun.tdk.sigtest.Check"/>
+      </manifest>
+    </jar>
+  </target>
+
+</project>

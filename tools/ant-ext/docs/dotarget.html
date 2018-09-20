@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML	3.2//EN">
+<html>
+<head>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <title>dotarget</title>
+</head>
+  <body	text="#000000" link="#0000ff" vlink="#0000ff">
+    <h2>dotarget</h2>
+<h3>Description:</h3>
+The dotarget task traverses a source tree looking for build files that contain the
+specified build task. If the task is located, it is executed, otherwise the build
+file is skipped. &nbsp;The order in	which subdirs are traversed is undefined.&nbsp;
+Normally it is only used in bin/build.xml.<br>
+<br>
+<h3>Parameters:</h3>
+<table border="1" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr	valign="Top">
+      <td>
+      <div align="Center">
+      <p><b>Attribute</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="Center">
+      <p><b>Description</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="Center">
+      <p><b>Required</b></p>
+      </div>
+      </td>
+    </tr>
+    <tr	valign="Top">
+      <td>
+      <p><b>srcdir</p>
+      </td>
+      <td>
+      <p><b>where to start the traversal</b></p>
+      </td>
+      <td>
+      <p><b>Yes</b></p>
+      </td>
+    </tr>
+    <tr	valign="Top">
+      <td>
+      <p><b>todo</b></p>
+      </td>
+      <td>
+      <p><b>target to invoke in build files</b></p>
+      </td>
+      <td>
+      <p><b>
+   Yes</p>
+      </td>
+    </tr>
+    <tr	valign="Top">
+      <td>
+       <p><b>includes</b></p>
+      </td>
+      <td>
+     <p><b>includes various directories</b></p>
+      </td>
+      <td>
+      <p><b>No</b></p>
+      </td>
+    </tr>	
+<tr	valign="Top">
+      <td>
+      <p><b>excludes</b></p>
+      </td>
+      <td>
+      <p><b>excludes various directories</b></p>
+      </td>
+      <td>
+      <p><b>No</b></p>
+      </td>
+    </tr>	
+  </tbody>
+</table>
+<br>
+<h3>Examples:</h3>
+<code>&nbsp;&nbsp;&nbsp; &lt;target name="build" depends="compile"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;dotarget srcdir="${user.dir}"
+todo="package"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/target&gt;<br>
+</code><br>
+</body>
+</html>

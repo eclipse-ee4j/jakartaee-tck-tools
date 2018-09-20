@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Ant Extensions" default="dist" basedir=".">
+
+  <property environment="user_env"/>
+  <property name="jdom.jar" value="../master-libs/jdom.jar"/> 
+  <property name="ts.home" value="${user_env.TS_HOME}"/>
+  <property name="ts.jar" value="${ts.home}/lib/tsharness.jar"/>
+  <property name="src" value="${basedir}/src"/>
+  <property name="classes" value="${basedir}/classes"/>
+  <property name="dist" value="${basedir}/dist"/>
+  <property name="dist.file" value="ant_sun"/>
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+      <delete dir="${dist}"/>
+   </target>
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+      <mkdir dir="${dist}"/>
+   </target>
+
+  <target name="compile" depends="prepare">
+      <javac optimize="true" srcdir="${src}"
+             classpath="${classes}:${ts.jar}:${jdom.jar}"
+             destdir="${classes}"
+             debug="on"
+             target="5"/>
+  </target>
+
+  <target name="dist" depends="compile">
+    <tstamp/>
+    <jar jarfile="${dist}/${dist.file}.jar" 
+         basedir="${basedir}/classes" excludes="**/*.zip,**/*.jar"/>
+  </target>
+
+
+<!--*****
+    ** Updates the local installation of ANT to include the jar built in dist.
+	** Please note that ant new task definitions will still need to be made
+	** explicitly in any top level build.xml files that use these tasks.
+    *****-->
+  
+  <target name="check.ts.ant" unless="ts.ant.present">
+    <fail message="${ant.lib.dir}/${dist.file}.jar does not exist.  Cannot update the ${dist.file}.jar. Bringover it first."/>
+  </target>
+  
+  <target name="update" depends="dist">
+    <property name="ant.lib.dir" value="${ts.home}/lib"/>
+    <property name="sccs.cmd" value="/usr/ccs/bin/sccs"/>
+    <!-- checkprops has been added to defaults.properties.  In case the user 
+    doesn't have it in ant.jar... -->
+    <!--
+    <taskdef name="checkprops" classname="com.sun.ant.taskdefs.common.CheckProps" 
+      classpath="${dist}/${dist.file}.jar"/>
+    <checkprops>
+      <property name="ts.home" value="${ts.home}"/>
+    </checkprops>
+    -->
+    <available file="${ant.lib.dir}/${dist.file}.jar" type="file" property="ts.ant.present"/>
+    <antcall target="check.ts.ant"/>
+    <exec executable="${sccs.cmd}" dir="${ant.lib.dir}">
+      <arg line="edit ${dist.file}.jar"/>
+    </exec>
+    <copy todir="${ant.lib.dir}" file="${dist}/${dist.file}.jar" overwrite="true"/>
+
+    <!-- unrem the following if you want to delget
+    <exec executable="${sccs.cmd}" dir="${ant.lib.dir}">
+      <arg line="delget -y'updated from tools workspace' ${dist.file}.jar"/>
+    </exec>
+    <echo message="Please putback ${ant.lib.dir}/${dist.file}.jar to parent workspace."/>
+    <echo message="Please putback any changes in tools workspace."/>
+  -->
+  </target>
+
+</project>

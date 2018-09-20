@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML	3.2//EN">
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=iso-8859-1">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <title>ejb-jar task</title>
+       
+  <meta name="GENERATOR" content="StarOffice 6.0  (Solaris Sparc)">
+    
+  <meta name="CREATED" content="20020205;12045300">
+    
+  <meta name="CHANGEDBY" content="Dianne">
+    
+  <meta name="CHANGED" content="20020205;12462600">
+    
+  <meta name="ProgId" content="Word.Document">
+    
+  <meta name="Originator" content="Microsoft Word 9">
+ 	<!--[if	gte mso	9]><xml>
+ <o:DocumentProperties>
+  <o:Author>djiao</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>djiao</o:LastAuthor>
+  <o:Revision>43</o:Revision>
+  <o:TotalTime>54</o:TotalTime>
+  <o:Created>2002-02-01T19:27:00Z</o:Created>
+  <o:LastSaved>2002-02-01T20:22:00Z</o:LastSaved>
+  <o:Pages>2</o:Pages>
+  <o:Words>720</o:Words>
+  <o:Characters>3749</o:Characters>
+  <o:Company>Sun Microsystem Inc.</o:Company>
+  <o:Lines>72</o:Lines>
+  <o:Paragraphs>72</o:Paragraphs>
+  <o:CharactersWithSpaces>5046</o:CharactersWithSpaces>
+  <o:Version>9.2720</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]-->
+    
+  <meta http-equiv="Content-Language" content="en-us">
+    
+  <style>
+	<!--
+		TD P { color: #000000 }
+		H2 { color: #000000 }
+		H3 { color: #000000 }
+		H4 { color: #000000 }
+		P { color: #000000 }
+		PRE { color: #000000 }
+		A:link { color:	#0000ff	}
+		A:visited { color: #0000ff }
+	-->
+	</style>
+</head>
+  <body text="#000000" link="#0000ff" vlink="#0000ff">
+  
+<h2><a name="ejbjar"></a>
+   <a name="iplanet-ejbc"></a>
+   ejb-jar</h2>
+  
+<h3>Description:</h3>
+  
+<p>This	task is	designed to support building of	EJB2.1 jar files.  </p>
+  
+<p>ejb-jar will	parse the deployment descriptor	to determine the necessary 
+ class files which implement the bean. These files are assembled along with 
+ the deployment	descriptor into	an EJB jar file. Any support files which need
+ to be included in	the generated jar can be added with the	&lt;support&gt; 
+ nested	element. For each class	included in the	jar, ejb-jar will scan for 
+ any super classes or super interfaces.	These will be added to the generated 
+ jar.</p>
+  
+<p>The jar files are only built	if they	are out	of date. Each deployment tool
+element will examine its target jar file and determine if it is out of date	with
+respect to	the class files	and deployment descriptors that	make up the bean.</p>
+  
+<h3>Parameters:</h3>
+  
+<table border="1" cellpadding="0" cellspacing="0">
+ 	<tbody>
+       <tr valign="Top">
+ 		<td>       
+      <div align="Center">       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+   Attribute</b></p>
+ 		</div>
+ 	</td>
+ 		<td>       
+      <div align="Center">       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+   Description</b></p>
+ 		</div>
+ 	</td>
+ 	<td valign="Top">       
+      <div align="Center">Required<br>
+ 	</div>
+ 	</td>
+ 			</tr>
+ 	<tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+   descriptor</p>
+ 	</td>
+ 	<td>xml	descriptor for the ejb jar</td>
+ 	<td>       
+      <div align="Center">Yes<br>
+ 		</div>
+ 	</td>
+ 			</tr>
+ 			<tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+   name</p>
+ 		</td>
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+   Controls the naming			convention used	to name	generated EJB jars.</p>
+ 		</td>
+ 		<td><br>
+        
+      <div align="Center">Yes<br>
+ 	</div>
+ 					</td>
+ 	</tr>
+     <tr>
+       <td valign="Top">manifest<br>
+       </td>
+       <td valign="Top">use it only if the jar needs custom manifest file<br>
+       </td>
+       <td valign="Top">       
+      <div align="Center">No<br>
+       </div>
+       </td>
+     </tr>
+    <tr>
+      <td valign="Top">autocheckexcludes<br>
+      </td>
+      <td valign="Top">files not to be automatically included into archives<br>
+      </td>
+      <td valign="Top">
+      <div align="Center">No<br>
+      </div>
+      </td>
+    </tr>
+    
+  </tbody> 
+</table>
+  
+<h3>Nested Elements</h3>
+  
+<p>In addition to the vendor specific nested elements, the ejb-jar task	provides 
+ three nested elements.	 </p>
+  
+<h4><a href="support.html">support</a>
+  </h4>
+  
+<p>The &lt;support&gt; nested element is used to supply	additional classes 
+ (files) to be included	in the generated jars. &nbsp;DO	NOT use	support	for 
+ejb classes and	interfaces that	are specified in descriptor.&nbsp; The &lt;support&gt; 
+element	is a FileSet, so it can	either reference a fileset declared elsewhere 
+or it can be defined in-place with the appropriate &lt;include&gt; and &lt;exclude&gt; 
+ nested	elements. The files in the support fileset are added into the generated 
+ EJB jar in the	same relative location as their	location within	the support 
+ fileset. Note that when ejb-jar generates more	than one jar file, the support 
+ files are added to each one..	</p>
+  
+<h3>Examples</h3>
+  
+<pre style="margin-bottom: 0.5cm; ">Example 1:<br>==========<br>  &lt;target name="package"&gt;<br>    &lt;package&gt;<br><br>	    &lt;ejb-jar	descriptor="ejb_sam_twobean_ejb.xml" name="ejb_sam_twobean" manifest="MY_MANIFEST.MF"&gt;<br>	   &lt;/ejb-jar&gt;<br><br>	 &lt;clientjar descriptor="ejb_sam_twobean_client.xml" name="ejb_sam_twobean"<br>	 mainclass="com.sun.ts.tests.samples.ejb.ee.twobean.TwoBeanClient"&gt;<br>	&lt;/clientjar&gt;<br><br>	&lt;appear name="ejb_sam_twobean"/&gt;<br>    &lt;/package&gt;<br>  &lt;/target&gt;<br><br>Example 2:<br>==========<br>	 &lt;target name="package"&gt;<br>    &lt;package&gt;<br><br>	   &lt;ejb-jar descriptor="ejb_depEcmp20_pkey_ejb.xml" name="ejb_depEcmp20_pkey"&gt;<br>	&lt;support includes="com/sun/ts/tests/assembly/util/wrapper/CMP20WrapperEJB.class, com/sun/ts/tests/assembly/util/dbsupport/CompoundPK.class"/&gt;<br>	     &lt;/ejb-jar&gt;<br><br>	   &lt;clientjar descriptor="ejb_depEcmp20_pkey_client.xml" name="ejb_depEcmp20_pkey"<br>	 mainclass="com.sun.ts.tests.ejb.ee.deploy.entity.cmp20.pkey.Client"&gt;<br>	    &lt;support	includes="com/sun/ts/tests/assembly/util/dbsupport/CompoundPK.class"/&gt;<br>	   &lt;/clientjar&gt;<br><br>	   &lt;appear name="ejb_depEcmp20_pkey"/&gt;<br>    &lt;/package&gt;<br>  &lt;/target&gt;<br><br></pre>
+  
+</body>
+</html>

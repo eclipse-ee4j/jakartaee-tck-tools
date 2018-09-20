@@ -1,0 +1,1480 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Verifier Results</title>
+</head>
+<body>
+<font size="+3">
+<center>Verifier Results</center>
+</font>
+<br>
+
+<br>
+<hr WIDTH="100%">
+<br>
+<u><font size="+2">
+<bold>EJB Results</bold>
+</font></u>
+<br>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Failed Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMatchesCreate</td><td>Session home interface create methods must have a co ejbCreate[METHOD] method in bean class test</td><td>For [ TestBean ]
+For Home Interface  
+Error: No corresponding ejbCreate[METHOD] method with matching parameters was found.
+For [ TestBean ]
+Error: ejbCreate[METHOD] method corresponding to the create[METHOD] method does not exist!
+</td>
+</tr>
+</table>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Passed Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassModifiersPublic</td><td>Ejb Class properly declares public class modifier test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares public class modifier.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodStatic</td><td>Enterprise bean business method static test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-static business method [ initLogging ].
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-static business method [ ping ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassModifiersAbstract</td><td>Ejb Class properly declares non-abstract class modifier test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-abstract class modifier.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodName</td><td>Each session Bean must have at least one ejbCreate method test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares [ ejbCreate ] method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.createmethod.HomeInterfaceCreateMethodExceptionRemote</td><td>Session home interface create methods must throw java.rmi.RemoteException test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] method [ create ]
+The create method which must throw java.rmi.RemoteException was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodPublic</td><td>Each session Bean must have at least one public ejbCreate method test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares public [ ejbCreate ] method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.createmethod.HomeInterfaceCreateMethodExceptionCreate</td><td>Session home interface create methods must throw javax.ejb.CreateException test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] method [ create ]
+The create method which must throw javax.ejb.CreateException was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceMatchMethodArgs</td><td>Remote interface business methods have matching method arguments test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+The corresponding business method with matching arguments was found.
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+The corresponding business method with matching arguments was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.SessionBeanInterface</td><td>Implements the SessionBean interface test </td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly implements the SessionBean interface.  
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodException</td><td>Each session Bean must have at least one ejbCreate method which properly does not throw java.rmi.RemoteException test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares [ ejbCreate ] method which properly does not throw java.rmi.RemoteException.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceMatchMethodException</td><td>Remote interface business methods have matching method exceptions test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+The corresponding business method with matching exceptions was found.
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+The corresponding business method with matching exceptions was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceRmiIIOP</td><td>Home interface methods have valid RMI-IIOP parameters test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] properly declares method with valid RMI-IIOP parameters.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.JarContainsXMLFile</td><td>Jar file contains the XML-based deployment descriptor test</td><td>For [ TestBean ]
+Found deployment descriptor xml file [ META-INF/ejb-jar.xml ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbNameNMTOKEN</td><td>EJB Name must conform to the lexical rules for an NMTOKEN test</td><td>For [ TestBean ]
+[ TestBean ] conforms to the lexical rules of NMTOKEN within bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceClassExist</td><td>Home Interface test</td><td>For [ TestBean ]
+Home interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] exists and is loadable.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceSuperInterface</td><td>Remote interface have valid RMI-IIOP superinterfaces test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly conforms to rules of RMI-IIOP for superinterfaces.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodFinal</td><td>Each session Bean must have at least one non-final ejbCreate method test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-final ejbCreate[METHOD] method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceRmiIIOPReturn</td><td>Home interface methods have valid RMI-IIOP return type test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP return type.
+For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP return type.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.createmethod.HomeInterfaceCreateMethodMatchArgs</td><td>Session home interface create methods must match ejbCreate[METHOD] method in bean class test</td><td>For [ TestBean ]
+For Home Interface method [ create ]
+The corresponding ejbCreate[METHOD] method with matching parameters was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.EjbRemoteInterfacePublic</td><td>Enterprise beans remote interface must be declared as public interface</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] is properly declared as a public remote interface. All enterprise bean remote interfaces must be defined as public.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransientFieldsSerialization</td><td>The Bean Provider should not store in a transient field a reference to any of the following objects: SessionContext object; environment JNDI naming context and any its subcontexts; home and remote interfaces; and the UserTransaction interface test.</td><td>For [ TestBean ]
+This session bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] has not stored in a transient field a reference to any of the following objects: SessionContext object; environment JNDI naming context and any its subcontexts; home and remote interfaces; and the UserTransaction interface.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbBeanType</td><td>Bean type test </td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly implements the SessionBean interface.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.UncheckedMethodsExist</td><td>Methods used in [unchecked] must be methods defined in the enterprise bean's remote and/or home interface test</td><td>For [ TestBean ]
+Method with method name [ remove ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ].
+For [ TestBean ]
+Method with method name [ ping ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ getHandle ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ remove ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ].
+For [ TestBean ]
+Method with method name [ getHomeHandle ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ].
+For [ TestBean ]
+Method with method name [ getPrimaryKey ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ getEJBMetaData ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ].
+For [ TestBean ]
+Method with method name [ remove ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ create ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ].
+For [ TestBean ]
+Method with method name [ isIdentical ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ initLogging ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+For [ TestBean ]
+Method with method name [ getEJBHome ] defined in  interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbHasLocalorRemoteorBothInterfaces</td><td>Bean type test </td><td>For [ TestBean ]
+Ejb [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does have valid local and/or remote interfaces
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.stateless.StatelessCreateReturn</td><td>Stateless session create method returns the session beans remote interface test</td><td>Valid: The create methods return type [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] is equal to remote interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbNameUnique</td><td>EJB name is unique within the same jar file test</td><td>For [ TestBean ]
+Valid: [ TestBean ] was found once within jar, ejb-name is unique.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodRmiIIOPArgs</td><td>Enterprise bean business method valid RMI-IIOP parameter type test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares business method  [ initLogging ] with valid RMI-IIOP parameter types.
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares business method  [ ping ] with valid RMI-IIOP parameter types.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.TransactionDemarcationBeanManaged</td><td>The Application Assembler must not define transaction attributes for an enterprise bean with bean-managed transaction demarcation test</td><td>For [ TestBean ]
+Valid: There are no method permissions within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.createmethod.HomeInterfaceCreateMethodExceptionMatch</td><td>Session home interface create method exceptions match test</td><td>For [ TestBean ]
+For Home Interface method [ create ]
+The corresponding [ ejbCreate ] method with matching exceptions was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodRmiIIOPReturn</td><td>Enterprise bean business method valid RMI-IIOP return type test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares business method  [ initLogging ] with valid RMI-IIOP return type.
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares business method  [ ping ] with valid RMI-IIOP return type.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassExist</td><td>Bean class test</td><td>For [ TestBean ]
+Bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] exists and is loadable.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceRmiIIOPArgs</td><td>Home interface methods have valid RMI-IIOP parameters test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP parameters.
+For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP parameters.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceRmiIIOPException</td><td>Remote interface business methods throws clause must include the java.rmi.RemoteException test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ initLogging ] method properly throws java.rmi.RemoteException.
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ ping ] method properly throws java.rmi.RemoteException.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.JarFileContainsProperEJBClasses</td><td>Jar file contains implementation class for EJB test</td><td>For [ TestBean ]
+Bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] exists and its supporting classes exist.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceRmiIIOPReturn</td><td>Remote interface business methods have valid RMI-IIOP return type test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP return type.
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP return type.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.stateless.StatelessCreateNoArgs</td><td>Stateless session create method test</td><td>For [ TestBean ]
+Valid: This beans [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] create method has no parameters. Stateless session beans can only have a create method with no parameters.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodPublic</td><td>Enterprise bean business method public test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares public business method [ initLogging ].
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares public business method [ ping ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbLogicalName</td><td>EJB logical name test</td><td>For [ TestBean ]
+EJB logical name is: [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodStatic</td><td>Each session Bean must have at least one non-static ejbCreate method test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-static ejbCreate(...) method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfacePublic</td><td>Enterprise beans home interface must be declared as public test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] properly declares the home interface as public.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.stateless.StatelessCreateOnlyOne</td><td>Stateless session defines only one create method test</td><td>For [ TestBean ]
+Valid: This bean [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] has defined only one create method.  Stateless session beans can only have one create method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodArgs</td><td>Each session Bean must have at least one ejbCreate method with valid RMI-IIOP argument types test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares [ ejbCreate ] method with valid RMI-IIOP argument types.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodFinal</td><td>Enterprise bean business method final test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.assembly.util.wrapper.StatelessWrapperEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.assembly.util.wrapper.StatelessWrapperEJB ] properly declares non-final business method [ initLogging ].
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-final business method [ ping ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceRmiIIOPArgs</td><td>Remote interface business methods have valid RMI-IIOP parameters test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP parameter(s).
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] properly declares method with valid RMI-IIOP parameter(s).
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.SessionType</td><td>Session Bean State type test</td><td>For [ TestBean ]
+[ Stateless ] is valid stateType within bean [ TestBean ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionType</td><td>Session Bean Transaction demarcation test</td><td>For [ TestBean ]
+[ Bean ] is valid transactionType.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceExtendsEJBHome</td><td>Enterprise beans interface must extend the EJBHome interface</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] properly extends the EJBHome interface.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassModifiersFinal</td><td>Ejb Class properly declares non-final class modifier test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares non-final class modifier.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceSuperInterface</td><td>Home interface have valid RMI-IIOP superinterfaces test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] properly conforms to rules of RMI-IIOP for superinterfaces.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.ApplicationExceptionComponentInterfaceMethods</td><td>An application exception must not be defined as a subclass of the java.lang.RuntimeException, or of the java.rmi.RemoteException in methods of the Remote interface test</td><td>For [ TestBean ]
+For Remote/Local Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+The method [ initLogging ] throws valid application exceptions in Remote/Local interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ]
+For [ TestBean ]
+For Remote/Local Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+The method [ ping ] throws valid application exceptions in Remote/Local interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodName</td><td>Enterprise bean business method properly named test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] declares properly named business method [ initLogging ].
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] declares properly named business method [ ping ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.createmethod.HomeInterfaceCreateMethodReturn</td><td>Session home interface create methods must return remote interface test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] method [ create ]
+The create method which returns remote interface was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassFinalizeMethod</td><td>Ejb Class properly does not define the finalize() method test</td><td>For [ TestBean ]
+Valid: This bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does not define the finalize() method.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbPublicID</td><td>The Ejb deployment descriptor has an acceptable PubidLiteral.</td><td>For [ TestBean ]
+The deployment descriptor has the proper PubidLiteral: -//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN
+For [ TestBean ]
+The deployment descriptor has the proper URL corresponding the the PubIdLiteral: http://java.sun.com/dtd/ejb-jar_2_0.dtd
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassConstructor</td><td>Ejb Class properly declares class constructor test</td><td>For [ TestBean ]
+Valid: This bean [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] has a public constructor method with no parameters.  Enterprise beans must have a public constructor method with no parameters.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassStaticFieldsFinal</td><td>Ejb bean class declares all class static fields as final test</td><td>For [ TestBean ]
+This bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] has defined any and all static fields as final.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.LocalInterfaceExposed</td><td>Test to check if local interface has been exposed through remote interface</td><td>For [ TestBean ]
+Valid: Local Interfaces have not  been exposed in remote interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.HomeInterfaceNoFinderMethodNames</td><td>Session home interface methods must not have defined any finder method named test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] 
+Valid: no finder methods were found.  Session beans home interface is not allowed to have any finder methods.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.ejbcreatemethod.EjbCreateMethodReturn</td><td>Each session Bean must have at least one ejbCreate method with valid return type test </td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] method [ ejbCreate ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly declares [ ejbCreate ] method with valid void return type.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionTypeBeanManaged</td><td>Enterprise bean with bean-managed transaction demarcation must be a Session bean test</td><td>For [ TestBean ]
+[ Bean ] is valid transactionType within Session bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceMatchMethodReturn</td><td>Remote interface business methods have matching method return type test</td><td>For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+The corresponding business method with a matching return type was found.
+For [ TestBean ]
+For Remote Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+The corresponding business method with a matching return type was found.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.RemoteInterfaceClassExist</td><td>Remote Interface test</td><td>For [ TestBean ]
+Remote interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] exists and is loadable.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.stateless.StatelessEjbCreateHome</td><td>Stateless session EJB class ejbCreate method test</td><td>For [ TestBean ]
+Valid: This beans [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] ejbCreate method has no parameters. Stateless session beans can only have a ejbCreate method with no parameters.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.businessmethod.BusinessMethodException</td><td>Enterprise bean business method throws RemoteException test</td><td>For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.assembly.util.wrapper.StatelessWrapperEJB ] business method [ initLogging ]
+[ com.sun.cts.tests.assembly.util.wrapper.StatelessWrapperEJB ] properly does not throw java.rmi.RemoteException from business method [ initLogging ].
+For [ TestBean ]
+For EJB Class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] business method [ ping ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] properly does not throw java.rmi.RemoteException from business method [ ping ].
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbNameMethodElement</td><td>EJB name for method element test</td><td>For [ TestBean ]
+[ TestBean ] is valid and contained within jar.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeInterfaceRmiIIOPException</td><td>Home interface methods properly throws exception java.rmi.RemoteException.</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ initLogging ]
+[ initLogging ] properly throws exception java.rmi.RemoteException.
+For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBean ] method [ ping ]
+[ ping ] properly throws exception java.rmi.RemoteException.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.remoteintf.EjbRemoteInterfaceExtendsEJBObject</td><td>Enterprise beans remote interface must extend the EJBObject interface</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBean ] remote interface properly extends the EJBObject interface.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.BeanFieldsTransient</td><td>EJB bean class declares all fields as non-transient fields test. </td><td>For [ TestBean ]
+This session bean class [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] has defined all fields as non-transient fields.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.beanclass.EjbClassExposed</td><td>Ejb Bean class Exposed in remote/local interface test</td><td>For [ TestBean ]
+Ejb Bean Class [com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB] is not exposed through interface [com.sun.cts.tests.appclient.deploy.compat.TestBean]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.ApplicationExceptionHomeInterfaceMethods</td><td>An application exception must not be defined as a subclass of the java.lang.RuntimeException, or of the java.rmi.RemoteException in methods of the Home interface test</td><td>For [ TestBean ]
+For Home Interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] method [ create ]
+The method [ create ] throws valid application exceptions in Home interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionTypeNullForContainerTX</td><td>Session bean with bean managed transaction demarcation test</td><td>For [ TestBean ]
+This session bean [ TestBean ] is [ Bean ] managed and correctly declares no container transactions.
+</td>
+</tr>
+</table>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Not Applicable Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsCmp</td><td>Ejb primary key class properly declares all class fields within subset of the names of the container-managed fields test. </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsCmp expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodReturn</td><td>Each entity Bean may have zero or more ejbCreate methods which return primary key type test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.SelectMethodReturnType</td><td>EJB 2.0 Spec 9.7.8 ejbSelect methods must not return the entity bean class</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.EntityBeanExtendsSerializableClass</td><td>EJB class extends/implements superclass/interfaces that are serializable</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.EntityBeanExtendsSerializableClass expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyName</td><td>Home interface defines findByPrimaryKey method test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyName expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodMatch</td><td>Entity home interface find[METHOD](...) matches ejbFind[METHOD](...) test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodMatch expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.localhomeintf.LocalHomeInterfacePublic</td><td>Enterprise beans home interface must be declared as public test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.ImplementsMessageListener</td><td>EJB 2.0 Spec 14.7.2 Declared message-driven Bean Components must implement the javax.jms.MessageListenerInterface</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMatchesCreate</td><td>Entity home interface create methods must have a co ejbCreate[METHOD] method in bean class test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMatchesCreate expected Session bean, but called with Entity bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbReferencesElement</td><td>References to other beans homes test</td><td>For [ TestBean ]
+There are no ejb references to other beans within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodHasQuery</td><td>Entity home interface find[METHOD](...) methods must have a query assigned to it.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodHasQuery expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsPublic</td><td>Ejb primary key class properly declares all class fields as public test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsPublic expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.LocalInterfaceMatchMethodArgs</td><td>Local interface business methods have matching method arguments test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodReturn</td><td>Entity home interface find[METHOD](...) methods must return remote interface or a collection thereof test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbLinkElement</td><td>EJB Link element test</td><td>For [ TestBean ]
+There are no ejb references to other beans within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionRemote</td><td>Entity home interface find[METHOD](...) methods must throw java.rmi.RemoteException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionRemote expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodNameCmp</td><td>ejbFind[METHOD] methods must not be defined for container managed entity beans test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodNameCmp expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbRefNamePrefixed</td><td>EJB reference name is prefixed with recommended string "ejb/" test</td><td>For [ TestBean ]
+There are no ejb references to other beans within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.EjbClassImplementsComponentInterface</td><td>Ejb Class optionally implements the enterprise beans remote/local interface test</td><td>[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does not optionally implement bean class remote/local interface  [ com.sun.cts.tests.appclient.deploy.compat.TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsMatchBeanFields</td><td>Ejb primary key class field names must correspond to the field names of the entity bean class that comprise the key test. </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield.PrimaryKeyClassFieldsMatchBeanFields expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionCreate</td><td>Entity home interface create methods must throw javax.ejb.CreateException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionCreate expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodFinal</td><td>Each entity Bean may have zero or more non-final ejbCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodFinal expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pksinglefield.PrimekeyFieldPrimaryKeyType</td><td>Primary key field type must be the same as the primary key type test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pksinglefield.PrimekeyFieldPrimaryKeyType expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.localhomeintf.LocalHomeMethodNameMatch</td><td>EJB 2.0 Spec 9.7.11 Home can have arbitrary names but they must have a matching ejbHome[METHOD] method on the bean class</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodPublic</td><td>Each entity Bean may have zero or more public ejbPostCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodPublic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.localhomeintf.LocalHomeInterfaceExtendsEJBLocalHome</td><td>Enterprise beans interface must extend the EJBLocalHome interface</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbResAuthElement</td><td>Resource-ref element res-auth sub-element must be Application or Container test</td><td>For [ TestBean ]
+There are no resource reference elements defined within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpEjbNoInvalidCreateMethod</td><td>EJB 2.0 Spec 14.1.8 : CMP 1.1 entity beans cannot define create[METHOD]</td><td>The EJB [ TestBean ] is not an CMP 1.1 entity bean
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionMatch</td><td>Entity home interface create and bean class ejbCreate method exceptions match test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionMatch expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.HomeInterfacePostCreateMethodExceptionMatch</td><td>Entity home interface create and bean class ejbPostCreate[METHOD] method exceptions match test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.HomeInterfacePostCreateMethodExceptionMatch expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.TransactionDemarcationHomeInterface</td><td>Entity bean container transaction demarcation for methods of home interface test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.TransactionDemarcationHomeInterface expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.HomeMethodException</td><td>Enterprise bean ejbHome[METHOD] method throws RemoteException test</td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does not declare any ejbHome[METHOD] methods.  
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodStatic</td><td>Each entity Bean may have zero or more non-static ejbCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodStatic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodException</td><td>Each entity Bean may have zero or more ejbPostCreate methods which properly do not throw java.rmi.RemoteException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodException expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.TransactionDemarcationType</td><td>Container Transaction demarcation test</td><td>For [ TestBean ]
+Bean [ TestBean ] is not Container managed, it is [ Bean ] managed.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.FindMethodException</td><td>EJB Spec 2.0 9.6.8.3 Query Method should throw the javax.ejb.FinderException</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionDemarcationSessionSynchronizationInterface</td><td>If an enterprise bean implements the javax.ejb.SessionSynchronization interface, the Application Assembler can specify only the following values for the transaction attributes of the bean's methods:  Required, RequiresNew, Mandatory test</td><td>For [ TestBean ]
+Optional interface SessionSynchronization is not implemented by bean [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbRemoveModifiers</td><td>EJB 2.0 Spec 14.7.5 Message-drive bean must define a public ejbRemove method that is not static or final</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbEnvEntryValueType</td><td>EJB environment entry value type test</td><td>For [ TestBean ]
+There are no environment entry elements defined within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.LocalInterfaceMatchMethodException</td><td>Local interface business methods have matching method exceptions test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyReturn</td><td>Defines ejbFindByPrimaryKey method with valid return type test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.ContainerTransactionStyle3</td><td>The container transaction method must be one defined in the remote or home interface of the specified enterprise bean test</td><td>For [ TestBean ]
+There are no method permissions within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.ContainerTransactionStyle2</td><td>There must be at most one container transaction element that uses the Style 2 method element for a given method name test</td><td>For [ TestBean ]
+There are no container transactions within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.ContainerTransactionStyle1</td><td>There must be at most one container transaction element that uses the Style 1 "*" method name element for a given enterprise bean test</td><td>For [ TestBean ]
+There are no method permissions within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.EjbLocalInterfacePublic</td><td>Enterprise beans remote interface must be declared as public interface</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.TransactionDemarcationComponentInterface</td><td>Entity bean container transaction demarcation for methods of remote interface test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.TransactionDemarcationComponentInterface expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbCreateReturnType</td><td>EJB 2.0 Spec 14.7.3 Message-driven bean must define one ejbCreate with a void return type</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionRemote</td><td>Entity home interface create methods must throw java.rmi.RemoteException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.createmethod.HomeInterfaceCreateMethodExceptionRemote expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.EjbEnvEntryValue</td><td>EJB environment entry value must be a string that is valid for the constructor of the specified type that takes a single String parameter test</td><td>For [ TestBean ]
+There are no environment entry elements defined within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.EjbClassImplementsComponentInterface</td><td>Ejb Class optionally implements the enterprise beans remote/local interface test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.EjbClassImplementsComponentInterface expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.EjbPrimaryKeyClassRmiIIOP</td><td>The Bean provider must specify a primary key class which must be legal Value Type in RMI-IIOP in the deployment descriptor test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.EjbPrimaryKeyClassRmiIIOP expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodArgs</td><td>Each entity Bean may have zero or more ejbCreate methods with arguments that are legal types for RMI-IIOP test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodArgs expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFields</td><td>EJB 2.0 Spec 9.4.1 Container managed relationship validity test</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldsAccessorExposition</td><td>EJB 2.0 Spec 9.4.11 Set Accessor method for primary key fields should not be exposed in the remote interface</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.PersistenceType</td><td>Entity Bean Persistence management test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.PersistenceType expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodName</td><td>Each entity bean may have zero or more ejbCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodName expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.SessionSynchronizationInterface</td><td>Properly optionally implements the SessionSynchronization interface test </td><td>For [ TestBean ]
+Optional interface SessionSynchronization is not implemented by bean [ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassOptReturn</td><td>Entity bean primary class key defined by deployer so ejbCreate() must return java.lang.Object test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassOptReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodFinal</td><td>Each entity Bean may have zero or more non-final ejbPostCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodFinal expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFields</td><td>EJB 2.0 Spec 9.4.1 Container managed field validity test</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.UniqueAbstractSchemaName</td><td>Entity CMP Beans within a JAR file must have unique abstract schema names.</td><td>For [ TestBean ]
+This test is only for CMP beans. Abstract Schema Names should be unique within an ejb JAR file.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodExceptions</td><td>Each entity Bean may have zero or more ejbCreate methods which properly do not throw java.rmi.RemoteException test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodExceptions expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.CMPFieldExistence</td><td>EJB 2.0 Spec deployment descriptors : CMP Entity bean must have at least one cmp field</td><td>The EJB [ TestBean ] is not an CMP entity bean
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.localhomeintf.LocalHomeMethodModifiers</td><td>EJB 2.0 Spec 9.7.11 ejbHome[METHOD] methods must be public and not static</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.FieldNameElementPublic</td><td>EJB public fields test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.FieldNameElementPublic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionDemarcationHomeInterface</td><td>Session bean container transaction demarcation for all methods of home interface test</td><td>For [ TestBean ]
+Bean [ TestBean ] is not [ Container ] managed, it is [ Bean ] managed.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbcreatemethod.EjbCreateMethodPublic</td><td>Each entity Bean may have zero or more public ejbCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbcreatemethod.EjbCreateMethodPublic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionMatch</td><td>Entity home interface find[METHOD](...) method and bean class ejbFind[METHOD(...) method exceptions match test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionMatch expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyStatic</td><td>Defines non-static ejbFindByPrimaryKey method test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyStatic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassMethodHashCode</td><td>The Bean provider must specify the method hashCode() in the primary key class.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassMethodHashCode expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyException</td><td>Defines ejbFindByPrimaryKey method which properly does not throw java.rmi.RemoteException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyException expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrUseCorrectCollectionInterface</td><td>EJB 2.0 Spec 9.4.1 Container managed one-to-many or many-to-many relationships fields should have the same type as declared in DD cmr-field-type element</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodFinal</td><td>Non-final ejbFind[METHOD] methods test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodFinal expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.RoleNameNMTOKEN</td><td>Role name conforms to lexical rules of NMTOKEN test</td><td>For [ TestBean ]
+No permissioned roles defined for this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbLargeIconElement</td><td>EJB large-icon element must end in ".jpg" or ".gif" test</td><td>For [ TestBean ]
+The large-icon element is not defined within bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.SecurityIdentityRefs</td><td>Security Identity should reference a valid role-name or  use-caller-identity for non message-driven bean</td><td>For [ TestBean ]
+Bean [ TestBean ] use caller identity for the execution of the method
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyFinal</td><td>Defines non-final ejbFindByPrimaryKey method test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyFinal expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.HomeMethodRmiIIOPArgs</td><td>Enterprise bean ejbHome[METHOD] method valid RMI-IIOP parameter type test </td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does not declare any ejbHome[METHOD] methods.  
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.session.TransactionDemarcationComponentInterface</td><td>Session bean container transaction demarcation for all methods of remote interface test</td><td>For [ TestBean ]
+Bean [ TestBean ] is not [ Container ] managed, it is [ Bean ] managed.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pkmultiplefield.PrimaryKeyClassConstructor</td><td>Ejb primary key class properly declares class public constructor test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield.PrimaryKeyClassConstructor expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodReturn</td><td>ejbFind[METHOD] method returns primary key type or collection thereof test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbSmallIconElement</td><td>EJB small-icon element must end in ".jpg" or ".gif" test</td><td>For [ TestBean ]
+The small-icon element is not defined within bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.ExcludeListMethodsExist</td><td>Methods used in exclude-list must be methods defined in the enterprise bean's remote and/or home interface test</td><td>For [ TestBean ]
+There is no [exclude-list] element within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFieldNameStartLowercase</td><td>EJB 2.0 Spec 9.4.1, the cmr field name first letter must be lowercase</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldAccessorModifiers</td><td>EJB 2.0 Spec 9.4.1, cmp field accessors methods must be abstract, public or protected</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpEjbCreateMethod</td><td>Each entity bean with container managed persistence ejbCreate(...) methods returns the primary key class type test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp.CmpEjbCreateMethod expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.HasValidMethodDescriptor</td><td>EJB 2.0 Spec 14.4.7 Message-drive beans with container-managed transaction must use Required or NotSupported transaction attribute</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.SelectMethodExposition</td><td>EJB 2.0 Spec 9.7.8 ejbSelect method must not be exposed through the home or remote interface</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassOptType</td><td>Entity bean primary class key defined by deployer so primary key class type must be set to java.lang.Object test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassOptType expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldReturnType</td><td>Test to check if return type of the accessor method for cmp-field is local interface</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.EjbLocalInterfaceExtendsEJBLocalObject</td><td>Enterprise beans remote interface must extend the EJBObject interface</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyArgs</td><td>Defines ejbFindByPrimaryKey method with valid RMI-IIOP arguments test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyArgs expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFieldsAbstract</td><td>EJB 2.0 Spec 9.4.1, the cmp and cmr fields should be virtual fields only</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.MethodPermissionMethodExists</td><td>Methods used in method permissions must be methods defined in the enterprise bean's remote and/or home interface test</td><td>For [ TestBean ]
+There are no [method-permission] elements within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.SecurityRolesBind</td><td>Binding security role references test</td><td>For [ TestBean ]
+There are no role references which need to be bound to other security roles within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbCreateModifiers</td><td>EJB 2.0 Spec 14.7.3 Message-drive bean must define a public ejbCreate method that is not static or final</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.LocalInterfaceMatchMethodReturn</td><td>Remote interface business methods have matching method return type test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyName</td><td>Defines ejbFindByPrimaryKey method test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyName expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyPublic</td><td>Defines public ejbFindByPrimaryKey method test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindbyprimarykey.EjbFindByPrimaryKeyPublic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbRefTypeElement</td><td>EJB reference type test</td><td>For [ TestBean ]
+There are no ejb references to other beans within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.EjbMethodIntfElement</td><td>EJB method-intf element must be one of the following: "Remote" or "Home" test</td><td>For [ TestBean ]
+There are no [method-intf] elements within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodStatic</td><td>Non-static ejbFind[METHOD] methods test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodStatic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodObjectNotFoundException</td><td>Multi-object ejbFind[METHOD] methods must not throw javax.ejb.ObjectNotFoundException test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodObjectNotFoundException expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFieldsAccessorExposition</td><td>EJB 2.0 Spec 9.4.11 CMR accessor methods for other than one-to-one or many-to-one relationships between entity beans should not be exposed in the remote interface</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.SelectMethodQL</td><td>EJB 2.0 Spec 9.7.8 ejbSelect methods must be associated with an EJB-QL query that include a SELECT statement</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.createmethod.HomeInterfaceCreateMethodMatchArgs</td><td>Entity home interface create methods must match ejbCreate method in bean class test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.createmethod.HomeInterfaceCreateMethodMatchArgs expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbRemoveExists</td><td>EJB 2.0 Spec 14.7.5 Message-driven bean must define one ejbRemove method which has no arguments</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodArgs</td><td>ejbFind[METHOD] method arguments must be valid types for RMI-IIOP test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodArgs expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFieldAccessor</td><td>EJB 2.0 Spec 9.4.1, cmr field accessors must bear the name of the field, first letter uppercased and prefixed with get and set</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.PersistenceFieldsElement</td><td>Container managed field test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.PersistenceFieldsElement expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbCreateExists</td><td>EJB 2.0 Spec 14.7.3 Message-driven bean must define one ejbCreate method which has no arguments</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.ImplementsMessageDrivenBean</td><td>EJB 2.0 Spec 14.7.2 Declared message-driven Bean Components must implement the javax.ejb.MessageDrivenBean interface</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeMethodNameMatch</td><td>EJB 2.0 Spec 9.7.11 Home can have arbitrary names but they must have a matching ejbHome[METHOD] method on the bean class</td><td>For [ TestBean ]
+Home interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] does not define any ejbHome[METHOD] methods
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodName</td><td>ejbFind[METHOD] methods name test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodName expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.HomeMethodRmiIIOPReturn</td><td>Enterprise bean ejbHome[METHOD] method valid RMI-IIOP return type test </td><td>For [ TestBean ]
+[ com.sun.cts.tests.appclient.deploy.compat.TestBeanEJB ] does not declare any ejbHome[METHOD] methods.  
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassElement</td><td>Entity Bean Primary Class Key test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassElement expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.SecurityRolesRefs</td><td>Security references to security roles test</td><td>For [ TestBean ]
+There are no role references within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodReturn</td><td>Each entity Bean may have zero or more ejbPostCreate methods which return void test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodArgs</td><td>Each entity Bean may have zero or more ejbPostCreate methods whose arguments must be the same as the arguments of the matching ejbCreate(...) method test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodArgs expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpFields</td><td>Container managed field valid type test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp.CmpFields expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyArg</td><td>Home interface defines findByPrimaryKey method with primary key class as method argument test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyArg expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.FindMethodsAbstract</td><td>EJB 2.0 Spec 9.7.2 The entity bean class does not implement the ejbFind[METHOD] methods.</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.EntityBeanInterface</td><td>Implements the EntityBean interface test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.EntityBeanInterface expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodName</td><td>Each entity Bean may have zero or more ejbPostCreate methods test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodName expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.HasValidMessageSelector</td><td>EJB 2.0 Spec deployment descriptors : Message-driven bean message selectors must be valid JMS message selector</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassOpt</td><td>Entity bean primary class key defined by deployer so type of the argument of the findByPrimaryKey method must be declared as "java.lang.Object" test</td><td>For [ TestBean ]
+For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassOpt expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.messagebean.EjbRemoveReturnType</td><td>EJB 2.0 Spec 14.7.3 Message-driven bean must define one ejbRemove with a void return type</td><td>For [ TestBean ]
+Test apply only to message-driven Bean components
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldAccessor</td><td>EJB 2.0 Spec 9.4.1, cmp field accessors must bear the name of the field, first letter uppercased and prefixed with get and set</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.EjbPrimaryKeyClass</td><td>The Bean provider must specify a primary key class in the deployment descriptor.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.EjbPrimaryKeyClass expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.SelectMethodException</td><td>EJB 2.0 Spec 9.7.8 ejbSelect methods must throw the javax.ejb.FinderException</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpFieldsJavaTypesAssigned</td><td>Java types assigned to the container-managed fields are restricted to the following: Java primitive types, Java serializable types, and references of enterprise beans' remote or home interfaces test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp.CmpFieldsJavaTypesAssigned expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldNameStartLowercase</td><td>EJB 2.0 Spec 9.4.1, the cmp field name first letter must be lowercase</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.primarykeyclass.PrimaryKeyClassMethodEqual</td><td>The Bean provider must specify the method equals() in the primary key class.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass.PrimaryKeyClassMethodEqual expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyReturn</td><td>Home interface defines findByPrimaryKey method which returns the primary key type test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findbyprimarykey.HomeInterfaceFindByPrimaryKeyReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmrFieldAccessorModifiers</td><td>EJB 2.0 Spec 9.4.1, cmr field accessors methods must be abstract, public or protected</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.intf.localintf.LocalInterfaceClassExist</td><td>Local Interface test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.FindMethodHasDescriptors</td><td>EJB 2.0 Spec 9.6.6 Finder methods should be associated with a query element in the deployment descriptor</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.localhomeintf.LocalHomeInterfaceClassExist</td><td>Home Interface test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionFinder</td><td>Entity home interface find[METHOD](...) methods must throw javax.ejb.FinderException test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.findermethod.HomeInterfaceFindMethodExceptionFinder expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ReEntrantElement</td><td>Reentrant type test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ReEntrantElement expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodPublic</td><td>Public ejbFind[METHOD] methods test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodPublic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.SelectMethodModifiers</td><td>EJB 2.0 Spec 9.7.8 ejbSelect methods must be public and abstract</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CascadeDeleteNotSupportedForManyMany</td><td>cascade-delete not supported for many-many relationships test</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpFieldsTransient</td><td>EJB bean class properly declares all container managed fields as non-transient fields test. </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp.CmpFieldsTransient expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.CmpFieldsAbstract</td><td>EJB 2.0 Spec 9.4.1, the cmp and cmr fields should be virtual fields only</td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodStatic</td><td>Each entity Bean may have zero or more non-static ejbPostCreate methods test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbpostcreatemethod.EjbPostCreateMethodStatic expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp2.DependentValueClassModifiers</td><td>EJB 2.0 Spec 9.7.4 Dependent value class must be declared public and not abstract    </td><td>For [ TestBean ]
+Test do not apply to non entity EJB 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbql.EjbQLFromCmpEntityDescriptor</td><td>EJB 2.0 Spec Chapter 10 Container managed persistent queries should comply with specification in its sytax and semantic rules</td><td>For [ TestBean ]
+Not applicable: Test only applies to container managed EJBs
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.cmp.CmpFieldsDefinedForContainerPersistence</td><td>Container managed fields must have at least one element defined for container-managed persistence test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp.CmpFieldsDefinedForContainerPersistence expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.elements.MethodPermissionSecurityRoleExists</td><td>Security roles used in method permission element must be defined in the roles element of the deployment descriptor test</td><td>For [ TestBean ]
+There are no [method-permission] elements within this bean [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pksinglefield.PrimekeyFieldPersistentFields</td><td>Primary key field declared in the persistence fields test.</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pksinglefield.PrimekeyFieldPersistentFields expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.homeintf.remotehomeintf.RemoteHomeMethodModifiers</td><td>EJB 2.0 Spec 9.7.11 ejbHome[METHOD] methods must be public and not static</td><td>For [ TestBean ]
+Home interface [ com.sun.cts.tests.appclient.deploy.compat.TestBeanHome ] does not define any ejbHome[METHOD] methods
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.PrimaryField</td><td>Primary Key Field test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.PrimaryField expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.pkmultiplefield.PrimaryKeyClassModifier</td><td>Ejb primary key class properly declares public class modifier test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield.PrimaryKeyClassModifier expected Entity bean, but called with Session.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.ejbfindermethod.EjbFinderMethodException</td><td>ejbFind[METHOD] methods which properly do not throw java.rmi.RemoteException test </td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbfindermethod.EjbFinderMethodException expected Entity bean, but called with Session bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.ejb.entity.createmethod.HomeInterfaceCreateMethodReturn</td><td>Entity home interface create methods must return remote interface test</td><td>For [ TestBean ]
+class com.sun.enterprise.tools.verifier.tests.ejb.entity.createmethod.HomeInterfaceCreateMethodReturn expected Entity bean, but called with Session bean.
+</td>
+</tr>
+</table>
+
+
+<br>
+<hr WIDTH="100%">
+<br>
+<u><font size="+2">
+<bold>Appclient Results</bold>
+</font></u>
+<br>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Passed Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientPublicID</td><td>The AppClient deployment descriptor has the expected PubidLiteral "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN".</td><td>For [ appclient_dep_compat_client ]
+The deployment descriptor has the proper PubidLiteral: -//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN
+For [ appclient_dep_compat_client ]
+The deployment descriptor has the proper URL corresponding the the PubIdLiteral: http://java.sun.com/j2ee/dtds/application-client_1_2.dtd
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.elements.AppClientEjbRefTypeElement</td><td>Application client enterprise bean reference type test</td><td>For [ appclient_dep_compat_client ]
+All ejb-ref-type elements are valid.  They are all [ Entity ] or [ Session ] within this application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.elements.AppClientEjbLinkElement</td><td>Application client enterprise bean link element test</td><td>For [ appclient_dep_compat_client ]
+ejb-link [ TestBean ] found same value as EJB [ TestBean ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.elements.AppClientEjbLinkOnlyOne</td><td>Application client enterprise bean link element test</td><td>For [ appclient_dep_compat_client ]
+ejb-link [ TestBean ] found only one corresponding EJB value [ TestBean ] for application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.elements.AppClientEjbReferencesElement</td><td>Application client references to other beans homes test</td><td></td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientEjbRefNamePrefixed</td><td>Application client EJB reference name is prefixed with recommended string "ejb/" test</td><td>For [ appclient_dep_compat_client ]
+[ ejb/TestBean ] is prefixed with recommended string "ejb/" within application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.JarContainsXML</td><td>Application-client jar file contains the XML-based deployment descriptor test</td><td>For [ appclient_dep_compat_client ]
+Found deployment descriptor xml file [ META-INF/application-client.xml ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientCallbackHandler</td><td>The AppClient has a loadable JAAS CallbackHandler</td><td>For [ appclient_dep_compat_client ]
+AppClient callback handler is not specified.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientName</td><td>The AppClient has a non-blank a display-name</td><td>For [ appclient_dep_compat_client ]
+AppClient display name is : [ appclient_dep_compat_client ]
+</td>
+</tr>
+</table>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Not Applicable Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.appclient.elements.AppClientResourceType</td><td>The Application-client resource-type element specifies the Java class type of the data source test</td><td>For [ appclient_dep_compat_client ]
+There are no resource-type elements within the application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientEnvEntryValueType</td><td>Application client environment entry value type test</td><td>For [ appclient_dep_compat_client ]
+There are no environment entry elements defined within this application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.appclient.AppClientEnvEntryValue</td><td>Application client environment entry value must be a string that is valid for the constructor of the specified type that takes a single String parameter test</td><td>For [ appclient_dep_compat_client ]
+There are no environment entry elements defined within this application client [ appclient_dep_compat_client ]
+</td>
+</tr>
+</table>
+
+
+<br>
+<hr WIDTH="100%">
+<br>
+<u><font size="+2">
+<bold>Application Results</bold>
+</font></u>
+<br>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Passed Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.app.AppName</td><td>The Application provider must assign a display name to each Application</td><td>Application display name is : [ appclient_dep_compat ]  
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.ModulesExistAppClient</td><td>Application's listed J2EE Application Client modules exist in the Enterprise archive test</td><td>J2EE Application Client module [ appclient_dep_compat_client.jar ] exists within [ appclient_dep_compat ]. 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppClientURI</td><td>The "java" element specifies the URI of a java application client module, relative to the top level of the application package test</td><td>[ appclient_dep_compat_client ] specifies the URI [ appclient_dep_compat_client.jar ] of a java application client module, relative to the top level of the application package [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.JarContainsXMLFile</td><td>Application deployment descriptor must be named META-INF/application.xml</td><td>Found deployment descriptor xml file [ META-INF/application.xml ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.ModulesExistEjb</td><td>Application's listed J2EE EJB modules exist in the Enterprise archive test</td><td>J2EE EJB module [ appclient_dep_compat_ejb.jar ] exists within [ appclient_dep_compat ]. 
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.EjbURI</td><td>The "ejb" element specifies the URI of a ejb-jar, relative to the top level of the application package test</td><td>[ Ejb1 ] specifies the URI [ appclient_dep_compat_ejb.jar ] of an ejb-jar, relative to the top level of the application package [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppPublicID</td><td>The application deployment descriptor has an expected PubidLiteral.</td><td>The deployment descriptor has the proper PubidLiteral: -//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN
+The deployment descriptor has the proper URL corresponding the the PubIdLiteral: http://java.sun.com/dtd/application_1_3.dtd
+</td>
+</tr>
+</table>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Not Applicable Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.app.AppAltDDAppClient</td><td>The Application may assign alternate application client deployment descriptor URI file test</td><td>There is no java application client alternative deployment descriptor in [ appclient_dep_compat_client ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppSecurityRole</td><td>Application security roles names test</td><td>There are no security role-name elements within this application [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppAltDDWeb</td><td>The Application may assign alternate web deployment descriptor URI file test</td><td>There are no web components in application [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.WebURI</td><td>The "web-uri" element specifies the URI of a web application file, relative to the top level of the application package test</td><td>There are no web components in application [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.ModulesExistWeb</td><td>Application's listed J2EE Web modules exist in the Enterprise archive test</td><td>There are no Web components in application [ appclient_dep_compat ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppAltDDEjb</td><td>The Application may assign EJB alternate deployment descriptor URI file test</td><td>There is no java EJB alternative deployment descriptor in [ Ejb1 ]
+</td>
+</tr>
+<tr valign="top">
+<td>tests.app.AppWebContext</td><td>All web modules in the application have a non-blank context-root test</td><td>There are no web components in application [ appclient_dep_compat ]
+</td>
+</tr>
+</table>
+
+
+<br>
+<hr WIDTH="100%">
+<br>
+<u><font size="+2">
+<bold>Other Test Results</bold>
+</font></u>
+<br>
+
+<br>
+<table cellspacing="0" cellpadding="4" border="1">
+<tr>
+<th colspan="3">Passed Tests</th>
+</tr>
+<tr>
+<th>Test Name</th><th>Test Assertion</th><th>Test Description</th>
+</tr>
+<tr valign="top">
+<td>tests.dd.ParseDD</td><td>Test parses the deployment descriptor using a SAX parser to avoid the dependency on the DOL</td><td>PASSED [EJB]: session-type is Stateless.
+PASSED [EJB]: transaction-type is Bean.
+</td>
+</tr>
+<tr valign="top">
+<td>tests.dd.ParseDD</td><td>Test parses the deployment descriptor using a SAX parser to avoid the dependency on the DOL</td><td>PASSED [App Client] : ejb-ref-type is Session.
+</td>
+</tr>
+</table>
+
+
+
+</body>
+</html>

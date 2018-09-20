@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Exclude_List_Tools" default="dist" basedir=".">
+
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="classes.dir" value="${basedir}/classes" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="zip.file" value="etool.zip" />
+	<property name="jarfile" value="etool.jar" />
+
+	<target name="dist" depends="jar">
+		<chmod file="bin/etool.sh" perm="555" />
+		<fixcrlf srcdir="bin" eol="unix" eof="remove" includes="**/*.sh" />
+
+		<zip destfile="${dist.dir}/${zip.file}">
+			<zipfileset dir="${basedir}/bin" prefix="etool/bin/" />
+			<zipfileset dir="${basedir}/Docs" prefix="etool/Docs/" />
+			<zipfileset dir="${basedir}/utils" prefix="etool/utils/" />
+			<zipfileset dir="${lib.dir}" prefix="etool/lib/" 
+						includes="${jarfile}" />
+		</zip>
+		
+		<delete file="${dist.dir}/${jarfile}"/>
+	</target>
+
+	<target name="clean" description="Cleans 'classes' and 'dist' directories">
+		<delete dir="${classes.dir}" />
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${lib.dir}" />
+	</target>
+
+	<target name="-prepare">
+		<tstamp />
+		<mkdir dir="${classes.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${lib.dir}" />
+	</target>
+
+	<target name="compile" 
+			depends="-prepare"
+			description="Builds 'src' directory.">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" debug="true">
+		</javac>
+	</target>
+
+	<target name="jar" 
+			depends="clean, compile" 
+			description="Generates etool.jar in the 'lib' directory.">
+		<jar jarfile="${lib.dir}/${jarfile}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.sun.ts.tools.Etool"/>
+            </manifest>
+		</jar>
+	</target>
+
+	<target name="run" depends="jar">
+		<property name="excludelist" value="/Users/rsoconne/Documents/workspace/adc_javaeetck-7.0-patch/install/j2ee/bin/ts.jtx"/>
+		<property name="version" value="7"/>
+	    <ant dir="./bin" target="test_list"/>
+	</target>
+	
+</project>

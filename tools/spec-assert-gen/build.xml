@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Specification Assertion Generation Tool" default="compile" basedir=".">
+
+  <property name="src"        value="${basedir}/src"/>
+  <property name="classes"    value="${basedir}/classes"/>
+  <property name="jdom-jar"   value="../master-libs/jdom.jar"/>
+  <property name="pkg"        value="com.sun.cts.utils.specassert"/>
+  <property name="class"      value="${pkg}.Driver"/>
+  <property name="common-dir" value="../common-utils"/>
+  <property name="common"     value="${common-dir}/classes"/>
+
+
+  <path id="cpath">
+    <pathelement location="${jdom-jar}"/>
+    <pathelement path="${classes}"/>
+    <pathelement path="${common}"/>
+  </path>
+
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+  </target>
+
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+      <ant dir="${common-dir}" inheritAll="false" target="compile"/>
+  </target>
+
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+
+  <property name="infile" value="test-data/in.xml"/>
+  <property name="outfile" value="test-data/out.xml"/>
+
+  <target name="run" depends="compile">
+    <delete file="${outfile}"/>
+    <java classname="${class}" fork="yes">
+      <classpath refid="cpath"/>
+      <arg value="${infile}"/>
+<!--      <arg value="${outfile}"/> -->
+      <jvmarg value="-Djava.compiler=NONE"/> 
+    </java>
+  </target>
+
+</project>

@@ -1,0 +1,137 @@
+<html>
+<head>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+	<title>insertbefore</title>
+</head>
+
+<body text="#000000" link="#0000ff" vlink="#0000ff">
+<h2>insertbefore</h2>
+<h3>Description:</h3>
+The insertbefore task traverses through a file looking for a specific string. If the string is located the insertString (or the contents of the insertFile file) is added to the output file directly before the current line the the string was found in. The number of occurrences can be specified to limit how pervasive the inserting is.
+<br>
+<br>
+<h3>Parameters:</h3>
+<table border="1" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+      <td>
+      <div align="center">
+      <p style="border: medium none ; padding: 0cm;"><b>Attribute</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="center">
+      <p style="border: medium none ; padding: 0cm;"><b>Description</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="center">
+      <p align="center" style="border: medium none ; padding: 0cm;"><b>Required</b></p>
+      </div>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">srcFile</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The source file which is read and searched.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes</p>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">destFile</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The destination file which contains the source file contents and any strings added as a result of the inserting.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes</p>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">occurrence</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The destination file which contains the source file contents and any strings added as a result of the inserting. The Default value is "all". The other values that can be specified are: "specific", or "after".</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">No</p>
+      </td>
+    </tr>    
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">index</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The index of which string to start the inserting.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes, if occurrence is set to "specific" or "after". </p>
+      </td>
+    </tr>     
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">searchString</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The string to search for in the srcFile.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes</p>
+      </td>
+    </tr> 
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">insertString</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The string to insert once a match is found in the srcFile.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes, if insertFile is not specified</p>
+      </td>
+    </tr>        
+    <tr valign="top">
+      <td>
+      <p style="border: medium none ; padding: 0cm;">insertFile</p>
+      </td>
+      <td>
+      <p style="border: medium none ; padding: 0cm;">The contents of a file  to insert once a match is found in the srcFile.</p>
+      </td>
+      <td>
+      <p align="center" style="border: medium none ; padding: 0cm;">Yes, if insertString is not specified</p>
+      </td>
+    </tr>    
+  </tbody>
+</table>
+<br>
+<h3>Examples:</h3>
+<code>    &lt;insertbefore srcFile="/tmp/html_basic.tld" destFile="/tmp/new.tld" occurrence="specific" index="1" searchString="&lt;/taglib" insertString="&lt;my-tag&gt;com.sun.ts.tests.jsf.common.tags.SillyArgsExtraInfo&lt;/my-tag&gt;" /&gt;<br>
+</code><br>
+<code>    &lt;insertbefore srcFile="/tmp/html_basic.tld" destFile="/tmp/new.tld" occurrence="specific" index="1" searchString="&lt;/taglib" insertFile="/tmp/testtag.tld" /&gt;<br>
+</code><br>
+
+
+</body></html>

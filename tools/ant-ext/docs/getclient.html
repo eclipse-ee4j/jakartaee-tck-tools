@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML	4.01 Transitional//EN">
+<html>
+<head>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+</head>
+<body>
+<h1>getclient</h1>
+<br>
+Given a	src dir, getclient tries to figure out the test	client class (e.g.,
+HelloTestClient.java). &nbsp;This information is needed	to run a single	test
+in javatest batch mode.	&nbsp;It collects all java source files	whose name
+contains the string "client" or	"Client", and select the first one.<br>
+<br>
+<h3>Parameters:</h3>
+<table border="1" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr	valign="Top">
+      <td>
+      <div align="Center">
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+    Attribute</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="Center">
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+    Description</b></p>
+      </div>
+      </td>
+      <td>
+      <div align="Center">
+      <p align="Center"	style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color;	border-right-width: medium; border-right-style:	none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color:	-moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm;	padding-left: 0cm; "><b>
+    Required</b></p>
+      </div>
+      </td>
+    </tr>
+    <tr	valign="Top">
+      <td>
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+    srcdir</p>
+      </td>
+      <td>
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+    where to search for	test client</p>
+      </td>
+      <td>
+      <p align="Center"	style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color;	border-right-width: medium; border-right-style:	none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color:	-moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm;	padding-left: 0cm; ">
+    Yes</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The same of the	test client java file (e.g., HelloTestClient.java) will	be
+assigned to property test.client.<br>
+<br>
+<h3>EXamples:</h3>
+<pre>&lt;target	name="get.client" unless="test.client"&gt;</pre>
+<pre>&nbsp; &lt;getclient srcdir="${ts.home}/src/${pkg.dir}"/&gt;</pre>
+<pre>&lt;/target&gt;</pre>
+</body>
+</html>

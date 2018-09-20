@@ -1,0 +1,5 @@
+This directory contains useful shell scripts to be used with the development
+tools within the CTS tools workspace.  Each script should contain a header with
+README type information at the top of the file.  If CTS developers have shell
+script or batch files that are useful tools or tie together CTS tools, this
+would be the place to put them.

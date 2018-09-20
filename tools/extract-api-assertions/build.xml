@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="API Assertion Extraction Tool" default="usage" basedir=".">
+
+	<property name="src" value="${basedir}/src" />
+	<property name="classes" value="${basedir}/classes" />
+	<property name="common.classes" value="${basedir}/../common-utils" />
+
+	<path id="cpath">
+		<pathelement path="${classes}" />
+		<pathelement path="${common.classes}/classes" />
+	</path>
+
+	<target name="clean">
+		<delete dir="${classes}" />
+	</target>
+
+	<target name="clean.all" depends="clean">
+		<ant dir="${common.classes}" inheritAll="false" target="clean" />
+	</target>
+
+	<target name="prepare">
+		<tstamp />
+		<mkdir dir="${classes}" />
+		<ant dir="${common.classes}" inheritAll="false" target="compile" />
+	</target>
+
+	<target name="compile" depends="prepare">
+		<javac srcdir="${src}" destdir="${classes}" debug="true">
+			<classpath refid="cpath" />
+		</javac>
+	</target>
+
+	<property name="verbose" value="false" />
+	<property name="prefix" value="WSC-" />
+	<property name="indir" value="${basedir}/test-data" />
+	<property name="outfile" value="${basedir}/extracted-ids.xml" />
+	<property name="filename.filter" value="(.*\.html)" />
+	<property name="class" value="com.oracle.ts.tools.extractor.txt.Driver" />
+
+	<target name="run" depends="compile">
+		<java classname="${class}" fork="yes" maxmemory="2048M">
+			<classpath refid="cpath" />
+			<arg value="${prefix}" />
+			<arg value="${indir}" />
+			<arg value="${outfile}" />
+			<arg value="${filename.filter}" />
+			<sysproperty key="verbose" value="${verbose}" />
+		</java>
+	</target>
+
+    <target name="usage">
+      <echo>
+This tool extracts assertion IDs from a set of text files.  The text files
+can be Java source files, Javadoc HTML files, or any other type of text file.
+
+Defined Targets:
+  usage    : Prints this message.  Default target.
+  clean    : Removes previously built classes of this tool.
+  clean.all: Removes previously built classes of this tool and dependent
+             libraries.
+  compile  : Builds the tool and dependent libraries.
+  run      : Runs the tool on the specified input. Depends on compile.
+      Definable Properties:
+        prefix (optional):
+                The string prepended to the regular expression that matches
+                any numeric value.  If omitted the empty string is used.
+                Valid assertion ID examples:
+                    JSP12345         prefix is JSP
+                    WebSockets4      prefix is WebSockets
+                    JSTL0000123      prefix is JSTL
+                    [WSC-1234]       prefix is WSC-
+        indir:
+                The base directory containing the text files to be searched.
+                This directory is recursively searched for file names that
+                match the specified regular expression (filename.filter).
+        outfile (optional):
+                The resulting XML ouput file containing the found
+                assertions.  If omitted the output file is written to the
+                base directory with the name extracted-ids.xml.
+        verbose (optional):
+                If set to true, prints the name of the file being processed.
+                Default is false.
+        filename.filter (optional):
+                Regular expression used to match file names.  Defaults to
+                (.*\.html) meaning all files that end with the .html extension
+                are searched for assertion IDs.
+      </echo>
+    </target>
+
+</project>

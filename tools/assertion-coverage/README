@@ -1,0 +1,54 @@
+This directory contains an assertion coverage tool.  This tool supports
+both API (Javadoc) and specification assertions.  Users must supply two
+input files to the tool.  The first input file is the assertion document
+for their technology area.  For API assertions this document can be
+created using the assert-gen script.  Specification assertions are
+traditionally done by hand.  The second input file is the list of tested
+assertions.  The API and specification version of this file can be created
+using the legacy assertion tool.  Users should see the README in
+<tools_ws>/legacy-assert.  Once the user has these two input files created
+they can run this tool on either the API or spec versions of their input
+documents.  So for a given technology users should run the tool twice,
+once for API assertions and once for spec assertions (this is 4 input
+files in total: API assertion doc, spec assertion doc, tested API
+assertion doc and tested spec assertion doc).
+
+The third parameter is an empty directory.  The tool generates a fair number
+of files that are hyperlinked together through an assertion summary page.
+
+Here is an example of how to run the assertion coverage tool.  This example
+is run across the JAXRPC technology area.  Note the tested assertion file
+was generated using the legacy assertion tool previous to running this tool.
+
+Example run of tool on JAXRPC:
+  For Javadoc (API) Assertions:
+    ant run -Dall-assertions-file=test-data/JAXRPCJavadocAssertions.xml \
+            -Dtested-assertions-file=test-data/api-tested-assertions.xml \
+            -Dcoverage-dir=api-out
+
+  For Spec Assertions:
+    ant run -Dall-assertions-file=test-data/JAXRPCSpecAssertions.xml \
+            -Dtested-assertions-file=test-data/spec-tested-assertions.xml \
+            -Dcoverage-dir=spec-out
+
+Note: This tool now supports a cparent property.  If the cparent property
+is set to false, no parent assertions will be used when calculating assertion
+coverage numbers.  If cparent is set to true parent assertion will be used in
+calculating assertion coverage numbers.  If you use parent assertions when
+calculating coverage numbers you will get slightly lower coverage numbers
+than if you don't include parent assertions.  The cparent property defaults
+to false.
+
+Example not using parent assertions in coverage numbers:
+    ant run -Dall-assertions-file=test-data/JAXRPCJavadocAssertions.xml \
+            -Dtested-assertions-file=test-data/api-tested-assertions.xml \
+            -Dcoverage-dir=api-out -Dcparent=false
+    OR (since the cparent property defaults to false)
+    ant run -Dall-assertions-file=test-data/JAXRPCJavadocAssertions.xml \
+            -Dtested-assertions-file=test-data/api-tested-assertions.xml \
+            -Dcoverage-dir=api-out
+
+Example using parent assertions in coverage numbers:
+    ant run -Dall-assertions-file=test-data/JAXRPCJavadocAssertions.xml \
+            -Dtested-assertions-file=test-data/api-tested-assertions.xml \
+            -Dcoverage-dir=api-out -Dcparent=true

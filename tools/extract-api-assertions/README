@@ -1,0 +1,38 @@
+This directory contains a simple tool that extracts assertion IDs out of
+text files.  This includes html files as well as Java source files.
+It will work on any text file or sets of text files.  This is meant to be used
+on API specifications that have embedded assertion IDs provided by the
+specification lead.
+
+The assertion IDs have the format <TECHNOLOGY-ID>integer.  Examples of valid
+IDs are:
+
+    JSP12345
+    WebSockets4
+    JSTL0000123
+    [WSC-1234]
+    
+This tool will take a directory as input.  This directory will be searched
+recursively looking for file names that match the regular expression supplied
+by the user.
+
+Each matching file will be scanned for assertion IDs that match the format
+described above.  If an assertion is found it will be added to the output
+document.  The format of the output document is compatible with the existing
+assertion coverage tools.  The output file of this tool can be used as input to
+the assertion coverage tool.  In practice, developers will run this tool to
+create an XML file containing the API assertions.  They will place this file
+under source control.  This file can then be used within the targets defined
+in the TS_HOME/spider/bin/coverage-build.xml file to calculate coverage metrics.
+
+This tool takes four parameters.  The input directory containing the text files,
+the output file (optional), the technology-id prefix (optional), and a
+regular expression used to match file names.  If no output file is specified,
+a file named extracted-ids.xml is written to the base directory of the tool.
+If no technology-id prefix is provided the empty string is used.
+Meaning all integers in the file will be considered valid assertion IDs.
+
+This tool will report non-unique IDs found within the processed text files in
+the form of a warning message.  Meaning the tool echos the non-unique IDs to the
+console and keeps on running.  Users should check the non-unique IDs to ensure
+the same ID has not been used to define two separate assertions.

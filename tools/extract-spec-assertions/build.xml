@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Spec Assertion Extraction Tool" default="usage" basedir=".">
+
+  <property name="src"              value="${basedir}/src"/>
+  <property name="classes"          value="${basedir}/classes"/>
+  <property name="pdfbox-jar"       value="${basedir}/../master-libs/pdfbox-app-1.8.6.jar"/>
+
+  <path id="cpath">
+    <pathelement location="${pdfbox-jar}"/>
+    <pathelement path="${classes}"/>
+  </path>
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+   </target>
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+   </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+  <target name="build" depends="compile"/>
+	
+  <property name="prefix"        value="WSC"/>
+  <property name="output-prefix" value=""/>
+  <property name="infile"        value="${basedir}/test.pdf"/>
+<!--
+  <property name="infile"        value="${basedir}/JSR356_ProposedFinalDraft1.pdf"/>
+ -->
+  <property name="outfile"       value="${basedir}/extracted-ids.xml"/>
+  <property name="legacy-format" value="false"/>
+  <property name="debug"         value="false"/>
+  <property name="class"         value="com.oracle.ts.tools.extractor.pdf.Driver"/>
+	
+  <target name="run" depends="compile">
+    <java classname="${class}" fork="yes" maxmemory="2048M">
+      <classpath refid="cpath"/>
+      <arg value="${prefix}"/>
+      <arg value="${infile}"/>
+      <arg value="${outfile}"/>
+      <arg value="${output-prefix}"/>
+        <sysproperty key="legacy-format" value="${legacy-format}"/>
+        <sysproperty key="debug" value="${debug}"/>
+    </java>
+  </target>
+
+	<target name="usage">
+	  <echo>
+This tool extracts assertion IDs out of text based specifications. The
+assumed format of the specifications is PDF.  See the README for more details.
+
+Defined Targets:
+  usage  : Prints this message.  Default target.
+  clean  : Removes previously built classes.
+  build  : alias -> calls compile.
+  compile: Builds the tool.
+  run    : Runs the tool on the specified input. Depends on compile.
+	  Definable Properties:
+	     prefix (optional):
+	            The string prepended to the regular expression that matches
+	            any numeric value in the PDF spec.  If omitted, the empty
+	  	        string is used.
+	            Valid assertion ID examples:
+	                [JSP12345]         prefix is JSP
+	                [WebSockets4]      prefix is WebSockets
+	                [JSTL0000123]      prefix is JSTL
+                    [WSC-1234]         prefix is WSC
+                    [WSC 1234]         prefix is WSC
+	     infile:
+	            The PDF to search for assertion IDs.
+	     outfile (optional):
+	            The resulting XML ouput file containing the
+	            found assertions.  If omitted the output file is written to the
+	            base directory with the name extracted-ids.xml.
+         output-prefix (optional):
+	  	        A string prepended to the assertion IDs found within
+		        the PDF specification.  Defaults to "&lt;specified-prefix&gt;:SPEC:".
+         legacy-format (optional):
+	  	        All the asserion IDs found in the spec pdf are passed through as
+	  	        they exist in the document with "-"s replaced with "."s in the
+	  	        numeric portion of the ID.  This mode is not recommended.  It
+	  	        should never be used unless there is a very specific and
+	  	        justifiable reason.  Default value is false.
+	  	          Examples (if set to true):
+                        [WSC-1-2.3.4-5]  ->  WSC:SPEC:WSC-1.2.3.4.5
+                        [WSC 1-2.3.4-5]  ->  WSC:SPEC:WSC-1.2.3.4.5
+         debug (optional):
+	  	        Defaults to false.  When set to true produces an output message
+	  	        showing the raw assertion ID and the normed ID.
+
+      See the README for more details.
+	  </echo>
+	</target>
+</project>

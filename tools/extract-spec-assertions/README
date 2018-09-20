@@ -1,0 +1,66 @@
+This directory contains a simple tool that extracts assertion IDs out of
+text based specifications.  The assumed format of the specifications is PDF.
+The assertion IDs have the format <TECHNOLOGY-ID>integer.  Examples of valid
+IDs are:
+
+    [JSP12345]
+    [WebSockets4]
+    [JSTL0000123]
+    [WSC-1234]
+    [WSC 1234]
+    [WSC 1.2.3.4]
+    [WSC 1.2-3.4]
+    
+This tool will take as input the PDF specification and output an XML file
+whose format is compatible with the existing assertion coverage tools.  So
+instead of CTS developers creating a spec assertion document in XML format by
+hand, they will automatically create it using this tool.  The output file of
+this tool can be used as input to the assertion coverage tool.  In practice,
+developers will run this tool to create an XML file containing the spec
+assertions.  They will place this file under source control.  This file can
+then be used within the targets defined in the
+TS_HOME/spider/bin/coverage-build.xml file.
+
+This tool takes four parameters.  The input file (PDF specification), the
+output file (optional), the technology-id prefix (optional), and an output
+prefix that can be prepended to the IDs found in the PDF specification
+(optional).  If no output file is specified, a file named extracted-ids.xml
+is written to the base directory of the tool.  If no technology-id prefix is
+provided the empty string is used.  If no output prefix is provided the output
+prefix is set to <technology-id prefix>:SPEC:
+
+Some examples:
+
+Here are some example of generated assertion IDs, if the user specified:
+
+input-prefix -> "WSC"
+output-prefix -> "Websockset:SPEC:"
+      [WSC 1.2.3-4-5.6]  ->  Websockset:SPEC:1.2.3-4-5.6
+      [WSC-1.2-3]        ->  Websockset:SPEC:1.2-3
+
+input-prefix -> "WSC"
+output-prefix -> none specified
+      [WSC 1.2.3-4-5.6]  ->  WSC:SPEC:1.2.3-4-5.6
+      [WSC-1.2-3]        ->  WSC:SPEC:1.2-3
+
+Users can also specify the legacy-format flag.  This flag will produce assertion
+IDs similar to the IDs that the first version of this tool produced.  Users
+should not set this flag to true unless they absolutely have to for some really
+good reason.  The legacy-format flag is defaulted to false.
+Here are some examples of what the legacy-format flag will do:
+   ID found in PDF specification -> output to xml file
+      [WSC 1.2.3-4-5.6]  ->  WSC:SPEC:WSC-1.2.3.4.5.6
+      [WSC-1.2-3]        ->  WSC:SPEC:WSC-1.2.3
+
+This tool will report non-unique IDs found within the PDF specification in the
+form of warning message.  Meaning the tool echos the non-unique IDs to the
+console and keeps on running.  Users should check the non-unique IDs to ensure
+the same ID has not been used to define two separate assertions.
+
+***Note:  This tool was originally written to find and normalize assertion IDs
+          within the Websocket specification.  This is the reason for the
+          legacy-format flag.  This allows the tool to produce assertion IDs
+          similar to the ones used to calculate coverage for the websocket spec.
+          CTS developers should drop this format and retag their TCK tests with
+          the correct assertion IDs.
+          

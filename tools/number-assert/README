@@ -1,0 +1,78 @@
+01/25/02
+
+Overview
+--------
+This directory contains a very simple minded application that
+replaces a specified tag (string) with a counter within a specified
+input file.  For instance a user may have the following XML file:
+
+<?xml version="1.0"?>
+<root>
+  <ID>some title ID:_NUMBER_</ID>
+  <ID>some title ID:_NUMBER_</ID>
+  <ID>some title ID:_NUMBER_</ID>
+  <ID>some title ID:_NUMBER_</ID>
+  <ID>some title ID:_NUMBER_</ID>
+</root>
+
+The user would like to number each ID.  The tool can be used
+to replace each occusrrence of the _NUMBER_ string with a counter.
+The user must specify an input file to be numbered.  Optionally a
+user can specify an output file to write the results to (if no
+output file is specified the output file will be the input file with
+a ".out" extension appended).  The user may also specify the initial
+counter value (optional) to start the counter at as well as the
+increment value (optional).  User may also supply the string value
+that the application will replace with the counter value (optional).
+Note: If two or more number replace tags are located on the same
+line within the input file the same counter value will be used to
+replace all occurrences.  Example output below:
+
+command run: ant -Dinput_file=x.in run
+
+<?xml version="1.0"?>
+<root>
+  <ID>some title ID:1</ID>
+  <ID>some title ID:2</ID>
+  <ID>some title ID:3</ID>
+  <ID>some title ID:4</ID>
+  <ID>some title ID:5</ID>
+</root>
+
+This tool can be compiled and executed using the ant build file that
+comes with the tool.  It can also be run from the command line using
+the java interpretter.
+
+
+Required Packages
+-----------------
+Users must install (or have installed) J2SE version 1.3 or higher and
+Apache's Ant build tool, version 1.4.1 or higher.  J2SE 1.3 can be
+downloaded from http://java.sun.com/j2se/1.3/.  Apache's Ant can be
+downloaded from http://jakarta.apache.org.  Follow the install
+instructions included with each distribution.  Users do not have to
+use Ant if they do not wish too, see the "Command Line Usage" section
+for details of running without ant.
+
+
+Command Line Usage
+------------------
+java -cp <path_to_classes> -input_file file [-output_file file]
+     [-replace_tag tag] [-inc_num number] [-start_num number]
+
+
+Supported Ant Targets
+---------------------
+  clean  : removes the build class files
+  compile: (default target) builds the tool
+  dist   : creates a set of distribution files under "dist" directory
+  run    : runs the tool on the specified input file
+
+
+Ant Usage
+---------
+ant -Dinput_file=file [-Doutput_file=file] [-Dreplace_tag=tag]
+    [-Dinc_num=number] [-Dstart_num=number] run
+
+
+

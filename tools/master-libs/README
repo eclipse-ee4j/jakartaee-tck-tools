@@ -1,0 +1,16 @@
+This directory contains library code used by various tools within the CTS
+tools workspace.  Each tool will be listed below with the current version
+of the tool and where it can be downloaded from.
+
+JDOM (jdom.jar 1.1.3) http://www.jdom.org/
+
+JavaTest (javatest.jar): version 3.0.2 http://javaweb.eng/jct/tools/javatest/index.html
+
+J2EE CTS (j2eects.jar): version from the 1.4 spider workspace on 4/11/02 
+
+ECS (ecs-1.4.2.jar): version 1.4.2 of ECS, a Java API for building HTML docs
+	http://jakarta.apache.org/ecs/index.html
+
+	
+Apache PDFBox version 1.8.6  http://incubator.apache.org/pdfbox/:
+    Used by extract-spec-assertions tool to pull assertion IDs out of PDF files.  Experimental.

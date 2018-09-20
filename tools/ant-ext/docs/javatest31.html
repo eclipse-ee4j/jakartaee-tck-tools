@@ -1,0 +1,121 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="GENERATOR"
+ content="Mozilla/4.79C-CCK-MCD  [en] (X11; U; SunOS 5.8 sun4u) [Netscape]">
+ <!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+  <title></title>
+</head>
+  <body>
+  
+<center> 
+<h1> Quickstart Javatest 3.1</h1>
+</center>
+  
+<h2> Batch mode:</h2>
+  
+<ul>
+ <li> Run batch as usual (in a test directory, tsant runclient)</li>
+  <li> By default test report will be generated in /tmp/JTreport at the end
+of test run, and test.jtr files are&nbsp; generated in work directory /tmp/JTwork.
+&nbsp;You can specify a custom report.dir or work.dir via system properties,
+for example:</li>
+  <ul>
+    <li>tsant runclient -Dreport.dir="/home/bh123456/JTreport"</li>
+    <li>tsant runclient -Dwork.dir="/home/bh123456/JTwork"<br>
+    </li>
+  </ul>
+  <li> To skip test report, run runclient target with -Dreport.dir="".&nbsp;
+(tsant runclient -Dreport.dir="") .&nbsp;</li>
+ 
+</ul>
+  
+<h2> GUI mode:</h2>
+  
+<ul>
+ <li> Start GUI (tsant gui)</li>
+  <li> If there is no previous test run record,&nbsp; you will be prompted
+to create work directory.&nbsp; Enter /tmp/JTwork</li>
+  <li> Click the start icon on the tool bar to start running ALL tests in
+the testsuite.&nbsp; Start icon is the third item on the toolbar.</li>
+  <li> To run selected tests, right click the test folder, and select from
+context menu.</li>
+  <li> To generate test report, open report menu, and specify report directory 
+(/tmp/JTreport).&nbsp; Report will NOT be automatically generated.</li>
+  <li> Most of the time, you do not need to run configuration editor.&nbsp;
+Default values have been set for all required interview questions:</li>
+ 
+</ul>
+  
+<table border="1" cols="2" width="100%" nosave="">
+ <tbody>
+    <tr>
+ <td> 
+      <center><b>Question</b></center>
+ </td>
+  <td> 
+      <center><b><u>Default</u></b></center>
+ </td>
+ </tr>
+  <tr>
+ <td>env file</td>
+  <td>ts.home/bin/ts.jte</td>
+ </tr>
+  <tr>
+ <td>env</td>
+  <td>ts_unix or ts_win32</td>
+ </tr>
+  <tr>
+ <td>specify tests to run</td>
+  <td>No (run all tests in testsuite)</td>
+ </tr>
+  <tr>
+ <td>specify exclude list</td>
+  <td>Yes</td>
+ </tr>
+  <tr>
+ <td>which exclude list</td>
+  <td>ts.home/bin/ts.jtx</td>
+ </tr>
+  <tr>
+ <td>concurrency</td>
+  <td>1</td>
+ </tr>
+  <tr>
+ <td>time factor</td>
+  <td>1</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  
+<ul>
+ <li> If you need to create a new interview file (jti file), open configuration 
+menu =&gt; new.&nbsp; No defaults are used when you create a new interview 
+file.&nbsp; Alternatively, you can choose configuration menu =&gt; edit,
+and you will be editing the default interview settintgs.</li>
+  <li> Click stop icon on the toolbar to stop test run.</li>
+  <li> To view test run report, open report menu =&gt; view.&nbsp; Javatest
+has a built-in browser to view test report.</li>
+ 
+</ul>
+  <br>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79C-CCK-MCD  [en] (X11; U; SunOS 5.8 sun4u) [Netscape]">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+</head>
+<body>
+
+<h1>
+Quick Start for Using tsant in j2eects</h1>
+
+<ol>
+<li>
+bringover the following directories:</li>
+
+<ol>
+<li>
+src/com/sun/ts/tests/common/vehicle</li>
+
+<li>
+lib</li>
+
+<li>
+install</li>
+
+<li>
+dist</li>
+
+<li>
+tools</li>
+
+<li>
+your test areas, including tests/common if necessary.</li>
+</ol>
+
+<li>
+cd ts.home/install/j2ee, type "<tt>ant setup</tt>". This will setup j2eects
+(Do NOT run <tt>setup</tt> script that were used for setup tsmake)</li>
+
+<ol>
+<li>
+If ant command not found:</li>
+
+<ol>
+<li>
+setenv ANT_HOME $TS_HOME/tools/ant</li>
+</ol>
+
+<ol>
+<li>
+cd $ANT_HOME/bin</li>
+
+<li>
+chmod +x *</li>
+
+<li>
+cd $TS_HOME/install/j2ee</li>
+
+<li>
+$ANT_HOME/bin/ant setup</li>
+</ol>
+</ol>
+
+<li>
+cd $TS_HOME/bin, edit build.properties, ts.jte.&nbsp; Edit ts_env only
+if you also want to use tsmake.</li>
+
+<ol>
+<li>
+ts.jte is not affected by the make-to-ant conversion, and edit it as usually.</li>
+
+<li>
+3 ways to assign value to a property in bin/build.properties (The first
+two are preferred):</li>
+
+<ol>
+<li>
+use the actual value.&nbsp; For example,</li>
+
+<ol>
+<li>
+j2ee.home=/home/ab123456/j2eesdk</li>
+
+<li>
+j2ee.home.ri=/home/ab123456/j2eesdk</li>
+</ol>
+
+<li>
+use in-file reference.&nbsp; For example,</li>
+
+<ol>
+<li>
+j2ee.home=/home/ab123456/j2eesdk</li>
+
+<li>
+j2ee.home.ri=${j2ee.home}</li>
+</ol>
+
+<li>
+take value from shell.&nbsp; For example,</li>
+
+<ol>
+<li>
+j2ee.home=${env.J2EE_HOME}</li>
+
+<li>
+j2ee.home.ri=${env.J2EE_HOME_RI}</li>
+</ol>
+</ol>
+
+<li>
+NOTE: Never use backslash as file separator in build.properties, even in
+Windows.&nbsp; build.properties is consumed by ant and java.</li>
+</ol>
+
+<li>
+set path = ( $path $TS_HOME/bin ), of course in csh.</li>
+
+<li>
+type <tt>tsant,</tt> it should show you usage message.</li>
+
+<li>
+cd $TS_HOME/src/com/sun/ts/tests/samples, type "<tt>tsant clean build</tt>",
+or "<tt>tsant clean build runclient</tt>" to run tests.&nbsp; Use "<tt>tsant
+compile</tt>" for compilation without packaging.</li>
+
+<li>
+<tt>setenv HARNESS_DEBUG true; tsant runclient</tt> to have detailed output.</li>
+
+<li>
+cd $TS_HOME/src/com/sun/ts/tests/samples/ejb/ee/simpleHello, type "<tt>
+tsant ld</tt>" to list generated archives, type "<tt>tsant lc</tt> " to
+list class files.&nbsp; Use "<tt>tsant lld</tt>" and "<tt> tsant llc</tt>"
+for long list.</li>
+
+<li>
+cd $TS_HOME/bin, type "<tt>tsant initdb</tt>" to initdb.&nbsp; Only available
+in bin directory.</li>
+
+<li>
+cd $TS_HOME/bin, type "<tt>tsant start.sunri.porting.server</tt> "</li>
+
+<li>
+<tt>tsant -Dtest=twobeanTest1 runclient</tt> to run a single test.</li>
+
+<li>
+<tt>tsant -Dmultiple.tests="com/sun/ts/tests/samples/ejb/ee/simpleHello com/sun/ts/tests/ejb/ee/bb jdbc/ee/dateTime"
+runclient</tt> to run multiple tests in discrete directories.</li>
+
+<li>
+To run smoke tests: <font face="Courier New, Courier, monospace">cd $TS_HOME/src/com/sun/ts/tests;
+tsant -buildfile smoke.xml usage</font> .</li>
+
+<li>
+To rebuild tsharness.jar,<font face="Courier New, Courier, monospace">
+cd $TS_HOME/bin; tsant tsharness</font>.</li>
+
+<li>
+To rebuild tck specific jar, <font face="Courier New, Courier, monospace">cd
+$TS_HOME/bin; tsant tslib.</font></li>
+
+<li>
+To rebuild both tsharness.jar and tck specific jar, <font face="Courier New, Courier, monospace">cd
+$TS_HOME/bin; tsant build.all.jars</font></li>
+
+<li>
+To build the whole workspace, <font face="Courier New, Courier,	monospace">cd
+$TS_HOME/bin; tsant build.all.&nbsp; </font>In a bundle, it rebuilds all
+tests; in a workspace, it rebuilds all tests and tsharness.jar and tck
+specific jar.</li>
+
+<li>
+To build all tests without rebuilding harnesss, <font face="Courier New, Courier, monospace">cd
+$TS_HOME/bin; tsant build.all.tests</font></li>
+
+<li>
+To remove all generated files in classes and dist dir, <font face="Courier New,	Courier, monospace">cd
+$TS_HOME/bin; tsant clean.all</font></li>
+
+<li>
+Performance tip: <font face="Courier New, Courier, monospace">setenv ANT_OPTS="-Xms64m
+-Xmx128m</font>".&nbsp; You may want to put this line in <font face="Courier	New, Courier, monospace">.cshrc.
+
+</font>The exact number may vary depending on your system.&nbsp; This
+sets the initial heap size and max heap size for tsant to 64M and 128M,
+respectively.&nbsp; If not set, the default is used (2M and 64M, respectively)</li>
+</ol>
+
+</body>
+</html>

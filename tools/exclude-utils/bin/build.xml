@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Exclude_List_Tools" default="usage" basedir=".">
+
+	<property environment="env" />
+	<property name="etool.home" value="${env.ETOOL_HOME}" />
+
+	<target name="etool.home" unless="env.ETOOL_HOME">
+		<fail message="Please set the &quot;ETOOL_HOME&quot; environment variable to etool installation directory." />
+	</target>
+
+	<target name="usage" depends="etool.home">
+		<echo>USAGE EXAMPLE: ant test_list -Dexcludelist=/ts/javaeetck/bin/ts.jtx -Dversion=6</echo>
+		<echo>Use ant -p to see all valid targets.</echo>
+	</target>
+	
+	<target name="test_list" depends="etool.home" 
+			description="Tests the specified excludelist to the correct version of a master list.">
+        <echo message="*** excludelist: &quot;${excludelist}&quot;"/>
+        <echo message="*** version    : &quot;${version}&quot;"/>
+		<java jar="${etool.home}/lib/etool.jar" fork="true">
+			<arg value="test_list"/>
+			<arg value="${excludelist}"/>
+			<arg value="${version}"/>
+		</java>
+	</target>
+	
+	<target name="create_xml" depends="etool.home"
+			description="Builds an xml file based on the specified excludelist and version">
+		<java jar="${etool.home}/lib/etool.jar" fork="true">
+			<arg value="create_xml"/>
+			<arg value="${excludelist}"/>
+			<arg value="${version}"/>
+		</java>
+	</target>
+
+</project>

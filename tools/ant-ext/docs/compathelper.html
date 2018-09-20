@@ -1,0 +1,406 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79C-CCK-MCD  [en] (X11; U; SunOS 5.9 sun4u) [Netscape]">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+</head>
+<body>
+
+<h1>
+compathelper</h1>
+It is designed to faciliate compiling and packaging compat tests using
+earlier version of JDK and J2EE. The following targets are designed for
+compat tests only:
+<ul>
+<li>
+init.compat: clean up, check java version and RI version, check existence
+of class and archive files under SCCS</li>
+
+<li>
+compile.compat: clean up and compile (compiled class files are in class
+dir only)</li>
+
+<li>
+build.compat: clean up, compile, package (generated archive files are put
+in both src and dist dirs, compiled class files are put in both src and
+class dirs)</li>
+</ul>
+Before running any of these targets, you need to setup your environment
+properly:
+<ul>
+<li>
+setenv JAVA_HOME to JDK 1.2 or JDK 1.3, depending on your compat level.</li>
+
+<li>
+set j2ee.home.ri in bin/ts.jte to j2eesdk 1.2, or j2eesdk 1.3 installation.</li>
+
+<li>
+remove the $ts.home/lib/tspackager.jar from the ts.classpath in the ts.jte
+file to avoid conflicts with the 1.4 packager</li>
+</ul>
+These two conditions will be enforced by compathelper.&nbsp; Therefore,
+all compat-related targets (build.compat, package.compat) must depend on
+compathelper.&nbsp; You can define a init.compat target that will be the
+dependency of compile.compat and build.compat.
+<p>For compat tests, archives (jar, war, rar, ear) will be generated in
+both dist and src directories.&nbsp; They must be checked into sccs after
+building and testing.&nbsp; Alll classes files should also be checked into
+sccs.&nbsp; The following are steps to build compat tests:
+<ul>
+<li>
+setenv JAVA_HOME to JDK 1.2 or JDK 1.3, depending on your compat level.</li>
+
+<li>
+set j2ee.home.ri in bin/ts.jte to j2eesdk 1.2, or j2eesdk 1.3 installation.</li>
+
+<li>
+sccs edit class files if you have modified the java sourcel</li>
+
+<li>
+sccs edit archives in src dir.</li>
+
+<li>
+tsant build.compat</li>
+
+<li>
+reset JAVA_HOME and j2ee.home.ri</li>
+
+<li>
+tsant build</li>
+
+<li>
+tsant runclient</li>
+
+<li>
+sccs delget class files and archives</li>
+
+<br>To avoid repeatedly editing ts.jte, set j2ee.home.ri=${env.J2EE_HOME_RI}
+in ts.jte, switch J2EE_HOME_RI in shell between different versions. Or
+you can use a soft link.</ul>
+<b>Note that the regular package target will NOT do any packaging work.&nbsp;
+Instead, it copies archives to dist dir and class files to class dir</b>.&nbsp;&nbsp;<b>
+Only this target will be invoked by the release engineer, who builds from
+top of the source tree.</b>
+<br>&nbsp;
+<h2>
+Some assumptions and restrictions:</h2>
+
+<ul>
+<li>
+You can only build compat tests at leaf directories, and do NOT attempt
+to build from any non-leaf dir.&nbsp; This is so designed since building
+compat tests also involves checking out and checking into sccs.</li>
+
+<li>
+Do not combine targets when building compat tests. They are either unnecessary
+or even harmful.&nbsp; For instance, the following are wrong usage: <font face="Courier New,Courier">tsant
+build.compat build, tsant build, tsant clean compile.compat.</font></li>
+
+<li>
+All compat tests must reside under tests/compat&lt;version_number></li>
+
+<li>
+All compat tests should not have any reference to, or dependency on java
+source outside their parent directory tests/compat&lt;version_number>.&nbsp;
+If there is such dependency, you must specify it using cleanpkgdirs attribute
+of compathelper task.</li>
+
+<li>
+<font face="Courier New,	Courier, monospace">Compile </font>target, which
+are present in all non-compat build.xml, should be removed from all compat-test
+build.xml files.</li>
+
+<li>
+<font face="Courier New,	Courier, monospace">package </font>target must
+comprise of a <font face="Courier New, Courier, monospace">package </font>task,
+which in turn must contain 2 <font face="Courier	New, Courier, monospace">copy
+</font>tasks,
+one for archives and the other for class files.</li>
+
+<li>
+To simplify the handling of runtime.xml files in compat service tests,
+do NOT use the generic runtime.xml files in vehicles directories.&nbsp;
+Instead, use the one specific for the current test directory and name them
+after the ear's name.&nbsp; For instance, if the ear is named connection_servlet_vehicle_web.ear,
+name its runtime.xml file connection_servlet_vehicle_web.runtime.xml.&nbsp;
+If the corresponding non-compat service tests use the generic runtime.xml
+files, or named differently than the ear's name, you need to look at the
+dist dir for that corresponding non-compat service tests for correct runtime.xml
+files.</li>
+</ul>
+
+<h2>
+Checklist for compat-tests build files (at risk of repetition):</h2>
+
+<ul>
+<li>
+There exist 3 compat-related targets: init.compat, compile.compat, build.compat</li>
+
+<li>
+init.compat contains compathelper task</li>
+
+<li>
+compile.compat depends on init.compat, and contains an ant task to ts.home/bin/build.xml</li>
+
+<li>
+build.compat depends on init.compat and compile.compat, and contains 1
+package task</li>
+
+<li>
+no compile target</li>
+
+<li>
+build target depends solely on package target</li>
+
+<li>
+package target has no dependency and contains 2 copy tasks, one for copying
+*.class to class dir, and the other for copying archives to dist dir</li>
+
+<li>
+neither build nor package target can contain any of the following tasks:
+ejb-jar, webwar, appear, resrar, clientjar, jar</li>
+
+<li>
+above contracts are validated by compathelper.</li>
+
+<br>&nbsp;</ul>
+
+<h2>
+Additional NEED-TO-KNOW Information when Building compat tests:</h2>
+
+<h3>
+For compat12 tests:</h3>
+
+<ul>
+<li>
+Obtain the J2EE RI 1.2.1 which contains two fixes needed for CTS:</li>
+
+<ul>
+<li>
+- a props2XMLConverter fix to ensure the XML encoding is of the correct
+type; i.e.,</li>
+
+<ul>
+<li>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;?xml version="1.0" encoding="ISO-8859-1"?></li>
+</ul>
+
+<li>
+- DOCTYPE element for web apps was changed from web-app_2.2.dtd to web-app_2_2.dtd;
+i.e.,</li>
+
+<ul>
+<li>
+&nbsp; &lt;!DOCTYPE web-app PUBLIC '-//Sun Microsystems, Inc.//DTD Web
+Application 2.2//EN' 'http://java.sun.com/j2ee/dtds/web-app_2_2.dtd'></li>
+</ul>
+</ul>
+
+<li>
+This special J2EE RI 1.2.1 can be obtained from:</li>
+
+<ul>
+<li>
+/net/invalid.domain.com/re_maint/j2sdkee/j2eesdk_1.2.1/q</li>
+</ul>
+
+<li>
+For archives containing web.wars, be sure the context-root of the META-INF/application.xml
+is the same as that defined in the appname.ear.sun-application.xml.&nbsp;
+This must be hand-edited once the archive has been built.</li>
+
+<li>
+JDK 1.2.2_05 can be obtained from:</li>
+
+<ul>
+<li>
+/net/invalid.domain.com/files/JDK/binary/solaris/jdk1.2/Solaris_JDK_1.2.2_05</li>
+
+<li>
+/net/invalid.domain.com/files/JDK/bundles/solaris/jdk1.2/Solaris_JDK_1.2.2_05_sparc.bin</li>
+</ul>
+
+<h3>
+For compat13 tests:</h3>
+
+<li>
+For archives containing web.wars, be sure the context-root of the META-INF/application.xml
+is the same as that defined in the appname.ear.sun-application.xml.&nbsp;
+This must be hand-edited once the archive has been built.</li>
+
+<li>
+J2SDKEE 1.3.1_01 can be obtained from:</li>
+
+<ul>
+<li>
+/net/invalid.domain.com/disk2/releng/weekly/j2sdkee1.3.1_patch/j2sdkee1.3.1_01/b01/binaries</li>
+
+<li>
+net/invalid.domain.com/disk2/releng/weekly/j2sdkee1.3.1_patch/j2sdkee1.3.1_01/b01/bundles</li>
+</ul>
+
+<li>
+JDK 1.3.1_01 can be obtained from:</li>
+
+<ul>
+<li>
+/net/invalid.domain.com/files/JDK/binary/solaris/jdk1.3.1/solaris</li>
+</ul>
+
+<li>
+JDK 1.3.1_02 can be obtained from:</li>
+
+<ul>
+<li>
+/net/invalid.domain.com/files/JDK/bundles/solaris/jdk1.3.1/j2sdk-1_3_1_02-fcs-bin-b02-solsparc-13_nov_2001.sh</li>
+
+<br>&nbsp;</ul>
+</ul>
+When rebuilding compat tests for CTS 1.3.1 using the CTS-V1.3.1-patch workspace
+and the J2SDKEE 1.3.1_01 RI, the packager adds Application authentication
+to the resource-ref elements in ejb.xml even though Container is specified.&nbsp;
+This must be hand-edited when the package is complete.
+<h2>
+Parameters:</h2>
+
+<table BORDER CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;
+<br><tbody></tbody><tbody></tbody><tbody>
+<br></tbody></caption>
+
+<tr VALIGN=TOP>
+<td>
+<center><b>Attribute</b></center>
+</td>
+
+<td>
+<center><b>Description</b></center>
+</td>
+
+<td>
+<center><b>Required</b></center>
+</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none;	border-left-color: -moz-use-text-color;	padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">javaversion</div>
+</td>
+
+<td>JDK version (1.2 or 1.3)</td>
+
+<td>
+<center>Yes</center>
+</td>
+</tr>
+
+<tr>
+<td>riversion</td>
+
+<td>j2eesdk version (1.2 or 1.3)</td>
+
+<td>
+<center>Yes</center>
+</td>
+</tr>
+
+<tr>
+<td>cleanpkgdirs</td>
+
+<td>additional pkg.dirs to clean up berfore invoking compat tasks.&nbsp;
+<br>If not specified, the default is set to com/sun/ts/tests/&lt;test_area>.&nbsp;
+<br>If specified, user values will be appended to the default value.&nbsp;
+<p>For example,&nbsp;
+<br>If the current pkg.dir is com/sun/ts/tests/compat13/connector/localTx/connection,&nbsp;
+<br>then the default cleanpkgdirs will be com/sun/ts/tests/compat13, and
+the class directory and dist directory for&nbsp;
+<br>com/sun/ts/tests/compat13 will be cleaned up prior to executing any
+compat targets.&nbsp; This is handled automatically&nbsp;
+<br>by compathelper.&nbsp;
+<p>If the compat tests use or reference other package directories, you
+must specify cleanpkgdirs.&nbsp; For instance,&nbsp;
+<br>cleanpkgdirs="com/sun/ts/tests/common/ejb/wrapper, com/sun/ts/tests/ejb/ee/bb,
+com/sun/ts/tests/integration"</td>
+
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No</td>
+</tr>
+</table>
+
+<h2>
+Examples:</h2>
+&lt;?xml version="1.0"?>
+<br>&lt;project name="ejb_ee_compat13_oneXmany" basedir="." default="usage">
+<br>&nbsp; &lt;property name="pkg.dir" value="com/sun/ts/tests/ejb/ee/compat13/oneXmany"/>
+<br>&nbsp; &lt;property name="app.name" value="ejb_compat13_1xM"/>
+<p>&nbsp; &lt;target name="init.compat">
+<br>&nbsp;&nbsp;&nbsp; &lt;compathelper javaversion="1.3" riversion="1.3"/>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="compile.compat" depends="init.compat">
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="compile"/>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="build.compat" depends="init.compat, compile.compat">
+<br>&nbsp;&nbsp;&nbsp; &lt;package>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ejb-jar descriptor="${app.name}_ejb.xml"
+name="${app.name}">
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="${pkg.dir}/ADVC.class,
+${pkg.dir}/BDVC.class"/>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/ejb-jar>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;clientjar descriptor="ejb_pm_1xM_bi_btob_client.xml"
+name="${app.name}"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mainclass="com.sun.ts.tests.ejb.ee.compat13.oneXmany.Client">
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;support includes="${pkg.dir}/ADVC.class,
+${pkg.dir}/BDVC.class"/>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/clientjar>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;appear name="${app.name}"/>
+<br>&nbsp;&nbsp;&nbsp; &lt;/package>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="package">
+<br>&nbsp;&nbsp;&nbsp; &lt;package>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;copy overwrite="true" todir="${dist.dir}/${pkg.dir}">
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fileset dir="." includes="*.ear,
+*.rar, *.war, *.jar"/>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/copy>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;copy overwrite="true" todir="${class.dir}/${pkg.dir}">
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fileset dir="." includes="*.class"/>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/copy>
+<br>&nbsp;&nbsp;&nbsp; &lt;/package>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="build" depends="package"/>
+<p>&nbsp; &lt;target name="runclient">
+<br>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="runclient"/>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="clean" >
+<br>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="clean"/>
+<br>&nbsp; &lt;/target>
+<p>&nbsp; &lt;target name="usage">
+<br>&nbsp;&nbsp;&nbsp; &lt;ant antfile="build.xml" dir="${ts.home}/bin"
+target="usage"/>
+<br>&nbsp; &lt;/target>
+<br>&lt;/project>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

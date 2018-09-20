@@ -1,0 +1,118 @@
+Legacy Assertion Tool
+----------------------------------------------------------------
+
+Summary:  This tool will allow the creation of a basic assertion 
+          list document based of existing test assertions (@assertion_ids).
+
+Pre-conditions: Users must set their TS_HOME directory to a valid workspace.
+                
+                The test code that contains the assertion IDs MUST compile.  If
+                the code does not compile the JavaTest test finder may fail to
+                find assertion IDs.  Non-terminated strings are one case that
+                causes assertion IDs to be missed. The tool may even hang
+                indefinitely if the source code can not be properly parsed.
+                Non-terminated comments is one such case that can hang the tool.
+		
+Usage:
+     ant [-Dassertion.filter=<filter-string>] -Doutput.filename=<filename> -Dinitial.dir<dir> get.assertions
+
+     output.filename --> Name of the file to write the assertions to.
+     initial.dir     --> Starting location for the test finder.
+                         ex. -Dinitial.dir=/jsp will grab the assertions
+                             for JSP.  
+                             -Dinitial.dir=/servlet/ee/servlet will grab
+                             all servlet assertions under that directory
+                             tree.
+     assertion.filter--> Optional argument that specifies the technology that
+                         an assertion ID must belong to.  For instance, we may
+                         want to grab all J2EE assertions from all the tests
+                         defined under $TS_HOME/src/com/sun/ts/tests but we
+                         do NOT want other technologys' assertions to be in the
+                         generated output file.  We would set the <filter-string>
+                         to J2EE so only assertion IDs that start with the text
+                         "J2EE" are placed in the generated output files.  Think
+                         of this as an assertion filter.  Any assertion ID NOT
+                         starting with the specified text is ignored.  If this
+                         argument is omitted all the assertion IDs found will
+                         added to the generated output files.
+
+    If initial.dir is not specified, it will default to the base directory
+    and generate a list of all the assertions in the src tree.
+
+    If output.filename is not specified, it will default to assertions.xml.
+
+    The tools also supports some optional properties.  They include:
+
+    queue.handler.class --> This property specifies which test queue handler
+                            to use while processing the test descriptions
+                            held in the test queue.  User can add their
+                            own handlers by extending the abstract class
+                            com.sun.ts.legacy.QueueHandler.  If this property
+                            is not specified the DefaultSpecHandler is used.
+    
+                            Currently supported queue handlers include
+                            com.sun.ts.legacy.DefaultSpecHandler,
+                            com.sun.ts.legacy.DefaultAPIHandler,
+                            com.sun.ts.legacy.SplitCoverageHandler,
+                            com.sun.ts.legacy.SplitCoverageHandlerSet and 
+                            com.sun.ts.legacy.CoverageHandler.  The
+                            DefaultSpecHandler creates an XML outrput file that
+                            adheres to the spec assertion DTD.  All elements
+                            are empty except the assertion id, description
+                            (content pulled from the test strategy tag) and
+                            comment (content pulled from the test class name
+                            and test name).  The DefaultAPIHandlercreates an
+                            XML output file that adheres to the API assertion
+                            DTD.  All elements are empty except the assertion
+                            id, description (content pulled from the test
+                            strategy tag) and comment (content pulled from the
+                            test class name and test name).  The CoverageHandler
+                            produces an XML output file with the same content
+                            as the DefaultAPIHandler and DefaultSpecHandler
+                            except empty elements are omitted.
+                            The SplitCoverageHandler produces two output XML
+                            files, one for SPEC assertions and one for API
+                            assertions.  The SplitCoverageHandlerSet produces
+                            two XML files one for SPEC assertions and one for
+                            API assertions with no duplicate assertion IDs.
+                            Each assertion element only contains the assertion
+                            ID (each file is sorted by assertion ID).
+
+     NOTE: The DefaultSpecHandler, DefaultAPIHandler, SplitCoverageHandler and CoverageHandler
+           do not duplicate assertion IDs across containers for ServiceTests.  The Test
+           finder generates a test description for each test method.  If the test is part
+           of a service test the finder generates a test description for each vehicle as well.
+           So an assertion that appears in an assertion list once will have 4 test descriptions
+           generated by a test finder if it is a service test.  The handlers listed above process
+           an assertion ID once and ignore the fact that the test is run from 4 vehicles.  As a
+           test description is processed a string is created with the concatenation of the
+           fully qualified class name plus the test name plus the assertion ID.  This value is
+           unique across asertions but will be identical for an assertion run from different vehicles.
+           This string is dropped into a list and checked everytime an assertion is processed
+           to ensure the assertion was not already processed.  The SplitCoverageHandlerSet
+           test handler is not affected by this issue since it removes duplicate assertion IDs.
+
+     Example using the SplitCoverageHandler to process the jaxrpc test area:
+       
+       ant -Doutput.filename=jaxrpc-assertions.xml -Dinitial.dir=/jaxrpc \
+           -Dqueue.handler.class=com.sun.ts.legacy.SplitCoverageHandler get.assertions
+
+     Example using the SplitCoverageHandler to grab all the J2EE assertions from all
+     the tests under $TS_HOME/src.com.sun/ts/tests area:
+
+       ant -Dassertion.filter=J2EE -Doutput.filename=j2ee-assertions.xml -Dinitial.dir=/ \
+           -Dqueue.handler.class=com.sun.ts.legacy.SplitCoverageHandler get.assertions
+
+     There are some optional system properties that can be used with the
+     com.sun.ts.legacy.SplitCoverageHandlerSet, they are: unique.assertions.only and
+     all.assertion.fields.  If the unique.assertions.only is set to true no duplicate
+     assertions show up in the output files, if false all the assertion IDs show up
+     including dupes.  If the all.assertion.fields property is set to true then the
+     assertion IDs as well as the comment and description elements show up in the
+     output files, if false only the assertion IDs are written to the output files.
+     
+     *********************************
+     * Generating Assertion Coverage *
+     *********************************
+     To generate input files to the assertion-coverage tool, users must use the
+     SplitCoverageHandler just like the jaxrpc example above.

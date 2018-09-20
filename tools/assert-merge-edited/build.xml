@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Hand Edited Assertion Merge Tool" default="compile" basedir=".">
+
+  <property name="src"        value="${basedir}/src"/>
+  <property name="classes"    value="${basedir}/classes"/>
+  <property name="jdom-jar"   value="../master-libs/jdom.jar"/>
+  <property name="class"      value="com.sun.cts.utils.assertion.edit.MergeAssert"/>
+  <property name="common-dir" value="../common-utils"/>
+  <property name="common"     value="${common-dir}/classes"/>
+
+  <path id="cpath">
+    <pathelement location="${jdom-jar}"/>
+    <pathelement path="${classes}"/>
+    <pathelement path="${common}"/>
+  </path>
+
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+  </target>
+
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+      <ant dir="${common-dir}" inheritAll="false" target="compile"/>
+  </target>
+
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+
+<!--*****
+    ** The following property elements define all the possible command line
+    ** options accepted by the main class.  All input parameters are required.
+    ** The reason all the options have been enumerated is to allow people to
+    ** override the default values by using the -D option when invoking ant.
+    *****-->
+  <property name="verfile" value="test-data/verified-sample.xml"/>
+  <property name="newfile" value="test-data/new-sample.xml"/>
+  <property name="outfile" value="test-data/out-file.xml"/>
+
+  <target name="run" depends="compile">
+    <delete file="${outfile}"/>
+    <java classname="${class}" fork="yes">
+      <classpath refid="cpath"/>
+      <arg value="${verfile}"/>
+      <arg value="${newfile}"/>
+      <arg value="${outfile}"/>
+      <jvmarg value="-Djava.compiler=NONE"/> 
+    </java>
+  </target>
+
+  <target name="usage">
+    <echo>
+      Usage: ant run -Dverfile=verified_file -Dnewfile=new_file -Doutfile=output_file
+    </echo>
+  </target>
+
+</project>

@@ -1,0 +1,153 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79C-CCK-MCD  [en] (X11; U; SunOS 5.8 sun4u) [Netscape]">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+</head>
+<body>
+
+<h1>
+String</h1>
+It provides the similar methods to java.lang.String.&nbsp; You will need
+to taskdef it before using this task.
+<br>&nbsp;
+<h3>
+Parameters:</h3>
+
+<table BORDER CELLSPACING=0 CELLPADDING=0 >
+<caption><tbody>
+<br></tbody></caption>
+
+<tr VALIGN=TOP>
+<td>
+<center><b>Attribute</b></center>
+</td>
+
+<td>
+<center><b>Description</b></center>
+</td>
+
+<td>
+<center><b>Required</b></center>
+</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">this</div>
+</td>
+
+<td>
+<div style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color;	border-bottom-width: medium; border-bottom-style: none;	border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style:	none; border-left-color: -moz-use-text-color; padding-top: 0cm;	padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">the
+original string to operate on</div>
+</td>
+
+<td>
+<center>Yes</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>method</td>
+
+<td VALIGN=TOP>the method name (as in java.lang.String) to invoke</td>
+
+<td VALIGN=TOP>
+<center>Yes</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>return</td>
+
+<td VALIGN=TOP>the property to hold the return value</td>
+
+<td VALIGN=TOP>
+<center>Yes</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>arg1</td>
+
+<td VALIGN=TOP>first parameter of the method</td>
+
+<td VALIGN=TOP>
+<center>No</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>arg2</td>
+
+<td VALIGN=TOP>second parameter of the method</td>
+
+<td VALIGN=TOP>
+<center>No</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>arg3</td>
+
+<td VALIGN=TOP>thid parameter of the method</td>
+
+<td VALIGN=TOP>
+<center>No</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>arg4</td>
+
+<td VALIGN=TOP>fourth parameter of the method</td>
+
+<td VALIGN=TOP>
+<center>No</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>arg5</td>
+
+<td VALIGN=TOP>fifth parameter of the method</td>
+
+<td VALIGN=TOP>
+<center>No</center>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h3>
+EXamples:</h3>
+<font face="Courier New, Courier, monospace">&lt;taskdef name="string"
+classname="com.sun.ant.taskdefs.common.MyString"/></font>
+<br><font face="Courier New, Courier, monospace">&lt;string method="replace"
+this="ejb, jsp, servlet, jaxp, samples" arg1="," arg2=" " return="result"/></font>
+<p>After this task is executed, the property <font face="Courier New, Courier, monospace">result
+</font>is assigned the value "<font face="Courier New, Courier, monospace">
+ejb jsp servlet jaxp samples</font>", which is the same as executing the
+java statement:
+<br><font face="Courier New, Courier, monospace">String result = this.replace(arg1,
+arg2);</font>
+</body>
+</html>

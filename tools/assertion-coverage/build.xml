@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="Assertion Coverage Tool" default="compile" basedir=".">
+
+  <property name="src"              value="${basedir}/src"/>
+  <property name="classes"          value="${basedir}/classes"/>
+  <property name="common-utils-dir" value="${basedir}/../common-utils"/>
+  <property name="common-utils"     value="${common-utils-dir}/classes"/>
+  <property name="jdom-jar"         value="${basedir}/../master-libs/jdom.jar"/>
+  <property name="ecs-jar"          value="${basedir}/../master-libs/ecs-1.4.2.jar"/>
+
+  <path id="cpath">
+    <pathelement location="${jdom-jar}"/>
+    <pathelement location="${ecs-jar}"/>
+    <pathelement path="${classes}"/>
+    <pathelement path="${common-utils}"/>
+  </path>
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+   </target>
+
+  <target name="prepare">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+      <ant dir="${common-utils-dir}" inheritAll="false" target="compile"/>
+   </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+  <!-- If cparent is set to true the parent assertions are counted when   -->
+  <!-- calculating spec coverage numbers.  If cparent is set to any value -->
+  <!-- other than true the parent assertions are not counted in the spec  -->
+  <!-- coverage numbers.  The later version will give a higher coverage   -->
+  <!-- number.                                                            -->
+  <property name="cparent" value="false"/>
+  <property name="class" value="com.sun.ts.assertion.coverage.Driver"/>
+  <property name="all-assertions-file"    value=""/>
+  <property name="tested-assertions-file" value=""/>
+  <property name="coverage-dir"           value=""/>
+	
+  <!--
+   If true, looks to see if assertion IDs found in the source code exist
+   in the specified XML assertion document. If not found, an error is
+   echoed to the console.
+  -->
+  <property name="verify-source-code-ids" value="true"/>
+
+  <!--
+    Specifies a directory location where the javadoc assertion DTD lives.
+    If set to a non-zero length string an entity resolver is created using this
+    directory to find the DTD for the XML parser.  Defaults to the empty
+    string meaning, no resolver is used and the DTD is pulled from the URL.
+  -->
+  <property name="local-dtd-path" value=""/>
+
+  <target name="run" depends="compile">
+    <java classname="${class}" fork="yes" maxmemory="1000M">
+      <classpath refid="cpath"/>
+      <arg value="${all-assertions-file}"/>
+      <arg value="${tested-assertions-file}"/>
+      <arg value="${coverage-dir}"/>
+      <jvmarg value="-Djava.compiler=NONE"/> 
+      <sysproperty key="count.parent" value="${cparent}"/>
+      <sysproperty key="verify.source.code.ids" value="${verify-source-code-ids}"/>
+      <sysproperty key="local.dtd.path" value="${local-dtd-path}"/>
+    </java>
+  </target>
+
+</project>

@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="API Check Tool" default="build" basedir=".">
+
+  <property environment="env"/>
+  <property name="src"      value="${basedir}/src"/>
+  <property name="classes"  value="${basedir}/classes"/>
+  <property name="dist"     value="${basedir}/dist"/>
+  <property name="dist.jar" value="${dist}/apiCheck.jar"/>
+  <property name="package"  value="javasoft.sqe.apiCheck"/>
+
+  <!-- ${ts.home}/lib/tsharness.jar is included to allow the API check       -->
+  <!-- utility access to the SigLogIntf interface and SigLogAdapter class    -->
+  <!-- used to log messages from the API check utility to the CTS framework. -->
+  <path id="cpath">
+    <pathelement path="${classes}"/>
+    <pathelement location="${env.TS_HOME}/lib/tsharness.jar"/>
+  </path>
+
+  <target name="check.ts.home" unless="env.TS_HOME">
+    <fail message="Please set the &quot;TS_HOME&quot; environment variable."/>    
+  </target>
+
+  <target name="print.ts.home">
+    <echo message="TS_HOME = ${env.TS_HOME}"/>    
+  </target>
+
+  <target name="clean">
+      <delete dir="${classes}"/>
+      <delete dir="${dist}"/>
+   </target>
+
+  <target name="prepare" depends="check.ts.home,print.ts.home">
+      <tstamp/>
+      <mkdir dir="${classes}"/>
+   </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+      <classpath refid="cpath"/>
+    </javac>
+  </target>
+
+  <target name="build" depends="compile">
+    <tstamp/>
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist.jar}" basedir="${classes}" excludes="javasoft/sqe/apiCheck/BatchSetup.class">
+      <manifest>
+          <attribute name="Extension-Name"         value="apiCheck"/>
+          <attribute name="Specification-Title"    value="TS API Check"/>
+          <attribute name="Specification-Version"  value="1.4"/>
+          <attribute name="Implementation-Version" value="1.4"/> 
+          <attribute name="Specification-Vendor"   value="Sun Microsystems"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- Target used to update the recordApiCheck jar file in the TS_HOME/lib directory. -->
+  <!-- Only the BatchSetup class is added to the existing jar, be sure to checkout the -->
+  <!-- ${env.TS_HOME}/lib/recordApiCheck.jar before executing this task.               -->
+  <!-- The javasoft/sqe/apiCheck/Setup.class is included because System.exit calls had -->
+  <!-- to be removed to write the batch version of the record tool that takes a map    -->
+  <!-- file.                                                                           -->
+  <target name="build.record" depends="compile">
+    <tstamp/>
+    <jar jarfile="${env.TS_HOME}/lib/recordApiCheck.jar" basedir="${classes}" update="yes" includes="javasoft/sqe/apiCheck/BatchSetup.class,javasoft/sqe/apiCheck/Setup.class,javasoft/sqe/apiCheck/PackageList.class">
+
+      <manifest>
+          <attribute name="Extension-Name"         value="apiCheck"/>
+          <attribute name="Specification-Title"    value="API Check"/>
+          <attribute name="Specification-Version"  value="1.4"/>
+          <attribute name="Implementation-Version" value="1.4"/> 
+          <attribute name="Specification-Vendor"   value="Sun Microsystems"/>
+      </manifest>
+    </jar>
+  </target>
+
+</project>

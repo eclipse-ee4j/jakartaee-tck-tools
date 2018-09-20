@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>RunCTS Task Documentation</title>
+</head>
+<body>
+<big style="font-weight: bold;"><big>RunCTS</big></big><br>
+<br>
+<big style="font-weight: bold;">Description</big><br>
+<br>
+This task can be used to execute any subset of CTS tests.&nbsp; Users
+specify which test directories they would like to execute and the task
+executes each specified test area.&nbsp; The task also stops and starts
+the application server between the specified test directories.&nbsp;
+This is done to clear any memory leak type issues.&nbsp; This task will
+run CTS tests against an appserver DAS as well as a remote instance.<br>
+<br>
+This task also supports pre and post processors.&nbsp; These processors
+can be used before and after, respectively, a test area is
+executed.&nbsp; These can be used to perform some type of pre condition
+or post condition setup or processing.&nbsp; As an example, when
+collection code coverage metrics against the app server by running the
+entire CTS test suite, the RunCTS task is used and a post processor is
+specified.&nbsp; This post processor is responsible for collecting the
+coverage information from the multiple VMs running the appserver.&nbsp;
+Note, the RunCTS task starts the appserver, executes the list of
+preprocessors specified, runs the current test area, executes the list
+of post processors specified and then stops the appserver.&nbsp; This
+sequence is repeated for each specified test area.&nbsp; All pre and
+post processors must implement the
+com.sun.ant.taskdefs.common.RunCTSProcIntf interface.&nbsp; The
+interface definition and it's javadoc is listed below:<br>
+<br>
+<br>
+package com.sun.ant.taskdefs.common;<br>
+import java.util.Properties;<br>
+import org.apache.tools.ant.Project;<br>
+<br>
+public interface RunCTSProcIntf {<br>
+<br>
+&nbsp;&nbsp;&nbsp; /**<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * Post and Pre processor interface.&nbsp; This
+interface should be implemented by all<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * processors that will be plugged into the CTS
+Ant task that runs the CTS tests.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * The idea here is to add two hook points into
+the Ant task to allow users to<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * run pre and post processing code to
+configure and perhaps clean up after a<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * certain test area is run.&nbsp; These
+processing classes are specified using the<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * preprocs and postprocs attributes of the CTS
+ant task.&nbsp; These props are comma<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * delimited lists of classes that implement
+the RunCTSProcIntf.&nbsp; Please note<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * these classes must have a public no-arg
+constructor since instances are created using<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * the reflection API.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * A preprocessor and post processor example
+can be seen at RunCTSPreProcessor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * and RunCTSPostProcessor, respectively.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; *<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param currentTestDir The current test being
+executed<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param props A set of props that contain
+data needed by the processor<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @param project The current ant project, used
+for logging purposes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @return boolean Returns true if you want to
+continue executing tests areas.&nbsp; Returns<br>
+&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+false if you want the ant task to stop processing this test area.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; * @throws Exception If any unexpected error is
+encountered running the processor.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+It is better to catch all exceptions and use the boolean return<br>
+&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+value to indicate that the current test directory should no<br>
+&nbsp;&nbsp;&nbsp;&nbsp;
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+longer be processed since an error occurred.<br>
+&nbsp;&nbsp;&nbsp;&nbsp; */<br>
+&nbsp;&nbsp;&nbsp; public boolean execute(String currentTestDir,
+Project project, Properties props) throws Exception;<br>
+}<br>
+<br>
+<br>
+The RunCTS task also executes some pre-test tasks based on the test
+directory that is currently being executed.&nbsp; Specifically, the
+RMI/IIOP server is automatically started before executing any test that
+lives under the rmiiiop test directory.&nbsp; Currently, the RMI/IIOP
+server is not stopped by the RunCTS task, so users will have to
+manually kill the RMI/IIOP server process (future fix).&nbsp; Also,
+enable.jacc is called before any JACC test directories are
+executed.&nbsp; Note, the RunCTS task also cleans up the JACC logs, if
+they exist, since the logs must be deleted for the tests to run
+successfully.<br>
+<br>
+Some pre-condition test tasks are not performed by the RunCTS
+task.&nbsp; Specifically, users must run config.vi, start the pointbase
+database and init the database.&nbsp; When running interop tests users
+must execute the enable.csiv2 target on the RI machine.<br>
+<br>
+<br>
+<big style="font-weight: bold;">Parameters</big><br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">Attribute</span><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">Description</span><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">Required</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">reportdir</td>
+      <td style="vertical-align: top;">The directory where JavaTest
+should write its reports.&nbsp; Default value passed to RunCTS task is
+the value in ts.jte.</td>
+      <td style="vertical-align: top;">yes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">workdir<br>
+      </td>
+      <td style="vertical-align: top;">The directory where JavaTest
+should write its work data.&nbsp; Default value passed to RunCTS task
+is the value in ts.jte.</td>
+      <td style="vertical-align: top;">yes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">tshome<br>
+      </td>
+      <td style="vertical-align: top;">The directory where CTS is
+installed.&nbsp; Default value passed to RunCTS task is the value in
+ts.jte.</td>
+      <td style="vertical-align: top;">yes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">j2eehome<br>
+      </td>
+      <td style="vertical-align: top;">The directory where SJSAS is
+installed.&nbsp; Default value passed to RunCTS task is the value in
+ts.jte.<br>
+      </td>
+      <td style="vertical-align: top;">yes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">testareas<br>
+      </td>
+      <td style="vertical-align: top;">The comma separated list if test
+areas to be executed by the RunCTS task.<br>
+      </td>
+      <td style="vertical-align: top;">yes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">preprocs<br>
+      </td>
+      <td style="vertical-align: top;">A comma separated list of
+pre-processors.&nbsp; The list is traversed in
+order and each pre-processor's execute method is invoked by the RunCTS
+task.&nbsp; Note, all pre-processors must implement the
+com.sun.ant.taskdefs.common.RunCTSProcIntf interface.</td>
+      <td style="vertical-align: top;">no, if not specified no
+pre-processors are executed</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">postprocs<br>
+      </td>
+      <td style="vertical-align: top;">A comma separated list of
+post-processors.&nbsp; The list is traversed in order and each
+post-processor's execute method is invoked by the RunCTS task.&nbsp;
+Note, all post-processors must implement the
+com.sun.ant.taskdefs.common.RunCTSProcIntf interface.</td>
+      <td style="vertical-align: top;">no, if not specified no
+post-processors are executed</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jdkversion</td>
+      <td style="vertical-align: top;">The file path and name to write
+the full VM version string of the VM that is executing the RunCTS task.<br>
+      </td>
+      <td style="vertical-align: top;">no, if not specified no version
+information is written<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">logfile</td>
+      <td style="vertical-align: top;">The file path and name&nbsp; to
+write any log messages output by the RunCTS task.<br>
+      </td>
+      <td style="vertical-align: top;">no, defaults to
+${java.io.tmpdir}/RunCTSAntLog.txt<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">remoteinstance</td>
+      <td style="vertical-align: top;">Boolean value denoting if the
+tests being executed by the RunCTS target are being deployed to a
+remote server instance.&nbsp; If running tests on a remote instance
+this value must be set to true so the appropriate command is executed
+in between test areas to restart the server instance.<br>
+      </td>
+      <td style="vertical-align: top;">no, defaults to false<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">hostname<br>
+      </td>
+      <td style="vertical-align: top;">The name of the host where the
+remote instance is running.&nbsp; Only valid if remoteinstance is set
+to true.</td>
+      <td style="vertical-align: top;">no defaults to localhost<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">adminport</td>
+      <td style="vertical-align: top;">The administration port number
+of the remote instance.&nbsp; Only valid if remoteinstance is set to
+true.</td>
+      <td style="vertical-align: top;">no, defaults to 4849<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">instancename<br>
+      </td>
+      <td style="vertical-align: top;">The name of the remote
+instance.&nbsp; Only valid if remoteinstance is set to true.</td>
+      <td style="vertical-align: top;">no, defaults to server-1<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">username</td>
+      <td style="vertical-align: top;">The administrator's user
+name.&nbsp; Only valid if remoteinstance is set to true.</td>
+      <td style="vertical-align: top;">no, defaults to admin<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">password</td>
+      <td style="vertical-align: top;">The administrator's
+password.&nbsp; Only valid if remoteinstance is set to true.</td>
+      <td style="vertical-align: top;">no, defaults to adminadmin<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">spshome</td>
+      <td style="vertical-align: top;">The location of the QA workspace
+used to support code coverage collection.&nbsp; This attribute should
+not be set unless you are operating with an instrumented SJSAS build.<br>
+      </td>
+      <td style="vertical-align: top;">no, added to the command
+execution environment, ignored if not collecting coverage metrics<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">coverageconfigfile</td>
+      <td style="vertical-align: top;">The location of the JCOV config
+file used by code coverage post processors when collecting coverage
+metrics against an instrumented build of SJSAS.<br>
+      </td>
+      <td style="vertical-align: top;">no, defaults to
+TS_HOME/internal/coverage/jcov.properties<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<h3>Parameters specified as nested elements</h3>
+RunCTS does not support any nested elements.<br>
+<br>
+<br>
+<big><span style="font-weight: bold;">Examples</span></big><br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;property name="test.areas" value="appclient,
+assembly, compat12, compat13,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+connector, ejb/ee/bb, ejb/ee/deploy, ejb/ee/pm, ejb/ee/sec,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ejb/ee/timer, ejb/ee/tx, ejb/ee/webservices,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+integration, interop, j2eetools, jacc, javamail,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jaxp, jaxr, jaxrpc, jdbc, jms, jmx, jsp,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jta, rmiiiop, saaj, samples, servlet, signaturetest,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+webservices, xa"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;taskdef name="runcts"
+classname="com.sun.ant.taskdefs.common.RunCTS"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;target name="run.cts"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;runcts reportdir="${report.dir}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+workdir="${work.dir}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tshome="${ts.home}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+j2eehome="${j2ee.home}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+testareas="${test.areas}"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/target&gt;<br>
+<br>
+This example runs the entire CTS test suite.&nbsp; The tests are broken
+up by the test areas directly listed under TS_HOME/src/com/sun/ts/tests
+except for the EJB tests which are broken into even smaller
+chunks.&nbsp; Note, this task invocation lists the required attributes
+of the RunCTS task.&nbsp; This target lives in the s1as.xml file and
+can be altered by users to run their desired test areas.&nbsp; The
+easiest way to modify the task is to simply edit the test.areas
+property and specify the set of tests you would like to run.&nbsp;
+Note, the target passes the default values specified in the ts.jte
+file.&nbsp; Users can override these values within the ts.jte file or
+pass them on the command line as -D props to the invocation of the
+run.cts target.<br>
+<br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;property name="test.areas" value="appclient,
+assembly, compat12, compat13,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+connector, ejb/ee/bb, ejb/ee/deploy, ejb/ee/pm, ejb/ee/sec,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ejb/ee/timer, ejb/ee/tx, ejb/ee/webservices,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+integration, interop, j2eetools, jacc, javamail,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jaxp, jaxr, jaxrpc, jdbc, jms, jmx, jsp,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jta, rmiiiop, saaj, samples, servlet, signaturetest,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+webservices, xa"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;taskdef name="runcts"
+classname="com.sun.ant.taskdefs.common.RunCTS"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;target name="run.cts"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;runcts reportdir="${report.dir}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+workdir="${work.dir}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tshome="${ts.home}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+j2eehome="${j2ee.home}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+spshome="/files/JCOV/appserver-sqe"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+postprocs="com.sun.ant.taskdefs.common.RunCTSPostProcessor"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+testareas="${test.areas}"/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/target&gt;<br>
+<br>
+This example specifies a post processor.&nbsp; The post processor is
+invoked after each test area run by the RunCTS task.&nbsp; This
+particular example specifies the post processor used when collecting
+coverage metrics by running CTS against an instrumented SJSAS build.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+</body>
+</html>

@@ -1,0 +1,3 @@
+This directory contains any CTS specific documents.  Users can also source
+control XSL style-sheets and DTDs within the docs/xsl and docs/dtd
+sub directories respectively.

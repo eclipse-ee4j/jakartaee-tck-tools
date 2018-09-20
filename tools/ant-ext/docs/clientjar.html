@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML	3.2//EN">
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=iso-8859-1">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <title>clientjar task</title>
+       
+  <meta name="GENERATOR" content="StarOffice 6.0  (Solaris Sparc)">
+    
+  <meta name="CREATED" content="20020205;12045300">
+    
+  <meta name="CHANGEDBY" content="Dianne">
+    
+  <meta name="CHANGED" content="20020206;13500400">
+    
+  <meta name="ProgId" content="Word.Document">
+    
+  <meta name="Originator" content="Microsoft Word 9">
+    
+  <style>
+	<!--
+		TD P { color: #000000 }
+		H2 { color: #000000 }
+		H3 { color: #000000 }
+		H4 { color: #000000 }
+		P { color: #000000 }
+		PRE { color: #000000 }
+		A:link { color:	#0000ff	}
+		A:visited { color: #0000ff }
+	-->
+	</style>
+</head>
+  <body text="#000000" link="#0000ff" vlink="#0000ff">
+  
+<h2>clientjar</h2>
+  
+<h3>Description:</h3>
+  
+<p>This	task is	designed to support building of	application client jar files. 
+ </p>
+  
+<p></p>
+  
+<p>&lt;clientjar&gt; will parse	the deployment descriptor to determine the 
+necessary class	files which implement the bean.	These files are	assembled 
+along with the deployment descriptor into an appclient jar file. Any support 
+ files which need to be	included in the	generated jar can be added with	the 
+&lt;support&gt;	nested element.	 </p>
+  
+<p>The jar files are only built	if they	are out	of date.  </p>
+  
+<p></p>
+  
+<ul type="Disc">
+    
+  <p></p>
+  
+</ul>
+  
+<h3>Parameters:</h3>
+  
+<table border="1" cellpadding="0" cellspacing="0">
+ 	<tbody>
+      <tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+  Attribute</b></p>
+ 		</td>
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+  Description</b></p>
+ 		</td>
+ 		<td>       
+      <p align="Center" style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "><b>
+  Required</b></p>
+ 		</td>
+ 	</tr>
+ 		<tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  name</p>
+ 		</td>
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  Controls the naming			convention used	to name	generated EJB jars.&nbsp;</p>
+ 		</td>
+ 		<td>       
+      <p align="Center" style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  Yes</p>
+ 		</td>
+ 	</tr>
+ 	<tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  descriptor</p>
+ 		</td>
+ 		<td>xml	descriptor for the client jar.<br>
+        <br>
+        
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; "></p>
+ 		</td>
+ 		<td>       
+      <p align="Center" style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  Yes</p>
+ 		</td>
+ 	</tr>
+ 	<tr valign="Top">
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  mainclass</p>
+ 		</td>
+ 		<td>       
+      <p style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  This is used to indicate the			appclient client class.</p>
+ 		</td>
+ 		<td>       
+      <p align="Center" style="border-top-width: medium; border-top-style: none; border-top-color: -moz-use-text-color; border-right-width: medium; border-right-style: none; border-right-color: -moz-use-text-color; border-bottom-width: medium; border-bottom-style: none; border-bottom-color: -moz-use-text-color; border-left-width: medium; border-left-style: none; border-left-color: -moz-use-text-color; padding-top: 0cm; padding-right: 0cm; padding-bottom: 0cm; padding-left: 0cm; ">
+  Yes</p>
+ 		</td>
+ 	</tr>
+     <tr>
+       <td valign="Top">manifest<br>
+       </td>
+       <td valign="Top">use it only if the clientjar needs custom manifest 
+file<br>
+       </td>
+       <td valign="Top">       
+      <div align="Center">No<br>
+       </div>
+       </td>
+     </tr>
+    <tr>
+      <td valign="Top">autocheckexcludes<br>
+      </td>
+      <td valign="Top">files not to be automatically included into archives<br>
+      </td>
+      <td valign="Top">
+      <div align="Center">No<br>
+      </div>
+      </td>
+    </tr>
+    
+  </tbody> 
+</table>
+  
+<h3>Nested Elements</h3>
+  
+<p>The &lt;clientjar&gt; task provides the following nested elements. </p>
+  
+<h4>support</h4>
+  
+<p>The &lt;support&gt; nested element is used to supply	additional classes 
+(files)	to be included in the generated	jars. The &lt;support&gt; element 
+is a FileSet, so it can	either reference a fileset declared elsewhere or
+it can be defined in-place	with the appropriate &lt;include&gt; and &lt;exclude&gt; 
+nested elements. The files in the support fileset are added into the generated 
+appclient jar in the same relative location as their location within the
+support fileset.  </p>
+  
+<h3>Examples</h3>
+  
+<pre style="margin-bottom: 0.5cm; ">Example 1:<br>==========<br><br>&lt;target name="package"&gt;<br>	 &lt;package&gt;<br>	 ....<br><br>	   &lt;clientjar descriptor="ejb_depMdbT_ejbref_single_client.xml" name="ejb_depMdbT_ejbref_single"<br>	       mainclass="com.sun.ts.tests.ejb.ee.deploy.mdb.ejbref.singleT.Client"&gt;<br>	   &lt;support includes="com/sun/ts/tests/jms/common/Client.class, com/sun/ts/tests/common/ejb/dba/IntegerDBSupport.class, com/sun/ts/tests/common/ejb/dba/DBSupport.class"/&gt;<br>	  &lt;/clientjar&gt;<br><br>	  &lt;appear name="ejb_depMdbT_ejbref_single"/&gt;<br>	  &lt;/package&gt;<br>	&lt;/target&gt;<br><br>Example 2:<br>==========<br>  &lt;target	name="package"&gt;<br>	  &lt;package&gt;<br>	   &lt;ejb-jar descriptor="ejb_sam_Hello_ejb.xml" name="ejb_sam_Hello"&gt;<br>	    &lt;/ejb-jar&gt;<br><br>	  &lt;clientjar	descriptor="ejb_sam_Hello_client.xml" name="ejb_sam_Hello"<br>	      mainclass="com.sun.ts.tests.samples.ejb.ee.simpleHello.HelloClient"&gt;<br>      &lt;/clientjar&gt;<br><br>      &lt;appear name="ejb_sam_Hello"/&gt;<br>	   &lt;/package&gt;<br>	 &lt;/target&gt;<br><br>Examples 3:<br>===========<br>	&lt;target name="package"&gt;<br>    &lt;package&gt;<br>      &lt;clientjar descriptor="assembly_classpath_appclient_client.xml" name="assembly_classpath_appclient"<br>	mainclass="com.sun.ts.tests.assembly.classpath.appclient.Client" manifest="MY_MANIFEST.MF"&gt;<br>	&lt;/clientjar&gt;<br>	    &lt;appear name="assembly_classpath_appclient"/&gt;<br>    &lt;/package&gt;<br>  &lt;/target&gt;<br><br></pre>
+  
+</body>
+</html>

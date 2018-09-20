@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML	3.2//EN">
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=iso-8859-1">
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+  <title>TSBuildListener</title>
+       
+  <meta name="GENERATOR" content="StarOffice 6.0  (Solaris Sparc)">
+    
+  <meta name="CREATED" content="20020205;12045300">
+    
+  <meta name="CHANGEDBY" content="Dianne">
+    
+  <meta name="CHANGED" content="20020206;14023500">
+    
+  <meta name="ProgId" content="Word.Document">
+    
+  <meta name="Originator" content="Microsoft Word 9">
+ 	<!--[if	gte mso	9]><xml>
+ <o:DocumentProperties>
+  <o:Author>djiao</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>djiao</o:LastAuthor>
+  <o:Revision>43</o:Revision>
+  <o:TotalTime>54</o:TotalTime>
+  <o:Created>2002-02-01T19:27:00Z</o:Created>
+  <o:LastSaved>2002-02-01T20:22:00Z</o:LastSaved>
+  <o:Pages>2</o:Pages>
+  <o:Words>720</o:Words>
+  <o:Characters>3749</o:Characters>
+  <o:Company>Sun Microsystem Inc.</o:Company>
+  <o:Lines>72</o:Lines>
+  <o:Paragraphs>72</o:Paragraphs>
+  <o:CharactersWithSpaces>5046</o:CharactersWithSpaces>
+  <o:Version>9.2720</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]-->
+    
+  <meta http-equiv="Content-Language" content="en-us">
+    
+  <style>
+	<!--
+		TD P { color: #000000 }
+		H2 { color: #000000 }
+		H3 { color: #000000 }
+		H4 { color: #000000 }
+		P { color: #000000 }
+		PRE { color: #000000 }
+		A:link { color:	#0000ff	}
+		A:visited { color: #0000ff }
+	-->
+	</style>
+</head>
+  <body text="#000000" link="#0000ff" vlink="#0000ff">
+  
+<h2><a name="ejbjar"></a>
+  <a name="iplanet-ejbc"></a>
+    TSBuildListener</h2>
+  
+<h3>Description:</h3>
+   TSListener does the following	right after tsant is started, before any	target 
+is run:<br>
+  
+<ul>
+    <li>read ts.home from	environment variable TS_HOME</li>
+    <li>load ts.home/bin/build.properties	into project as	user properties</li>
+    <li>define a	user environment</li>
+    
+  <ul>
+      <li>env</li>
+    
+  </ul>
+    <li>j2ee.home.ri, if	not defined in build.properties,	will be	set to
+the value of the environment variable J2EE_HOME_RI</li>
+    <li>load all	ts custom tasks</li>
+    
+  <ul>
+      <li><a href="ejbjar.html">ejb-jar</a>
+      </li>
+      <li><a href="webwar.html">webwar</a>
+      </li>
+      <li><a href="clientjar.html">clientjar</a>
+      </li>
+      <li><a href="vehicles.html">vehicles</a>
+      </li>
+      <li><a href="appear.html">appear</a>
+      </li>
+      <li><a href="resrar.html">resrar</a>
+      </li>
+      <li><a href="dosubdirs.html">dosubdirs</a>
+      </li>
+      <li><a href="package.html">package</a>
+      </li>
+    
+  </ul>
+    <li>load ts custom types</li>
+    
+  <ul>
+      <li><a href="support.html">support</a>
+      </li>
+    
+  </ul>
+    <li>add a common target to project</li>
+    
+  <ul>
+      <li>gui</li>
+    
+  </ul>
+    <li><a name="implicit"></a>
+ define ts	implicit properties</li>
+    
+  <ul>
+      <li>ts.home: as defined in	environment, ${env.TS_HOME}</li>
+      <li>class.dir: ${ts.home}/classes</li>
+      <li>vehicle.dir: com/sun/ts/tests/common/vehicle</li>
+      <li>dist.dir: ${ts.home}/dist</li>
+    <li>pkg.dir for non-leaf dirs (For leaf dirs it is defined in build files)
+    </li>
+    
+  </ul>
+  
+</ul>
+  TSBuildListener	is hooked up in	tsant/tsant.bat	with option -listener com.sun.ant.TSBuildListener. 
+&nbsp;It enables us to plug in ts extensions to	different ant installation. 
+&nbsp;Some do's	and dont's:<br>
+  <br>
+  
+<ul>
+    <li>Do not load bin/build.properties	in build.xml</li>
+    <li>Do not define user environment using &lt;property	environment ...	/&gt;</li>
+    <li>Do not define class.dir,	vehicle.dir, dist.dir, ts.home,	since they 
+are already defined by listener. &nbsp;Be aware	that vehicle.dir is set	to 
+com/sun/ts/tests/common/vehicle, NOT the full path</li>
+    <li>Do not taskdef ts	custom tasks</li>
+    <li>Do not define target to start javatest in	build.xml. &nbsp;The target
+gui is already added to project by TSBuildListener.</li>
+    <li>Do not create build.xml in non leaf directories</li>
+    <li>Define your own usage target, if	necessary. &nbsp;The default one	is 
+to call	the usage target in bin/build.xml</li>
+  
+</ul>
+  <br>
+  
+<h3></h3>
+  
+</body>
+</html>

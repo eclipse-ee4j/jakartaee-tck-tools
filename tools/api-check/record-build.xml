@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<!-- ############################################################## -->
+<!-- This build file must NOT be included in the CTS distribution.  -->
+<!-- ############################################################## -->
+
+<project name="API Check Tool Record Only" default="build" basedir=".">
+
+  <property environment="env"/>
+  <property name="package"    value="javasoft.sqe.apiCheck"/>
+  <property name="main.class" value="${package}.Setup"/>
+  <property name="classes"    value="${basedir}/classes"/>
+
+  <path id="cpath">
+    <pathelement path="${classes}"/>
+  </path>
+
+  <property name="packages"   value="javax.sql+javax.ejb+javax.ejb.spi+javax.jms+javax.security.auth+javax.security.auth.callback+javax.security.auth.login+javax.security.auth.spi+javax.xml.parsers+javax.xml.transform+javax.xml.transform.dom+javax.xml.transform.sax+javax.xml.transform.stream+org.xml.sax+org.xml.sax.ext+org.xml.sax.helpers+org.w3c.dom+javax.transaction+javax.transaction.xa+javax.mail+javax.mail.event+javax.mail.internet+javax.mail.search+javax.activation+javax.resource+javax.resource.cci+javax.resource.spi+javax.resource.spi.security+javax.servlet+javax.servlet.http+javax.servlet.jsp+javax.servlet.jsp.tagext"/>
+  <property name="sig.out"    value="j2ee.sig"/>
+  <target name="record">
+    <echo message="record-build.xml: Running Setup Class - Recording Signatures..."/>
+    <echo message="record-build.xml:   sig source - ${sig.source}"/>
+    <echo message="record-build.xml:   packages   - ${packages}"/>
+    <echo message="record-build.xml:   out file   - ${sig.out}"/>
+    <java classname="${main.class}" fork="yes">
+      <classpath refid="cpath"/>
+      <arg value="-constvalues"/>
+      <arg value="-in"/>
+      <arg value="${sig.source}"/>
+      <arg value="-package"/>
+      <arg value="${packages}"/>
+      <arg value="-out"/>
+      <arg value="${sig.out}"/>
+      <jvmarg value="-Djava.compiler=NONE"/> 
+    </java>
+  </target>
+
+</project>

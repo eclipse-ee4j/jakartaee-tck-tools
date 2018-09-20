@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project name="XSL Transformer" default="compile" basedir=".">
+
+  <property environment="env"/>
+  <property name="classes" value="${basedir}/classes"/>
+  <property name="src" value="${basedir}/src"/>
+  <property name="scripts" value="${basedir}/scripts"/>
+  <property name="pkg" value="com.sun.cts.util"/>
+
+  <property name="props-file" value="${basedir}/props.txt"/>
+  <property name="xml-file" value=""/>
+  <property name="xslt-file" value=""/>
+  <property name="output-file" value=""/>
+  <property name="error" value="false"/>
+  <property name="class-name" value="${pkg}.Trans"/>
+
+  <target name="usage">
+    <echo message="usage: ant -Dxml-file=xml-file -Dxslt-file=xslt-file -Doutput-file=ouput-file [-Derror=true | false] run"/>
+  </target>
+
+  <target name="clean" depends="delete-scripts">
+    <delete dir="${classes}"/>
+  </target>
+
+  <target name="prepare">
+    <tstamp/>
+    <mkdir dir="${classes}"/>
+    <copy file="${props-file}" todir="${classes}"/>
+  </target>
+
+  <target name="build-scripts">
+    <copy todir="${scripts}">
+      <fileset dir="${scripts}" />
+      <mapper type="glob" from="*.sh" to="*"/>
+    </copy>
+    <chmod perm="ugo+rx"> 
+      <fileset dir="${scripts}">
+        <exclude name="*.sh"/>
+        <exclude name="*.bat"/>
+      </fileset>
+    </chmod>
+  </target>
+
+  <target name="delete-scripts">
+    <delete>
+      <fileset dir="${scripts}">
+        <exclude name="*.sh"/>
+        <exclude name="*.bat"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="compile" depends="prepare,build-scripts">
+    <javac srcdir="${src}" classpath="${classes}" destdir="${classes}" debug="on"/>
+  </target>
+
+  <property name="gui-class" value="${pkg}.XslGui"/>
+  <target name="gui" depends="compile">
+    <java classname="${gui-class}" fork="yes">
+      <classpath>
+        <pathelement path="${classes}"/>
+      </classpath>
+      <sysproperty key="java.compiler" value="NONE"/>
+    </java>
+  </target>
+
+  <!--
+    Specifies a directory location where the javadoc assertion DTD lives.
+    If set to a non-zero length string, an entity resolver is created using this
+    directory to find the DTD for the XML parser.  Defaults to the empty
+    string meaning, no resolver is used and the DTD is pulled from the URL.
+  -->
+  <property name="local-dtd-path" value=""/>
+  <property name="trans-class" value="${pkg}.Trans"/>
+  <target name="run" depends="compile">
+    <java classname="${trans-class}" fork="yes">
+      <classpath>
+        <pathelement path="${classes}"/>
+      </classpath>
+      <arg value="${xml-file}"/>
+      <arg value="${xslt-file}"/>
+      <arg value="${output-file}"/>
+      <arg value="${error}"/>
+      <sysproperty key="local.dtd.path" value="${local-dtd-path}"/>
+    </java>
+  </target>
+
+</project>

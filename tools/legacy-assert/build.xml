@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project basedir="." default="compile" name="Legacy Assertion Grabber">
+	
+	<property environment="user"/>
+	<property name="ts.tools.home" value="${user.TS_TOOLS_HOME}"/>
+	<property name="ts.home" value="${user.TS_HOME}"/>
+	<property name="deliv.class" value="com.sun.ts.lib.deliverable.cts.CTSDeliverable"/>
+	<property name="queue.handler.class" value="com.sun.ts.legacy.DefaultHandler"/>
+	<property name="unique.assertions.only" value="true"/>
+	<property name="all.assertion.fields" value="false"/>
+	<property name="output.filename" value="assertions.xml"/>
+	<property name="initial.dir" value="${ts.home}"/>
+	<property name="assertion.filter" value=""/>
+	<property name="class.path" value="../master-libs/cts.jar:../master-libs/tsharness.jar:../master-libs/javatest.jar:${basedir}/classes"/>
+    <property name="skip.well.formed.id.check" value="false"/>
+
+	<property name="compile.debug" value="on"/>
+	<property name="compile.optimize" value="on"/>
+	<property name="compile.deprecation" value="on"/>
+
+
+        <target name="check.ts.home" unless="user.TS_HOME">
+          <fail message="Please set the &quot;TS_HOME&quot; environment variable to an appropriate value."/>
+        </target>
+
+        <target name="check.ts.tools.home" unless="user.TS_TOOLS_HOME">
+          <fail message="Please set the &quot;TS_TOOLS_HOME&quot; environment variable to an appropriate value."/>
+        </target>
+
+	<target name="compile">
+		<mkdir dir="${basedir}/classes"/>
+		<javac classpath="${class.path}" debug="${compile.debug}"
+                       deprecation="${compile.deprecation}" optimize="${compile.optimize}"
+                       destdir="${basedir}/classes" srcdir="${basedir}/src"/>
+	</target>
+	
+
+	<target name="get.assertions" depends="compile,check.ts.home,check.ts.tools.home">
+		<java classname="com.sun.ts.legacy.GetAssertions" fork="yes">
+			<classpath>
+				<pathelement path="${class.path}"/>
+			</classpath>
+			<sysproperty key="assertion.filter" value="${assertion.filter}"/>
+			<sysproperty key="assertion.coverage" value="true"/>
+			<sysproperty key="process.assertion" value="true"/>
+			<sysproperty key="ts.home" value="${ts.home}"/>
+			<sysproperty key="ts.tools.home" value="${ts.tools.home}"/>
+			<sysproperty key="deliverable.class" value="${deliv.class}"/>
+			<sysproperty key="queue.handler.class" value="${queue.handler.class}"/>
+			<sysproperty key="initial.dir" value="${initial.dir}"/>
+			<sysproperty key="filename" value="${output.filename}"/>
+			<sysproperty key="unique.assertions.only" value="${unique.assertions.only}"/>
+            <sysproperty key="all.assertion.fields" value="${all.assertion.fields}"/>
+            <sysproperty key="skip.well.formed.id.check" value="${skip.well.formed.id.check}"/>
+	    <jvmarg value="-Xmx2048m"/>
+		</java>
+	</target>
+
+	<target name="clean">
+               <delete dir="${basedir}/classes" quiet="true"/>
+	</target>
+</project>
+		

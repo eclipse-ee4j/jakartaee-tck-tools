@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<project name="CTS Tools Area" default="compile" basedir=".">
+
+  <property name="common-utils-dir"       value="${basedir}/common-utils"/>
+  <property name="number-assert-dir"      value="${basedir}/number-assert"/>
+  <property name="xsl-transform-dir"      value="${basedir}/xsl-transformer"/>
+  <property name="scripts-dir"            value="${basedir}/scripts"/>
+  <property name="assert-merge-dir"       value="${basedir}/assert-merge"/>
+  <property name="spec-assert-dir"        value="${basedir}/spec-assert-gen"/>
+  <property name="assertion-coverage-dir" value="${basedir}/assertion-coverage"/>
+  <property name="spec-diff-dir"          value="${basedir}/spec-diff"/>
+  <property name="assert-merge-edit-dir"  value="${basedir}/assert-merge-edited"/>
+  <property name="api-check-dir"          value="${basedir}/api-check"/>
+  <property name="legacy-assert-dir"      value="${basedir}/legacy-assert"/>
+  <property name="gen-index-dir"          value="${basedir}/gen-index"/>
+  <property name="gen-summary-dir"        value="${basedir}/gen-summary"/>
+  <property name="exclude-tools"      	  value="${basedir}/exclude-utils"/>
+  <property name="xsl-transformer"      	  value="${basedir}/xsl-transformer"/>
+  <property name="ant-ext"                value="${basedir}/ant-ext"/>
+    <property name="extract-api-assertions"                value="${basedir}/extract-api-assertions"/>
+    <property name="extract-spec-assertions"                value="${basedir}/extract-spec-assertions"/>
+    <property name="newsigtest"                value="${basedir}/newsigtest"/>
+    
+
+
+  <target name="default">
+    <ant dir="${common-utils-dir}"         inheritAll="false" target="compile"/>
+    <ant dir="${number-assert-dir}"        inheritAll="false" target="compile"/>
+    <ant dir="${xsl-transform-dir}"        inheritAll="false" target="compile"/>
+    <ant dir="${scripts-dir}"              inheritAll="false" target="compile"/>
+    <ant dir="${assert-merge-dir}"         inheritAll="false" target="compile"/>
+    <ant dir="${spec-assert-dir}"          inheritAll="false" target="compile"/>
+    <ant dir="${assertion-coverage-dir}"   inheritAll="false" target="compile"/>
+    <ant dir="${spec-diff-dir}"            inheritAll="false" target="compile"/>
+    <ant dir="${assert-merge-edit-dir}"    inheritAll="false" target="compile"/>
+    <ant dir="${api-check-dir}"            inheritAll="false" target="build"/>
+    <ant dir="${legacy-assert-dir}"        inheritAll="false" target="compile"/>
+    <ant dir="${gen-index-dir}"            inheritAll="false" target="compile"/>
+    <ant dir="${gen-summary-dir}"          inheritAll="false" target="compile"/>
+    <ant dir="${exclude-tools}"            inheritAll="false" target="dist"/>
+    <ant dir="${xsl-transformer}"            inheritAll="false" target="compile"/>
+    <ant dir="${ant-ext}"            inheritAll="false" target="dist"/>
+    <ant dir="${extract-api-assertions}"            inheritAll="false" target="compile"/>
+    <ant dir="${extract-spec-assertions}"            inheritAll="false" target="compile"/>
+    <ant dir="${newsigtest}"            inheritAll="false" target="compile"/>
+    
+  </target>
+
+  <target name="clean">
+    <ant dir="${common-utils-dir}"         inheritAll="false" target="clean"/>
+    <ant dir="${number-assert-dir}"        inheritAll="false" target="clean"/>
+    <ant dir="${xsl-transform-dir}"        inheritAll="false" target="clean"/>
+    <ant dir="${scripts-dir}"              inheritAll="false" target="clean"/>
+    <ant dir="${assert-merge-dir}"         inheritAll="false" target="clean"/>
+    <ant dir="${spec-assert-dir}"          inheritAll="false" target="clean"/>
+    <ant dir="${assertion-coverage-dir}"   inheritAll="false" target="clean"/>
+    <ant dir="${spec-diff-dir}"            inheritAll="false" target="clean"/>
+    <ant dir="${assert-merge-edit-dir}"    inheritAll="false" target="clean"/>
+    <ant dir="${api-check-dir}"            inheritAll="false" target="clean"/>
+    <ant dir="${legacy-assert-dir}"        inheritAll="false" target="clean"/>
+    <ant dir="${gen-index-dir}"            inheritAll="false" target="clean"/>
+    <ant dir="${gen-summary-dir}"          inheritAll="false" target="clean"/>
+    <ant dir="${exclude-tools}"            inheritAll="false" target="clean"/>
+    <ant dir="${xsl-transformer}"            inheritAll="false" target="clean"/>
+    <ant dir="${ant-ext}"            inheritAll="false" target="clean"/>
+    <ant dir="${extract-api-assertions}"            inheritAll="false" target="clean"/>
+    <ant dir="${extract-spec-assertions}"            inheritAll="false" target="clean"/>
+    <ant dir="${newsigtest}"            inheritAll="false" target="clean"/>
+    
+  </target>
+
+  <target name="compile" depends="default"/>
+
+  <!-- Recursively remove emacs back-up files and SCCS check-in generated files -->
+  <target name="clean-up">
+    <delete>
+      <fileset dir="${basedir}">
+        <include name=",*"/>
+        <include name="*~"/>
+        <include name="**/,*"/>
+        <include name="**/*~"/>
+      </fileset>
+    </delete>
+  </target>
+
+</project>

@@ -1,0 +1,43 @@
+This directory contains a very simple tool that applies a specified XSL
+transformation to a specified XML file.  The results are written to the
+standard output unless an optional output filename is supplied.  The tool
+is invoked from a unix shell script.  To build and use the tool, users
+must have ant installed and configured correctly.  This tool makes use of
+XSL processing APIs in J2SE version 1.4.  So user must install J2SE 1.4
+to use this tool.  Here is the command line usage statement:
+
+	usage: run xml_input_file xsl_file [output_file].
+
+
+This tool also allows users to pass XSL parameters to the specified stylesheet.
+To use this feature the user should modify the props.txt file in the classes
+directory.  This properties file contains the name value pairs for the XSL
+parameters.  Users should ensure that the specified XSL style sheet has
+parameters defined for the parameters found in the properties file.  If no such
+parameter is defined in the XSL style sheet the parameters will simply not 
+be set and the transformation will run as if the parameters were never defined
+in the properties file.  The properties file is held in the classes directory so
+the application can find the file no matter where the app is run from (since
+the props file is in the classpath of the app).
+
+This tools also has a small GUI.  To start the GUI users can run the ant "gui" target.
+The GUI provides dialogs for specifying an XML file to transform, the stylesheet
+that contains the transformation and an output file.  Users may also specify a
+list of stylesheets to be applied to the input XML file.  The first stylesheet is
+applied then the next stylesheet in the list is applied to the result of the first
+transformation.  The next stylesheet is then applied to the resulting transformation
+until all stylesheets in the list have been applied to the previous transformation
+result.  To specify a list of stylesheets simply use the browse button and select
+the stylesheets you wish to apply in series. Each slected stylesheet is added to
+the XSL text display separated by a semi-colon.  Note, the order the stylesheets
+appear in the XSL text window is the order that they will be applied to the XML
+file and it's resulting transformation file. The output file is overwritten each time
+a trabsformation is applied.  The GUI also contains a small properties editor
+for defining and modifying parameters that are passed to the current stylesheet
+being used.  The properties editor is loaded with the properties in the props.txt
+file in the classes directory when the GUI is started.  User can keep
+a set list of properties in this file and they will be loaded when the GUI is started
+or the user selects the "reload default properties" option.  If the properties editor
+contains any parameters that are not defined in the current stylesheet they are simply
+ignored.  So the properties list can contain many more properties than what is defined
+in the current stylesheet.
