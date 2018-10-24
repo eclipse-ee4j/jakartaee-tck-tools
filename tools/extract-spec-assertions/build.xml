@@ -21,10 +21,14 @@
 
   <property name="src"              value="${basedir}/src"/>
   <property name="classes"          value="${basedir}/classes"/>
-  <property name="pdfbox-jar"       value="${basedir}/../master-libs/pdfbox-app-1.8.6.jar"/>
+  <property name="pdfbox-jar"       value="${basedir}/../master-libs/pdfbox-1.8.6.jar"/>
+  <property name="commons-log-jar"       value="${basedir}/../master-libs/commons-logging-1.1.1.jar"/>
+  <property name="fontbox-jar"       value="${basedir}/../master-libs/fontbox-1.8.6.jar"/>
 
   <path id="cpath">
     <pathelement location="${pdfbox-jar}"/>
+    <pathelement location="${common-log-jar}"/>
+    <pathelement location="${fontbox-jar}"/>  
     <pathelement path="${classes}"/>
   </path>
 
