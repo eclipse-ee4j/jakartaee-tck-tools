@@ -62,6 +62,7 @@ import java.util.*;
  * @see com.sun.tdk.signaturetest.classpath.ClasspathEntry
  */
 public class ClasspathImpl implements Classpath {
+    private final boolean useBootCP;
 
     /*
     public class ClassIterator {
@@ -168,6 +169,7 @@ public class ClasspathImpl implements Classpath {
      * directories and zip files become available through the created
      * <b>ClasspathImpl</b> instance.
      *
+     * @param useBootCP search JDK's bootclasspath when class isn't found?
      * @param classPath Path string listing directories and/or zip files.
      * @throws SecurityException The <code>classPath</code> string has
      *                           invalid format.
@@ -176,7 +178,8 @@ public class ClasspathImpl implements Classpath {
      * @see #setListToBegin()
      * @see #createPathEntry(ClasspathEntry, String)
      */
-    public ClasspathImpl(String classPath) {
+    public ClasspathImpl(boolean useBootCP, String classPath) {
+        this.useBootCP = useBootCP;
         init(classPath);
     }
 
@@ -331,6 +334,13 @@ public class ClasspathImpl implements Classpath {
                 return ((ClasspathEntry) e.next()).findClass(name);
             } catch (ClassNotFoundException exc) {
                 // just skip this entry
+            }
+        }
+        if (useBootCP) {
+            final String resourceName = name.replace('.', '/') + ".class";
+            InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName);
+            if (is != null) {
+                return is;
             }
         }
         throw new ClassNotFoundException(name);

@@ -34,9 +34,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -125,46 +123,7 @@ abstract class SigtestHandler {
                 pref = File.pathSeparator;
             }
             if (addBootCP) {
-                boolean rtJAR = false;
-                File lib = new File(System.getProperty("java.home"), "lib");
-                if (!lib.exists()) {
-                    throw new IOException("Missing " + lib + "/rt.jar");
-                }
-                Set<File> candidates = new HashSet<File>();
-                for (File f : lib.listFiles()) {
-                    if (f.getName().endsWith(".jar")) {
-                        try {
-                            candidates.add(f.getCanonicalFile());
-                        } catch (IOException ex) {
-                            logError(ex.getMessage());
-                        }
-                    }
-                }
-                String bootCP = System.getProperty("sun.boot.class.path");
-                if (bootCP != null) {
-                    for (String c : bootCP.split(File.pathSeparator)) {
-                        try {
-                            final File f = new File(c).getCanonicalFile();
-                            if (f.isFile()) {
-                                candidates.add(f);
-                            }
-                        } catch (IOException ex) {
-                            logError(ex.getMessage());
-                        }
-                    }
-                } else {
-                    logError("No sun.boot.class.path property defined!");
-                }
-                for (File f : candidates) {
-                    sb.append(File.pathSeparator).append(f);
-                    if ("rt.jar".equals(f.getName())) {
-                        rtJAR = true;
-                    }
-                }
-                if (!rtJAR) {
-                    logInfo("Missing " + lib + "/rt.jar");
-                }
-                logInfo("Using bootclasspath: " + sb);
+                arg.add("-BootCP");
             }
             arg.add("-Classpath");
             arg.add(sb.toString());

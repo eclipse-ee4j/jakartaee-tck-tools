@@ -77,6 +77,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     // Command line options
     public static final String ALLPUBLIC_OPTION = "-AllPublic";
     public static final String CLASSPATH_OPTION = "-Classpath";
+    public static final String USE_BOOT_CP = "-BootCp";
     public static final String PACKAGE_OPTION = "-Package";
     public static final String WITHOUTSUBPACKAGES_OPTION = "-PackageWithoutSubpackages";
     public static final String EXCLUDE_OPTION = "-Exclude";
@@ -139,6 +140,9 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
      * @see java.io.File#pathSeparator
      */
     protected String classpathStr = null;
+
+    /** search also boot classpath when a class is not found on classpath? */
+    protected boolean useBootCp;
 
     /**
      * Collector for error messages, or <code>null</code> if log is not required.
@@ -279,6 +283,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             excludedPackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
+        } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
+            useBootCp = true;
         } else if (optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
             apiVersion = args[0];
         } else if (optionName.equalsIgnoreCase(STATIC_OPTION)) {

@@ -247,7 +247,7 @@ public class Main implements Log {
         }
         else if (optionName.equalsIgnoreCase(TS_OPTION)) {
             try {
-                classpath = new ClasspathImpl(args[0]);
+                classpath = new ClasspathImpl(true, args[0]);
             } catch (SecurityException e) {
                 debug(e);
                 log.println(i18n.getString("Main.error.sec.newclasses"));
