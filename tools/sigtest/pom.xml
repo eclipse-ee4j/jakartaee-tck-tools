@@ -13,10 +13,10 @@
     <name>API Signature Test Plugin</name>
     <url>http://wiki.netbeans.org/APITest</url>
     <scm>
-        <connection>scm:hg:https://hg.netbeans.org/apitest</connection>
-        <developerConnection>scm:hg:https://hg.netbeans.org/apitest</developerConnection>
-        <url>https://hg.netbeans.org/apitest</url>
-        <tag>default</tag>
+        <connection>scm:git:https://github.com/jtulach/netbeans-apitest/</connection>
+        <developerConnection>scm:git:https://github.com/jtulach/netbeans-apitest/</developerConnection>
+        <url>https://github.com/jtulach/netbeans-apitest/</url>
+        <tag>master</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
