@@ -1,0 +1,152 @@
+# SigTest
+
+*SigTest* is the tool for checking incompatibilities between different versions of the same API. 
+It is possible to use it as a Maven plugin or an Ant task to check for binary backward 
+compatibility and mutual signature compatibility. The tool is known to work with JDK8 and JDK11 and
+is used by many projects including [Graal](https://github.com/oracle/graal/commit/6ca3d0458d108ba183997f09fa51596fbe503893#diff-6229fdf88aa48f7dda4de6126283c913),
+[Hibernate](https://github.com/hibernate/hibernate-validator/pull/831/files) and 
+Apache [NetBeans](https://github.com/apache/incubator-netbeans/pull/670).
+
+[![Travis Status](https://travis-ci.org/jtulach/netbeans-apitest.svg?branch=master)](https://travis-ci.org/jtulach/netbeans-apitest)
+
+## Use in Maven
+
+The [Maven Plugin](http://search.maven.org/#search|ga|1|a%3A%22sigtest-maven-plugin%22) is available 
+on Maven central thus it is easily embeddable it into your own project. 
+
+### Generate the Signature File
+
+The first thing to do is to generate snapshot of API of your library - 
+e.g. the signature file. Just add following into your own `pom.xml` file:
+
+```xml
+<plugin>
+  <groupId>org.netbeans.tools</groupId>
+  <artifactId>sigtest-maven-plugin</artifactId>
+  <version>1.1</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>generate</goal>
+      </goals>
+    </execution>
+  </executions>
+  <configuration>
+    <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
+  </configuration>
+</plugin>
+```
+
+with just this change the API of your classes is going to be recorded 
+into a `.sigtest` file and included as an secondary artefact of your project
+when you invoke `mvn install`.
+
+For example libraries of [Apache Html/Java API](https://github.com/apache/incubator-netbeans-html4j/) have their 
+sigtest files attached in [Maven central](http://repo1.maven.org/maven2/org/netbeans/html/net.java.html.json/1.3/)
+with [this changeset](https://github.com/emilianbold/netbeans-html4j/commit/3474a45f6cd1352d2366ced976a12d7d6497bc09).
+
+
+### Check Against Signature File in a Repository
+
+Once the sigfile is part of a Maven repository, you want to check your new APIs against that 
+API snapshot recorded previously to make sure you are not making *incompatible changes*.
+Try the following:
+
+```xml
+<plugin>
+  <groupId>org.netbeans.tools</groupId>
+  <artifactId>sigtest-maven-plugin</artifactId>
+  <version>1.1</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>check</goal>
+      </goals>
+    </execution>
+  </executions>
+  <configuration>
+    <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
+    <releaseVersion>1.3</releaseVersion>
+  </configuration>
+</plugin>
+```
+
+The difference is the goal - e.g. check and also the need to specify `releaseVersion` - that is the
+identification of the previously released version of your library that you want to check 
+compatibility against.
+
+And that is all! To verify the setup is correct, try to remove a method or do some other
+incompatible change. When I tried and executed `mvn install` I got a build failure
+
+```bash
+SignatureTest report
+Base version: 1.3
+Tested version: 2.0-SNAPSHOT
+Check mode: bin [throws removed]
+Constant checking: on
+ 
+ 
+Class net.java.html.json.Models
+  "E1.2 - API type removed" : method public final static void net.java.html.json.Models.applyBindings(java.lang.Object,java.lang.String)
+ 
+ 
+ 
+target/surefire-reports/sigtest/TEST-json-2.0-SNAPSHOT.xml: 1 failures in /.m2/repository/json/1.3/json-1.3.sigfile
+------------------------------------------------------------------------
+BUILD FAILURE
+```
+
+This is the way [Apache Html/Java API](https://github.com/apache/incubator-netbeans-html4j/) project
+enabled signature its testing: see 
+[changeset mixing both goals together](https://github.com/emilianbold/netbeans-html4j/commit/d3ef8e3208f2b04c85eafde97e4ccaf2cfe6d627).
+
+### Fail on Error
+
+You may want to control whether a failure in signature test should be fatal or not. Do it with:
+
+```xml
+  <configuration>
+    <failOnError>false</failOnError>
+ 
+    <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
+    <releaseVersion>1.3</releaseVersion>
+  </configuration>
+```  
+
+With this configuration the test will be performed and output printed, but the build will go on.
+This may be useful when one needs to do an incompatible change and wants to disable the check
+until next version is published.
+
+### Prevent Any Change
+
+By default the plugin verifies there are no incompatible changes. However compatible changes
+are allowed. Sometimes it is useful to prevent any changes altogether (when creating a bugfix release, for example), 
+then try:
+
+```xml
+  <configuration>
+    <action>strictcheck</action>
+ 
+    <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
+    <releaseVersion>1.3</releaseVersion>
+  </configuration>
+```
+
+with the action option set to `strictcheck` the plugin will detect any API change and fail even if it is compatible. 
+
+## History
+
+This tool is based on original [SigTest](https://wiki.openjdk.java.net/display/CodeTools/sigtest) sources,
+but has been adopted to suite the needs of a [NetBeans project](http://wiki.netbeans.org/SignatureTest). 
+Since then it evolved into [general purpose tool](http://wiki.netbeans.org/SigTest). When NetBeans become
+Apache project, Emilian Bold converted the [original Hg repository](http://hg.netbeans.org/apitest/) to
+[Git repository](https://github.com/emilianbold/netbeans-apitest) to preserve the history. The development,
+including support for JDK11, etc. now continues at following GitHub
+[repository](https://github.com/jtulach/netbeans-apitest/).
+
+# License
+
+You can use the *SigTest* tool to generate and verify signatures for projects released under any license. 
+The sources of the tool are available in its own [github repository](https://github.com/jtulach/netbeans-apitest) 
+and are provided under GPL version 2. Contribute to the development of *SigTest* by forking
+the repository and creating pull requests.
