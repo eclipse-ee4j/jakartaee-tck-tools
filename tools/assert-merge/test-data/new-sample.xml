@@ -75,7 +75,7 @@
         <keyword>Keyword_1_for_number_4</keyword>
         <keyword>Keyword_2_for_number_4</keyword>
       </keywords>
-      <package>com.sun.crap</package>
+      <package>com.sun.assert4</package>
       <class-interface>myFourthClass</class-interface>
       <field name="assert4_var" type="java.util.List"/>
       <comment>My Technology Comment for assertion 4</comment>
@@ -87,7 +87,7 @@
         <keyword>Keyword_1_for_number_5</keyword>
         <keyword>Keyword_2_for_number_5</keyword>
       </keywords>
-      <package>com.sun.crap</package>
+      <package>com.sun.assert5</package>
       <class-interface>myFourthClass</class-interface>
       <method name="methodFive" return-type="java.util.LinkedList">
         <parameters>
