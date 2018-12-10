@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
 
-package com.oracle.cts.tools;
+package org.eclipse.ee4j.jakartaeetck.tools.jtreportparser;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  *
@@ -74,16 +74,16 @@ public class TestCase {
     
     public String toXML() {
         StringBuilder sb = new StringBuilder("  <testcase ");
-        sb.append(" name=\"" + testName + "\"");
-        sb.append(" classname=\"" + className + "\"");
-        sb.append(" time=\"" + duration + "\"");
-        sb.append(" status=\"" + status.getStatus() + "\"");
+        sb.append(" name=\"").append(testName).append("\"");
+        sb.append(" classname=\"").append(className).append("\"");
+        sb.append(" time=\"").append(duration).append("\"");
+        sb.append(" status=\"").append(status.getStatus()).append("\"");
         sb.append(">");
         sb.append(System.getProperty("line.separator"));
         if (status == TestStatus.ERROR)
-            sb.append("<error type=\"Error\" message=\"" + errorMsg + "\">" + errorMsg + "</error>");
+            sb.append("<error type=\"Error\" message=\"").append(errorMsg).append("\">").append(errorMsg).append("</error>");
         if (status == TestStatus.FAILED)
-            sb.append("<failure type=\"AssertionFailure\" message=\"" + errorMsg + "\">" + errorMsg + "</failure>");
+            sb.append("<failure type=\"AssertionFailure\" message=\"").append(errorMsg).append("\">").append(errorMsg).append("</failure>");
         if (status == TestStatus.EXCLUDED)
             sb.append("<skipped />");
         sb.append("<system-out>");
@@ -109,20 +109,14 @@ public class TestCase {
             writer.println("<failure type=\"AssertionFailure\" message=\"" + errorMsg + "\">" + errorMsg + "</failure>");
         if (status == TestStatus.EXCLUDED)
             writer.println("<skipped />");
-        writer.println("<system-out>");
-        boolean embedSysoutFlag = 
-                Boolean.parseBoolean(System.getProperty("junit.embed.sysout", "false"));
-        if (embedSysoutFlag && status != TestStatus.PASSED) {
-            File outputFile = new File(sysoutFile);
-            if (outputFile.exists() && outputFile.isFile() && outputFile.canRead()) {
-                try (Stream<String> stream = Files.lines(Paths.get(sysoutFile))) {
-                    stream.forEach(x -> writer.println(StringEscapeUtils.escapeXml11(x)));
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+        writer.println("<system-out>");      
+        File outputFile = new File(sysoutFile);
+        if (outputFile.exists() && outputFile.isFile() && outputFile.canRead()) {
+            try (Stream<String> stream = Files.lines(Paths.get(sysoutFile))) {
+                stream.forEach(x -> writer.println(StringEscapeUtils.escapeXml11(x)));
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
             }
-        } else {
-            writer.println(sysoutFile);
         }
         writer.println("</system-out>");
         writer.println("</testcase>");
@@ -140,7 +134,6 @@ public class TestCase {
         int hash = 7;
         hash = 67 * hash + Objects.hashCode(this.testName);
         hash = 67 * hash + Objects.hashCode(this.className);
-        hash = 67 * hash + Objects.hashCode(this.status);
         return hash;
     }
 
@@ -156,9 +149,6 @@ public class TestCase {
         if (!Objects.equals(this.testName, other.testName)) {
             return false;
         }
-        if (!Objects.equals(this.className, other.className)) {
-            return false;
-        }
-        return this.status == other.status;
+        return Objects.equals(this.className, other.className);
     }
 }

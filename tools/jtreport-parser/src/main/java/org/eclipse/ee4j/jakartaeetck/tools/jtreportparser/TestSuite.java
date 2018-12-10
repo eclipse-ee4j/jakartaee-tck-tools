@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
 
-package com.oracle.cts.tools;
+package org.eclipse.ee4j.jakartaeetck.tools.jtreportparser;
 
 import java.time.LocalDateTime;
 
@@ -29,8 +29,6 @@ public class TestSuite {
     private final String id;
     
     private final String hostname;
-    
-    private String timestamp;
     
     //Store all counts
     private int passedTestsCount;
@@ -142,16 +140,16 @@ public class TestSuite {
 
     public String  getXMLStartElement() {
         StringBuilder sb = new StringBuilder("<testsuite ");
-        sb.append(" id=\"" + this.id + "\"");
-        sb.append(" name=\"" + this.name + "\"");
-        sb.append(" hostname=\"" + this.hostname + "\"");
-        sb.append(" tests=\"" + this.getTotalTestsCount()+"\"");
-        sb.append(" failures=\"" + this.getFailedTestsCount()+"\"");
-        sb.append(" errors=\"" + this.getErrorTestsCount()+"\"");
-        sb.append(" disabled=\"" + this.getExcludedTestsCount()+"\"");
-        sb.append(" skipped=\"" + this.getExcludedTestsCount()+"\"");
-        sb.append(" time=\"" + this.getTotalDuration()+"\"");
-        sb.append(" timestamp=\"" + this.getTimestamp()+"\"");
+        sb.append(" id=\"").append(this.id).append("\"");
+        sb.append(" name=\"").append(this.name).append("\"");
+        sb.append(" hostname=\"").append(this.hostname).append("\"");
+        sb.append(" tests=\"").append(this.getTotalTestsCount()).append("\"");
+        sb.append(" failures=\"").append(this.getFailedTestsCount()).append("\"");
+        sb.append(" errors=\"").append(this.getErrorTestsCount()).append("\"");
+        sb.append(" disabled=\"").append(this.getExcludedTestsCount()).append("\"");
+        sb.append(" skipped=\"").append(this.getExcludedTestsCount()).append("\"");
+        sb.append(" time=\"").append(this.getTotalDuration()).append("\"");
+        sb.append(" timestamp=\"").append(this.getTimestamp()).append("\"");
         sb.append(">");
         return sb.toString();
     }
