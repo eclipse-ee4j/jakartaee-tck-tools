@@ -591,7 +591,7 @@ public class APITest extends NbTestCase {
             if (!ExecuteUtils.getStdOut().contains("1.1")) {
                 fail("Should report 1.1:\n" + ExecuteUtils.getStdErr());
             }
-            if (!ExecuteUtils.getStdOut().contains("3.3")) {
+            if (!ExecuteUtils.getStdErr().contains("3.3")) {
                 fail("Should report 3.3:\n" + ExecuteUtils.getStdErr());
             }
         }

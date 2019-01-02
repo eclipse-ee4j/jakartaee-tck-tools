@@ -163,7 +163,11 @@ abstract class SigtestHandler {
         } else {
             out = output.toString();
         }
-        logInfo(out);
+        if (returnCode == 0) {
+            logInfo(out);
+        } else {
+            logError(out);
+        }
         boolean fail;
         if (getReport() != null) {
             writeReport(getReport(), out, returnCode == 0 || Boolean.FALSE.equals(isFailOnError()));
