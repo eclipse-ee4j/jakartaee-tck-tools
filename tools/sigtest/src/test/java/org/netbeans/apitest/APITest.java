@@ -649,8 +649,8 @@ public class APITest extends NbTestCase {
 
         assertTrue("Report exists", report.exists());
         String in = readFile(report);
-        if (!in.contains("failures=\"0\"")) {
-            fail("Should contain failures='0':\n" + in);
+        if (!in.contains("failures=\"1\"")) {
+            fail("Should contain failures='1':\n" + in);
         }
     }
     
@@ -843,7 +843,7 @@ public class APITest extends NbTestCase {
         ExecuteUtils.execute(build, args.toArray(new String[0]));
     }
     
-    private static final void copy(String txt, File f) throws Exception {
+    static final void copy(String txt, File f) throws Exception {
         f.getParentFile().mkdirs();
         FileWriter w = new FileWriter(f);
         w.append(txt);

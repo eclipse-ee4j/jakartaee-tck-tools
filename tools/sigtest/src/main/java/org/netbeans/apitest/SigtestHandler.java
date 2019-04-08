@@ -170,7 +170,7 @@ abstract class SigtestHandler {
         }
         boolean fail;
         if (getReport() != null) {
-            writeReport(getReport(), out, returnCode == 0 || Boolean.FALSE.equals(isFailOnError()));
+            writeReport(getReport(), out, returnCode == 0);
             fail = Boolean.TRUE.equals(isFailOnError());
         } else {
             fail = !Boolean.FALSE.equals(isFailOnError());
