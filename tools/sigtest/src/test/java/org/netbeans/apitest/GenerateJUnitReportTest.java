@@ -55,21 +55,34 @@ public class GenerateJUnitReportTest extends NbTestCase {
 
     public void testFailWhenGenerating() throws Exception {
         File xml = new File(getWorkDir(), "junit.xml");
+        File sig = new File(getWorkDir(), "api.sig");
         try {
-            generateAPIs(1, "-Dcheck.package=ahoj.*", "-Dfail.on.error=true", "-Dcheck.report=" + xml);
+            generateAPIs(1, "-Dcheck.package=ahoj.*", "-Dfail.on.error=true", "-Dcheck.report=" + xml, "-Dapi.out=" + sig);
             fail("Generating of sigtest files should fail");
         } catch (ExecuteUtils.ExecutionError err) {
             // OK
         }
         assertTrue("File " + xml + " exists", xml.exists());
         assertJUnitFailure(xml);
+        assertSigfileGenerated(sig);
     }
 
     public void testReportFailureWhenGenerating() throws Exception {
         File xml = new File(getWorkDir(), "junit.xml");
-        generateAPIs(1, "-Dcheck.package=ahoj.*", "-Dfail.on.error=false", "-Dcheck.report=" + xml);
+        File sig = new File(getWorkDir(), "api.sig");
+        generateAPIs(1, "-Dcheck.package=ahoj.*", "-Dfail.on.error=false", "-Dcheck.report=" + xml, "-Dapi.out=" + sig);
         assertJUnitFailure(xml);
+        assertSigfileGenerated(sig);
     }
+    protected void assertSigfileGenerated(File sig) throws IOException {
+        assertTrue("Signatures generated in " + sig, sig.exists());
+        final String sigContent = APITest.readFile(sig);
+        if (sigContent.contains("interface ahoj.I")) {
+            return;
+        }
+        fail(sigContent);
+    }
+
 
     private void assertJUnitFailure(File xml) throws IOException {
         assertTrue("File " + xml + " exists", xml.exists());

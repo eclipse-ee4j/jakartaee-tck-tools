@@ -71,6 +71,7 @@ abstract class SigtestHandler {
             addBootCP = true;
             arg.add("-static");
             arg.add("-ErrorAll");
+            arg.add("-KeepFile");
         } else if (getAction().equals("check") || getAction().equals("binarycheck")) {
             // no special arg for check
             arg.add("-static");

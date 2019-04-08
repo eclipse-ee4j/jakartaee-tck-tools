@@ -24,9 +24,10 @@
         
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         <property name="check.package" value="x.*"/>
+        <property name="api.out" value="${dir1}/api.out"/>
         
         <sigtest action="generate" 
-            classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"
+            classpath="${dir1}/api.jar" packages="${check.package}" filename="${api.out}"
             failonerror="${fail.on.error}" report="${check.report}"
         />
     </target>
