@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.Test;
+import static org.junit.Assert.assertNotEquals;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -474,6 +475,35 @@ public class APITest extends NbTestCase {
             fail("Missing method has to be detected");
         } catch (ExecuteUtils.ExecutionError ex) {
             // ok
+        }
+    }
+
+    public void testRenamedInnerClassDetected() throws Exception {
+        String c1 = ""
+                + "package ahoj;"
+                + "public interface Platform {\n"
+                + "    interface Aarch64 extends Platform {\n"
+                + "    }\n"
+                + "}\n"
+                + "";
+        createFile(1, "Platform.java", c1);
+
+
+        String c2 = ""
+                + "package ahoj;"
+                + "public interface Platform {\n"
+                + "    interface AARCH64 extends Platform {\n"
+                + "    }\n"
+                + "}\n"
+                + "";
+        createFile(2, "Platform.java", c2);
+
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Rename of an inner interface is noticed as an error");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            final int at = ExecuteUtils.getStdErr().indexOf("API type removed");
+            assertNotEquals("API type removed error found", -1, at);
         }
     }
     
