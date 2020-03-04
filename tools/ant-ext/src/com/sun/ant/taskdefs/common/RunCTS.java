@@ -71,6 +71,7 @@ public class RunCTS extends Task {
     private File     tshomebincommon;
     private File     j2eehomebin;
     private File     javahome;
+    private File     rijava;
     private File     windir;
     private File     tempdir;
     private File     systemroot;
@@ -391,6 +392,7 @@ public class RunCTS extends Task {
         String command = "runclient " + runclientargs + " -Dreport.dir=" +
                 reportdir.getPath() + File.separator + mapTestArea(testArea) +
                 " -Dwork.dir=" + workdir.getPath() + File.separator + mapTestArea(testArea);
+        
         if (!currentTestDir.isDirectory()) {
             throw new BuildException("Directory does not exist \"" +
                     currentTestDir + "\"");
@@ -608,16 +610,23 @@ public class RunCTS extends Task {
                 File.separator + "sun" + File.separator + "ts" +
                 File.separator + "tests";
         javahome = new File(System.getProperty("java.home"));
+
+        if (System.getenv("RI_JAVA_HOME") != null) {
+            rijava = new File(System.getenv("RI_JAVA_HOME"));
+        } else  {
+            rijava = javahome;
+        }
+
         tshomebincommon = new File(tshome, "bin");
         tshomebin = new File(tshome, "install/" + deliverabledir + "/bin");
-	if (!tshomebin.isDirectory()) {
-	    tshomebin = tshomebincommon;
-	}
+    	if (!tshomebin.isDirectory()) {
+    	    tshomebin = tshomebincommon;
+    	}
         j2eehomebin = new File(j2eehome, "bin");
         if (antopts == null || antopts.length() == 0) {
-	    antopts = "-Djava.endorsed.dirs=" + j2eehome.getPath() + File.separator +
-		"modules" + File.separator + "endorsed";
-	}
+		    antopts = "-Djava.endorsed.dirs=" + j2eehome.getPath() + File.separator +
+			"modules" + File.separator + "endorsed";
+		}
         processorProps.setProperty("j2ee.home", j2eehome.getPath());
         processorProps.setProperty("ts.home", tshome.getPath());
         String spsHome = "";
@@ -625,9 +634,9 @@ public class RunCTS extends Task {
             processorProps.setProperty("sps.home", spshome.getPath());
             spsHome = spshome.getPath();
         }
-	if (deliverabledir == null || deliverabledir.length() == 0) {
-	    deliverabledir = "j2ee";
-	}
+    	if (deliverabledir == null || deliverabledir.length() == 0) {
+    	    deliverabledir = "j2ee";
+    	}
         if(osname.startsWith("Win")) {
             windir = new File(System.getenv("windir"));
             systemroot = new File(System.getenv("systemroot"));
@@ -637,12 +646,14 @@ public class RunCTS extends Task {
 				"ANT_HOME=" + anthome.getPath(), "S1AS_HOME=" + j2eehome.getPath(),
 				"SPS_HOME=" + spsHome, "windir=" + windir.getPath(),
 				"SystemRoot=" + systemroot.getPath(), "ANT_OPTS=" + antopts,
+                "RI_JAVA_HOME=" + rijava.getPath(),
 				"PATH=" + javahome.getPath() + "\bin;" + System.getenv("PATH"),
 				"deliverabledir=" + deliverabledir};
         } else {
             env = new String[] {"TS_HOME=" + tshome.getPath(), "JAVA_HOME=" + javahome.getPath(),
 				"ANT_HOME=" + anthome.getPath(), "S1AS_HOME=" + j2eehome.getPath(),
 				"SPS_HOME=" + spsHome, "ANT_OPTS=" + antopts,
+                "RI_JAVA_HOME=" + rijava.getPath(),
 				"PATH=" + javahome.getPath() + "/bin:" + System.getenv("PATH"),
                                 "deliverabledir=" + deliverabledir};
         }
