@@ -550,6 +550,32 @@ public class APITest extends NbTestCase {
         }
     }
     
+    public void testChangeOfStaticFieldTypeInNetBeans12() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public class I {" +
+            "  public I() {}" +
+            "  protected static java.util.HashSet instances;" +
+            "}";
+        createFile(1, "I.java", c1);
+        
+        
+        String c2 =
+            "package ahoj;" +
+            "public class I {" +
+            "  public I() {}" +
+            "  protected static java.util.Set<java.lang.String> instances;" +
+            "}";
+        createFile(2, "I.java", c2);
+        
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Change of field type to Set has to be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            assertNotEquals(ex.getMessage(), -1, ex.getMessage().indexOf("E4.1 - Changing field type"));
+        }
+    }
+    
     public void testAddProtectedIsFine() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -851,6 +877,27 @@ public class APITest extends NbTestCase {
         } catch (ExecuteUtils.ExecutionError err) {
             // ok
         }
+    }
+
+    public void testPackageInfoIsAnAPI() throws Exception {
+        String c1 =
+            "package x;" +
+            "public class C {" +
+            "  public void x() { }" +
+            "}";
+        createFile(1, "C.java", c1);
+        String p1 =
+            "@Deprecated\n" +
+            "package x;\n";
+        createFile(1, "package-info.java", p1);
+        String c2 =
+            "package x;" +
+            "public class C {" +
+            "  public void x() { }" +
+            "}";
+        createFile(2, "C.java", c2);
+
+        compareAPIs(1, 2);
     }
     
     protected final void createFile(int slot, String name, String content) throws Exception {
