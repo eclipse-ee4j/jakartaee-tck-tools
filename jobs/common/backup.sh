@@ -20,7 +20,7 @@ function backup {
 
     NAME="${FILE/.zip/}"
     SHA=$(sha256sum "$FILE" | sed 's, .*,,')
-    DATE="$(date +"%Y-%m-%d-%s")"
+    DATE="$(date +"%Y-%m-%d")"
 
     SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
