@@ -1,5 +1,11 @@
 #!/bin/bash -x
 
+##[ Imports ]####################
+
+source "$(dirname $0)/../common/backup.sh"
+
+##[ Main ]#######################
+
 #GF_VER=`cat glassfish.version | tr '\n' '|'`
 TCK_VER=`cat jakartaeetck.version | tr '\n' '|'`
 echo "Version Info:Eclipse GF URL : https://ci.eclipse.org/jakartaee-tck/job/build-glassfish/lastSuccessfulBuild/artifact/appserver/distributions/glassfish/target/glassfish.zip ; JakartaEETCK-$TCK_VER"
@@ -36,8 +42,14 @@ scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jakarta-jakartae
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakartaeetck.version genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakarta-jakartaeetckinfo.txt genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900
 
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org ls -lt /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900
+
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org mkdir /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900/history
+
+backup jakarta-jakartaeetck-9.0.0.zip \
+       genie.jakartaee-tck@build.eclipse.org \
+       /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900/history
+
 rm -rf jakarta-jakartaeetck-9.0.0.zip
 rm -rf jakarta-jakartaee-smoke-9.0.0.zip
-
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org ls -lt /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900
 
