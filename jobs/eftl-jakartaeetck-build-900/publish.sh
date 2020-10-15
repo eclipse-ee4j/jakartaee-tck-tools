@@ -46,7 +46,8 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-
 
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org mkdir /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900/history
 
-backup jakarta-jakartaeetck-9.0.0.zip \
+# backup limits the number of zips kept to 5, instead we will temporily switch to backup_no_delete which doesn't limit the number of zips.
+backup_no_delete jakarta-jakartaeetck-9.0.0.zip \
        genie.jakartaee-tck@build.eclipse.org \
        /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-900/history
 
