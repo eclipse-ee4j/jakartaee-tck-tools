@@ -850,7 +850,7 @@ public class APITest extends NbTestCase {
         createFile(2, "C.java", c2);
         
         try {
-            compareAPIs(1, 2, "-Dcheck.type=StrictCheck");
+            compareAPIs(1, 2, "-Dcheck.type=strictcheck");
             fail("This should fail, the mode is strict and we see some changes");
         } catch (ExecuteUtils.ExecutionError err) {
             // ok
