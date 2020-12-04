@@ -861,6 +861,18 @@ public class APITest extends NbTestCase {
         String c1 = """
             package x;
             public interface P {
+                    interface LB extends PI.PJ {
+                    }
+                    interface A extends P {
+                    }
+                    interface L extends LB {
+                    }
+                    class L_A implements L, A {
+                    }
+            }
+            interface PI {
+                    interface PJ extends P {
+                    }
             }
             """;
         createFile(1, "P.java", c1);
