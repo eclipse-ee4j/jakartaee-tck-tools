@@ -462,7 +462,7 @@ public class MemberCollectionBuilder {
                     } else if (memb.isInner()) {
 
                         if (!internalClasses.contains(memb.getName()) && retVal.findSimilar(memb) == null) {
-                            retVal.addMember(memb);
+       //                     retVal.addMember(memb);
                             if (logger.isLoggable(Level.FINER)) {
                                 logger.finer(" added inner class " + memb);
                             }
