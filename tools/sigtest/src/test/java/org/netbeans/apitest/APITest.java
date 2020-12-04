@@ -44,7 +44,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class APITest extends NbTestCase {
     private static File workDir;
-    
+
     public APITest(String s) {
         super(s);
     }
@@ -70,19 +70,19 @@ public class APITest extends NbTestCase {
             "  public static final class ObjSub {}" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public interface I {" +
             "  public static final class ObjSub {}" +
-            "  String toString(); " + 
+            "  String toString(); " +
             "}";
         createFile(2, "I.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
     public void testAddingMethodToEnumIsOK() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -90,8 +90,8 @@ public class APITest extends NbTestCase {
             "  A;" +
             "}";
         createFile(1, "E.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public enum E {" +
@@ -99,10 +99,10 @@ public class APITest extends NbTestCase {
             "  public void get() {};" +
             "}";
         createFile(2, "E.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
     public void testAddingInterfaceMethodToEnumIsOK() throws Exception {
         String c1 =
                 "package ahoj;"
@@ -140,7 +140,7 @@ public class APITest extends NbTestCase {
 
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-   
+
     public void testMissingMethodInAnInterfaceIsDetected() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -148,14 +148,14 @@ public class APITest extends NbTestCase {
             "  public void get();" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public interface I {" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Do not remove methods from interfaces");
@@ -163,30 +163,30 @@ public class APITest extends NbTestCase {
             // ok
         }
     }
-    
+
     public void testProblemsWithInnerInterface() throws Exception {
-        String c1 = 
+        String c1 =
             "package ahoj;" +
             "public class Utils {" +
             "  public static interface I { }" +
             "}";
-        
+
         createFile(1, "Utils.java", c1);
         createFile(2, "Utils.java", c1);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
     public void testProblemsWithInnerClass() throws Exception {
-        String c1 = 
+        String c1 =
             "package ahoj;" +
             "public class Utils {" +
             "  public static class I { }" +
             "}";
-        
+
         createFile(1, "Utils.java", c1);
         createFile(2, "Utils.java", c1);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
@@ -208,15 +208,15 @@ public class APITest extends NbTestCase {
     }
 
     public void testProblemsWithInnerClassChanged() throws Exception {
-        String c1 = 
+        String c1 =
             "package ahoj;" +
             "public class Utils {" +
             "  public STATIC class I { }" +
             "}";
-        
+
         createFile(1, "Utils.java", c1.replace("STATIC", "static"));
         createFile(2, "Utils.java", c1.replace("STATIC", ""));
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("This is an incompatible change");
@@ -231,15 +231,15 @@ public class APITest extends NbTestCase {
             "public interface I {" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public interface I {" +
             "  public void get();" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Adding new methods to interfaces is not polite");
@@ -291,29 +291,29 @@ public class APITest extends NbTestCase {
             "public interface I {" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public interface I {" +
             "  public void get();" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "-Dcheck.type=binarycheck");
     }
-    
+
     public void testMakingAClassNonFinalIsNotIncompatibleChange() throws Exception {
         String c1 =
             "package ahoj;" +
             "public final class C {" +
             "}";
         createFile(1, "C.java", c1);
-        
-        
+
+
         String c2 = c1.replaceAll("final", "");
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
@@ -439,7 +439,7 @@ public class APITest extends NbTestCase {
 
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
     public void testGenericsOverridenType() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -451,7 +451,7 @@ public class APITest extends NbTestCase {
             "}";
         createFile(1, "A.java", c1);
         createFile(2, "A.java", c1);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
@@ -462,14 +462,14 @@ public class APITest extends NbTestCase {
             "  public abstract void get();" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Missing method has to be detected");
@@ -506,7 +506,7 @@ public class APITest extends NbTestCase {
             assertNotEquals("API type removed error found", -1, at);
         }
     }
-    
+
     public void testAbstractPackagePrivateMethodIsOK() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -515,15 +515,15 @@ public class APITest extends NbTestCase {
             "  abstract void get();" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
             "  I() {}" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
@@ -533,15 +533,15 @@ public class APITest extends NbTestCase {
             "public abstract class I {" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
             "  public abstract void get();" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Added method has to be detected");
@@ -549,7 +549,7 @@ public class APITest extends NbTestCase {
             // ok
         }
     }
-    
+
     public void testChangeOfStaticFieldTypeInNetBeans12() throws Exception {
         String c1 =
             "package ahoj;" +
@@ -558,8 +558,8 @@ public class APITest extends NbTestCase {
             "  protected static java.util.HashSet instances;" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public class I {" +
@@ -567,7 +567,7 @@ public class APITest extends NbTestCase {
             "  protected static java.util.Set<java.lang.String> instances;" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
             fail("Change of field type to Set has to be detected");
@@ -575,22 +575,22 @@ public class APITest extends NbTestCase {
             assertNotEquals(ex.getMessage(), -1, ex.getMessage().indexOf("E4.1 - Changing field type"));
         }
     }
-    
+
     public void testAddProtectedIsFine() throws Exception {
         String c1 =
             "package ahoj;" +
             "public abstract class I {" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
             "  protected void get() { }" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
 
@@ -600,18 +600,18 @@ public class APITest extends NbTestCase {
             "public abstract class I {" +
             "}";
         createFile(1, "I.java", c1);
-        
-        
+
+
         String c2 =
             "package ahoj;" +
             "public abstract class I {" +
             "  public void get() { }" +
             "}";
         createFile(2, "I.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
     public void testOverridenTypeChanged() throws Exception {
         String c1 =
             "package ahoj; import java.io.IOException; " +
@@ -623,10 +623,10 @@ public class APITest extends NbTestCase {
         String c2 = c1.replaceAll("public Appendable", "public W");
         createFile(1, "W.java", c1);
         createFile(2, "W.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
     }
-    
+
     public void testGenerateVersionNumber() throws Exception {
         String retAppendable =
             "package ahoj; import java.io.IOException; " +
@@ -638,7 +638,7 @@ public class APITest extends NbTestCase {
         String retW = retAppendable.replaceAll("public Appendable", "public W");
         createFile(1, "W.java", retW);
         createFile(2, "W.java", retAppendable);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version", "-Dv1=1.1", "-Dv2=3.3");
             fail("Should be an incompatible change");
@@ -652,7 +652,7 @@ public class APITest extends NbTestCase {
             }
         }
     }
-    
+
     public void testGenerateVersionNumberAsJunit() throws Exception {
         String retAppendable =
             "package ahoj; import java.io.IOException; " +
@@ -664,10 +664,10 @@ public class APITest extends NbTestCase {
         String retW = retAppendable.replaceAll("public Appendable", "public W");
         createFile(1, "W.java", retW);
         createFile(2, "W.java", retAppendable);
-        
+
         File report = new File(getWorkDir(), "report.xml");
         report.delete();
-        
+
         compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "with-version-junit", "-Dv1=1.1", "-Dv2=3.3", "-Dcheck.report=" + report, "-Dsigtest.mail=jarda@darda.petarda.org");
 
         assertTrue("Report exists", report.exists());
@@ -683,7 +683,7 @@ public class APITest extends NbTestCase {
             fail("Should contain email:\n" + in);
         }
     }
-    
+
     public void testNoFailuresIfInXMLIf() throws Exception {
         String retAppendable =
             "package ahoj; import java.io.IOException; " +
@@ -692,13 +692,13 @@ public class APITest extends NbTestCase {
                 "} class X {} ";
         createFile(1, "W.java", retAppendable);
         createFile(2, "W.java", retAppendable);
-        
+
         File report = new File(getWorkDir(), "report.xml");
         report.delete();
-        
-        compareAPIs(1, 2, 
+
+        compareAPIs(1, 2,
             "generate",
-            "-Dcheck.package=ahoj.*", 
+            "-Dcheck.package=ahoj.*",
             "-Dcheck.report=" + report,
             "-Dfail.on.error=false"
         );
@@ -709,8 +709,8 @@ public class APITest extends NbTestCase {
             fail("Should contain failures='1':\n" + in);
         }
     }
-    
-    
+
+
     public void testAntScript() throws Exception {
         String c1 =
             "package x;" +
@@ -730,10 +730,10 @@ public class APITest extends NbTestCase {
             "  public C() { }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2);
     }
-    
+
     public void testSubpackage() throws Exception {
         String c1 =
             "package x.y;" +
@@ -753,10 +753,10 @@ public class APITest extends NbTestCase {
             "  public C() { }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=x.y.*");
     }
-    
+
     public void testStaticMethodsReportedAsMissing() throws Exception {
         String c1 =
             "package x.y;" +
@@ -772,7 +772,7 @@ public class APITest extends NbTestCase {
             "  public static C getDefault() { return new C(); }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
     }
 
@@ -791,7 +791,7 @@ public class APITest extends NbTestCase {
             "  public static C DEFAULT = new C();" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
     }
 
@@ -806,7 +806,7 @@ public class APITest extends NbTestCase {
         createFile(1, "C.java", c1);
         String c2 = c1;
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
     }
 
@@ -825,15 +825,15 @@ public class APITest extends NbTestCase {
             "  public C getDefault() { return new C(); }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         compareAPIs(1, 2, "-Dcheck.package=x.y.*", "-Dcheck.type=check");
     }
-    
+
     public void testStrictCheckDiscoversAnAPIChange() throws Exception {
         String c1 =
             "package x;" +
             "public class C {" +
-            "  private C() { }" + 
+            "  private C() { }" +
             "}";
         createFile(1, "C.java", c1);
         String cc1 =
@@ -848,7 +848,7 @@ public class APITest extends NbTestCase {
             "  public void newMeth() { }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.type=strictcheck");
             fail("This should fail, the mode is strict and we see some changes");
@@ -856,7 +856,19 @@ public class APITest extends NbTestCase {
             // ok
         }
     }
-    
+
+    public void testStrictNestedInterfaces() throws Exception {
+        String c1 = """
+            package x;
+            public interface P {
+            }
+            """;
+        createFile(1, "P.java", c1);
+        createFile(2, "P.java", c1);
+
+        compareAPIs(1, 2, "-Dcheck.type=strictcheck");
+    }
+
     public void testDeleteOfAMethodIsReported() throws Exception {
         String c1 =
             "package x;" +
@@ -870,7 +882,7 @@ public class APITest extends NbTestCase {
             "  public C() { }" +
             "}";
         createFile(2, "C.java", c2);
-        
+
         try {
             compareAPIs(1, 2, "-Dcheck.type=Check");
             fail("This comparition should fail");
@@ -899,27 +911,27 @@ public class APITest extends NbTestCase {
 
         compareAPIs(1, 2);
     }
-    
+
     protected final void createFile(int slot, String name, String content) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slot);
         File c1 = new File(d1, name);
         copy(content, c1);
     }
-    
+
     protected void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
         File d1 = new File(getWorkDir(), "dir" + slotFirst);
         File d2 = new File(getWorkDir(), "dir" + slotSecond);
-        
+
         File build = new File(getWorkDir(), "build.xml");
         extractResource("build.xml", build);
-        
+
         List<String> args = new ArrayList<String>();
         args.addAll(Arrays.asList(additionalArgs));
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d2);
         ExecuteUtils.execute(build, args.toArray(new String[0]));
     }
-    
+
     static final void copy(String txt, File f) throws Exception {
         f.getParentFile().mkdirs();
         FileWriter w = new FileWriter(f);
@@ -930,7 +942,7 @@ public class APITest extends NbTestCase {
     final File extractResource(String res, File f) throws Exception {
         URL u = APITest.class.getResource(res);
         assertNotNull ("Resource should be found " + res, u);
-        
+
         FileOutputStream os = new FileOutputStream(f);
         InputStream is = u.openStream();
         for (;;) {
@@ -941,22 +953,22 @@ public class APITest extends NbTestCase {
             os.write (ch);
         }
         os.close ();
-            
+
         return f;
     }
-    
+
     final static String readFile (java.io.File f) throws java.io.IOException {
         int s = (int)f.length ();
         byte[] data = new byte[s];
         assertEquals ("Read all data", s, new java.io.FileInputStream (f).read (data));
-        
+
         return new String (data);
     }
-    
+
     final File extractString (String res, String nameExt) throws Exception {
         File f = new File(getWorkDir(), nameExt);
         f.deleteOnExit ();
-        
+
         FileOutputStream os = new FileOutputStream(f);
         InputStream is = new ByteArrayInputStream(res.getBytes("UTF-8"));
         for (;;) {
@@ -967,8 +979,8 @@ public class APITest extends NbTestCase {
             os.write (ch);
         }
         os.close ();
-            
+
         return f;
     }
-    
+
 }
