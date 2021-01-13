@@ -2,7 +2,7 @@
 
 ##[ Imports ]####################
 
-source "$(dirname $0)/../common/backup.sh"
+source "$(dirname $0)/../../common/backup.sh"
 
 ##[ Main ]#######################
 
