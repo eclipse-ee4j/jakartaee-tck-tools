@@ -38,6 +38,7 @@ do
 done
 
 
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org mkdir -p /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x/
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jakarta-jakartaeetck-9.0.2.zip genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakartaeetck.version genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakarta-jakartaeetckinfo.txt genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
