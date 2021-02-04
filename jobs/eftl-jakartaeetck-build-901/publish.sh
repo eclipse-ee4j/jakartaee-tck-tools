@@ -22,7 +22,7 @@ ls -ltr
 
 rm -rf $WORKSPACE/jakarta-jakartaeetckinfo.txt
 touch $WORKSPACE/jakarta-jakartaeetckinfo.txt
-export BUNDLE_URL="http://download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901"
+export BUNDLE_URL="http://download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x"
 
 for tck_bundle in *tck*.zip
 do
@@ -38,19 +38,19 @@ do
 done
 
 
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jakarta-jakartaeetck-9.0.1.zip genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakartaeetck.version genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakarta-jakartaeetckinfo.txt genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jakarta-jakartaeetck-9.0.2.zip genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakartaeetck.version genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $WORKSPACE/jakarta-jakartaeetckinfo.txt genie.jakartaee-tck@build.eclipse.org:/home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
 
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org ls -lt /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org ls -lt /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x
 
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org mkdir /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901/history
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null genie.jakartaee-tck@build.eclipse.org mkdir /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x/history
 
 # backup limits the number of zips kept to 5, instead we will temporily switch to backup_no_delete which doesn't limit the number of zips.
-backup_no_delete jakarta-jakartaeetck-9.0.1.zip \
+backup_no_delete jakarta-jakartaeetck-9.0.2.zip \
        genie.jakartaee-tck@build.eclipse.org \
-       /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-901/history
+       /home/data/httpd/download.eclipse.org/ee4j/jakartaee-tck/jakartaee9-eftl/staged-90x/history
 
-rm -rf jakarta-jakartaeetck-9.0.1.zip
-rm -rf jakarta-jakartaee-smoke-9.0.1.zip
+rm -rf jakarta-jakartaeetck-9.0.x.zip
+rm -rf jakarta-jakartaee-smoke-9.0.x.zip
 
