@@ -25,7 +25,7 @@
         <repository>
             <id>netbeans</id>
             <name>NetBeans</name>
-            <url>http://bits.netbeans.org/maven2/</url>
+            <url>http://netbeans.apidesign.org/maven2/</url>
         </repository>
     </repositories>
     <build>
