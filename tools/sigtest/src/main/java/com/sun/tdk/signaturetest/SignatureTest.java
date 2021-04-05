@@ -168,6 +168,7 @@ public class SignatureTest extends SigTest {
     public static final String NOMERGE_OPTION = "-NoMerge";
     public static final String WRITE_OPTION = "-Write";
     public static final String UPDATE_FILE_OPTION = "-Update";
+    public static final String EXCLUDE_JDK_CLASS_OPTION = "-IgnoreJDKClass";
 
     private String logName = null;
     private String outFormat = null;
@@ -241,6 +242,15 @@ public class SignatureTest extends SigTest {
 
     protected Exclude exclude;
     private int readMode = MultipleFileReader.MERGE_MODE;
+    private JDKExclude jdkExclude = new DefaultJDKExclude();
+    /**
+     * List of names of JDK classes and/or packages to be ignored along with subpackages. 
+     */
+    private static PackageGroup excludedJdkClasses = new PackageGroup(true);
+    
+    public SignatureTest() {
+        normalizer = new ThrowsNormalizer(jdkExclude); 
+    }
 
     /**
      * Run the test using command-line; return status via numeric exit code.
@@ -325,7 +335,6 @@ public class SignatureTest extends SigTest {
      */
     private boolean parseParameters(String[] args) {
 
-
         CommandLineParser parser = new CommandLineParser(this, "-");
 
         // Print help text only and exit.
@@ -374,7 +383,8 @@ public class SignatureTest extends SigTest {
         parser.addOption(UPDATE_FILE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(MODE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(ALLPUBLIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
-
+        parser.addOption(EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
+        
         parser.addOption(VERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -494,6 +504,8 @@ public class SignatureTest extends SigTest {
             isSupersettingEnabled = true;
         } else if (optionName.equalsIgnoreCase(NOMERGE_OPTION)) {
             readMode = MultipleFileReader.CLASSPATH_MODE;
+        } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
+            excludedJdkClasses.addPackages(CommandLineParser.parseListOption(args));
         } else {
             super.decodeCommonOptions(optionName, args);
         }
@@ -526,6 +538,7 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.exclude", EXCLUDE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.nomerge", NOMERGE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.update", UPDATE_FILE_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.excludejdkclass", EXCLUDE_JDK_CLASS_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.apiversion", APIVERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.checkvalue", CHECKVALUE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.formatplain", FORMATPLAIN_OPTION));
@@ -709,7 +722,7 @@ public class SignatureTest extends SigTest {
 
         testableHierarchy = new ClassHierarchyImpl(loader, trackMode);
 
-        testableMCBuilder = new MemberCollectionBuilder(this);
+        testableMCBuilder = new MemberCollectionBuilder(this, jdkExclude);
 
         signatureClassesHierarchy = new ClassHierarchyImpl(in, trackMode);
 
@@ -730,7 +743,7 @@ public class SignatureTest extends SigTest {
         boolean buildMembers = in.isFeatureSupported(FeaturesHolder.BuildMembers);
         MemberCollectionBuilder sigfileMCBuilder = null;
         if (buildMembers) {
-            sigfileMCBuilder = new MemberCollectionBuilder(this);
+            sigfileMCBuilder = new MemberCollectionBuilder(this, jdkExclude);
         }
 
         //  Reading the sigfile: main loop.
@@ -1388,7 +1401,7 @@ public class SignatureTest extends SigTest {
             }
         }
 
-        if (!isSupersettingEnabled && found != null) {
+        if (!isSupersettingEnabled && found != null && !jdkExclude.isJdkClass(found.getDeclaringClassName())) {
             errorManager.addError(MessageType.getAddedMessageType(found.getMemberType()), name, found.getMemberType(), found.toString(), found);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("added :-( " + found);
@@ -1423,8 +1436,22 @@ public class SignatureTest extends SigTest {
         int bPos = 0;
         int tPos = 0;
 
+        if (base != null && jdkExclude.isJdkClass(base.getDeclaringClassName())) {
+            return;
+        }
+
+        if (test != null && jdkExclude.isJdkClass(test.getDeclaringClassName())) {
+            return;
+        }
+
         while ((bPos < bl) && (tPos < tl)) {
-            int comp = baseAnnotList[bPos].compareTo(testAnnotList[tPos]);
+            int comp = 0;
+            if (jdkExclude.isJdkClass(baseAnnotList[bPos].getName()) || 
+                    jdkExclude.isJdkClass(testAnnotList[bPos].getName())) {
+                comp = baseAnnotList[bPos].getName().compareTo(testAnnotList[tPos].getName());
+            } else {
+                comp = baseAnnotList[bPos].compareTo(testAnnotList[tPos]);
+            }
             if (comp < 0) {
                 reportError(base, baseAnnotList[bPos].toString(), false);
                 bPos++;
@@ -1538,5 +1565,14 @@ public class SignatureTest extends SigTest {
             return null;
         }
 
+    }
+
+    static class DefaultJDKExclude implements JDKExclude {
+
+        @Override
+        public boolean isJdkClass(String name) {
+            return name != null && 
+                    excludedJdkClasses.checkName(name);
+        }
     }
 }
