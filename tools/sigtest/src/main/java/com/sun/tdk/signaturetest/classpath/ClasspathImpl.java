@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -62,7 +63,7 @@ import java.util.*;
  * @see com.sun.tdk.signaturetest.classpath.ClasspathEntry
  */
 public class ClasspathImpl implements Classpath {
-    private final boolean useBootCP;
+    private final Release release;
 
     /*
     public class ClassIterator {
@@ -169,7 +170,7 @@ public class ClasspathImpl implements Classpath {
      * directories and zip files become available through the created
      * <b>ClasspathImpl</b> instance.
      *
-     * @param useBootCP search JDK's bootclasspath when class isn't found?
+     * @param release specify how to search JDK's API when class isn't found on class path
      * @param classPath Path string listing directories and/or zip files.
      * @throws SecurityException The <code>classPath</code> string has
      *                           invalid format.
@@ -178,8 +179,8 @@ public class ClasspathImpl implements Classpath {
      * @see #setListToBegin()
      * @see #createPathEntry(ClasspathEntry, String)
      */
-    public ClasspathImpl(boolean useBootCP, String classPath) {
-        this.useBootCP = useBootCP;
+    public ClasspathImpl(Release release, String classPath) {
+        this.release = release;
         init(classPath);
     }
 
@@ -336,9 +337,8 @@ public class ClasspathImpl implements Classpath {
                 // just skip this entry
             }
         }
-        if (useBootCP) {
-            final String resourceName = name.replace('.', '/') + ".class";
-            InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName);
+        if (release != null) {
+            InputStream is = release.findClass(name);
             if (is != null) {
                 return is;
             }

@@ -434,14 +434,14 @@ public class SignatureTest extends SigTest {
 
         // create ClasspathImpl for founding of the added classes
         try {
-            classpath = new ClasspathImpl(useBootCp, classpathStr);
+            classpath = new ClasspathImpl(release, classpathStr);
         } catch (SecurityException e) {
             if (SigTest.debug)
                 e.printStackTrace();
             getLog().println(i18n.getString("SignatureTest.error.sec.newclasses"));
         }
 
-        if (isStatic && classpath.isEmpty() && !useBootCp)
+        if (isStatic && classpath.isEmpty() && release == null)
             return error(i18n.getString("SignatureTest.error.classpath.unspec"));
 
         return passed();

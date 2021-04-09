@@ -373,7 +373,7 @@ public class Setup extends SigTest {
         getLog().println(i18n.getString("Setup.log.classpath", classpathStr));
 
         try {
-            classpath = new ClasspathImpl(useBootCp, classpathStr);
+            classpath = new ClasspathImpl(release, classpathStr);
         } catch (SecurityException e) {
             if (SigTest.debug)
                 e.printStackTrace();

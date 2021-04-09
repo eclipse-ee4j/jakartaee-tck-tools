@@ -41,6 +41,7 @@ import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 import com.sun.tdk.signaturetest.util.OptionInfo;
 import com.sun.tdk.apicover.markup.Adapter;
+import com.sun.tdk.signaturetest.classpath.Release;
 
 import com.sun.tdk.signaturetest.core.MemberCollectionBuilder.BuildMode;
 import com.sun.tdk.signaturetest.sigfile.FileManager;
@@ -247,7 +248,7 @@ public class Main implements Log {
         }
         else if (optionName.equalsIgnoreCase(TS_OPTION)) {
             try {
-                classpath = new ClasspathImpl(true, args[0]);
+                classpath = new ClasspathImpl(Release.BOOT_CLASS_PATH, args[0]);
             } catch (SecurityException e) {
                 debug(e);
                 log.println(i18n.getString("Main.error.sec.newclasses"));
