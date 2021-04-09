@@ -245,12 +245,10 @@ final class ExecuteUtils {
         public void checkAccept (String host, int port) {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkMemberAccess (Class clazz, int which) {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkSystemClipboardAccess () {
         }
@@ -263,7 +261,6 @@ final class ExecuteUtils {
         public void checkCreateClassLoader () {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkAwtEventQueueAccess () {
         }
