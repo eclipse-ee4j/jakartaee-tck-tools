@@ -285,7 +285,15 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
-            release = Release.BOOT_CLASS_PATH;
+            if (args.length == 0) {
+                release = Release.BOOT_CLASS_PATH;
+            } else {
+                try {
+                    release = Release.find(Integer.parseInt(args[0]));
+                } catch (NumberFormatException ex) {
+                    throw new CommandLineParserException(i18n.getString("SigTest.error.arg.invalid2", optionName, args[0]));
+                }
+            }
         } else if (optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
             apiVersion = args[0];
         } else if (optionName.equalsIgnoreCase(STATIC_OPTION)) {

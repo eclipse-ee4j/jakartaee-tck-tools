@@ -58,6 +58,8 @@ public final class SigtestGenerate extends AbstractMojo {
     private File sigfile;
     @Parameter(defaultValue = "")
     private String packages;
+    @Parameter(property = "maven.compiler.release")
+    private String release;
     /**
      * attach the generated file with extension .sigfile to the main artifact for deployment
      */
@@ -68,12 +70,13 @@ public final class SigtestGenerate extends AbstractMojo {
     public SigtestGenerate() {
     }
 
-    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version) {
+    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
         this.packages = packages;
         this.version = version;
+        this.release = release;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -136,6 +139,11 @@ public final class SigtestGenerate extends AbstractMojo {
             @Override
             protected void logError(String message) {
                 getLog().error(message);
+            }
+
+            @Override
+            protected Integer getRelease() {
+                return ListCtSym.parseReleaseInteger(release);
             }
         };
         try {

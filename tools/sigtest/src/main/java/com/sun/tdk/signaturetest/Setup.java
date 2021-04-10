@@ -192,7 +192,7 @@ public class Setup extends SigTest {
 
         parser.addOption(PACKAGE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(CLASSPATH_OPTION, OptionInfo.requiredOption(1), optionsDecoder);
-        parser.addOption(USE_BOOT_CP, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(USE_BOOT_CP, OptionInfo.optionVariableParams(0, 1), optionsDecoder);
         parser.addOption(FILENAME_OPTION, OptionInfo.requiredOption(1), optionsDecoder);
 
         parser.addOption(TESTURL_OPTION, OptionInfo.option(1), optionsDecoder);

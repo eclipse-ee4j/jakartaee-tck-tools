@@ -150,6 +150,19 @@ public class AnnotationItem implements Comparable {
         members.remove(m);
     }
 
+    public static boolean isInternal(String annoName) {
+        if (annoName.startsWith("sun.")) {
+            return true;
+        }
+        if (annoName.startsWith("jdk.")) {
+            return true;
+        }
+        if (annoName.contains(".internal.")) {
+            return true;
+        }
+        return false;
+    }
+
     public static class Member implements Comparable {
         public String type;
         public String name;

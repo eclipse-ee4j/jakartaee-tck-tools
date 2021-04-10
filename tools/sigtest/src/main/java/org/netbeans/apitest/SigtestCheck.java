@@ -65,6 +65,8 @@ public final class SigtestCheck extends AbstractMojo {
     private File classes;
     @Parameter()
     private File sigfile;
+    @Parameter(property = "maven.compiler.release")
+    private String release;
     @Parameter(property = "sigtest.releaseVersion")
     private String releaseVersion;
     @Parameter(defaultValue = "check", property = "sigtest.check")
@@ -156,6 +158,11 @@ public final class SigtestCheck extends AbstractMojo {
             @Override
             protected void logError(String message) {
                 getLog().error(message);
+            }
+
+            @Override
+            protected Integer getRelease() {
+                return ListCtSym.parseReleaseInteger(release);
             }
         };
         try {

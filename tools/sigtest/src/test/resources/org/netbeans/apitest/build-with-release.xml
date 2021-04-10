@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="testing build script" default="all" basedir=".">
+    <target name="all">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+
+        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+    </target>
+
+    <target name="generate">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+        <property name="api.out" value="${dir1}/api.out"/>
+
+        <sigtest action="generate" release="${check.release}"
+            classpath="${dir1}/api.jar" packages="${check.package}" filename="${api.out}"
+            failonerror="${fail.on.error}" report="${check.report}"
+        />
+    </target>
+
+    <target name="compare">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="org.openide.nodes.*"/>
+
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" release="${check.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${sig}"/>
+    </target>
+
+    <target name="all-property">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+
+        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"
+            failureproperty="f"
+        />
+        <fail message="${check.type} failed" if="f"/>
+    </target>
+
+    <target name="with-version">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+
+        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
+
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" version="${v2}" packages="${check.package}" filename="${dir1}/api.out"/>
+    </target>
+
+    <target name="with-version-junit">
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir1}"/>
+        </antcall>
+        <antcall target="-compile-dir">
+            <param name="dir" value="${dir2}"/>
+        </antcall>
+
+        <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
+        <property name="check.package" value="x.*"/>
+
+        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
+
+        <property name="check.type" value="check"/>
+        <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" version="${v2}" packages="${check.package}" filename="${dir1}/api.out"
+            report="${check.report}"
+        />
+        <junitreport todir="${dir2}">
+            <fileset dir="${check.report}/..">
+                <include name="*.xml"/>
+            </fileset>
+        </junitreport>
+    </target>
+
+    <target name="-compile-dir">
+        <delete dir="${dir}/classes"/>
+        <mkdir dir="${dir}/classes"/>
+        <javac srcdir="${dir}" fork="false" destdir="${dir}/classes"/>
+        <jar basedir="${dir}/classes" includes="**/*.class" jarfile="${dir}/api.jar"/>
+    </target>
+</project>

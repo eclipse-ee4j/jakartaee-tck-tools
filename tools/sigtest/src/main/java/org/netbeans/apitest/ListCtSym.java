@@ -57,4 +57,21 @@ final class ListCtSym {
             }
         }
     }
+
+    static Integer parseReleaseInteger(String release) {
+        if (release == null) {
+            return null;
+        }
+        String r;
+        if (release.startsWith("1.")) {
+            r = release.substring(2);
+        } else {
+            r = release;
+        }
+        try {
+            return Integer.parseInt(r);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
 }

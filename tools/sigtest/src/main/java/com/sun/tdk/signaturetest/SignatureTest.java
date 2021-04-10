@@ -344,7 +344,7 @@ public class SignatureTest extends SigTest {
 
         // required only in static mode!
         parser.addOption(CLASSPATH_OPTION, OptionInfo.option(1), optionsDecoder);
-        parser.addOption(USE_BOOT_CP, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(USE_BOOT_CP, OptionInfo.optionVariableParams(0, 1), optionsDecoder);
 
         parser.addOption(FILENAME_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(FILES_OPTION, OptionInfo.option(1), optionsDecoder);
