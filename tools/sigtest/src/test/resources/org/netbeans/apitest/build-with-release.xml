@@ -11,7 +11,7 @@
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         <property name="check.package" value="x.*"/>
 
-        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+        <sigtest action="generate" release="${generate.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
 
         <property name="check.type" value="check"/>
         <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
@@ -26,7 +26,7 @@
         <property name="check.package" value="x.*"/>
         <property name="api.out" value="${dir1}/api.out"/>
 
-        <sigtest action="generate" release="${check.release}"
+        <sigtest action="generate" release="${generate.release}"
             classpath="${dir1}/api.jar" packages="${check.package}" filename="${api.out}"
             failonerror="${fail.on.error}" report="${check.report}"
         />
@@ -55,7 +55,7 @@
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         <property name="check.package" value="x.*"/>
 
-        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
+        <sigtest action="generate" release="${generate.release}" classpath="${dir1}/api.jar" packages="${check.package}" filename="${dir1}/api.out"/>
 
         <property name="check.type" value="check"/>
         <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" packages="${check.package}" filename="${dir1}/api.out"
@@ -75,7 +75,7 @@
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         <property name="check.package" value="x.*"/>
 
-        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
+        <sigtest action="generate" release="${generate.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
 
         <property name="check.type" value="check"/>
         <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" version="${v2}" packages="${check.package}" filename="${dir1}/api.out"/>
@@ -92,7 +92,7 @@
         <taskdef name="sigtest" classname="org.netbeans.apitest.Sigtest"/>
         <property name="check.package" value="x.*"/>
 
-        <sigtest action="generate" release="${check.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
+        <sigtest action="generate" release="${generate.release}" classpath="${dir1}/api.jar" version="${v1}" packages="${check.package}" filename="${dir1}/api.out" />
 
         <property name="check.type" value="check"/>
         <sigtest action="${check.type}" release="${check.release}" classpath="${dir2}/api.jar" version="${v2}" packages="${check.package}" filename="${dir1}/api.out"

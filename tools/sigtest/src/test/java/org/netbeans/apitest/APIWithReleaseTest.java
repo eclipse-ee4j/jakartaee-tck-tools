@@ -50,4 +50,39 @@ public class APIWithReleaseTest extends APITest {
         return "build-with-release.xml";
     }
 
+    @Override
+    protected String generateRelease() {
+        return "14";
+    }
+
+    @Override
+    protected String checkRelease() {
+        return "15";
+    }
+
+    public void testDetectChangeInCharSequence() throws Exception {
+        String c1 =
+            "package ahoj;" +
+            "public interface I extends CharSequence {" +
+            "  public void get();" +
+            "}";
+        createFile(1, "I.java", c1);
+
+
+        String c2 =
+            "package ahoj;" +
+            "public interface I extends CharSequence {" +
+            "  public void get();" +
+            "}";
+        createFile(2, "I.java", c2);
+
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.*", "-Dcheck.type=strictcheck");
+            fail("CharSequence.isEmpty() was added in JDK15 and that should be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            String out = ex.getStdErr().replace('\n', ' ');
+            assertTrue(out, out.matches(".*Added Methods.*ahoj.I.*method public boolean java.lang.CharSequence.isEmpty().*"));
+        }
+    }
+
 }

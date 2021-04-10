@@ -941,8 +941,17 @@ public class APITest extends NbTestCase {
         args.addAll(Arrays.asList(additionalArgs));
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d2);
-        args.add("-Dcheck.release=8");
+        args.add("-Dcheck.release=" + checkRelease());
+        args.add("-Dgenerate.release=" + generateRelease());
         ExecuteUtils.execute(build, args.toArray(new String[0]));
+    }
+
+    protected String checkRelease() {
+        return "invalid-ignore";
+    }
+
+    protected String generateRelease() {
+        return checkRelease();
     }
 
     protected String buildScript() {

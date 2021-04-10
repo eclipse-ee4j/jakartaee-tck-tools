@@ -32,6 +32,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
     </execution>
   </executions>
   <configuration>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
   </configuration>
 </plugin>
@@ -67,6 +68,7 @@ Try the following:
   <configuration>
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
   </configuration>
 </plugin>
 ```
@@ -129,6 +131,7 @@ then try:
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
   </configuration>
 ```
 
