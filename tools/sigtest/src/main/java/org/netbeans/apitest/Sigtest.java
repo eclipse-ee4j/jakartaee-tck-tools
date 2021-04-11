@@ -198,6 +198,12 @@ public final class Sigtest extends Task {
         }
     }
 
+    /** One of <code>generate</code>,
+        <code>check</code>,
+        <code>strictcheck</code>,
+        <code>versioncheck</code>,
+        <code>binarycheck</code>.
+        */
     public static final class ActionType extends EnumeratedAttribute {
         public String[] getValues() {
             return SigtestHandler.ACTIONS;

@@ -44,7 +44,27 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-/**
+/** Mojo to check {@code .class} files against an existing {@code .sigtest}
+ * file.
+ * <pre>
+&lt;plugin&gt;
+  &lt;groupId&gt;org.netbeans.tools&lt;/groupId&gt;
+  &lt;artifactId&gt;sigtest-maven-plugin&lt;/artifactId&gt;
+  &lt;version&gt;1.3&lt;/version&gt;
+  &lt;executions&gt;
+    &lt;execution&gt;
+      &lt;goals&gt;
+        &lt;goal&gt;check&lt;/goal&gt;
+      &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+  &lt;configuration&gt;
+    &lt;packages&gt;org.yourcompany.app.api,org.yourcompany.help.api&lt;/packages&gt;
+    &lt;releaseVersion&gt;1.3&lt;/releaseVersion&gt;
+    &lt;release&gt;8&lt;/release&gt; &lt;!-- specify version of JDK API to use 6,7,8,...15 --&gt;
+  &lt;/configuration&gt;
+&lt;/plugin&gt;
+ * </pre>
  *
  * @author Jaroslav Tulach
  */

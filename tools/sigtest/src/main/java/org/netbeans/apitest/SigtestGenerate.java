@@ -37,7 +37,25 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 
-/**
+/** Mojo to generate a {@code .sigtest} file.
+ * <pre>
+&lt;plugin&gt;
+  &lt;groupId&gt;org.netbeans.tools&lt;/groupId&gt;
+  &lt;artifactId&gt;sigtest-maven-plugin&lt;/artifactId&gt;
+  &lt;version&gt;1.4&lt;/version&gt;
+  &lt;executions&gt;
+    &lt;execution&gt;
+      &lt;goals&gt;
+        &lt;goal&gt;generate&lt;/goal&gt;
+      &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+  &lt;configuration&gt;
+    &lt;release&gt;8&lt;/release&gt; &lt;!-- specify version of JDK API to use 6,7,8,...15 --&gt;
+    &lt;packages&gt;org.yourcompany.app.api,org.yourcompany.help.api&lt;/packages&gt;
+  &lt;/configuration&gt;
+&lt;/plugin&gt;
+ * </pre>
  *
  * @author Jaroslav Tulach
  */

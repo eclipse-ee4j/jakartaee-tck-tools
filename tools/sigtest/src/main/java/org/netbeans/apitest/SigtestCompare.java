@@ -40,7 +40,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-/**
+/** Mojo to compare {@code .class} files with an existing {@code .sigtest}
+ * file.
  *
  * @author Jaroslav Tulach
  */

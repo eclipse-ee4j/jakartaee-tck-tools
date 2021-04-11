@@ -23,7 +23,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 <plugin>
   <groupId>org.netbeans.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
   <executions>
     <execution>
       <goals>
@@ -57,7 +57,7 @@ Try the following:
 <plugin>
   <groupId>org.netbeans.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
   <executions>
     <execution>
       <goals>
