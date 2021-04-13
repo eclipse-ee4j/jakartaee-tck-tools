@@ -134,6 +134,14 @@ then try:
 
 with the action option set to `strictcheck` the plugin will detect any API change and fail even if it is compatible. 
 
+## Relax verification of JDK signatures
+
+There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
+The `-IgnoreJDKClass` option can be used to specify a set of JDK classes that can benefit from relaxed signature verification rules when it comes to dealing with JDK 
+specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
+due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass java.lang.Deprecated` enabled, verification of the @Deprecated will only check that the tested class member has the 
+@Deprecated class but no verification of the @Deprecated signature will be performed. 
+
 ## History
 
 This tool is based on original [SigTest](https://wiki.openjdk.java.net/display/CodeTools/sigtest) sources,

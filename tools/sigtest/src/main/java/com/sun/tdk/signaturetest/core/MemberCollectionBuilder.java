@@ -76,6 +76,16 @@ public class MemberCollectionBuilder {
      */
     static Logger logger = Logger.getLogger(MemberCollectionBuilder.class.getName());
 
+    public MemberCollectionBuilder(Log log, JDKExclude jdkExclude) {
+        this.cc = jdkExclude == null ? new ClassCorrector(log) : new ClassCorrector(log, jdkExclude);
+        this.log = log;
+
+        // not configured externally
+        if (logger.getLevel() == null) {
+            logger.setLevel(Level.OFF);
+        }
+    }
+    
     public MemberCollectionBuilder(Log log) {
         this.cc = new ClassCorrector(log);
         this.log = log;

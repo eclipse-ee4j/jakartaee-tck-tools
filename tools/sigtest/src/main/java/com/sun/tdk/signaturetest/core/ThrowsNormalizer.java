@@ -43,6 +43,12 @@ import java.util.List;
  */
 public class ThrowsNormalizer {
 
+    public ThrowsNormalizer() {
+        
+    }
+    public ThrowsNormalizer(JDKExclude jdkExclude) {
+        this.jdkExclude = jdkExclude;
+    }
     public void normThrows(ClassDescription c, boolean removeJLE) throws ClassNotFoundException {
 
         ClassHierarchy h = c.getClassHierarchy();
@@ -93,7 +99,8 @@ public class ThrowsNormalizer {
                 if (s == null)
                     continue;
 
-                if (s.charAt(0) != '{' /* if not generic */) {
+
+                if (!jdkExclude.isJdkClass(s) && s.charAt(0) != '{' /* if not generic */) {
 
                     if (checkException(h, s, "java.lang.RuntimeException") || (removeJLE && checkException(h, s, "java.lang.Error"))) {
                         xthrows.set(i, null);
@@ -145,4 +152,10 @@ public class ThrowsNormalizer {
     
     private List/*String*/ xthrows = new ArrayList();
     private StringBuffer sb = new StringBuffer();
+    private JDKExclude jdkExclude = new JDKExclude() {
+        @Override
+        public boolean isJdkClass(String name) {
+            return false;
+        }
+    };
 }
