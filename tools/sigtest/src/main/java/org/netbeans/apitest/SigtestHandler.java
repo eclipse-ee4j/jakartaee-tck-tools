@@ -124,7 +124,11 @@ abstract class SigtestHandler {
                 pref = File.pathSeparator;
             }
             if (addBootCP) {
+                Integer release = getRelease();
                 arg.add("-BootCP");
+                if (release != null) {
+                    arg.add("" + release);
+                }
             }
             arg.add("-Classpath");
             arg.add(sb.toString());
@@ -245,6 +249,7 @@ abstract class SigtestHandler {
         }
     }
 
+    protected abstract Integer getRelease();
     protected abstract String getPackages();
     protected abstract File getFileName();
     protected abstract String getAction();

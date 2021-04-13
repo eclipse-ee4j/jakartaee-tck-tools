@@ -23,7 +23,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 <plugin>
   <groupId>org.netbeans.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
   <executions>
     <execution>
       <goals>
@@ -32,6 +32,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
     </execution>
   </executions>
   <configuration>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
   </configuration>
 </plugin>
@@ -56,7 +57,7 @@ Try the following:
 <plugin>
   <groupId>org.netbeans.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
   <executions>
     <execution>
       <goals>
@@ -67,6 +68,7 @@ Try the following:
   <configuration>
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
   </configuration>
 </plugin>
 ```
@@ -129,6 +131,7 @@ then try:
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
+    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
   </configuration>
 ```
 

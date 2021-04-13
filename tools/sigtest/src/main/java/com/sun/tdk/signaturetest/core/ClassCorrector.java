@@ -751,9 +751,17 @@ public class ClassCorrector implements Transformer {
         for (int i = 0; i < len; ++i) {
             String annoName = annotations[i].getName();
 
-            boolean documented = classHierarchy.isDocumentedAnnotation(annoName);
+            boolean documented;
+            boolean invisible;
+            try {
+                documented = classHierarchy.isDocumentedAnnotation(annoName);
+                invisible = isInvisibleClass(annoName);
+            } catch (ClassNotFoundException ex) {
+                documented = false;
+                invisible = true;
+            }
 
-            if (isInvisibleClass(annoName)) {
+            if (invisible) {
                 if (documented && logger.isLoggable(Level.WARNING))
                     logger.warning(i18n.getString("ClassCorrector.error.invisible_documented_annotation", annoName));
                 annotations[i] = null;

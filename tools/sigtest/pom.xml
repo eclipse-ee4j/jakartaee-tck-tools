@@ -20,6 +20,7 @@
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ct.sym>${java.home}/lib/ct.sym</ct.sym>
     </properties>
     <build>
         <plugins>
@@ -45,23 +46,68 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeGroupIds>org.netbeans.tools</includeGroupIds>
+                            <includes>**/*</includes>
+                            <exclude>META-INF/**</exclude>
+                            <outputDirectory>${project.build.directory}/classes/META-INF/sigtest/</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.10</version>
                 <configuration>
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>list-sigtest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.netbeans.apitest.ListCtSym</mainClass>
+                            <arguments>
+                                <argument>${project.build.directory}/classes/META-INF/sigtest.ls</argument>
+                                <argument>${project.build.directory}/classes/META-INF/sigtest/</argument>
+                                <argument>2</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
+                    <subpackages>org.netbeans.apitest</subpackages>
                 </configuration>
-                <version>2.10.3</version>
+                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.6.0</version>
                 <configuration>
                     <extractors>
                         <extractor>java-annotations</extractor>
@@ -158,6 +204,14 @@
             <artifactId>compiler</artifactId>
             <version>15.0.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.tools</groupId>
+            <artifactId>ct-sym</artifactId>
+            <version>latest</version>
+            <scope>system</scope>
+            <systemPath>${ct.sym}</systemPath>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <description>

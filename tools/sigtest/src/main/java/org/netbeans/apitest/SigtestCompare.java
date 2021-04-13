@@ -40,7 +40,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-/**
+/** Mojo to compare {@code .class} files with an existing {@code .sigtest}
+ * file.
  *
  * @author Jaroslav Tulach
  */
@@ -63,6 +64,8 @@ public final class SigtestCompare extends AbstractMojo {
     @Parameter(defaultValue = "")
     private String packages;
 
+    @Parameter(property = "maven.compiler.release")
+    private String release;
     @Parameter(property = "sigtest.releaseVersion")
     private String releaseVersion;
     @Parameter(defaultValue = "check", property = "sigtest.check")
@@ -91,7 +94,7 @@ public final class SigtestCompare extends AbstractMojo {
             throw new MojoExecutionException("Cannot resolve " + artifact, ex);
         }
 
-        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion);
+        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion, release);
         generate.execute();
 
         SigtestCheck check = new SigtestCheck(prj, classes, sigfile, action, packages, report, failOnError);

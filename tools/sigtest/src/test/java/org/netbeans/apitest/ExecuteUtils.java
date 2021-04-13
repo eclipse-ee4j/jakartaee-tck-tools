@@ -105,7 +105,7 @@ final class ExecuteUtils {
         }
     }
 
-    static class ExecutionError extends AssertionFailedError {
+    final static class ExecutionError extends AssertionFailedError {
         public final int exitCode;
 
         public ExecutionError (String msg, int e) {
@@ -113,7 +113,11 @@ final class ExecuteUtils {
             this.exitCode = e;
         }
 
-        public static void assertExitCode (String msg, int e) {
+        public String getStdErr() {
+            return ExecuteUtils.getStdErr();
+        }
+
+        static void assertExitCode (String msg, int e) {
             if (e != 0) {
                 throw new ExecutionError (
                     msg + " was: " + e + "\nOutput: " + out.toString () +
@@ -245,12 +249,10 @@ final class ExecuteUtils {
         public void checkAccept (String host, int port) {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkMemberAccess (Class clazz, int which) {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkSystemClipboardAccess () {
         }
@@ -263,7 +265,6 @@ final class ExecuteUtils {
         public void checkCreateClassLoader () {
         }
 
-        @Override
         @SuppressWarnings("deprecation")
         public void checkAwtEventQueueAccess () {
         }

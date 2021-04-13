@@ -960,8 +960,15 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
 
             int m = is.readUnsignedShort();
             for (int l = 0; l < m; l++) {
-                AnnotationItem anno = readAnnotation(c, target, false);
-                annolist.add(anno);
+                try {
+                    AnnotationItem anno = readAnnotation(c, target, false);
+                    annolist.add(anno);
+                } catch (AnnotationNotFoundException ex) {
+                    final String annoName = ex.getMessage();
+                    if (!AnnotationItem.isInternal(annoName)) {
+                        System.out.println("Warning: " + i18n.getString("BinaryClassDescrLoader.error.annotnotfound", annoName));
+                    }
+                }
             }
         }
 
@@ -1107,7 +1114,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
             return anno;
         }
 
-        void completeAnnotation(AnnotationItem anno) {
+        void completeAnnotation(AnnotationItem anno) throws AnnotationNotFoundException {
             try {
                 ClassDescription c = load(anno.getName());
 
@@ -1132,8 +1139,7 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
                     }
             }
             catch (ClassNotFoundException e) {
-                System.out.println("Warning: " + i18n.getString("BinaryClassDescrLoader.error.annotnotfound", anno.getName()));
-                //throw new ClassFormatError(i18n.getString("BinaryClassDescrLoader.error.annotnotfound", anno.getName()));
+                throw new AnnotationNotFoundException(anno.getName(), e);
             }
         }
 
@@ -1581,4 +1587,14 @@ public class BinaryClassDescrLoader implements ClassDescriptionLoader, LoadingHi
     
     private PrintWriter log;
 
+    private static final class AnnotationNotFoundException extends IOException {
+        public AnnotationNotFoundException(String message, ClassNotFoundException cause) {
+            super(message, cause);
+        }
+
+        @Override
+        public ClassNotFoundException getCause() {
+            return (ClassNotFoundException) super.getCause();
+        }
+    }
 }

@@ -29,6 +29,7 @@ package com.sun.tdk.signaturetest;
 
 import com.sun.tdk.signaturetest.classpath.Classpath;
 import com.sun.tdk.signaturetest.classpath.ClasspathImpl;
+import com.sun.tdk.signaturetest.classpath.Release;
 import com.sun.tdk.signaturetest.core.*;
 import com.sun.tdk.signaturetest.errors.ErrorFormatter;
 import com.sun.tdk.signaturetest.model.AnnotationItem;
@@ -142,7 +143,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     protected String classpathStr = null;
 
     /** search also boot classpath when a class is not found on classpath? */
-    protected boolean useBootCp;
+    protected Release release;
 
     /**
      * Collector for error messages, or <code>null</code> if log is not required.
@@ -284,7 +285,15 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
-            useBootCp = true;
+            if (args.length == 0) {
+                release = Release.BOOT_CLASS_PATH;
+            } else {
+                try {
+                    release = Release.find(Integer.parseInt(args[0]));
+                } catch (NumberFormatException ex) {
+                    throw new CommandLineParserException(i18n.getString("SigTest.error.arg.invalid2", optionName, args[0]));
+                }
+            }
         } else if (optionName.equalsIgnoreCase(APIVERSION_OPTION)) {
             apiVersion = args[0];
         } else if (optionName.equalsIgnoreCase(STATIC_OPTION)) {

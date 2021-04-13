@@ -46,6 +46,7 @@ public final class Sigtest extends Task {
     Boolean failOnError;
     File report;
     String failureProperty;
+    String release;
 
     public void setFileName(File f) {
         fileName = f;
@@ -92,6 +93,10 @@ public final class Sigtest extends Task {
 
     public void setReport(File report) {
         this.report = report;
+    }
+
+    public void setRelease(String release) {
+        this.release = release;
     }
 
     @Override
@@ -163,6 +168,11 @@ public final class Sigtest extends Task {
             protected void logError(String msg) {
                 getProject().log(msg, Project.MSG_ERR);
             }
+
+            @Override
+            protected Integer getRelease() {
+                return ListCtSym.parseReleaseInteger(release);
+            }
         };
         int returnCode;
         try {
@@ -188,6 +198,12 @@ public final class Sigtest extends Task {
         }
     }
 
+    /** One of <code>generate</code>,
+        <code>check</code>,
+        <code>strictcheck</code>,
+        <code>versioncheck</code>,
+        <code>binarycheck</code>.
+        */
     public static final class ActionType extends EnumeratedAttribute {
         public String[] getValues() {
             return SigtestHandler.ACTIONS;

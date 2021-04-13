@@ -353,7 +353,7 @@ public class SignatureTest extends SigTest {
 
         // required only in static mode!
         parser.addOption(CLASSPATH_OPTION, OptionInfo.option(1), optionsDecoder);
-        parser.addOption(USE_BOOT_CP, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(USE_BOOT_CP, OptionInfo.optionVariableParams(0, 1), optionsDecoder);
 
         parser.addOption(FILENAME_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(FILES_OPTION, OptionInfo.option(1), optionsDecoder);
@@ -444,14 +444,14 @@ public class SignatureTest extends SigTest {
 
         // create ClasspathImpl for founding of the added classes
         try {
-            classpath = new ClasspathImpl(useBootCp, classpathStr);
+            classpath = new ClasspathImpl(release, classpathStr);
         } catch (SecurityException e) {
             if (SigTest.debug)
                 e.printStackTrace();
             getLog().println(i18n.getString("SignatureTest.error.sec.newclasses"));
         }
 
-        if (isStatic && classpath.isEmpty() && !useBootCp)
+        if (isStatic && classpath.isEmpty() && release == null)
             return error(i18n.getString("SignatureTest.error.classpath.unspec"));
 
         return passed();
