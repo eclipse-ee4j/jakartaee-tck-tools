@@ -20,6 +20,7 @@
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ct.sym>${java.home}/lib/ct.sym</ct.sym>
     </properties>
     <build>
         <plugins>
@@ -52,20 +53,13 @@
                         <id>unpack</id>
                         <phase>process-resources</phase>
                         <goals>
-                            <goal>unpack</goal>
+                            <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.frgaal</groupId>
-                                    <artifactId>compiler</artifactId>
-                                    <version>15.0.0</version>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                            <includes>META-INF/ct.sym/**/*</includes>
-                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                            <includeGroupIds>org.netbeans.tools</includeGroupIds>
+                            <includes>**/*</includes>
+                            <exclude>META-INF/**</exclude>
+                            <outputDirectory>${project.build.directory}/classes/META-INF/sigtest/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
@@ -85,7 +79,7 @@
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>list-ct.sym</id>
+                        <id>list-sigtest</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>java</goal>
@@ -93,8 +87,8 @@
                         <configuration>
                             <mainClass>org.netbeans.apitest.ListCtSym</mainClass>
                             <arguments>
-                                <argument>${project.build.directory}/classes/META-INF/ct.sym.ls</argument>
-                                <argument>${project.build.directory}/classes/META-INF/ct.sym/</argument>
+                                <argument>${project.build.directory}/classes/META-INF/sigtest.ls</argument>
+                                <argument>${project.build.directory}/classes/META-INF/sigtest/</argument>
                                 <argument>2</argument>
                             </arguments>
                         </configuration>
@@ -210,6 +204,14 @@
             <artifactId>compiler</artifactId>
             <version>15.0.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.tools</groupId>
+            <artifactId>ct-sym</artifactId>
+            <version>latest</version>
+            <scope>system</scope>
+            <systemPath>${ct.sym}</systemPath>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <description>

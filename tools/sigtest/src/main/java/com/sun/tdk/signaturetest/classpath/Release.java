@@ -26,6 +26,9 @@ public final class Release {
      * @return found version or null
      */
     public static Release find(int version) {
+        if (version > 15) {
+            return null;
+        }
         char ch = (char) (version < 10 ? '0' + version : 'A' + (version - 10));
         return RELEASES.get(ch);
     }
@@ -36,7 +39,7 @@ public final class Release {
             return ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName);
         } else {
             for (String p : prefixes) {
-                final String resourceName = "/META-INF/ct.sym/" + p + "/" + name.replace('.', '/') + ".class";
+                final String resourceName = "/META-INF/sigtest/" + p + "/" + name.replace('.', '/') + ".sig";
                 InputStream is = Release.class.getResourceAsStream(resourceName);
                 if (is != null) {
                     return is;
@@ -51,7 +54,7 @@ public final class Release {
     static {
         List<String> lines = new ArrayList<>();
         try {
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(Release.class.getResourceAsStream("/META-INF/ct.sym.ls")))) {
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(Release.class.getResourceAsStream("/META-INF/sigtest.ls")))) {
                 for (;;) {
                     String l = r.readLine();
                     if (l == null) {
