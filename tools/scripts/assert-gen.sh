@@ -93,9 +93,9 @@
 # OVERWRITTEN without warning.
 #
 #
-​
+
 USAGE="usage: ${0} technology id name version source_dir output_dir package_name_1 [package_name_2 ...]"
-​
+
 #####
 # Must specify a source directory, an output directory and at least one package
 #####
@@ -103,7 +103,7 @@ if [ $# -lt 7 ]; then
     echo $USAGE
     exit 1
 fi
-​
+
 #####
 # Setup the input arguments
 #####
@@ -116,8 +116,8 @@ OUTPUT_DIR=${6}
 OUTPUT_FILE="xml-doclet.out"
 NUM_PACKAGES=`expr $# - 6`
 echo "NUM_PACKAGES = $NUM_PACKAGES"
-​
-​
+
+
 #####
 # Check that the source and destination directories exist
 #####
@@ -129,8 +129,8 @@ if [ ! -d "${OUTPUT_DIR}" ]; then
   echo "\n\n***Error, directory \"${OUTPUT_DIR}\" does not exist\n\n"
   exit 1
 fi
-​
-​
+
+
 #####
 # The following chunk of script simply takes each package name and puts them
 # into a comma separated list (with no spaces).  This constructed string is
@@ -145,7 +145,7 @@ while [ "$LOOP_COUNTER" -gt 0 ]; do
   shift
   LOOP_COUNTER=`expr $LOOP_COUNTER - 1`
 done
-​
+
 ARGS=0
 PACKAGE_ARG=""
 COMMA_COUNT=`expr $NUM_PACKAGES - 1`
@@ -158,7 +158,7 @@ while [ "$1" != "" ]; do
   shift
 done
 echo "\nPACKAGE_ARG=$PACKAGE_ARG\n"
-​
+
 #####
 # Run the XML doclet tool and output the results to the specified output directory.
 # The OUTPUT_FILE variable contains the file name.
@@ -167,7 +167,7 @@ cd ../xml-doclet
 CMD="ant -Dsrc-path=$SOURCE_DIR -Doutput-file=${OUTPUT_DIR}/${OUTPUT_FILE} -Dpackages-for-docs=${PACKAGE_ARG}"
 echo "\n\n$CMD\n\n"
 $CMD
-​
+
 #####
 # Check for the output of the XML doclet, if it does not exist there must have
 # been an error.  So this would be a good time to bail out.
@@ -176,7 +176,7 @@ if [ ! -s "${OUTPUT_DIR}/${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, running the XML doclet, exiting...\n\n*****"
   exit 1
 fi
-​
+
 #####
 # Convert all occurrences of the "&amp;" to a "&", and replace all instances of "&nbsp" with an empty
 # space.
@@ -188,10 +188,10 @@ rm -rf ${OUTPUT_FILE}*
 echo "\n\nsed -e 's/\&amp;/\&/g' ${INPUT_FILE} > ${OUTPUT_FILE}_one\n\n"
 #sed -e 's/\&amp;/\&/g' ${INPUT_FILE} > ${OUTPUT_FILE}_one
 sed -e 's/\&amp;/ /g' ${INPUT_FILE} > ${OUTPUT_FILE}_one
-​
+
 echo "\n\nsed -e 's/\&nbsp;/ /g' ${OUTPUT_FILE}_one > ${OUTPUT_FILE}\n\n"
 sed -e 's/\&nbsp;/ /g' ${OUTPUT_FILE}_one > ${OUTPUT_FILE}
-​
+
 #####
 # Check for the output of the conversion, if it does not exist there must have
 # been an error.  So this would be a good time to bail out.
@@ -200,7 +200,7 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, running the conversion, exiting...\n\n*****"
   exit 1
 fi
-​
+
 #####
 # Transform the XML doclet file using the javadoc to XML assertion XSL style-sheet.
 #####
@@ -214,7 +214,7 @@ OUTPUT_FILE="${OUTPUT_DIR}/${XML_ASSERT_NO_NUMS_FILE}"
 CMD="./run.sh ${INPUT_FILE} ${XSL_FILE} ${OUTPUT_FILE}"
 echo "\n\n$CMD\n\n"
 $CMD
-​
+
 #####
 # Check for the output of the transformation, if it does not exist there must have
 # been an error.  So this would be a good time to bail out.
@@ -223,8 +223,8 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, transforming doclet output, exiting...\n\n*****"
   exit 1
 fi
-​
-​
+
+
 #####
 # Add sed command to substitute out required elements added by the
 # javadoc2assertions.xsl stylesheet above
@@ -235,8 +235,8 @@ sed "s/__ID__/${ID}/" | \
 sed "s/__NAME__/${NAME}/" | \
 sed "s/__VERSION__/${VERSION}/" > ${TEMP_FILE}
 mv -f ${TEMP_FILE} ${OUTPUT_FILE}
-​
-​
+
+
 #####
 # javadoc sorting transformation here
 #####
@@ -247,7 +247,7 @@ OUTPUT_FILE="${OUTPUT_DIR}/${XML_ASSERT_SORTED_FILE}"
 CMD="./run ${INPUT_FILE} ${XSL_FILE} ${OUTPUT_FILE}"
 echo "\n\n$CMD\n\n"
 $CMD
-​
+
 #####
 # Check for sorted output file
 #####
@@ -255,8 +255,8 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, sorting the javadoc assertion file, exiting...\n\n*****"
   exit 1
 fi
-​
-​
+
+
 #####
 # Number the assertions in the XML assertion document.
 #####
@@ -267,7 +267,7 @@ OUTPUT_FILE="${OUTPUT_DIR}/${XML_ASSERT_NUMS_FILE}"
 CMD="ant -Dinput_file=${INPUT_FILE} -Doutput_file=${OUTPUT_FILE}"
 echo "\n\n$CMD\n\n"
 $CMD
-​
+
 #####
 # Check for the output of the numbering tool, if it does not exist there must have
 # been an error.  So this would be a good time to bail out.
@@ -276,7 +276,7 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, numbering the XML assertion document, exiting...\n\n*****"
   exit 1
 fi
-​
+
 #####
 # Transform the numbered XML assertion document to HTML
 #####
@@ -288,7 +288,7 @@ OUTPUT_FILE="${OUTPUT_DIR}/${HTML_ASSERT_FILE}"
 CMD="./run ${INPUT_FILE} ${XSL_FILE} ${OUTPUT_FILE}"
 echo "\n\n$CMD\n\n"
 $CMD
-​
+
 #####
 # Check for the output of the transformation to HTML, if it does not exist
 # there must have been an error.  So this would be a good time to bail out.
@@ -297,10 +297,10 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   echo "\n\n***** Error, transforming the XML to HTML, exiting...\n\n*****"
   exit 1
 fi
-​
+
 #####
 # leave em where they started
 #####
 cd ../scripts
-​
+
 echo "\n\n***** Success, the assertion file \"${OUTPUT_FILE}\" has been created. *****\n\n"
