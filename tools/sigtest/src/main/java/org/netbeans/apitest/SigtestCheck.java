@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -97,6 +98,11 @@ public final class SigtestCheck extends AbstractMojo {
     private File report;
     @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
+    /**
+     * ignore JDK classes entries
+     */
+    @Parameter
+    private String[] ignoreJDKClasses;
 
     public SigtestCheck() {
     }
@@ -184,6 +190,11 @@ public final class SigtestCheck extends AbstractMojo {
             protected Integer getRelease() {
                 return ListCtSym.parseReleaseInteger(release);
             }
+
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
+                return ignoreJDKClasses;
+            }
         };
         try {
             if (sigfile == null) {
@@ -216,5 +227,6 @@ public final class SigtestCheck extends AbstractMojo {
         }
         return path.toArray(new String[0]);
     }
+
 
 }
