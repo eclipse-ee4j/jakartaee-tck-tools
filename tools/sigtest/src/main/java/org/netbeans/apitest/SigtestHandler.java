@@ -102,13 +102,13 @@ abstract class SigtestHandler {
             String p = packagesTokenizer.nextToken().trim();
             String prefix = "-PackageWithoutSubpackages "; // NOI18N
             //Strip the ending ".*"
-            int idx = p.lastIndexOf(".*");
+            int idx = p.lastIndexOf(".**");
             if (idx > 0) {
                 p = p.substring(0, idx);
+                prefix = "-Package "; // NOI18N
             } else {
-                idx = p.lastIndexOf(".**");
+                idx = p.lastIndexOf(".*");
                 if (idx > 0) {
-                    prefix = "-Package "; // NOI18N
                     p = p.substring(0, idx);
                 }
             }
