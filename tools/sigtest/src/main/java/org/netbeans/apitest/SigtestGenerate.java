@@ -83,6 +83,13 @@ public final class SigtestGenerate extends AbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean attach;
+    
+    /**
+     * ignore JDK classes entries
+     */
+    @Parameter
+    private String[] ignoreJDKClasses;
+
     private String version;
 
     public SigtestGenerate() {
@@ -162,6 +169,11 @@ public final class SigtestGenerate extends AbstractMojo {
             @Override
             protected Integer getRelease() {
                 return ListCtSym.parseReleaseInteger(release);
+            }
+            
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
+                return ignoreJDKClasses;
             }
         };
         try {

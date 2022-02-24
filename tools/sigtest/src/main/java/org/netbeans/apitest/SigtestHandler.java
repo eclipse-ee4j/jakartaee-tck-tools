@@ -96,6 +96,11 @@ abstract class SigtestHandler {
             arg.add("-ApiVersion");
             arg.add(getVersion());
         }
+        for (String ignorePath : getIgnoreJDKClassEntries()) {
+            arg.add("-IgnoreJDKClass");
+            arg.add(ignorePath);
+        }
+
         logInfo("Packages: " + getPackages());
         StringTokenizer packagesTokenizer = new StringTokenizer(getPackages(), ",:;");
         while (packagesTokenizer.hasMoreTokens()) {
@@ -258,6 +263,7 @@ abstract class SigtestHandler {
     protected abstract File getReport();
     protected abstract String getMail();
     protected abstract Boolean isFailOnError();
+    protected abstract String[] getIgnoreJDKClassEntries();
     protected abstract void logInfo(String message);
     protected abstract void logError(String message);
 }

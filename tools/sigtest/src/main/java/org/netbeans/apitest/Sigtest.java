@@ -173,6 +173,11 @@ public final class Sigtest extends Task {
             protected Integer getRelease() {
                 return ListCtSym.parseReleaseInteger(release);
             }
+
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
+                return new String[0];
+            }
         };
         int returnCode;
         try {
