@@ -145,6 +145,23 @@ specific signature changes introduced by a later JDK version. As an example, a S
 due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass java.lang.Deprecated` enabled, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 
 
+### Specify JDK classes to ignore in Maven plugin
+To configure the JDK classes to pass to the sigtest engine with a `-IgnoreJDKClass` option, use the ignoreJDKClasses
+configuration element and provide the classes to ignore using the include element as shown here:
+
+```xml
+  <configuration>
+    <action>check</action>
+ 
+    <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
+    <releaseVersion>1.3</releaseVersion>
+    <ignoreJDKClasses>
+      <include>java.lang.Deprecated</include>
+      <include>java.lang.Object</include>
+    </ignoreJDKClasses>
+  </configuration>
+```
+
 ## History
 
 This tool is based on original [SigTest](https://wiki.openjdk.java.net/display/CodeTools/sigtest) sources,
