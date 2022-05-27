@@ -1447,7 +1447,7 @@ public class SignatureTest extends SigTest {
         while ((bPos < bl) && (tPos < tl)) {
             int comp = 0;
             if (jdkExclude.isJdkClass(baseAnnotList[bPos].getName()) || 
-                    jdkExclude.isJdkClass(testAnnotList[bPos].getName())) {
+                    jdkExclude.isJdkClass(testAnnotList[tPos].getName())) {
                 comp = baseAnnotList[bPos].getName().compareTo(testAnnotList[tPos].getName());
             } else {
                 comp = baseAnnotList[bPos].compareTo(testAnnotList[tPos]);
