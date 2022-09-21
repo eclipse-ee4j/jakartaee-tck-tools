@@ -176,7 +176,7 @@ public final class Sigtest extends Task {
 
             @Override
             protected String[] getIgnoreJDKClassEntries() {
-                return new String[0];
+                return null;
             }
         };
         int returnCode;

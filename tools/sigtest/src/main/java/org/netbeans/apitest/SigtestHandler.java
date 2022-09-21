@@ -96,9 +96,12 @@ abstract class SigtestHandler {
             arg.add("-ApiVersion");
             arg.add(getVersion());
         }
-        for (String ignorePath : getIgnoreJDKClassEntries()) {
-            arg.add("-IgnoreJDKClass");
-            arg.add(ignorePath);
+        final String[] ignoreJdkClassEntries = getIgnoreJDKClassEntries();
+        if (ignoreJdkClassEntries != null) {
+            for (String ignore : ignoreJdkClassEntries) {
+                arg.add("-IgnoreJDKClass");
+                arg.add(ignore);
+            }
         }
 
         logInfo("Packages: " + getPackages());
