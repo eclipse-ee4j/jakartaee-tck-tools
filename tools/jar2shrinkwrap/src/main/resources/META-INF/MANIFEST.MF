@@ -1,0 +1,1 @@
+Main-Class: jakartatck.jar2shrinkwrap.Main
