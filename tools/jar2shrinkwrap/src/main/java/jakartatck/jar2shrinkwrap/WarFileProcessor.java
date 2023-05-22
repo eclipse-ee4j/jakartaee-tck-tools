@@ -29,6 +29,7 @@ public class WarFileProcessor implements JarProcessor {
 
     private final String archiveFile;
     private final File fileTargetFolder;
+
     public WarFileProcessor(String archiveFile, File fileTargetFolder) {
         this.archiveFile = archiveFile;
         this.fileTargetFolder = fileTargetFolder;
@@ -55,7 +56,7 @@ public class WarFileProcessor implements JarProcessor {
     @Override
     public void saveOutput() {
 
-        File output = new File(fileTargetFolder, archiveFile+".java");
+        File output = new File(fileTargetFolder, archiveFile + ".java");
         System.out.println("generating " + output.getName());
         output.mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
@@ -68,22 +69,22 @@ public class WarFileProcessor implements JarProcessor {
             printWriter.println("public static WebArchive getTestArchive() throws Exception {");
             printWriter.print("return ShrinkWrap.create(WebArchive.class, ");
             printWriter.println("\"" + archiveFile + ".war\")");
-            for (String name:libraries) {
+            for (String name : libraries) {
                 printWriter.print(".addAsLibrary(");
                 printWriter.print(name);
                 printWriter.println(")");
             }
-            for (String name:classes) {
+            for (String name : classes) {
                 printWriter.print(".addClass(");
                 printWriter.print(name);
                 printWriter.println(")");
             }
-            for (String name:webinf) {
+            for (String name : webinf) {
                 printWriter.print(".addAsWebInfResource(");
                 printWriter.print(name);
                 printWriter.println(")");
             }
-            for (String name:metainf) {
+            for (String name : metainf) {
                 printWriter.print(".addAsManifestResource(");
                 printWriter.print(name);
                 printWriter.println(")");
@@ -117,7 +118,7 @@ public class WarFileProcessor implements JarProcessor {
             name = name.substring(WEB_INF_CLASSES.length());
         if (name.endsWith(CLASS))
             name = name.substring(0, name.length() - CLASS.length());
-        name = name.replace('/','.');
+        name = name.replace('/', '.');
         classes.add(name);
     }
 
