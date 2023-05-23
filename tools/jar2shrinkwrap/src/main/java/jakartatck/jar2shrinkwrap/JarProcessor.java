@@ -10,7 +10,7 @@ import java.util.zip.ZipEntry;
  */
 public interface JarProcessor {
 
-    void process(ZipEntry entry);
+    void process(final ZipEntry entry);
 
-    void saveOutput(final File fileTargetFolder);
+    void saveOutput(final File FileInputArchive);
 }
