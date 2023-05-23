@@ -1,5 +1,7 @@
 package jakartatck.jar2shrinkwrap;
 
+import java.io.File;
+
 /**
  * ${NAME}
  *
@@ -16,9 +18,9 @@ public class Main {
         System.out.println("targetFolder is " + targetFolder);
         for (String file : args) {
             System.out.println("process file " + file);
-            JarVisit visitor = new JarVisit(file, targetFolder);
-            visitor.execute();
-
+            JarVisit visitor = new JarVisit(new File(file));
+            JarProcessor jarProcessor = visitor.execute();
+            jarProcessor.saveOutput(new File(targetFolder));
         }
     }
 

@@ -27,12 +27,9 @@ public class WarFileProcessor implements JarProcessor {
     private final ArrayList<String> classes = new ArrayList<>();
     private final ArrayList<String> otherFiles = new ArrayList<>();
 
-    private final String archiveFile;
-    private final File fileTargetFolder;
 
-    public WarFileProcessor(String archiveFile, File fileTargetFolder) {
-        this.archiveFile = archiveFile;
-        this.fileTargetFolder = fileTargetFolder;
+
+    public WarFileProcessor(File archiveFile) {
     }
 
     @Override
@@ -54,11 +51,11 @@ public class WarFileProcessor implements JarProcessor {
     }
 
     @Override
-    public void saveOutput() {
-
+    public void saveOutput(final File fileTargetFolder) {
+        String archiveFile = "Client";
         File output = new File(fileTargetFolder, archiveFile + ".java");
         System.out.println("generating " + output.getName());
-        output.mkdirs();
+        output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             PrintWriter printWriter = new PrintWriter(fileWriter);
             printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");

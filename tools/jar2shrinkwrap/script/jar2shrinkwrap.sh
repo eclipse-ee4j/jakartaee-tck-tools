@@ -25,6 +25,6 @@ cd $tckroot
 [ ! -d "jakartaeetck" ] && wget https://download.eclipse.org/jakartaee/platform/10/jakarta-jakartaeetck-10.0.2.zip -O jakarta-jakartaeetck-10.0.2.zip && unzip jakarta-jakartaeetck-10.0.2.zip 
 cd $tckroot/jakartaeetck/dist/com/sun/ts/tests/servlet
 
-find -name *.war -exec java -DtargetFolder=$PWD -jar $TOOLFOLDER/target/jar2shrinkwrap-10.0.0-SNAPSHOT.jar {} +
+find -name *.war -exec java -DtargetFolder=$PWD -jar $TOOLFOLDER/target/jar2shrinkwrap-11.0.0-SNAPSHOT.jar {} +
 
 

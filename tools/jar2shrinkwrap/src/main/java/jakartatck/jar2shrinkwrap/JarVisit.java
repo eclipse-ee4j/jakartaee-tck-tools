@@ -14,26 +14,24 @@ import java.util.zip.ZipInputStream;
  */
 public class JarVisit {
 
-    private final String targetFolder;
-    private final String archiveFile;
+    private final File archiveFile;
 
-    public JarVisit(String archiveFile, String targetFolder) {
-        this.archiveFile = archiveFile;
-        this.targetFolder = targetFolder;
+
+    public JarVisit(File target) {
+        this.archiveFile = target;
     }
 
-    public void execute() {
-        File fileTargetFolder = new File(targetFolder);
-        if (!fileTargetFolder.exists()) {
-            fileTargetFolder.mkdirs();
+    public JarProcessor execute() {
+
+        if (archiveFile.isDirectory()) {
+            throw new RuntimeException("Specify an archive file name instead of a folder name.");
         }
+
         JarProcessor jarProcessor;
-        if (archiveFile.endsWith(".war"))
-            jarProcessor = new WarFileProcessor(archiveFile, fileTargetFolder);
+        if (archiveFile.getName().endsWith(".war"))
+            jarProcessor = new WarFileProcessor(archiveFile);
         else
             throw new IllegalStateException("unsupported file type extension: " + archiveFile);
-
-        System.out.println("output will be in " + fileTargetFolder.getName());
         final byte[] buffer = new byte[100 * 1024];
         try {
             ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(archiveFile));
@@ -44,7 +42,7 @@ public class JarVisit {
             }
             zipInputStream.closeEntry();
             zipInputStream.close();
-            jarProcessor.saveOutput();
+            return jarProcessor;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
