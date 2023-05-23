@@ -51,10 +51,10 @@ public class WarFileProcessor implements JarProcessor {
     }
 
     @Override
-    public void saveOutput(final File fileTargetFolder) {
-        String archiveFile = "Client";
-        File output = new File(fileTargetFolder, archiveFile + ".java");
-        System.out.println("generating " + output.getName());
+    public void saveOutput(final File fileInputArchive) {
+        String testclient = "Client";
+        File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
+        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName() );
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             PrintWriter printWriter = new PrintWriter(fileWriter);
@@ -65,7 +65,7 @@ public class WarFileProcessor implements JarProcessor {
             printWriter.println("@Deployment(testable = false)");
             printWriter.println("public static WebArchive getTestArchive() throws Exception {");
             printWriter.print("return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + archiveFile + ".war\")");
+            printWriter.println("\"" + testclient + ".war\")");
             for (String name : libraries) {
                 printWriter.print(".addAsLibrary(");
                 printWriter.print(name);
