@@ -1,5 +1,6 @@
 package jakartatck.jar2shrinkwrap;
 
+import java.io.File;
 import java.util.zip.ZipEntry;
 
 /**
@@ -11,5 +12,5 @@ public interface JarProcessor {
 
     void process(ZipEntry entry);
 
-    void saveOutput();
+    void saveOutput(final File fileTargetFolder);
 }
