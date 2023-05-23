@@ -23,10 +23,12 @@ public class Main {
                 System.out.println("done with TCK test package " + file);
                 System.out.println();
             }
-            File fileInputArchive = new File(file);
-            JarVisit visitor = new JarVisit(fileInputArchive);
-            JarProcessor jarProcessor = visitor.execute();
-            jarProcessor.saveOutput(fileInputArchive);
+            else {
+                File fileInputArchive = new File(file);
+                JarVisit visitor = new JarVisit(fileInputArchive);
+                JarProcessor jarProcessor = visitor.execute();
+                jarProcessor.saveOutput(fileInputArchive);
+            }
         }
     }
 
