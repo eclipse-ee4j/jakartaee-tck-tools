@@ -20,7 +20,6 @@ public class WarFileProcessor implements JarProcessor {
     public static final String WEB_INF_LIB = "WEB-INF/lib/";
     public static final String META_INF = "META-INF";
 
-
     private final ArrayList<String> libraries = new ArrayList<>();
     private final ArrayList<String> metainf = new ArrayList<>();
     private final ArrayList<String> webinf = new ArrayList<>();
@@ -92,6 +91,31 @@ public class WarFileProcessor implements JarProcessor {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Override
+    public ArrayList<String> getLibraries() {
+        return libraries;
+    }
+
+    @Override
+    public ArrayList<String> getMetainf() {
+        return metainf;
+    }
+
+    @Override
+    public ArrayList<String> getWebinf() {
+        return webinf;
+    }
+
+    @Override
+    public ArrayList<String> getClasses() {
+        return classes;
+    }
+
+    @Override
+    public ArrayList<String> getOtherFiles() {
+        return otherFiles;
     }
 
     private void otherFiles(String name) {
