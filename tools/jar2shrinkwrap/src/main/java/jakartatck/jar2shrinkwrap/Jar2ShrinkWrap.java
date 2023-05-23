@@ -32,7 +32,7 @@ public class Jar2ShrinkWrap {
     }
 
     private static final String legacyTCKZipDownload = "https://download.eclipse.org/jakartaee/platform/10/jakarta-jakartaeetck-10.0.2.zip";
-    private static final String legacyTCKFolder = "jakartaeetck";
+    private static final String unzippedLegacyTCK = "jakartaeetck";
     private static String LegacyTCKFolderName = System.getProperty(LegacyTCKFolderPropName, System.getProperty("java.io.tmpdir") + File.separator + defaultFolderName);
 
     public static JarProcessor fromPackage(String packageName) {
@@ -67,13 +67,15 @@ public class Jar2ShrinkWrap {
         if (packageName.startsWith("com.ibm")) {
             System.out.println("ignoring the request for the Batch TCK tests as they were already rewritten and moved to Batch Specification");
         }
+        target = new File(target, unzippedLegacyTCK);
         File targetWarFile = locateTargetPackageFolder(target, packageName);
         JarVisit visitor = new JarVisit(targetWarFile);
         return visitor.execute();
     }
 
     private static File locateTargetPackageFolder(File target, String packageName) {
-        File findTCKDistArchive = new File(target, "dist" + package2Name(packageName));
+        File findTCKDistArchive = new File(target, "dist" + File.separator + package2Name(packageName));
+        System.out.println("locateTargetPackageFolder will look inside of " + target.getName() + " for findTCKDistArchive = " + findTCKDistArchive.getName());
         System.out.println("looking inside of " + findTCKDistArchive.getName() + " for the archive that contains a test client for package " + packageName);
         // TODO: Add support for ear achives which can contain jar + war files
         // TODO: Add support for jar archives
@@ -89,9 +91,6 @@ public class Jar2ShrinkWrap {
                     match = targetWarFile;
                 }
             }
-            if (match == null) {
-                throw new RuntimeException("could not find a match for " + packageName + " in " + target.getName());
-            }
             return match;
         } else {
             throw new RuntimeException("could not locate " + packageName + " in " + findTCKDistArchive.getName());
@@ -99,7 +98,7 @@ public class Jar2ShrinkWrap {
     }
 
     private static String package2Name(String packageName) {
-        return packageName.replace(".", File.pathSeparator);
+        return packageName.replace(".", File.separator);
     }
 
     private static void unzip(File fileFolder) {
