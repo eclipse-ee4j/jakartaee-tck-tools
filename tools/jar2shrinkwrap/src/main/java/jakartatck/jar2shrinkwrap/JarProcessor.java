@@ -15,14 +15,14 @@ public interface JarProcessor {
 
     void saveOutput(final File FileInputArchive);
 
-    public ArrayList<String> getLibraries();
+    ArrayList<String> getLibraries();
 
-    public ArrayList<String> getMetainf();
+    ArrayList<String> getMetainf();
 
-    public ArrayList<String> getWebinf();
+    ArrayList<String> getWebinf();
 
-    public ArrayList<String> getClasses();
+    ArrayList<String> getClasses();
 
-    public ArrayList<String> getOtherFiles();
+    ArrayList<String> getOtherFiles();
 
 }

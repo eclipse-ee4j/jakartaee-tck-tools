@@ -27,7 +27,6 @@ public class WarFileProcessor implements JarProcessor {
     private final ArrayList<String> otherFiles = new ArrayList<>();
 
 
-
     public WarFileProcessor(File archiveFile) {
     }
 
@@ -53,7 +52,7 @@ public class WarFileProcessor implements JarProcessor {
     public void saveOutput(final File fileInputArchive) {
         String testclient = "Client";
         File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName() );
+        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             PrintWriter printWriter = new PrintWriter(fileWriter);
