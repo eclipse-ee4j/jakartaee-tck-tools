@@ -1,3 +1,4 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
@@ -36,9 +37,10 @@ public class Jar2ShrinkwrapPkgTest {
             iterator.remove();
         }
         assertTrue(classesSet.size() == 0);
-        System.out.printf("Libraries: %s\n", war.getLibraries());
-        System.out.printf("Metainf: %s\n", war.getMetainf());
-        System.out.printf("Webinf: %s\n", war.getWebinf());
-        System.out.printf("OtherFiles: %s\n", war.getOtherFiles());
+
+        assertEquals("initilizer.jar", war.getLibraries().get(0));
+        assertEquals("META-INF/MANIFEST.MF", war.getMetainf().get(0));
+        assertEquals("WEB-INF/web.xml",war.getWebinf().get(0));
+        assertTrue(0 == war.getOtherFiles().size());
     }
 }
