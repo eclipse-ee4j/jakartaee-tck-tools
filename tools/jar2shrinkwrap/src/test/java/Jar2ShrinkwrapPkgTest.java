@@ -1,5 +1,8 @@
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +14,9 @@ import java.util.Iterator;
  * has the expected contents.
  */
 public class Jar2ShrinkwrapPkgTest {
-    public static void main(String[] args) {
+
+    @Test
+    public void canLocateTestDefinitions() {
         String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer",
                 "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener",
                 "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet",
@@ -23,19 +28,14 @@ public class Jar2ShrinkwrapPkgTest {
         ArrayList<String> classes = war.getClasses();
         System.out.printf("Classes: %s\n", classes);
         HashSet<String> classesSet = new HashSet<>(Arrays.asList(expectedClasses));
+        HashSet<String> warClassesSet = new HashSet<>(classes);
         Iterator<String> iterator = classesSet.iterator();
         while(iterator.hasNext()) {
             String c = iterator.next();
-            if(!classesSet.contains(c)) {
-                System.err.printf("Failed to find class: %s\n", c);
-            }
+            assertTrue(warClassesSet.contains(c));
             iterator.remove();
         }
-        if(classesSet.size() != 0) {
-            System.out.printf("Not all expected classes were found: %s\n", classesSet);
-            System.exit(1);
-        }
-
+        assertTrue(classesSet.size() == 0);
         System.out.printf("Libraries: %s\n", war.getLibraries());
         System.out.printf("Metainf: %s\n", war.getMetainf());
         System.out.printf("Webinf: %s\n", war.getWebinf());
