@@ -5,6 +5,7 @@ import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.Test;
 
 
 import java.io.File;
