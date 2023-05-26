@@ -1,7 +1,11 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
 
 import java.io.File;
 import java.io.StringWriter;
@@ -17,7 +21,9 @@ import java.util.stream.Collectors;
  * has the expected contents.
  */
 public class Jar2ShrinkwrapPkgTest {
-    public static void main(String[] args) {
+
+    @Test
+    public void canLocateTestDefinitions() {
         String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer",
                 "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener",
                 "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet",
@@ -29,18 +35,14 @@ public class Jar2ShrinkwrapPkgTest {
         ArrayList<String> classes = war.getClasses();
         System.out.printf("Classes: %s\n", classes);
         HashSet<String> classesSet = new HashSet<>(Arrays.asList(expectedClasses));
+        HashSet<String> warClassesSet = new HashSet<>(classes);
         Iterator<String> iterator = classesSet.iterator();
         while(iterator.hasNext()) {
             String c = iterator.next();
-            if(!classesSet.contains(c)) {
-                System.err.printf("Failed to find class: %s\n", c);
-            }
+            assertTrue(warClassesSet.contains(c));
             iterator.remove();
         }
-        if(classesSet.size() != 0) {
-            System.out.printf("Not all expected classes were found: %s\n", classesSet);
-            System.exit(1);
-        }
+        assertTrue(classesSet.size() == 0);
 
         System.out.printf("Libraries: %s\n", war.getLibraries());
         System.out.printf("LibDir: %s\n", war.getLibDir());
@@ -68,6 +70,10 @@ public class Jar2ShrinkwrapPkgTest {
         System.out.printf("Metainf: %s\n", war.getMetainf());
         System.out.printf("Webinf: %s\n", war.getWebinf());
         System.out.printf("OtherFiles: %s\n", war.getOtherFiles());
+
+        assertEquals("initilizer.jar", war.getLibraries().get(0));
+        assertEquals("web.xml",war.getWebinf().get(0));
+        assertTrue(0 == war.getOtherFiles().size());
 
         // Write the java source to the console
         StringWriter src = new StringWriter();
