@@ -37,7 +37,7 @@ public class JarVisit {
             ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(archiveFile));
             ZipEntry entry = zipInputStream.getNextEntry();
             while (entry != null) {
-                jarProcessor.process(entry);
+                jarProcessor.process(zipInputStream, entry);
                 entry = zipInputStream.getNextEntry();
             }
             zipInputStream.closeEntry();
