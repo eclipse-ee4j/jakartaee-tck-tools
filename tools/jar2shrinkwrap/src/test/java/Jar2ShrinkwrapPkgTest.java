@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -80,5 +82,23 @@ public class Jar2ShrinkwrapPkgTest {
         StringWriter src = new StringWriter();
         war.saveOutput(src, false);
         System.out.printf("\nJavaSource:\n%s\n", src.toString());
+    }
+
+    @Test
+    public void testFindServletTestPkgs() throws IOException {
+        Set<String> testPkgNames = Jar2ShrinkWrap.getTestPkgNames("com/sun/ts/tests/servlet");
+        assertTrue(0 < testPkgNames.size());
+        System.out.printf("Found %d test pkgs\n", testPkgNames.size());
+        // Just a few random pkgs
+        String[] expectedPkgs = {
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.filterconfig",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet_http.httpsessionbindingevent",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.servletoutputstream",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.createfilter"
+        };
+        for(String pkg : expectedPkgs) {
+            assertTrue(testPkgNames.contains(pkg), "Should contain: "+pkg);
+        }
+
     }
 }
