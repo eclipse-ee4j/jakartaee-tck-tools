@@ -8,6 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -35,7 +39,11 @@ public class Jar2ShrinkWrap {
     private static final String unzippedLegacyTCK = "jakartaeetck";
     private static String LegacyTCKFolderName = System.getProperty(LegacyTCKFolderPropName, System.getProperty("java.io.tmpdir") + File.separator + defaultFolderName);
 
-    public static JarProcessor fromPackage(String packageName) {
+    /**
+     * Look for a previously downloaded TCK bundle, or download it,  and return the root dir containing the unzipped bundle.
+     * @return root directory containing the unzipped TCK bundle
+     */
+    public static File maybeDownloadTck() {
         System.out.println("looking for existing copy of jakarta-jakartaeetck-10.0.2.zip in folder " + LegacyTCKFolderName);
         if (System.getProperty("java.io.tmpdir") == null) {
             System.out.println("java.io.tmpdir needs to point to temp folder, exiting with failure code 3");
@@ -62,7 +70,11 @@ public class Jar2ShrinkWrap {
             unzip(target);
             System.out.println("one time setup is complete");
         }
-
+        return target;
+    }
+    public static JarProcessor fromPackage(String packageName) {
+        // Locate or download the legacy TCK
+        File target = maybeDownloadTck();
         System.out.println("Locate the TCK archive that contains the test for package " + packageName);
         if (packageName.startsWith("com.ibm")) {
             System.out.println("ignoring the request for the Batch TCK tests as they were already rewritten and moved to Batch Specification");
@@ -73,6 +85,28 @@ public class Jar2ShrinkWrap {
         return visitor.execute();
     }
 
+    /**
+     * Get the candidate pkg names of the tests in the legacy TCK bundle
+     * @param rootPkgName - optional root pkg path to filter against, com/sun/ts/tests/servlet
+     * @return A possibly empty set of pkg names
+     * @throws IOException - on failure to traverse the bundle contents
+     */
+    public static Set<String> getTestPkgNames(String rootPkgName) throws IOException {
+        if(rootPkgName == null) {
+            rootPkgName = "";
+        }
+        // Locate or download the legacy TCK
+        File target = maybeDownloadTck();
+        Path tckRoot = target.toPath().resolve(unzippedLegacyTCK).resolve("dist");
+        System.out.println("Searing in: "+tckRoot.toAbsolutePath());
+        TestPkgVisitor visitor = new TestPkgVisitor(tckRoot, rootPkgName);
+        Files.walkFileTree(tckRoot, visitor);
+        return visitor.getTestPkgs();
+    }
+    private static String getLegacyTCKFolder() {
+        String name = null;
+        return name;
+    }
     private static File locateTargetPackageFolder(File target, String packageName) {
         File findTCKDistArchive = new File(target, "dist" + File.separator + package2Name(packageName));
         System.out.println("locateTargetPackageFolder will look inside of " + target.getName() + " for findTCKDistArchive = " + findTCKDistArchive.getName());
