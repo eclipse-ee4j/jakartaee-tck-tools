@@ -5,11 +5,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -92,20 +89,17 @@ public class WarFileProcessor implements JarProcessor {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
+                printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;\n");
+                printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;\n");
+
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
             // The libary jars
-            printWriter.println(indent.repeat(2)+"List<File> libraryFiles = new ArrayList<>();");
-            printWriter.println(indent.repeat(2)+"for (String jarName : war.getLibraries()) {");
-            printWriter.println(indent.repeat(3)+"File jarFile = new File(war.getLibDir(), jarName);");
-            printWriter.println(indent.repeat(3)+"libraryFiles.add(jarFile);");
-            printWriter.println(indent.repeat(2)+"}");
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = libraryFiles.stream()\n"+
-                    indent.repeat(2)+".map(file -> ShrinkWrap.createFromZipFile(JavaArchive.class, file))\n"+
-                    indent.repeat(2)+".collect(Collectors.toList());");
+            // Class thisClass = MethodHandles.lookup().lookupClass();
+            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
 
             // Start war creation
             printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
