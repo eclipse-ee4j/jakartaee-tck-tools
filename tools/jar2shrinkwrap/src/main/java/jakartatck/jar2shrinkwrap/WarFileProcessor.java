@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -23,6 +24,7 @@ public class WarFileProcessor implements JarProcessor {
     public static final String WEB_INF_LIB = "WEB-INF/lib/";
     public static final String META_INF = "META-INF";
 
+    private final File archiveFile;
     /**
      * This is a list of jar names in a unique directory for a given package that
      * need to be loaded as JavaArchive files in the deployment method.
@@ -36,6 +38,7 @@ public class WarFileProcessor implements JarProcessor {
 
 
     public WarFileProcessor(File archiveFile) {
+        this.archiveFile = archiveFile;
         libDir = new File(archiveFile.getAbsolutePath()+".lib");
         if(!libDir.exists()) {
             libDir.mkdirs();
@@ -79,6 +82,15 @@ public class WarFileProcessor implements JarProcessor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String getName() {
+        return archiveFile.getName();
+    }
+    @Override
+    public Path getArchivePath() {
+        return archiveFile.toPath();
     }
 
     @Override
