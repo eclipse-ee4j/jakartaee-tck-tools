@@ -2,6 +2,7 @@ package jakartatck.jar2shrinkwrap;
 
 import java.io.File;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -24,6 +25,18 @@ public interface JarProcessor {
     void saveOutput(Writer writer, boolean includeImports);
 
     void saveOutput(final File FileInputArchive);
+
+    /**
+     * Get the archive name
+     * @return name of jar, war, ear file
+     */
+    String getName();
+
+    /**
+     * Get the archive path
+     * @return Path to the archive file
+     */
+    Path getArchivePath();
 
     ArrayList<String> getLibraries();
     File getLibDir();
