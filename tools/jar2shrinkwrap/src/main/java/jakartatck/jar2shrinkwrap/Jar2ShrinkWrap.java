@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -26,6 +27,7 @@ public class Jar2ShrinkWrap {
     private static final String defaultFolderName = "legacytck";
     private static final String legacyTCKZip = "jakarta-jakartaeetck-10.0.2.zip";
     private static final URL tckurl;
+    private static File legacyTckRoot;
 
     static {
         try {
@@ -44,6 +46,10 @@ public class Jar2ShrinkWrap {
      * @return root directory containing the unzipped TCK bundle
      */
     public static File maybeDownloadTck() {
+        if(legacyTckRoot != null) {
+            return legacyTckRoot;
+        }
+
         System.out.println("looking for existing copy of jakarta-jakartaeetck-10.0.2.zip in folder " + LegacyTCKFolderName);
         if (System.getProperty("java.io.tmpdir") == null) {
             System.out.println("java.io.tmpdir needs to point to temp folder, exiting with failure code 3");
@@ -70,6 +76,7 @@ public class Jar2ShrinkWrap {
             unzip(target);
             System.out.println("one time setup is complete");
         }
+        legacyTckRoot = target;
         return target;
     }
     public static JarProcessor fromPackage(String packageName) {
@@ -120,7 +127,7 @@ public class Jar2ShrinkWrap {
             for (File targetWarFile : possibleMatches) {
                 if (targetWarFile.getName().endsWith(".war")) {
                     if (match != null) {
-                        throw new RuntimeException("found multiple matches for " + packageName + " " + match.getName() + " vs " + targetWarFile.getName());
+                        throw new IllegalStateException("found multiple matches for " + packageName + " " + match.getName() + " vs " + targetWarFile.getName());
                     }
                     match = targetWarFile;
                 }
