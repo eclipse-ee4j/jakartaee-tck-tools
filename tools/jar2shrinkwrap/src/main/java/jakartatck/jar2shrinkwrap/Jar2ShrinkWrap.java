@@ -87,8 +87,8 @@ public class Jar2ShrinkWrap {
             System.out.println("ignoring the request for the Batch TCK tests as they were already rewritten and moved to Batch Specification");
         }
         target = new File(target, unzippedLegacyTCK);
-        File targetWarFile = locateTargetPackageFolder(target, packageName);
-        JarVisit visitor = new JarVisit(targetWarFile);
+        File targetArchiveFile = locateTargetPackageFolder(target, packageName);
+        JarVisit visitor = new JarVisit(targetArchiveFile);
         return visitor.execute();
     }
 
@@ -118,21 +118,19 @@ public class Jar2ShrinkWrap {
         File findTCKDistArchive = new File(target, "dist" + File.separator + package2Name(packageName));
         System.out.println("locateTargetPackageFolder will look inside of " + target.getName() + " for findTCKDistArchive = " + findTCKDistArchive.getName());
         System.out.println("looking inside of " + findTCKDistArchive.getName() + " for the archive that contains a test client for package " + packageName);
-        // TODO: Add support for ear achives which can contain jar + war files
-        // TODO: Add support for jar archives
-        // Initial support is for war archives
         if (findTCKDistArchive.exists()) {
-            File[] possibleMatches = findTCKDistArchive.listFiles();
-            File match = null;
-            for (File targetWarFile : possibleMatches) {
-                if (targetWarFile.getName().endsWith(".war")) {
-                    if (match != null) {
-                        throw new IllegalStateException("found multiple matches for " + packageName + " " + match.getName() + " vs " + targetWarFile.getName());
+            File[] possibleMatches = findTCKDistArchive.listFiles(); // may contain EAR, WARs, JARs
+            File matchWar = null;
+            for (File targetFile : possibleMatches) {
+                if (targetFile.getName().endsWith(".ear")) {
+                    return targetFile;
+                } else if (targetFile.getName().endsWith(".war") ) {
+                    if (matchWar == null) {
+                        matchWar = targetFile;
                     }
-                    match = targetWarFile;
                 }
             }
-            return match;
+            return matchWar;
         } else {
             throw new RuntimeException("could not locate " + packageName + " in " + findTCKDistArchive.getName());
         }

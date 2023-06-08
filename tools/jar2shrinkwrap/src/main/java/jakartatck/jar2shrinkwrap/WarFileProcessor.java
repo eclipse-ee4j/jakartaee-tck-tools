@@ -25,25 +25,7 @@ import java.util.zip.ZipInputStream;
  *
  * @author Scott Marlow
  */
-public class WarFileProcessor implements JarProcessor {
-
-    public static final String WEB_INF_CLASSES = "WEB-INF/classes/";
-    public static final String CLASS = ".class";
-    public static final String WEB_INF = "WEB-INF/";
-    public static final String WEB_INF_LIB = "WEB-INF/lib/";
-    public static final String META_INF = "META-INF";
-
-    private final File archiveFile;
-    /**
-     * This is a list of jar names in a unique directory for a given package that
-     * need to be loaded as JavaArchive files in the deployment method.
-     */
-    private final ArrayList<String> libraries = new ArrayList<>();
-    private File libDir;
-    private final ArrayList<String> metainf = new ArrayList<>();
-    private final ArrayList<String> webinf = new ArrayList<>();
-    private final ArrayList<String> classes = new ArrayList<>();
-    private final ArrayList<String> otherFiles = new ArrayList<>();
+public class WarFileProcessor extends AbstractFileProcessor {
 
 
     public WarFileProcessor(File archiveFile) {
@@ -59,8 +41,6 @@ public class WarFileProcessor implements JarProcessor {
 
         if (entry.isDirectory()) {
             // ignore
-        } else if (entry.toString().startsWith("META-INF/")) {
-            addMetainf(entry.getName());
         } else if (entry.toString().startsWith("WEB-INF/classes/")) {
             addClass(entry.getName());
         } else if (entry.toString().startsWith("WEB-INF/lib/")) {
@@ -76,7 +56,7 @@ public class WarFileProcessor implements JarProcessor {
         } else if (entry.toString().startsWith("WEB-INF/")) {
             addWebinf(entry.getName().substring("WEB-INF/".length()));
         } else {
-            otherFiles(entry.getName());
+            super.process(zipInputStream, entry);
         }
     }
 
@@ -91,15 +71,6 @@ public class WarFileProcessor implements JarProcessor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String getName() {
-        return archiveFile.getName();
-    }
-    @Override
-    public Path getArchivePath() {
-        return archiveFile.toPath();
     }
 
     @Override
@@ -177,63 +148,4 @@ public class WarFileProcessor implements JarProcessor {
         }
     }
 
-    @Override
-    public ArrayList<String> getLibraries() {
-        return libraries;
-    }
-
-    public File getLibDir() {
-        return libDir;
-    }
-
-    @Override
-    public ArrayList<String> getMetainf() {
-        return metainf;
-    }
-
-    @Override
-    public ArrayList<String> getWebinf() {
-        return webinf;
-    }
-
-    @Override
-    public ArrayList<String> getClasses() {
-        return classes;
-    }
-
-    @Override
-    public ArrayList<String> getOtherFiles() {
-        return otherFiles;
-    }
-
-    private void otherFiles(String name) {
-        otherFiles.add(name);
-    }
-
-    private void addWebinf(String name) {
-        if (name.startsWith(META_INF))
-            name = name.substring(META_INF.length());
-        webinf.add(name);
-    }
-
-    private void addLibrary(String name) {
-        if (name.startsWith(WEB_INF_LIB))
-            name = name.substring(WEB_INF_LIB.length());
-        libraries.add(name);
-    }
-
-    private void addClass(String name) {
-        if (name.startsWith(WEB_INF_CLASSES))
-            name = name.substring(WEB_INF_CLASSES.length());
-        if (name.endsWith(CLASS))
-            name = name.substring(0, name.length() - CLASS.length());
-        name = name.replace('/', '.');
-        classes.add(name);
-    }
-
-    private void addMetainf(String name) {
-        if (name.startsWith(WEB_INF))
-            name = name.substring(WEB_INF.length());
-        metainf.add(name);
-    }
-}
+ }
