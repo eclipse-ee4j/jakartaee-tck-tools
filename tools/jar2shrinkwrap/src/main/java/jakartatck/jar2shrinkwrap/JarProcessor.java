@@ -43,6 +43,12 @@ public interface JarProcessor {
 
     ArrayList<String> getMetainf();
 
+    /**
+     *
+     * @return submodules defined for an EAR deployment
+     */
+    ArrayList<JarProcessor> getSubModules();
+
     ArrayList<String> getWebinf();
 
     ArrayList<String> getClasses();

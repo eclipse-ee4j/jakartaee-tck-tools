@@ -101,4 +101,19 @@ public class Jar2ShrinkwrapPkgTest {
         }
 
     }
+
+    @Test
+    public void testFindPersistenceTestPkgs() throws IOException {
+        Set<String> testPkgNames = Jar2ShrinkWrap.getTestPkgNames("com/sun/ts/tests/jpa/ee/packaging/jar");
+
+        assertTrue(0 < testPkgNames.size());
+
+        String[] expectedPkgs = {
+                "com.sun.ts.tests.jpa.ee.packaging.jar"
+        };
+        for(String pkg : expectedPkgs) {
+            assertTrue(testPkgNames.contains(pkg), "Should contain: "+pkg);
+        }
+
+    }
 }

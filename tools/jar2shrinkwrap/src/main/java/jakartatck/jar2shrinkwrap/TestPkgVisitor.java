@@ -63,12 +63,11 @@ public class TestPkgVisitor implements FileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         String fileName = file.getFileName().toString();
-        // TODO for other test deployment extensions...
-        if (fileName.endsWith(".war")) {
-            Path warSubpath = file.subpath(tckRoot.getNameCount(), file.getNameCount());
-            Path warPkg = warSubpath.subpath(0, warSubpath.getNameCount() - 1);
-            String warPkgName = warPkg.toString().replace('/', '.');
-            testPkgs.add(warPkgName);
+        if (fileName.endsWith(".war") || fileName.endsWith(".ear") || fileName.endsWith(".jar")) {
+            Path subpath = file.subpath(tckRoot.getNameCount(), file.getNameCount());
+            Path pkg = subpath.subpath(0, subpath.getNameCount() - 1);
+            String pkgName = pkg.toString().replace('/', '.');
+            testPkgs.add(pkgName);
         }
         return FileVisitResult.CONTINUE;
     }

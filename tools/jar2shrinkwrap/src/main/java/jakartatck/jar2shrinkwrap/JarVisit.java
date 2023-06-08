@@ -30,6 +30,10 @@ public class JarVisit {
         JarProcessor jarProcessor;
         if (archiveFile.getName().endsWith(".war"))
             jarProcessor = new WarFileProcessor(archiveFile);
+        else if (archiveFile.getName().endsWith(".jar"))
+            jarProcessor = new JarFileProcessor(archiveFile);
+        else if (archiveFile.getName().endsWith(".ear"))
+            jarProcessor = new EarFileProcessor(archiveFile);
         else
             throw new IllegalStateException("unsupported file type extension: " + archiveFile);
         final byte[] buffer = new byte[100 * 1024];
