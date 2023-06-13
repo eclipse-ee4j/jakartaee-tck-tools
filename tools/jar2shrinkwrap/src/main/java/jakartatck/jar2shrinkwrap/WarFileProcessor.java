@@ -1,5 +1,11 @@
 package jakartatck.jar2shrinkwrap;
 
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -8,6 +14,9 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -110,7 +119,34 @@ public class WarFileProcessor implements JarProcessor {
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
             // The libary jars
-            // Class thisClass = MethodHandles.lookup().lookupClass();
+            if(getLibraries().size() > 0) {
+            /* The #{} here is a parameter substitution indicator for the test class being processed
+            https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
+             */
+                printWriter.println(indent.repeat(2) + "// TODO, check the library jar classes\n");
+                // Write out the classes seen in the EE10 jars in a comment as a hint
+                List<File> libraryFiles = new ArrayList<>();
+                for (String jarName : getLibraries()) {
+                    File jarFile = new File(getLibDir(), jarName);
+                    libraryFiles.add(jarFile);
+                }
+                List<JavaArchive> warJars = libraryFiles.stream()
+                        .map(file -> ShrinkWrap.createFromZipFile(JavaArchive.class, file))
+                        .toList();
+                printWriter.println("/*");
+                for (JavaArchive jar : warJars) {
+                    printWriter.print("%sWEB-INF/lib/%s\n".formatted(indent.repeat(2), jar.getName()));
+                    Map<ArchivePath, Node> content = jar.getContent();
+                    for (ArchivePath path : content.keySet()) {
+                        Asset asset = content.get(path).getAsset();
+                        if (asset != null) {
+                            printWriter.print("%s%s\n".formatted(indent.repeat(3), path.get()));
+                        }
+                    }
+                }
+                printWriter.println("*/");
+            }
+            // The code only contains a stub class to the LibraryUtil.getJars() method
             printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
 
             // Start war creation
@@ -127,7 +163,7 @@ public class WarFileProcessor implements JarProcessor {
             for (String name : webinf) {
                 printWriter.print(indent.repeat(3)+".addAsWebInfResource(\"");
                 printWriter.print(name);
-                printWriter.println("\")");
+                printWriter.println("\");");
             }
             // I don't think this is valid in general as a custom manifest would not be added to a deployment
             /*
