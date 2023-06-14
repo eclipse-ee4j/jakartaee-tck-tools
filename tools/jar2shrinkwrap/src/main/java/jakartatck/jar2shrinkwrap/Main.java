@@ -25,6 +25,7 @@ public class Main {
             }
             else {
                 File fileInputArchive = new File(file);
+                System.out.println("Process TCK test in " + fileInputArchive.getAbsolutePath());
                 JarVisit visitor = new JarVisit(fileInputArchive);
                 JarProcessor jarProcessor = visitor.execute();
                 jarProcessor.saveOutput(fileInputArchive);
