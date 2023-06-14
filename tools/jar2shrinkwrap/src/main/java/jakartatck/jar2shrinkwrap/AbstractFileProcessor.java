@@ -1,11 +1,12 @@
 package jakartatck.jar2shrinkwrap;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 
 
 /**
@@ -30,7 +31,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected final ArrayList<String> otherFiles = new ArrayList<>();
     protected File archiveFile;
     protected File libDir;
-    private final ArrayList<JarProcessor> subModules = new ArrayList<>();
+    protected final ArrayList<String> subModules = new ArrayList<>();
 
     @Override
     public void process(ZipInputStream zipInputStream, ZipEntry entry) {
@@ -70,7 +71,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     }
 
     @Override
-    public ArrayList<JarProcessor> getSubModules() {
+    public ArrayList<String> getSubModules() {
         return subModules;
     }
 
@@ -106,13 +107,10 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         libraries.add(name);
     }
 
-    protected void addModule(JarProcessor subModuleProcessor) {
-        subModules.add(subModuleProcessor);
+    protected void addModule(String name) {
+        subModules.add(name);
     }
 
-    protected void addLibrary(JarProcessor subModuleProcessor) {
-        subModules.add(subModuleProcessor);
-    }
 
     protected void addClass(String name) {
         if (name.startsWith(WEB_INF_CLASSES))
@@ -132,5 +130,16 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     public Path getArchivePath() {
         return archiveFile.toPath();
     }
-
+    @Override
+    public void saveOutput(final File fileInputArchive) {
+        String testclient = "Client";
+        File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
+        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
+        output.getParentFile().mkdirs();
+        try (FileWriter fileWriter = new FileWriter(output)) {
+            saveOutput(fileWriter, true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

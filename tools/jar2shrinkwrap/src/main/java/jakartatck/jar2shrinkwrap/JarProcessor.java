@@ -47,7 +47,7 @@ public interface JarProcessor {
      *
      * @return submodules defined for an EAR deployment
      */
-    ArrayList<JarProcessor> getSubModules();
+    ArrayList<String> getSubModules();
 
     ArrayList<String> getWebinf();
 

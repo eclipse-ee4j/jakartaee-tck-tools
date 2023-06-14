@@ -21,7 +21,7 @@ public class Jar2ShrinkwrapEarTest {
     public void canLocateTestDefinitions() {
 
         JarProcessor ear = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.jpa.ee.pluggability.contracts.jta");
-        List<JarProcessor> subModules = ear.getSubModules();
+        List<String> subModules = ear.getSubModules();
         System.out.printf("EAR Modules: %s\n", subModules);
         assertEquals(7, subModules.size()); // jpa_alternate_provider.jar + jpa_ee_pluggability_contracts_jta.jar
         // Write the java source to the console
