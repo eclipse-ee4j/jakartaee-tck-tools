@@ -75,13 +75,14 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
-                printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;\n");
+                printWriter.println("import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;\n");
                 printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;\n");
 
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
+            printWriter.println(indent+"public static Archive<?> deployment() {");
+            printWriter.print(indent+"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\"\n);".formatted(archiveFile.getName()));
             // The libary jars
             if(getLibraries().size() > 0) {
             /* The #{} here is a parameter substitution indicator for the test class being processed
@@ -94,12 +95,12 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     File jarFile = new File(getLibDir(), jarName);
                     libraryFiles.add(jarFile);
                 }
-                List<JavaArchive> warJars = libraryFiles.stream()
+                List<JavaArchive> EarLibJars = libraryFiles.stream()
                         .map(file -> ShrinkWrap.createFromZipFile(JavaArchive.class, file))
                         .toList();
-                printWriter.println("/*");
-                for (JavaArchive jar : warJars) {
-                    printWriter.print("%sWEB-INF/lib/%s\n".formatted(indent.repeat(2), jar.getName()));
+                printWriter.println("/* Add each jar via ear.addAsLibrary() \n");
+                for (JavaArchive jar : EarLibJars) {
+                    printWriter.print("%s/lib/%s\n".formatted(indent.repeat(2), jar.getName()));
                     Map<ArchivePath, Node> content = jar.getContent();
                     for (ArchivePath path : content.keySet()) {
                         Asset asset = content.get(path).getAsset();
