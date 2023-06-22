@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -23,6 +24,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author Scott Marlow
  */
 public class EarFileProcessor extends AbstractFileProcessor {
+    private HashMap<String, JarProcessor> subModuleContent = new HashMap<>();
+
     public EarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
         libDir = new File(archiveFile.getParentFile().getAbsolutePath());
@@ -30,6 +33,10 @@ public class EarFileProcessor extends AbstractFileProcessor {
             libDir.mkdirs();
         }
 
+    }
+
+    public JarProcessor getSubmodule(String name) {
+        return subModuleContent.get(name);
     }
 
     @Override
@@ -50,7 +57,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
             }
             addLibrary(libFile.getName());
         } else if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".war") ) {
-            String jarName = entry.getName().substring("lib/".length());
+            String jarName = entry.getName();
             File libFile = new File(libDir, jarName);
             if (!libFile.exists()) { // Typical usage for EAR is that module archives will already exist but if not, create them)
                 try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
@@ -60,6 +67,10 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     throw new RuntimeException(e);
                 }
             }
+            // Load the submodule content
+            JarVisit visit = new JarVisit(libFile);
+            JarProcessor jar = visit.execute();
+            subModuleContent.put(jarName, jar);
             addModule(libFile.getName());
         } else {
             super.process(zipInputStream, entry);
