@@ -1,10 +1,13 @@
 package jakartatck.jar2shrinkwrap;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,8 +33,11 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected final ArrayList<String> classes = new ArrayList<>();
     protected final ArrayList<String> otherFiles = new ArrayList<>();
     protected File archiveFile;
-    protected File libDir;
+    protected File baseDir;
     protected final ArrayList<String> subModules = new ArrayList<>();
+
+    private Map<String, JarProcessor> libraryContent = new HashMap<>();
+
 
     @Override
     public void process(ZipInputStream zipInputStream, ZipEntry entry) {
@@ -51,6 +57,31 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         }
     }
 
+    protected void processLibrary(String jarName, File libFile, ZipInputStream zipInputStream) {
+        if (!libFile.exists()) { // Typical usage for EAR is that module/library entries archives will already exist in test folder but if not, create them)
+            try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
+                byte[] libContent = zipInputStream.readAllBytes();
+                libFileOS.write(libContent);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        // load the library content
+        JarVisit visit = new JarVisit(libFile);
+        JarProcessor jar = visit.execute();
+        libraryContent.put(jarName, jar);
+        addLibrary(libFile.getName());
+
+    }
+
+    public JarProcessor getLibrary(String name) {
+        return libraryContent.get(name);
+    }
+
+    protected String archiveName(String archiveName) {
+        return archiveName.replace(".", "_");
+    }
+
     protected void addMetainf(String name) {
         if (name.startsWith(WEB_INF))
             name = name.substring(WEB_INF.length());
@@ -66,8 +97,8 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         return libraries;
     }
 
-    public File getLibDir() {
-        return libDir;
+    public File getBaseDir() {
+        return baseDir;
     }
 
     @Override

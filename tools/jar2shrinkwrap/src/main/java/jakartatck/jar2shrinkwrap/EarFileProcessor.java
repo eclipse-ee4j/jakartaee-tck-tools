@@ -12,25 +12,19 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.Node;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
 /**
  * EarFileProcessor
  *
  * @author Scott Marlow
  */
 public class EarFileProcessor extends AbstractFileProcessor {
-    private HashMap<String, JarProcessor> subModuleContent = new HashMap<>();
+    private Map<String, JarProcessor> subModuleContent = new HashMap<>();
 
     public EarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
-        libDir = new File(archiveFile.getParentFile().getAbsolutePath());
-        if(!libDir.exists()) {
-            libDir.mkdirs();
+        baseDir = new File(archiveFile.getParentFile().getAbsolutePath());
+        if(!baseDir.exists()) {
+            baseDir.mkdirs();
         }
 
     }
@@ -46,19 +40,11 @@ public class EarFileProcessor extends AbstractFileProcessor {
             // ignore
         } else if (entry.getName().startsWith("lib/")) {
             String jarName = entry.getName().substring("lib/".length());
-            File libFile = new File(libDir, jarName);
-            if (!libFile.exists()) { // Typical usage for EAR is that module archives will already exist but if not, create them)
-                try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
-                    byte[] libContent = zipInputStream.readAllBytes();
-                    libFileOS.write(libContent);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            addLibrary(libFile.getName());
+            File libFile = new File(baseDir, jarName);
+            processLibrary(jarName, libFile, zipInputStream);
         } else if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".war") ) {
             String jarName = entry.getName();
-            File libFile = new File(libDir, jarName);
+            File libFile = new File(baseDir, jarName);
             if (!libFile.exists()) { // Typical usage for EAR is that module archives will already exist but if not, create them)
                 try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
                     byte[] libContent = zipInputStream.readAllBytes();
@@ -79,71 +65,67 @@ public class EarFileProcessor extends AbstractFileProcessor {
 
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
-        String testclient = "Client";
-        String indent = "\t";
+        final String indent = "\t";
+        final String newLine = "\n";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
-                printWriter.println("import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;\n");
-                printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;\n");
+                printWriter.println("import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;");
+                printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;" + newLine);
 
             }
 
-            printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static Archive<?> deployment() {");
-            printWriter.print(indent+"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\"\n);".formatted(archiveFile.getName()));
-            // The libary jars
+            printWriter.println("@Deployment(testable = false)");
+            printWriter.println("public static Archive<?> deployment() {");
+            printWriter.println(newLine + indent.repeat(1) +"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\");".formatted(archiveFile.getName()));
+            // The library jars
             if(getLibraries().size() > 0) {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
              */
-                printWriter.println(indent.repeat(2) + "// TODO, check the library jar classes\n");
+                printWriter.println(indent.repeat(1) + "// TODO: filter/eliminate the library jar classes that shouldn't be included");
+                printWriter.println(indent.repeat(1) + "// Add ear/lib jars");
                 // Write out the classes seen in the EE10 jars in a comment as a hint
                 List<File> libraryFiles = new ArrayList<>();
-                for (String jarName : getLibraries()) {
-                    File jarFile = new File(getLibDir(), jarName);
-                    libraryFiles.add(jarFile);
-                }
-                List<JavaArchive> EarLibJars = libraryFiles.stream()
-                        .map(file -> ShrinkWrap.createFromZipFile(JavaArchive.class, file))
-                        .toList();
-                printWriter.println("/* Add each jar via ear.addAsLibrary() \n");
-                for (JavaArchive jar : EarLibJars) {
-                    printWriter.print("%s/lib/%s\n".formatted(indent.repeat(2), jar.getName()));
-                    Map<ArchivePath, Node> content = jar.getContent();
-                    for (ArchivePath path : content.keySet()) {
-                        Asset asset = content.get(path).getAsset();
-                        if (asset != null) {
-                            printWriter.print("%s%s\n".formatted(indent.repeat(3), path.get()));
-                        }
+                for (String archiveName : getLibraries()) {
+                    JarProcessor jarProcessor = getLibrary(archiveName);
+                    printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
+                    for (String className: jarProcessor.getClasses()) {
+                        printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
                     }
+                    printWriter.println(indent.repeat(1)+"ear.addAsLibrary(%s);".formatted(archiveName(archiveName)));
                 }
-                printWriter.println("*/");
-            }
-            // The code only contains a stub class to the LibraryUtil.getJars() method
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
 
-            // Start war creation
-            printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + testclient + ".war\")");
-
-            printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
-
-            for (String name : classes) {
-                printWriter.print(indent.repeat(3)+".addClass(");
-                printWriter.print(name);
-                printWriter.println(".class)");
             }
-            for (String name : webinf) {
-                printWriter.print(indent.repeat(3)+".addAsWebInfResource(\"");
-                printWriter.print(name);
-                printWriter.println("\");");
+            if (getSubModules().size() > 0) {
+                printWriter.println(indent.repeat(1) + "// Add ear submodules");
+                for (String archiveName : getSubModules()) {
+                    JarProcessor jarProcessor = getSubmodule(archiveName);
+                    if ( jarProcessor instanceof WarFileProcessor) {
+                        // WebArchive war = ShrinkWrap.create(WebArchive.class, name)
+                        printWriter.println(newLine + indent + "WebArchive %s = ShrinkWrap.create(WebArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
+                        for (String webinfFile : jarProcessor.getWebinf()) {
+                            printWriter.print(indent.repeat(3)+"%s.addAsWebInfResource(\"%s\");".formatted(archiveName(archiveName), webinfFile));
+                        }
+
+                    } else {
+                        // JavaArchive jar  = ShrinkWrap.create(JavaArchive.class);
+                        printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
+                    }
+                    // add classes
+                    for (String className: jarProcessor.getClasses()) {
+                        printWriter.println(indent+"%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                    }
+                    // add war/jar to ear
+                    printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
+                }
+
             }
+
+            printWriter.println(indent.repeat(1)+"return ear;");
             printWriter.println("}");
         }
     }
-
-
 }

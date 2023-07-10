@@ -29,4 +29,17 @@ public class Jar2ShrinkwrapEarTest {
         ear.saveOutput(src, false);
         System.out.printf("\nJavaSource:\n%s\n", src.toString());
     }
+
+    @Test void locate_assembly_altDD() {
+        JarProcessor ear = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.assembly.altDD");
+        List<String> subModules = ear.getSubModules();
+        System.out.printf("EAR Modules: %s\n", subModules);
+        assertEquals(2, subModules.size());
+        StringWriter src = new StringWriter();
+        ear.saveOutput(src, true);
+        String result = src.toString();
+        assertTrue(result.contains("org.jboss.shrinkwrap.api.spec.EnterpriseArchive"));
+        System.out.printf("\nJavaSource:\n%s\n", result);
+
+    }
 }
