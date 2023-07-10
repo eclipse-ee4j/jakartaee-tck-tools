@@ -37,7 +37,7 @@ public class DumpWarTest {
     private void displayEarStructure(EarFileProcessor ear) {
         List<File> libraryFiles = new ArrayList<>();
         for (String jarName : ear.getLibraries()) {
-            File jarFile = new File(ear.getLibDir(), jarName);
+            File jarFile = new File(ear.getBaseDir(), jarName);
             libraryFiles.add(jarFile);
         }
         List<JavaArchive> earJars = libraryFiles.stream()
@@ -66,7 +66,7 @@ public class DumpWarTest {
     private void displayWarStructure(WarFileProcessor war) {
         List<File> libraryFiles = new ArrayList<>();
         for (String jarName : war.getLibraries()) {
-            File jarFile = new File(war.getLibDir(), jarName);
+            File jarFile = new File(war.getBaseDir(), jarName);
             libraryFiles.add(jarFile);
         }
         List<JavaArchive> warJars = libraryFiles.stream()

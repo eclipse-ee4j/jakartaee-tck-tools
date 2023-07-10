@@ -48,8 +48,8 @@ public class Jar2ShrinkwrapPkgTest {
         assertTrue(classesSet.size() == 0);
 
         System.out.printf("Libraries: %s\n", war.getLibraries());
-        System.out.printf("LibDir: %s\n", war.getLibDir());
-        File initializeJar = new File(war.getLibDir(), war.getLibraries().get(0));
+        System.out.printf("LibDir: %s\n", war.getBaseDir());
+        File initializeJar = new File(war.getBaseDir(), war.getLibraries().get(0));
         if(!initializeJar.exists()) {
             System.out.printf("initilizer.jar does not exist in war libDir: %s\n", initializeJar.getAbsolutePath());
             System.exit(2);
@@ -61,7 +61,7 @@ public class Jar2ShrinkwrapPkgTest {
         // Sample tests code for what needs to be done in the deployment method to add the extracted war jars
         List<File> libraryFiles = new ArrayList<>();
         for (String jarName : war.getLibraries()) {
-            File jarFile = new File(war.getLibDir(), jarName);
+            File jarFile = new File(war.getBaseDir(), jarName);
             libraryFiles.add(jarFile);
         }
         List<JavaArchive> warJars =

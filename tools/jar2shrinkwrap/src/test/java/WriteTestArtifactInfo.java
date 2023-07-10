@@ -34,7 +34,7 @@ public class WriteTestArtifactInfo {
     static void writeInfo(String pkg, JarProcessor war) {
         List<File> libraryFiles = new ArrayList<>();
         for (String jarName : war.getLibraries()) {
-            File jarFile = new File(war.getLibDir(), jarName);
+            File jarFile = new File(war.getBaseDir(), jarName);
             libraryFiles.add(jarFile);
         }
         List<JavaArchive> warJars = libraryFiles.stream()

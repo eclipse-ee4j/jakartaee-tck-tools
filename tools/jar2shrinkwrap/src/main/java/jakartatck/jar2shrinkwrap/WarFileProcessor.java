@@ -12,11 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,9 +28,9 @@ public class WarFileProcessor extends AbstractFileProcessor {
 
     public WarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
-        libDir = new File(archiveFile.getAbsolutePath()+".lib");
-        if(!libDir.exists()) {
-            libDir.mkdirs();
+        baseDir = new File(archiveFile.getAbsolutePath()+".lib");
+        if(!baseDir.exists()) {
+            baseDir.mkdirs();
         }
     }
 
@@ -45,14 +43,8 @@ public class WarFileProcessor extends AbstractFileProcessor {
             addClass(entry.getName());
         } else if (entry.toString().startsWith("WEB-INF/lib/")) {
             String jarName = entry.getName().substring("WEB-INF/lib/".length());
-            File libFile = new File(libDir, jarName);
-            try(FileOutputStream libFileOS = new FileOutputStream(libFile)) {
-                byte[] libContent = zipInputStream.readAllBytes();
-                libFileOS.write(libContent);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            addLibrary(entry.getName());
+            File libFile = new File(baseDir, jarName);
+            processLibrary(jarName, libFile, zipInputStream);
         } else if (entry.toString().startsWith("WEB-INF/")) {
             addWebinf(entry.getName().substring("WEB-INF/".length()));
         } else {
@@ -89,7 +81,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
 
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            // The libary jars
+            // The library jars
             if(getLibraries().size() > 0) {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
@@ -98,7 +90,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
                 // Write out the classes seen in the EE10 jars in a comment as a hint
                 List<File> libraryFiles = new ArrayList<>();
                 for (String jarName : getLibraries()) {
-                    File jarFile = new File(getLibDir(), jarName);
+                    File jarFile = new File(getBaseDir(), jarName);
                     libraryFiles.add(jarFile);
                 }
                 List<JavaArchive> warJars = libraryFiles.stream()

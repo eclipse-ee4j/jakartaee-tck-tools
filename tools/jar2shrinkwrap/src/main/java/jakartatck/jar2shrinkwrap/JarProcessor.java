@@ -39,7 +39,7 @@ public interface JarProcessor {
     Path getArchivePath();
 
     ArrayList<String> getLibraries();
-    File getLibDir();
+    File getBaseDir();
 
     ArrayList<String> getMetainf();
 
