@@ -80,7 +80,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
             printWriter.println("@Deployment(testable = false)");
             printWriter.println("public static Archive<?> deployment() {");
             printWriter.println(newLine + indent.repeat(1) +"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\");".formatted(archiveFile.getName()));
-            // The library jars
+            // The EAR library jars
             if(getLibraries().size() > 0) {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
@@ -93,7 +93,9 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     JarProcessor jarProcessor = getLibrary(archiveName);
                     printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                     for (String className: jarProcessor.getClasses()) {
-                        printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                        if (!ignoreFile(className)) {
+                            printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                        }
                     }
                     printWriter.println(indent.repeat(1)+"ear.addAsLibrary(%s);".formatted(archiveName(archiveName)));
                 }
@@ -107,7 +109,35 @@ public class EarFileProcessor extends AbstractFileProcessor {
                         // WebArchive war = ShrinkWrap.create(WebArchive.class, name)
                         printWriter.println(newLine + indent + "WebArchive %s = ShrinkWrap.create(WebArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                         for (String webinfFile : jarProcessor.getWebinf()) {
-                            printWriter.print(indent.repeat(3)+"%s.addAsWebInfResource(\"%s\");".formatted(archiveName(archiveName), webinfFile));
+                            if (!ignoreFile(webinfFile)) {
+                                printWriter.println(indent.repeat(3) + "%s.addAsWebInfResource(\"%s\");".formatted(archiveName(archiveName), webinfFile));
+                            }
+                        }
+                        for (String otherFile : jarProcessor.getOtherFiles()) {
+                            if (!ignoreFile(otherFile)) {
+                                printWriter.println(indent.repeat(3) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(archiveName), otherFile));
+                            }
+                        }
+
+                        for (String warlibrary : jarProcessor.getLibraries()) {
+                            JarProcessor warLibraryProcessor = ((WarFileProcessor)jarProcessor).getLibrary(warlibrary);
+                            printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
+                            for (String className: warLibraryProcessor.getClasses()) {
+                                if (!ignoreFile(className)) {
+                                    printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(warlibrary), className));
+                                }
+                            }
+                            for (String otherFile: warLibraryProcessor.getOtherFiles()) {
+                                if (!ignoreFile(otherFile)) {
+                                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), otherFile));
+                                }
+                            }
+                            for (String metainf : warLibraryProcessor.getMetainf()) {
+                                if (!ignoreFile(metainf)) {
+                                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), metainf));
+                                }
+                            }
+                            printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),warlibrary));
                         }
 
                     } else {
@@ -116,7 +146,9 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     }
                     // add classes
                     for (String className: jarProcessor.getClasses()) {
-                        printWriter.println(indent+"%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                        if (!ignoreFile(className)) {
+                            printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                        }
                     }
                     // add war/jar to ear
                     printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
@@ -128,4 +160,5 @@ public class EarFileProcessor extends AbstractFileProcessor {
             printWriter.println("}");
         }
     }
+
 }

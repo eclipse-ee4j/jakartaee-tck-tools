@@ -42,4 +42,14 @@ public class Jar2ShrinkwrapEarTest {
         System.out.printf("\nJavaSource:\n%s\n", result);
 
     }
+
+    @Test void locate_servletcontext40() {
+        JarProcessor ear = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.servlet.api.jakarta_servlet.servletcontext40");
+        StringWriter src = new StringWriter();
+        ear.saveOutput(src, true);
+        String result = src.toString();
+        assertTrue(result.contains("org.jboss.shrinkwrap.api.spec.EnterpriseArchive"));
+        System.out.printf("\nJavaSource:\n%s\n", result);
+    }
+
 }
