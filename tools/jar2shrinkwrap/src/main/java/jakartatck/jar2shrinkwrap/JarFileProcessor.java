@@ -57,14 +57,18 @@ public class JarFileProcessor extends AbstractFileProcessor {
             printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
 
             for (String name : classes) {
-                printWriter.print(indent.repeat(3)+".addClass(");
-                printWriter.print(name);
-                printWriter.println(".class)");
+                if (!ignoreFile(name)) {
+                    printWriter.print(indent.repeat(3) + ".addClass(");
+                    printWriter.print(name);
+                    printWriter.println(".class)");
+                }
             }
             for (String name : webinf) {
-                printWriter.print(indent.repeat(3)+".addAsWebInfResource(\"");
-                printWriter.print(name);
-                printWriter.println("\")");
+                if (!ignoreFile(name)) {
+                    printWriter.print(indent.repeat(3) + ".addAsWebInfResource(\"");
+                    printWriter.print(name);
+                    printWriter.println("\")");
+                }
             }
             printWriter.println("}");
         }

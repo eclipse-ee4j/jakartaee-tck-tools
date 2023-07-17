@@ -173,4 +173,9 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             throw new RuntimeException(e);
         }
     }
+
+    protected boolean ignoreFile(String filename) {
+        return filename.isEmpty() || filename.endsWith(".java");
+    }
+
 }
