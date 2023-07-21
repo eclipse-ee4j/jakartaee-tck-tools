@@ -70,8 +70,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
              */
-                printWriter.println(indent.repeat(2) + "// TODO, check the library jar classes\n");
-                // Write out the classes seen in the EE10 jars in a comment as a hint
+                // printWriter.println(indent.repeat(2) + "// TODO, check the library jar classes\n");
                 List<File> libraryFiles = new ArrayList<>();
                 for (String jarName : getLibraries()) {
                     File jarFile = new File(getBaseDir(), jarName);

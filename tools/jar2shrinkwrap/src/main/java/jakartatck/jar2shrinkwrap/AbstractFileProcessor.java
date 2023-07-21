@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -172,6 +174,53 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void saveOutputWar(PrintWriter printWriter, boolean includeImports, String archiveName) {
+        final String indent = "\t";
+        final String newLine = "\n";
+
+        // WebArchive war = ShrinkWrap.create(WebArchive.class, name)
+        printWriter.println(newLine + indent + "WebArchive %s = ShrinkWrap.create(WebArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
+        for (String webinfFile : getWebinf()) {
+            if (!ignoreFile(webinfFile)) {
+                printWriter.println(indent.repeat(3) + "%s.addAsWebInfResource(\"%s\");".formatted(archiveName(archiveName), webinfFile));
+            }
+        }
+        for (String otherFile : getOtherFiles()) {
+            if (!ignoreFile(otherFile)) {
+                printWriter.println(indent.repeat(3) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(archiveName), otherFile));
+            }
+        }
+
+        for (String warlibrary : getLibraries()) {
+            JarProcessor warLibraryProcessor = getLibrary(warlibrary);
+            printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
+            for (String className: warLibraryProcessor.getClasses()) {
+                if (!ignoreFile(className)) {
+                    printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(warlibrary), className));
+                }
+            }
+            for (String otherFile: warLibraryProcessor.getOtherFiles()) {
+                if (!ignoreFile(otherFile)) {
+                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), otherFile));
+                }
+            }
+            for (String metainf : warLibraryProcessor.getMetainf()) {
+                if (!ignoreFile(metainf)) {
+                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), metainf));
+                }
+            }
+            printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),warlibrary));
+        }
+        // add classes
+        for (String className: getClasses()) {
+            if (!ignoreFile(className)) {
+                printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+            }
+        }
+
     }
 
     protected boolean ignoreFile(String filename) {

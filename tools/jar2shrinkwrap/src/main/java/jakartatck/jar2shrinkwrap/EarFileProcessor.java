@@ -107,52 +107,20 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 for (String archiveName : getSubModules()) {
                     JarProcessor jarProcessor = getSubmodule(archiveName);
                     if ( jarProcessor instanceof WarFileProcessor) {
-                        // WebArchive war = ShrinkWrap.create(WebArchive.class, name)
-                        printWriter.println(newLine + indent + "WebArchive %s = ShrinkWrap.create(WebArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
-                        for (String webinfFile : jarProcessor.getWebinf()) {
-                            if (!ignoreFile(webinfFile)) {
-                                printWriter.println(indent.repeat(3) + "%s.addAsWebInfResource(\"%s\");".formatted(archiveName(archiveName), webinfFile));
-                            }
-                        }
-                        for (String otherFile : jarProcessor.getOtherFiles()) {
-                            if (!ignoreFile(otherFile)) {
-                                printWriter.println(indent.repeat(3) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(archiveName), otherFile));
-                            }
-                        }
-
-                        for (String warlibrary : jarProcessor.getLibraries()) {
-                            JarProcessor warLibraryProcessor = ((WarFileProcessor)jarProcessor).getLibrary(warlibrary);
-                            printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
-                            for (String className: warLibraryProcessor.getClasses()) {
-                                if (!ignoreFile(className)) {
-                                    printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(warlibrary), className));
-                                }
-                            }
-                            for (String otherFile: warLibraryProcessor.getOtherFiles()) {
-                                if (!ignoreFile(otherFile)) {
-                                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), otherFile));
-                                }
-                            }
-                            for (String metainf : warLibraryProcessor.getMetainf()) {
-                                if (!ignoreFile(metainf)) {
-                                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), metainf));
-                                }
-                            }
-                            printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),warlibrary));
-                        }
-
+                        jarProcessor.saveOutputWar(printWriter,includeImports, archiveName);
                     } else {
                         // JavaArchive jar  = ShrinkWrap.create(JavaArchive.class);
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                     }
+                    // add war/jar to ear
+                    printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
                     // add classes
                     for (String className: jarProcessor.getClasses()) {
                         if (!ignoreFile(className)) {
                             printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
                         }
                     }
-                    // add war/jar to ear
-                    printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
+
                 }
 
             }
