@@ -65,64 +65,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
 
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            // The library jars
-            if(getLibraries().size() > 0) {
-            /* The #{} here is a parameter substitution indicator for the test class being processed
-            https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
-             */
-                // printWriter.println(indent.repeat(2) + "// TODO, check the library jar classes\n");
-                List<File> libraryFiles = new ArrayList<>();
-                for (String jarName : getLibraries()) {
-                    File jarFile = new File(getBaseDir(), jarName);
-                    libraryFiles.add(jarFile);
-                }
-                List<JavaArchive> warJars = libraryFiles.stream()
-                        .map(file -> ShrinkWrap.createFromZipFile(JavaArchive.class, file))
-                        .toList();
-                printWriter.println("/*");
-                for (JavaArchive jar : warJars) {
-                    printWriter.print("%sWEB-INF/lib/%s\n".formatted(indent.repeat(2), jar.getName()));
-                    Map<ArchivePath, Node> content = jar.getContent();
-                    for (ArchivePath path : content.keySet()) {
-                        Asset asset = content.get(path).getAsset();
-                        if (asset != null) {
-                            printWriter.print("%s%s\n".formatted(indent.repeat(3), path.get()));
-                        }
-                    }
-                }
-                printWriter.println("*/");
-            }
-            // The code only contains a stub class to the LibraryUtil.getJars() method
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
-
-            // Start war creation
-            printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + testclient + ".war\")");
-
-            printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
-
-            for (String name : classes) {
-                if (!ignoreFile(name)) {
-                    printWriter.print(indent.repeat(3) + ".addClass(");
-                    printWriter.print(name);
-                    printWriter.println(".class)");
-                }
-            }
-            for (String name : webinf) {
-                if (!ignoreFile(name)) {
-                    printWriter.print(indent.repeat(3) + ".addAsWebInfResource(\"");
-                    printWriter.print(name);
-                    printWriter.println("\");");
-                }
-            }
-            // I don't think this is valid in general as a custom manifest would not be added to a deployment
-            /*
-            for (String name : metainf) {
-                printWriter.print(".addAsManifestResource(");
-                printWriter.print(name);
-                printWriter.println(")");
-            }
-            */
+            saveOutputWar(printWriter,includeImports, archiveFile.getName());
             printWriter.println("}");
         }
     }
