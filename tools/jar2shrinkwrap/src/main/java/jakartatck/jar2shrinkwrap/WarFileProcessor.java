@@ -7,9 +7,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -49,19 +46,6 @@ public class WarFileProcessor extends AbstractFileProcessor {
             addWebinf(entry.getName().substring("WEB-INF/".length()));
         } else {
             super.process(zipInputStream, entry);
-        }
-    }
-
-    @Override
-    public void saveOutput(final File fileInputArchive) {
-        String testclient = "Client";
-        File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
-        output.getParentFile().mkdirs();
-        try (FileWriter fileWriter = new FileWriter(output)) {
-            saveOutput(fileWriter, true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
