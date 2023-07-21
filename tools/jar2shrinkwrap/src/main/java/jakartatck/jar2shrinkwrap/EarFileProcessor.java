@@ -73,6 +73,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;");
+                printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;");
                 printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;" + newLine);
 
             }
