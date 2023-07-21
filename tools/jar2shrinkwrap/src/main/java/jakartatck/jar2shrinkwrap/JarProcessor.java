@@ -1,6 +1,7 @@
 package jakartatck.jar2shrinkwrap;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,4 +56,5 @@ public interface JarProcessor {
 
     ArrayList<String> getOtherFiles();
 
+    void saveOutputWar(PrintWriter writer, boolean includeImports, String archiveName);
 }
