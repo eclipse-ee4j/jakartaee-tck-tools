@@ -224,7 +224,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     }
 
     protected boolean ignoreFile(String filename) {
-        return filename.isEmpty() || filename.endsWith(".java");
+        return filename.isEmpty() || filename.endsWith(".java") || filename.contains("com.sun.ts.lib.");
     }
 
 }
