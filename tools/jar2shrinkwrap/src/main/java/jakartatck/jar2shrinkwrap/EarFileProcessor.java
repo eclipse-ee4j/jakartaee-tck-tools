@@ -114,15 +114,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     }
                     // add war/jar to ear
                     printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
-                    // add classes
-                    for (String className: jarProcessor.getClasses()) {
-                        if (!ignoreFile(className)) {
-                            printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
-                        }
-                    }
-
                 }
-
             }
 
             printWriter.println(indent.repeat(1)+"return ear;");
