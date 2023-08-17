@@ -178,7 +178,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
     @Override
     public void saveOutputWar(PrintWriter printWriter, boolean includeImports, String archiveName) {
-        final String indent = "\t";
+        final String indent = " ";
         final String newLine = "\n";
 
         // WebArchive war = ShrinkWrap.create(WebArchive.class, name)
@@ -204,23 +204,24 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             }
             for (String otherFile: warLibraryProcessor.getOtherFiles()) {
                 if (!ignoreFile(otherFile)) {
-                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), otherFile));
+                    printWriter.println(indent.repeat(1) + "%s.addAsManifestResource(\"%s\");".formatted(archiveName(warlibrary), otherFile));
                 }
             }
             for (String metainf : warLibraryProcessor.getMetainf()) {
                 if (!ignoreFile(metainf)) {
-                    printWriter.println(indent.repeat(1) + "%s.addAsWebResource(\"%s\");".formatted(archiveName(warlibrary), metainf));
+                    printWriter.println(indent.repeat(1) + "%s.addAsManifestResource(\"%s\");".formatted(archiveName(warlibrary), metainf));
                 }
             }
-            printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),warlibrary));
+            printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),archiveName(warlibrary)));
         }
         // add classes
         for (String className: getClasses()) {
             if (!ignoreFile(className)) {
-                printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
             }
         }
 
+        printWriter.println(indent + "return %s;".formatted(archiveName(archiveName)));
     }
 
     protected boolean ignoreFile(String filename) {
