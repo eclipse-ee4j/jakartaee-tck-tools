@@ -112,6 +112,11 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     } else {
                         // JavaArchive jar  = ShrinkWrap.create(JavaArchive.class);
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
+                        for (String className: jarProcessor.getClasses()) {
+                            if (!ignoreFile(className)) {
+                                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                            }
+                        }
                     }
                     // add war/jar to ear
                     printWriter.println(indent+"ear.addAsModule(%s);".formatted(archiveName(archiveName)));
