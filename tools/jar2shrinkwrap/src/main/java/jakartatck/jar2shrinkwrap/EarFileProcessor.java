@@ -38,8 +38,9 @@ public class EarFileProcessor extends AbstractFileProcessor {
 
         if (entry.isDirectory()) {
             // ignore
-        } else if (entry.getName().startsWith("lib/")) {
-            String jarName = entry.getName().substring("lib/".length());
+        } else if (entry.getName().startsWith("lib/") || entry.getName().startsWith("libs/")) {
+            int prefix = entry.getName().indexOf('/');
+            String jarName = entry.getName().substring(prefix+1);
             File libFile = new File(baseDir, jarName);
             processLibrary(jarName, libFile, zipInputStream);
         } else if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".war") ) {
@@ -65,17 +66,16 @@ public class EarFileProcessor extends AbstractFileProcessor {
 
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
-        final String indent = "\t";
+        final String indent = " ";
         final String newLine = "\n";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
+                printWriter.println("import org.jboss.shrinkwrap.api.Archive;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
-                printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;");
+                printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;");
-                printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;" + newLine);
-
             }
 
             printWriter.println("@Deployment(testable = false)");
@@ -95,13 +95,14 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                     for (String className: jarProcessor.getClasses()) {
                         if (!ignoreFile(className)) {
-                            printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                            printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
                         }
                     }
                     printWriter.println(indent.repeat(1)+"ear.addAsLibrary(%s);".formatted(archiveName(archiveName)));
                 }
 
             }
+            // TODO: these need to be built up the same as library jars
             if (getSubModules().size() > 0) {
                 printWriter.println(indent.repeat(1) + "// Add ear submodules");
                 for (String archiveName : getSubModules()) {
@@ -111,18 +112,15 @@ public class EarFileProcessor extends AbstractFileProcessor {
                     } else {
                         // JavaArchive jar  = ShrinkWrap.create(JavaArchive.class);
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
-                    }
-                    // add war/jar to ear
-                    printWriter.println(indent+"ear.addModule(\"%s\");".formatted(archiveName(archiveName)));
-                    // add classes
-                    for (String className: jarProcessor.getClasses()) {
-                        if (!ignoreFile(className)) {
-                            printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(archiveName), className));
+                        for (String className: jarProcessor.getClasses()) {
+                            if (!ignoreFile(className)) {
+                                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                            }
                         }
                     }
-
+                    // add war/jar to ear
+                    printWriter.println(indent+"ear.addAsModule(%s);".formatted(archiveName(archiveName)));
                 }
-
             }
 
             printWriter.println(indent.repeat(1)+"return ear;");

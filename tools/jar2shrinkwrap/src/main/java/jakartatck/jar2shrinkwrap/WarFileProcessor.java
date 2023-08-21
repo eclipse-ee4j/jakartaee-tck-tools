@@ -52,7 +52,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
         String testclient = "Client";
-        String indent = "\t";
+        String indent = " ";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
