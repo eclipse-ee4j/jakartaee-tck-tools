@@ -33,7 +33,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
         String testclient = "Client";
-        String indent = "\t";
+        String indent = " ";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
@@ -46,7 +46,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
 
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            // The libary jars
+            /* The library jars
             // Class thisClass = MethodHandles.lookup().lookupClass();
             printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
 
@@ -55,6 +55,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
             printWriter.println("\"" + testclient + ".war\")");
 
             printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
+            */
 
             for (String name : classes) {
                 if (!ignoreFile(name)) {
