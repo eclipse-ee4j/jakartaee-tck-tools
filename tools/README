@@ -88,3 +88,6 @@ api-check      : This is the apiCheck tool created by the JCK tools group.  This
                  J2EE container.  The web page for apiCheck is 
                  http://javaweb.eng/jck/eng/process/apiCheck.html.  The version
                  controlled here is part of the JCTT tools release version 3.1.
+
+ tck-rewrite    : An OpenRewrite set of rules that support transforming the legacy JavaTest
+                  based test to Junit 5/Arquillian based tests.
