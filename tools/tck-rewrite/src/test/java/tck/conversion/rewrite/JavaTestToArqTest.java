@@ -70,7 +70,7 @@ class JavaTestToArqTest implements RewriteTest {
                                             servlet_sci_setsessiontrackingmode_web_war.addAsWebInfResource("web.xml");
                                     
                                             JavaArchive initilizer_jar = ShrinkWrap.create(JavaArchive.class, "initilizer.jar");
-                                            initilizer_jar.addClass("com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer");
+                                            initilizer_jar.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer.class);
                                             initilizer_jar.addAsManifestResource("META-INF/MANIFEST.MF");
                                             initilizer_jar.addAsManifestResource("META-INF/services/jakarta.servlet.ServletContainerInitializer");
                                             servlet_sci_setsessiontrackingmode_web_war.addAsLibrary(initilizer_jar);
