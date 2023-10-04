@@ -100,7 +100,8 @@ public class AddArqDeploymentTest implements RewriteTest {
                                             servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet.class);
                                             servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet.class);
                                             servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.util.Data.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.util.ServletTestUtil.class);                  
+                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.util.ServletTestUtil.class);
+                                            return servlet_sci_setsessiontrackingmode_web_war;                   
                                         }
                                   
                                         /**
