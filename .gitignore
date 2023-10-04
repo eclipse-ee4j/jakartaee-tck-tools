@@ -1,2 +1,5 @@
 /tools/jtreport-parser/target/
 /tools/jtreport-parser/dependency-reduced-pom.xml
+.idea
+*.iml
+target
