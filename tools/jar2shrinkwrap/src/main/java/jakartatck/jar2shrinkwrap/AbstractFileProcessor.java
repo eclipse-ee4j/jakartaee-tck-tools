@@ -199,7 +199,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
             for (String className: warLibraryProcessor.getClasses()) {
                 if (!ignoreFile(className)) {
-                    printWriter.println(indent + "%s.addClass(\"%s\");".formatted(archiveName(warlibrary), className));
+                    printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(warlibrary), className));
                 }
             }
             for (String otherFile: warLibraryProcessor.getOtherFiles()) {
