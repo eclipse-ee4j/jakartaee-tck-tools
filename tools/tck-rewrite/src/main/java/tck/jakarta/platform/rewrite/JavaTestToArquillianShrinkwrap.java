@@ -2,6 +2,7 @@ package tck.jakarta.platform.rewrite;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 
 import java.time.Duration;
@@ -12,13 +13,6 @@ import java.time.Duration;
  * conversions.
  */
 public class JavaTestToArquillianShrinkwrap extends Recipe {
-
-    /**
-     * Chain this Recipe to the ConvertJavaTestNameRecipe
-     */
-    public JavaTestToArquillianShrinkwrap() {
-        doNext(new ConvertJavaTestNameRecipe());
-    }
 
     @Override
     public String getDisplayName() {
@@ -36,7 +30,7 @@ public class JavaTestToArquillianShrinkwrap extends Recipe {
     }
 
     @Override
-    protected JavaIsoVisitor<ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new AddArquillianDeployMethod<>();
     }
 }

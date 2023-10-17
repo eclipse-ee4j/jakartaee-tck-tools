@@ -2,6 +2,7 @@ package tck.jakarta.platform.rewrite;
 
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
+import org.openrewrite.Cursor;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -10,6 +11,7 @@ import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.List;
@@ -87,23 +89,19 @@ public class AddArquillianDeployMethod<ExecutionContext> extends JavaIsoVisitor<
                 log.finest("Applying template to method code: "+methodCode);
 
                 JavaTemplate deploymentTemplate =
-                        JavaTemplate.builder(this::getCursor, methodCode)
+                        JavaTemplate.builder( methodCode)
                                 .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                                 .imports("org.jboss.arquillian.container.test.api.Deployment",
                                         "org.jboss.shrinkwrap.api.Archive",
                                         "org.jboss.shrinkwrap.api.ShrinkWrap",
                                         "org.jboss.shrinkwrap.api.spec.EnterpriseArchive",
-                                        "org.jboss.shrinkwrap.api.spec.JavaArchive",
-                                        "org.jboss.shrinkwrap.api.spec.WebArchive"
+                                        "org.jboss.shrinkwrap.api.spec.JavaArchive"
                                 )
                                 .build();
 
                 String dotClassRef = classDecl.getType().getClassName()+".class";
-                cd = classDecl.withBody(
-                        classDecl.getBody().withTemplate(
-                                deploymentTemplate,
-                                classDecl.getBody().getCoordinates().firstStatement()
-                        ));
+                cd = classDecl.withBody( deploymentTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
+                        classDecl.getBody().getCoordinates().firstStatement()));
                 maybeAddImport("org.jboss.arquillian.container.test.api.Deployment");
                 maybeAddImport("org.jboss.shrinkwrap.api.Archive");
                 maybeAddImport("org.jboss.shrinkwrap.api.ShrinkWrap");
@@ -112,7 +110,10 @@ public class AddArquillianDeployMethod<ExecutionContext> extends JavaIsoVisitor<
                 maybeAddImport("org.jboss.shrinkwrap.api.spec.WebArchive");
                 log.info("Added @Deployment method to class: "+classDecl.getType().getFullyQualifiedName());
             } catch (RuntimeException e) {
+                StringWriter trace = new StringWriter();
+                e.printStackTrace(new PrintWriter(trace));
                 log.warning("No code generated for package: %s, due to exception: %s".formatted(pkg, e));
+                log.warning(trace.toString());
                 return cd;
             }
             finally {

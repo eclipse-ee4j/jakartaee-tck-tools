@@ -23,7 +23,7 @@ public class ConvertJavaTestNameVisitor<ExecutionContext> extends JavaIsoVisitor
     private final AnnotationMatcher TEST_ANN_MATCH = new AnnotationMatcher("@org.junit.jupiter.api.Test");
 
     private final JavaTemplate testAnnotationTemplate =
-            JavaTemplate.builder(this::getCursor, "@Test")
+            JavaTemplate.builder( "@Test")/*[Rewrite8 migration] contextSensitive() could be unnecessary, please follow the migration guide*/.contextSensitive()
                     .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                     .imports("org.junit.jupiter.api.Test")
                     .build();
@@ -47,7 +47,7 @@ public class ConvertJavaTestNameVisitor<ExecutionContext> extends JavaIsoVisitor
                         String name = ((Javadoc.UnknownBlock) jd).getName();
                         if(name.equals("testName:")) {
                             // Javadoc comment with a @testName tag
-                            method = method.withTemplate(testAnnotationTemplate,
+                            method = testAnnotationTemplate.apply(/*[Rewrite8 migration] getCursor() could be updateCursor() if the J instance is updated, or it should be updated to point to the correct cursor, please follow the migration guide*/getCursor(),
                                     method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                             maybeAddImport("org.junit.jupiter.api.Test");
                             log.fine("Added @Test annotation to: "+method);
@@ -63,7 +63,7 @@ public class ConvertJavaTestNameVisitor<ExecutionContext> extends JavaIsoVisitor
                     // Java comment with a @testName tag
                     String name = text.substring(testNameIndex+9).strip();
                     String[] parts = name.split("[\s\n\t]+");
-                    method = method.withTemplate(testAnnotationTemplate,
+                    method = testAnnotationTemplate.apply(/*[Rewrite8 migration] getCursor() could be updateCursor() if the J instance is updated, or it should be updated to point to the correct cursor, please follow the migration guide*/getCursor(),
                             method.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                     maybeAddImport("org.junit.jupiter.api.Test", null, false);
                     log.fine("Added @Test annotation to: "+method);
