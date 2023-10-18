@@ -1,10 +1,8 @@
 package tck.jakarta.platform.rewrite;
 
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.Result;
+import org.openrewrite.*;
 import org.openrewrite.config.Environment;
+import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 
@@ -49,7 +47,8 @@ public class Main {
                 // put any rewrite recipe jars on this main method's runtime classpath
                 // and either construct the recipe directly or via an Environment
                 Environment environment = Environment.builder().scanRuntimeClasspath().build();
-                Recipe recipe = environment.activateRecipes("tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe");
+                Recipe recipe = environment.activateRecipes("tck.jakarta.platform.rewrite.JavaTestToArquillianShrinkwrap",
+                        "tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe");
 
                 // create a JavaParser instance with your classpath
                 JavaParser javaParser = JavaParser.fromJavaVersion()
@@ -64,10 +63,12 @@ public class Main {
                 ExecutionContext ctx = new InMemoryExecutionContext(Throwable::printStackTrace);
 
                 // parser the source files into LSTs
-                List<J.CompilationUnit> cus = javaParser.parse(sourcePaths, projectDir, ctx);
+                List<SourceFile> cus = javaParser.parse(sourcePaths, projectDir, ctx).collect(Collectors.toList());
+                InMemoryLargeSourceSet sourceSet = new InMemoryLargeSourceSet(cus);
 
                 // collect results
-                List<Result> results = recipe.run(cus, ctx).getResults();
+                RecipeRun run = recipe.run(sourceSet, ctx);
+                List<Result> results = run.getChangeset().getAllResults();
 
                 for (Result result : results) {
                     // print diffs to the console
