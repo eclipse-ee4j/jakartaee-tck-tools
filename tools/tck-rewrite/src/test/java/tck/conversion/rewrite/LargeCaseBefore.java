@@ -1,10 +1,15 @@
-//package com.sun.ts.tests.servlet.api.jakarta_servlet_http.sessioncookieconfig;
+//package com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics;
 package tck.conversion.rewrite;
 
-import java.io.PrintWriter;
+import java.util.Properties;
 
 import com.sun.javatest.Status;
-import com.sun.ts.tests.servlet.common.client.AbstractUrlClient;
+import com.sun.ts.lib.harness.EETest;
+import com.sun.ts.lib.util.TSNamingContext;
+import com.sun.ts.lib.util.TestUtil;
+
+import com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.CallerBean;
+import com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.CallerBeanHome;
 import org.junit.jupiter.api.Disabled;
 
 /**
@@ -13,172 +18,374 @@ import org.junit.jupiter.api.Disabled;
  * and syntax checked. The class name and package are replaced by the testLargeCase method.
  */
 @Disabled
-public class LargeCaseBefore extends AbstractUrlClient {
+public class LargeCaseBefore extends EETest {
 
-    /**
-     * Entry point for different-VM execution. It should delegate to method
-     * run(String[], PrintWriter, PrintWriter), and this method should not contain
-     * any test configuration.
-     */
+    private static final String testName = "EntityBeanTest";
+
+    private static final String beanLookup = "java:comp/env/ejb/Caller";
+
+    private CallerBean bean = null;
+
+    private CallerBeanHome beanHome = null;
+
+    private Properties props = null;
+
+    private TSNamingContext nctx = null;
+
     public static void main(String[] args) {
-        com.sun.ts.tests.servlet.api.jakarta_servlet_http.sessioncookieconfig.URLClient theTests = new com.sun.ts.tests.servlet.api.jakarta_servlet_http.sessioncookieconfig.URLClient();
-        Status s = theTests.run(args, new PrintWriter(System.out),
-                new PrintWriter(System.err));
+        com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.Client theTests = new com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.Client();
+        Status s = theTests.run(args, System.out, System.err);
         s.exit();
     }
 
     /**
-     * Entry point for same-VM execution. In different-VM execution, the main
-     * method delegates to this method.
+     * @class.setup_props: org.omg.CORBA.ORBClass; java.naming.factory.initial;
+     *                     generateSQL;
      */
-    public Status run(String args[], PrintWriter out, PrintWriter err) {
+    public void setup(String[] args, Properties props) throws Fault {
+        try {
+            logMsg("[Client] setup()");
+            this.props = props;
 
-        setContextRoot("/servlet_jsh_sessioncookieconfig_web");
-        setServletName("TestServlet");
+            logTrace("[Client] Getting Naming Context...");
+            nctx = new TSNamingContext();
 
-        return super.run(args, out, err);
+            logTrace("[Client] Looking up " + beanLookup);
+            beanHome = (CallerBeanHome) nctx.lookup(beanLookup, CallerBeanHome.class);
+            logTrace("[Client] Create EJB instance...");
+            bean = (CallerBean) beanHome.create();
+        } catch (Exception e) {
+            throw new Fault("Setup failed:", e);
+        }
     }
 
-    /*
-     * @class.setup_props: webServerHost; webServerPort; ts_home;
-     */
-    /* Run test */
-    /*
-     * @testName: constructortest1
+    /**
+     * @testName: testStatefulRemote
      *
-     * @assertion_ids: Servlet:JAVADOC:693; Servlet:JAVADOC:733;
-     * Servlet:JAVADOC:734; Servlet:JAVADOC:735; Servlet:JAVADOC:736;
-     * Servlet:JAVADOC:737; Servlet:JAVADOC:738; Servlet:JAVADOC:739;
-     * Servlet:JAVADOC:740; Servlet:JAVADOC:741; Servlet:JAVADOC:742;
-     * Servlet:JAVADOC:743; Servlet:JAVADOC:744; Servlet:JAVADOC:745;
-     * Servlet:JAVADOC:746;
+     * @assertion_ids: EJB:SPEC:906
      *
-     * @test_Strategy: Create a Servlet TestServlet, with a
-     * ServletContextListener; In the Servlet, turn HttpSession on; In
-     * ServletContextListener, create a SessionCookieConfig instance, Verify in
-     * Client that the SessionCookieConfig instance is created, and all
-     * SessionCookieConfig APIs work accordingly.
+     * @test_Strategy:
+     *
+     *                 This is applicable to : - a Session Stateful Callee bean
+     *                 defining a remote client view only (No local view). - a
+     *                 Stateless Caller bean, Calling this Callee Bean home or
+     *                 remote interface.
+     *
+     *                 We package in the same ejb-jar: - a Session Stateful Callee
+     *                 bean defining a remote client view only (No local view). -
+     *                 a Stateless Caller bean
+     *
+     *                 Remote Home arg semantics verification:
+     *
+     *                 - We set a non-remote object 'arg' (of type SimpleArgument)
+     *                 to an initial value. This SimpleArgument class is just a
+     *                 data structure holding an int.
+     *
+     *                 - The Caller bean calls the Callee Home create(...) method,
+     *                 passing this 'arg' object as an argument.
+     *
+     *                 - The Callee create(..) method modifies the value of the
+     *                 argument (should be a copy of 'arg')
+     *
+     *                 - When we return from the create method, the Caller check
+     *                 that the argument value is still set to the initial value.
+     *
+     *                 Remote interface arg semantics verif/loication: Same
+     *                 strategy but the Caller call a business method on the
+     *                 Callee remote interface.
      */
-    public void constructortest1() throws Exception {
-        TEST_PROPS.setProperty(REQUEST,
-                "GET /servlet_jsh_sessioncookieconfig_web/TestServlet?testname=constructortest1 HTTP/1.1");
-        TEST_PROPS.setProperty(EXPECTED_HEADERS,
-                "Set-Cookie:" + "TCK_Cookie_Name=" + "##Expires="
-                        + "##Path=/servlet_jsh_sessioncookieconfig_web/TestServlet"
-                        + "##Secure");
-        TEST_PROPS.setProperty(UNEXPECTED_RESPONSE_MATCH, "Test FAILED");
-        invoke();
+    public void testStatefulRemote() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testStatefulRemote(props);
+        } catch (Exception e) {
+            throw new Fault("testStatefulRemote failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.cleanUpBean();
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testStatefulRemote failed");
+        }
+
     }
 
-    /*
-     * @testName: setNameTest
+    /**
+     * @testName: testStatefulLocal
      *
-     * @assertion_ids: Servlet:JAVADOC:744;
+     * @assertion_ids: EJB:SPEC:907.2; EJB:SPEC:1
      *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setName cannot be
-     * called once is set.
+     * @test_Strategy: This is applicable to : - a Session Stateful Callee bean
+     *                 defining a local client view only (No remote view).
+     *
+     *                 - a Stateless Caller bean, Calling this Callee Bean local
+     *                 home or local interface.
+     *
+     *                 We package in the same ejb-jar: - a Session Stateful Callee
+     *                 bean defining a local client view only (No remote view). -
+     *                 a Stateless Caller bean
+     *
+     *                 Local Home arg semantics verification:
+     *
+     *                 - We set a non-remote object 'arg' (of type SimpleArgument)
+     *                 to an initial value. This SimpleArgument class is just a
+     *                 data structure holding an int.
+     *
+     *                 - The Caller bean calls the Callee local home create(...)
+     *                 method, passing this 'arg' object as an argument.
+     *
+     *                 - The Callee create(..) method modifies the value of the
+     *                 argument (should be a reference to original 'arg')
+     *
+     *                 - When we return from the create method, the Caller check
+     *                 that the argument value is not set to the initial value,
+     *                 and reflect the changes made by the Callee.
+     *
+     *                 Local interface arg semantics verification:
+     *
+     *                 Same strategy but the Caller call a business method on the
+     *                 Callee local interface.
      */
-    public void setNameTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setNameTest");
-        invoke();
+    public void testStatefulLocal() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testStatefulLocal(props);
+        } catch (Exception e) {
+            throw new Fault("testStatefulLocal failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.cleanUpBean();
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testStatefulLocal failed");
+        }
+
     }
 
-    /*
-     * @testName: setCommentTest
+    /**
+     * @testName: testStatefulBoth
      *
-     * @assertion_ids: Servlet:JAVADOC:740;
+     * @assertion_ids: EJB:SPEC:906; EJB:SPEC:907; EJB:SPEC:907.2
      *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setComment cannot be
-     * called once is set.
+     *
+     * @test_Strategy: This is applicable to :
+     *
+     *                 - a Session Stateful Callee bean defining a remote AND a
+     *                 local client view.
+     *
+     *                 - a Stateless Caller bean, Calling this Callee Bean home,
+     *                 local home, remote, or local interface.
+     *
+     *                 The test strategy is a cumulated version of the two
+     *                 previous tests ('testStatefulRemote' and
+     *                 'testStatefulLocal') on the Callee bean defining a local
+     *                 and a remote client view.
      */
-    public void setCommentTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setCommentTest");
-        invoke();
+    public void testStatefulBoth() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testStatefulBoth(props);
+        } catch (Exception e) {
+            throw new Fault("testStatefulBoth failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.cleanUpBean();
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testStatefulBoth failed");
+        }
+
     }
 
-    /*
-     * @testName: setPathTest
+    /**
+     * @testName: testCMP20Remote
      *
-     * @assertion_ids: Servlet:JAVADOC:745;
+     * @assertion_ids: EJB:SPEC:906
      *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setPath cannot be
-     * called once is set.
+     * @test_Strategy:
+     *
+     *                 This is applicable to : - a CMP 2.0 Callee bean defining a
+     *                 remote client view only (No local view). - a Stateless
+     *                 Caller bean, Calling this CMP 2.0 Bean home or remote
+     *                 interface.
+     *
+     *                 We package in the same ejb-jar: - a CMP 2.0 Callee bean
+     *                 defining a remote client view only (No local view). - a
+     *                 Stateless Caller bean
+     *
+     *                 Remote Home arg semantics verification:
+     *
+     *                 - We set a non-remote object 'arg' (of type SimpleArgument)
+     *                 to an initial value. This SimpleArgument class is just a
+     *                 data structure holding an int.
+     *
+     *                 - The Caller bean calls the Callee Home create(...) method,
+     *                 passing this 'arg' object as an argument.
+     *
+     *                 - The Callee create(..) method modifies the value of the
+     *                 argument (should be a copy of 'arg')
+     *
+     *                 - When we return from the create method, the Caller check
+     *                 that the argument value is still set to the initial value.
+     *
+     *                 Remote interface arg semantics verification: Same strategy
+     *                 but the Caller call a business method on the Callee remote
+     *                 interface.
      */
-    public void setPathTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setPathTest");
-        invoke();
+    public void testCMP20Remote() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testCMP20Remote(props);
+        } catch (Exception e) {
+            throw new Fault("testCMP20Remote failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testCMP20Remote failed");
+        }
+
     }
 
-    /*
-     * @testName: setDomainTest
+    /**
+     * @testName: testCMP20Local
      *
-     * @assertion_ids: Servlet:JAVADOC:741;
+     * @assertion_ids: EJB:SPEC:1; EJB:SPEC:907.2
      *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setDomain cannot be
-     * called once is set.
+     * @test_Strategy:
+     *
+     *                 This is applicable to : - a CMP 2.0 Callee bean defining a
+     *                 local client view only (No remote view).
+     *
+     *                 - a Stateless Caller bean, Calling this CMP 2.0 Bean local
+     *                 home or local interface.
+     *
+     *                 We package in the same ejb-jar:
+     *
+     *                 - a CMP 2.0 Callee bean defining a local client view only
+     *                 (No remote view).
+     *
+     *                 - a Stateless Caller bean
+     *
+     *                 Local Home arg semantics verification:
+     *
+     *                 - We set a non-remote object 'arg' (of type SimpleArgument)
+     *                 to an initial value. This SimpleArgument class is just a
+     *                 data structure holding an int.
+     *
+     *                 - The Caller bean calls the Callee local home create(...)
+     *                 method, passing this 'arg' object as an argument.
+     *
+     *                 - The Callee create(..) method modifies the value of the
+     *                 argument (should be a reference to original 'arg')
+     *
+     *                 - When we return from the create method, the Caller check
+     *                 that the argument value is not set to the initial value,
+     *                 and reflect the changes made by the Callee.
+     *
+     *                 Local interface arg semantics verification:
+     *
+     *                 Same strategy but the Caller call a business method on the
+     *                 Callee local interface.
      */
-    public void setDomainTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setDomainTest");
-        invoke();
+    public void testCMP20Local() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testCMP20Local(props);
+        } catch (Exception e) {
+            throw new Fault("testCMP20Local failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testCMP20Local failed");
+        }
+
     }
 
-    /*
-     * @testName: setMaxAgeTest
+    /**
+     * @testName: testCMP20Both
      *
-     * @assertion_ids: Servlet:JAVADOC:743;
+     * @assertion_ids: EJB:SPEC:907; EJB:SPEC:907.1
      *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setMaxAge cannot be
-     * called once is set.
+     * @test_Strategy:
+     *
+     *                 This is applicable to :
+     *
+     *                 - a CMP 2.0 Callee bean defining a remote AND a local
+     *                 client view.
+     *
+     *                 - a Stateless Caller bean, Calling the CMP 2.0 Bean home,
+     *                 local home, remote, or local interface.
+     *
+     *                 The test strategy is a cumulated version of the two
+     *                 previous tests ('testCMP20Remote' and 'testCMP20Local') on
+     *                 the Callee bean defining a local and a remote client view.
      */
-    public void setMaxAgeTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setMaxAgeTest");
-        invoke();
+    public void testCMP20Both() throws Fault {
+        boolean pass;
+
+        try {
+            pass = bean.testCMP20Both(props);
+        } catch (Exception e) {
+            throw new Fault("testCMP20Both failed", e);
+        } finally {
+            if (null != bean) {
+                try {
+                    bean.remove();
+                } catch (Exception e) {
+                    TestUtil.logErr("[Client] Ignoring Exception on " + "bean remove", e);
+                }
+            }
+        }
+
+        if (!pass) {
+            throw new Fault("testCMP20Both failed");
+        }
+
     }
 
-    /*
-     * @testName: setHttpOnlyTest
-     *
-     * @assertion_ids: Servlet:JAVADOC:742;
-     *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setHttpOnly cannot be
-     * called once is set.
-     */
-    public void setHttpOnlyTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setHttpOnlyTest");
-        invoke();
-    }
-
-    /*
-     * @testName: setSecureTest
-     *
-     * @assertion_ids: Servlet:JAVADOC:746;
-     *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setSecure cannot be
-     * called once is set.
-     */
-    public void setSecureTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setSecureTest");
-        invoke();
-    }
-
-    /*
-     * @testName: setAttributeTest
-     *
-     * @assertion_ids:
-     *
-     * @test_Strategy: Create a Servlet TestServlet, In the Servlet, turn
-     * HttpSession on; Verify in servlet SessionCookieConfig.setAttribute cannot be
-     * called once is set.
-     */
-    public void setAttributeTest() throws Exception {
-        TEST_PROPS.setProperty(APITEST, "setAttributeTest");
-        invoke();
+    public void cleanup() throws Fault {
+        logMsg("[Client] cleanup()");
     }
 }

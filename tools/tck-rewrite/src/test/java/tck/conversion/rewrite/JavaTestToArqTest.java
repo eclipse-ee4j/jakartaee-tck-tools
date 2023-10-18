@@ -1,9 +1,12 @@
 package tck.conversion.rewrite;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Recipe;
+import org.openrewrite.config.CompositeRecipe;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe;
 import tck.jakarta.platform.rewrite.JavaTestToArquillianShrinkwrap;
 
 import java.io.IOException;
@@ -21,78 +24,15 @@ import static org.openrewrite.java.Assertions.java;
 class JavaTestToArqTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
+        Recipe[] toRun = {new JavaTestToArquillianShrinkwrap(), new ConvertJavaTestNameRecipe()};
+        CompositeRecipe testRecipes = new CompositeRecipe(Arrays.asList(toRun));
+
         spec
-                .recipe(new JavaTestToArquillianShrinkwrap())
+                .recipe(testRecipes)
                 .parser(JavaParser.fromJavaVersion()
                         .classpath(JavaParser.runtimeClasspath())
                 )
         ;
-    }
-
-    /**
-     * Test of a war deployment from the com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes
-     * pkg.
-     */
-    @Test
-    void addDeploymentMethod() {
-        rewriteRun(
-                java(
-                        """
-                                    package com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes;
-                                    
-                                    import com.sun.ts.tests.servlet.common.client.AbstractUrlClient;
-                                    
-                                    public class SomeTestClass extends AbstractUrlClient {
-                                  
-                                        /**
-                                        @testName: someTestMethod
-                                        */
-                                        public void someTestMethod() {
-                                        }
-                                    }
-                                """,
-                        """
-                                    package com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes;
-                                    
-                                    import com.sun.ts.tests.servlet.common.client.AbstractUrlClient;
-                                    import org.jboss.arquillian.container.test.api.Deployment;
-                                    import org.jboss.shrinkwrap.api.ShrinkWrap;
-                                    import org.jboss.shrinkwrap.api.spec.JavaArchive;
-                                    import org.jboss.shrinkwrap.api.spec.WebArchive;
-                                    import org.junit.jupiter.api.Test;
-                                    
-                                    public class SomeTestClass extends AbstractUrlClient {
-                                    
-                                        @Deployment(testable = false)
-                                        public static WebArchive getTestArchive() throws Exception {
-
-                                            WebArchive servlet_sci_setsessiontrackingmode_web_war = ShrinkWrap.create(WebArchive.class, "servlet_sci_setsessiontrackingmode_web_war");
-                                            servlet_sci_setsessiontrackingmode_web_war.addAsWebInfResource("web.xml");
-                                    
-                                            JavaArchive initilizer_jar = ShrinkWrap.create(JavaArchive.class, "initilizer.jar");
-                                            initilizer_jar.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer.class);
-                                            initilizer_jar.addAsManifestResource("META-INF/MANIFEST.MF");
-                                            initilizer_jar.addAsManifestResource("META-INF/services/jakarta.servlet.ServletContainerInitializer");
-                                            servlet_sci_setsessiontrackingmode_web_war.addAsLibrary(initilizer_jar);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.util.Data.class);
-                                            servlet_sci_setsessiontrackingmode_web_war.addClass(com.sun.ts.tests.servlet.common.util.ServletTestUtil.class);
-                                            return servlet_sci_setsessiontrackingmode_web_war;
-                                        }
-                                  
-                                        /**
-                                        @testName: someTestMethod
-                                        */
-                                        @Test
-                                        public void someTestMethod() {
-                                        }
-                                    }
-                                """
-                )
-        );
     }
 
     @Test
@@ -103,7 +43,7 @@ class JavaTestToArqTest implements RewriteTest {
     }
 
     /**
-     * A test from the com.sun.ts.tests.servlet.api.jakarta_servlet_http.sessioncookieconfig pkg that has several
+     * A test from the com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics pkg that has several
      * methods. The before and after source are read in from the LargeCaseBefore.java/LargeCaseAfter.java files
      *
      * @throws IOException
@@ -112,7 +52,7 @@ class JavaTestToArqTest implements RewriteTest {
     @Test
     public void testLargeCase() throws IOException {
         String className = "LargeCase";
-        String pkg = "com.sun.ts.tests.servlet.api.jakarta_servlet_http.sessioncookieconfig";
+        String pkg = "com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics";
         runTestFromSource(className, pkg);
     }
 
