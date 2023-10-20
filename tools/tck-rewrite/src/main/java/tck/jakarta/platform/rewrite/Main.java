@@ -6,6 +6,7 @@ import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,7 +76,13 @@ public class Main {
                     // System.out.println(result.diff(projectDir));
 
                     // or overwrite the file on disk with changes.
-                    Files.writeString(result.getAfter().getSourcePath(),
+                    Path resultPath = result.getAfter().getSourcePath();
+                    // if resultPath is a related path, change to absolute path
+                    if (resultPath.getParent() == null || !resultPath.toString().startsWith(File.separator)) {
+                        resultPath = Path.of(projectDir.toString(),resultPath.toString());
+
+                    }
+                    Files.writeString(resultPath,
                             result.getAfter().printAll());
                 }
             }
