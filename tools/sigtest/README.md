@@ -1,5 +1,15 @@
 # SigTest
 
+**_NOTE:_**  This is a fork of the https://github.com/jtulach/netbeans-apitest project to allow for
+updates as needed by the Jakarta projects. The GAV for this fork has changed to:
+```xml
+<dependency>
+    <groupId>org.jboss.tools</groupId>
+    <artifactId>sigtest-maven-plugin</artifactId>
+    <version>2.1-SNAPSHOT</version>
+</dependency>
+```
+
 *SigTest* is the tool for checking incompatibilities between different versions of the same API. 
 It is possible to use it as a Maven plugin or an Ant task to check for binary backward 
 compatibility and mutual signature compatibility. The tool is known to work with JDK8 and JDK11 and
@@ -21,9 +31,9 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 
 ```xml
 <plugin>
-  <groupId>org.netbeans.tools</groupId>
+  <groupId>org.jboss.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.5</version>
+  <version>2.0</version>
   <executions>
     <execution>
       <goals>
@@ -55,7 +65,7 @@ Try the following:
 
 ```xml
 <plugin>
-  <groupId>org.netbeans.tools</groupId>
+  <groupId>org.jboss.tools</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
   <version>1.5</version>
   <executions>
