@@ -26,7 +26,7 @@ public final class Release {
      * @return found version or null
      */
     public static Release find(int version) {
-        if (version > 15) {
+        if (version > 21) {
             return null;
         }
         char ch = (char) (version < 10 ? '0' + version : 'A' + (version - 10));

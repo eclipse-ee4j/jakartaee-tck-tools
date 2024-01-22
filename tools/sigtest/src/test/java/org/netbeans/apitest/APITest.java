@@ -33,6 +33,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.sun.tdk.signaturetest.SigTest;
 import junit.framework.Test;
 import static org.junit.Assert.assertNotEquals;
 import org.netbeans.junit.NbTestCase;
@@ -694,12 +696,13 @@ public class APITest extends NbTestCase {
         createFile(2, "W.java", retAppendable);
 
         File report = new File(getWorkDir(), "report.xml");
+        System.out.println(report.getAbsolutePath());
         report.delete();
 
         compareAPIs(1, 2,
             "generate",
             "-Dcheck.package=ahoj.*",
-            "-Dcheck.report=" + report,
+            "-Dcheck.report=" + report.getAbsolutePath(),
             "-Dfail.on.error=false"
         );
 
@@ -928,6 +931,7 @@ public class APITest extends NbTestCase {
         File d1 = new File(getWorkDir(), "dir" + slot);
         File c1 = new File(d1, name);
         copy(content, c1);
+        System.out.printf("createFile(%d, %s): %s\n", slot, name, c1.getAbsolutePath());
     }
 
     protected void compareAPIs(int slotFirst, int slotSecond, String... additionalArgs) throws Exception {
@@ -936,11 +940,12 @@ public class APITest extends NbTestCase {
 
         File build = new File(getWorkDir(), buildScript());
         extractResource(buildScript(), build);
+        System.out.printf("d1=%s, d2=%s, build=%s\n", d1.getAbsolutePath(), d2.getAbsolutePath(), build.getAbsolutePath());
 
         List<String> args = new ArrayList<String>();
         args.addAll(Arrays.asList(additionalArgs));
-        args.add("-Ddir1=" + d1);
-        args.add("-Ddir2=" + d2);
+        args.add("-Ddir1=" + d1.getAbsolutePath());
+        args.add("-Ddir2=" + d2.getAbsolutePath());
         args.add("-Dcheck.release=" + checkRelease());
         args.add("-Dgenerate.release=" + generateRelease());
         ExecuteUtils.execute(build, args.toArray(new String[0]));

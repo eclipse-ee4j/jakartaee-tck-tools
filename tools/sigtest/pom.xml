@@ -1,21 +1,27 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>3</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>41</version>
     </parent>
-    <groupId>org.netbeans.tools</groupId>
+    <groupId>org.jboss.tools</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
     <version>2.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>http://wiki.netbeans.org/APITest</url>
+    <description>
+        Signature test to compare APIs of two versions of JARs
+        of the same library.
+    </description>
+
     <scm>
-        <connection>scm:git:https://github.com/jtulach/netbeans-apitest/</connection>
-        <developerConnection>scm:git:https://github.com/jtulach/netbeans-apitest/</developerConnection>
-        <url>https://github.com/jtulach/netbeans-apitest/</url>
+        <connection>scm:git:https://github.com/jakartaredhat/netbeans-apitest/</connection>
+        <developerConnection>scm:git:https://github.com/jakartaredhat/netbeans-apitest/</developerConnection>
+        <url>https://github.com/jakartaredhat/netbeans-apitest/</url>
         <tag>master</tag>
     </scm>
     <properties>
@@ -32,13 +38,15 @@
                     <dependency>
                         <groupId>org.frgaal</groupId>
                         <artifactId>compiler-maven-plugin</artifactId>
-                        <version>15.0.0</version>
+                        <version>21.0.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <compilerId>frgaal</compilerId>
-                    <source>15</source>
+                    <source>17</source>
                     <target>1.8</target>
+                    <testSource>15</testSource>
+                    <testTarget>15</testTarget>
                     <compilerArgs>
                         <arg>-Xlint:deprecation</arg>
                     </compilerArgs>
@@ -47,7 +55,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>unpack</id>
@@ -58,7 +66,7 @@
                         <configuration>
                             <includeGroupIds>org.netbeans.tools</includeGroupIds>
                             <includes>**/*</includes>
-                            <exclude>META-INF/**</exclude>
+                            <excludes>META-INF/**</excludes>
                             <outputDirectory>${project.build.directory}/classes/META-INF/sigtest/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -69,9 +77,20 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.10</version>
-                <configuration>
-                </configuration>
+                <version>3.2.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.2.5</version>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report-only</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -98,16 +117,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
                     <subpackages>org.netbeans.apitest</subpackages>
                 </configuration>
-                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.11.0</version>
                 <configuration>
                     <extractors>
                         <extractor>java-annotations</extractor>
@@ -130,48 +149,38 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <mavenExecutorId>forked-path</mavenExecutorId>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <arguments>-Pjvnet-release -Pgpg</arguments>
-                    <tag>release-${releaseVersion}</tag>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.0.5</version>
+            <version>3.9.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.0</version>
+            <version>3.11.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.0.5</version>
+            <version>3.9.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.10.5</version>
+            <version>1.10.14</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-nbjunit</artifactId>
-            <version>RELEASE123</version>
+            <version>RELEASE200</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -184,7 +193,7 @@
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant-junit</artifactId>
-            <version>1.10.5</version>
+            <version>1.10.14</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -196,19 +205,19 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
-            <version>3.0.5</version>
+            <version>3.9.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.frgaal</groupId>
             <artifactId>compiler</artifactId>
-            <version>15.0.0</version>
+            <version>21.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -220,8 +229,70 @@
             <type>jar</type>
         </dependency>
     </dependencies>
-    <description>
-        Signature test to compare APIs of two versions of JARs
-        of the same library.
-    </description>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <pushChanges>false</pushChanges>
+                            <localCheckout>true</localCheckout>
+                            <preparationGoals>clean install</preparationGoals>
+                            <releaseProfiles>gpg-sign,jboss-release</releaseProfiles>
+                            <tagNameFormat>@{project.version}</tagNameFormat>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet>
+                            <docletArtifact>
+                                <groupId>nl.talsmasoftware</groupId>
+                                <artifactId>umldoclet</artifactId>
+                                <version>2.0.18</version>
+                            </docletArtifact>
+                            <useStandardDocletOptions>true</useStandardDocletOptions>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <breakiterator>true</breakiterator>
+                            <version>true</version>
+                            <author>true</author>
+                            <keywords>true</keywords>
+                            <additionalOptions>
+                                <additionalOption>-sourceclasspath ${project.build.outputDirectory}</additionalOption>
+                            </additionalOptions>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <distributionManagement>
+                <repository>
+                    <id>${jboss.releases.repo.id}</id>
+                    <name>JBoss Releases Repository</name>
+                    <url>${jboss.releases.repo.url}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>${jboss.snapshots.repo.id}</id>
+                    <name>JBoss Snapshots Repository</name>
+                    <url>${jboss.snapshots.repo.url}</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
 </project>
