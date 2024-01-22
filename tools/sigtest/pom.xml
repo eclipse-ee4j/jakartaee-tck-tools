@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.jboss.tools</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.0</version>
+    <version>2.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>http://wiki.netbeans.org/APITest</url>
@@ -21,7 +21,7 @@
         <connection>scm:git:https://github.com/jakartaredhat/netbeans-apitest/</connection>
         <developerConnection>scm:git:https://github.com/jakartaredhat/netbeans-apitest/</developerConnection>
         <url>https://github.com/jakartaredhat/netbeans-apitest/</url>
-        <tag>2.0</tag>
+        <tag>master</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
