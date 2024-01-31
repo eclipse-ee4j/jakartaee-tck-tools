@@ -89,5 +89,8 @@ api-check      : This is the apiCheck tool created by the JCK tools group.  This
                  http://javaweb.eng/jck/eng/process/apiCheck.html.  The version
                  controlled here is part of the JCTT tools release version 3.1.
 
- tck-rewrite    : An OpenRewrite set of rules that support transforming the legacy JavaTest
+tck-rewrite    : An OpenRewrite set of rules that support transforming the legacy JavaTest
                   based test to Junit 5/Arquillian based tests.
+
+sigtest         : This is a fork of the netbeans-apitest repo from https://github.com/jakartaredhat/netbeans-apitest.
+
