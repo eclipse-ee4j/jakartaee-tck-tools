@@ -7,7 +7,7 @@
         <version>1.0.9</version>
     </parent>
 
-    <groupId>jakarta.tck.tools</groupId>
+    <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
     <version>2.0</version>
     <packaging>maven-plugin</packaging>
