@@ -4,7 +4,7 @@
 updates as needed by the Jakarta projects. The GAV for this fork has changed to:
 ```xml
 <dependency>
-    <groupId>jakarta.tck.tools</groupId>
+    <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
     <version>2.0</version>
 </dependency>
