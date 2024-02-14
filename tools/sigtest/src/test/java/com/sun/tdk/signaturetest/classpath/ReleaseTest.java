@@ -95,7 +95,8 @@ public class ReleaseTest {
     @Test
     public void testFindJDK17() throws ClassNotFoundException {
         Release jdk17 = Release.find(17);
-        assertNotNull(jdk17.findClass("java.lang.Object"));
+        assertNotNull("could not find the java 17 release",jdk17);
+        assertNotNull("could not find the java.lang.Object class",jdk17.findClass("java.lang.Object"));
         assertNotNull(jdk17.findClass("java.lang.Module"));
         assertNotNull(jdk17.findClass("java.lang.Record"));
         BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk17, null), 4096);
