@@ -27,26 +27,40 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ct.sym>${java.home}/lib/ct.sym</ct.sym>
+
+        <maven.compiler.release>11</maven.compiler.release>
+        <!-- Require a Java 17 for testing and compiling -->
+        <maven.compiler.testRelease>17</maven.compiler.testRelease>
+        <jdk.min.version>${maven.compiler.testRelease}</jdk.min.version>
     </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <message>To build this project JDK ${jdk.min.version} (or greater) is required.</message>
+                                    <version>${jdk.min.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.frgaal</groupId>
-                        <artifactId>compiler-maven-plugin</artifactId>
-                        <version>21.0.0</version>
-                    </dependency>
-                </dependencies>
+                <version>3.12.1</version>
                 <configuration>
-                    <compilerId>frgaal</compilerId>
-                    <source>17</source>
-                    <target>1.8</target>
-                    <testSource>15</testSource>
-                    <testTarget>15</testTarget>
                     <compilerArgs>
                         <arg>-Xlint:deprecation</arg>
                     </compilerArgs>
@@ -213,12 +227,6 @@
             <artifactId>maven-compat</artifactId>
             <version>3.9.6</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.frgaal</groupId>
-            <artifactId>compiler</artifactId>
-            <version>21.0.0</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.netbeans.tools</groupId>
