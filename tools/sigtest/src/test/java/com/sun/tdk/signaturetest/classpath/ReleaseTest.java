@@ -92,6 +92,17 @@ public class ReleaseTest {
         assertMethods(deprecatedClass, "forRemoval", "since");
     }
 
+    @Test
+    public void testFindJDK17() throws ClassNotFoundException {
+        Release jdk17 = Release.find(17);
+        assertNotNull(jdk17.findClass("java.lang.Object"));
+        assertNotNull(jdk17.findClass("java.lang.Module"));
+        assertNotNull(jdk17.findClass("java.lang.Record"));
+        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk17, null), 4096);
+        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
+        assertMethods(deprecatedClass, "forRemoval", "since");
+    }
+
     private void assertMethods(ClassDescription deprecatedClass, String... names) {
         MethodDescr[] arr = deprecatedClass.getDeclaredMethods();
         assertEquals("Same number of methods: " + Arrays.toString(arr), names.length, arr.length);
