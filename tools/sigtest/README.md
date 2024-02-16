@@ -6,16 +6,14 @@ updates as needed by the Jakarta projects. The GAV for this fork has changed to:
 <dependency>
     <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
 </dependency>
 ```
 
 *SigTest* is the tool for checking incompatibilities between different versions of the same API. 
 It is possible to use it as a Maven plugin or an Ant task to check for binary backward 
-compatibility and mutual signature compatibility. The tool is known to work with JDK8 and JDK11 and
-is used by many projects including [Graal](https://github.com/oracle/graal/commit/6ca3d0458d108ba183997f09fa51596fbe503893#diff-6229fdf88aa48f7dda4de6126283c913),
-[Hibernate](https://github.com/hibernate/hibernate-validator/pull/831/files) and 
-Apache [NetBeans](https://github.com/apache/incubator-netbeans/pull/670).
+compatibility and mutual signature compatibility. The tool is known to work with JDK8 and JDK11 and is used by many projects including [Graal](https://github.com/oracle/graal/commit/6ca3d0458d108ba183997f09fa51596fbe503893#diff-6229fdf88aa48f7dda4de6126283c913),
+[Hibernate](https://github.com/hibernate/hibernate-validator/pull/831/files), Apache [NetBeans](https://github.com/apache/incubator-netbeans/pull/670), and [Jakarta EE](https://jakarta.ee).
 
 [![Travis Status](https://travis-ci.org/jtulach/netbeans-apitest.svg?branch=master)](https://travis-ci.org/jtulach/netbeans-apitest)
 
@@ -31,9 +29,9 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 
 ```xml
 <plugin>
-  <groupId>org.jboss.tools</groupId>
+  <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>2.0</version>
+  <version>2.1</version>
   <executions>
     <execution>
       <goals>
@@ -42,7 +40,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
     </execution>
   </executions>
   <configuration>
-    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
+    <release>8</release> <!-- specify version of JDK API to use 8,11,...21 -->
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
   </configuration>
 </plugin>
@@ -65,9 +63,9 @@ Try the following:
 
 ```xml
 <plugin>
-  <groupId>org.jboss.tools</groupId>
+  <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>1.5</version>
+  <version>2.1</version>
   <executions>
     <execution>
       <goals>
@@ -185,6 +183,6 @@ including support for JDK11, etc. now continues at following GitHub
 # License
 
 You can use the *SigTest* tool to generate and verify signatures for projects released under any license. 
-The sources of the tool are available in its own [github repository](https://github.com/jtulach/netbeans-apitest) 
+The sources of the tool are available in its own [github repository](https://github.com/eclipse-ee4j/jakartaee-tck-tools/tree/master/tools/sigtest) 
 and are provided under GPL version 2. Contribute to the development of *SigTest* by forking
 the repository and creating pull requests.
