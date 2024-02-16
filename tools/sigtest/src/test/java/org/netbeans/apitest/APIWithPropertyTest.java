@@ -64,7 +64,7 @@ public class APIWithPropertyTest extends APITest {
         args.addAll(Arrays.asList(additionalArgs));
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d2);
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
    
     @Override

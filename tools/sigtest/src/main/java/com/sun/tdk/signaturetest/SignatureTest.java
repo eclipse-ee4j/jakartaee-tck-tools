@@ -345,6 +345,7 @@ public class SignatureTest extends SigTest {
         }
 
         args = exclude.parseParameters(args);
+        logger.info("SignatureTest.args: "+Arrays.asList(args));
 
 
         final String optionsDecoder = "decodeOptions";

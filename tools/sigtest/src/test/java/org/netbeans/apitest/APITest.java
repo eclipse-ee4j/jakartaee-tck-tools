@@ -940,7 +940,7 @@ public class APITest extends NbTestCase {
 
         File build = new File(getWorkDir(), buildScript());
         extractResource(buildScript(), build);
-        System.out.printf("d1=%s, d2=%s, build=%s\n", d1.getAbsolutePath(), d2.getAbsolutePath(), build.getAbsolutePath());
+        getLog().printf("d1=%s, d2=%s, build=%s\n", d1.getAbsolutePath(), d2.getAbsolutePath(), build.getAbsolutePath());
 
         List<String> args = new ArrayList<String>();
         args.addAll(Arrays.asList(additionalArgs));
@@ -948,7 +948,7 @@ public class APITest extends NbTestCase {
         args.add("-Ddir2=" + d2.getAbsolutePath());
         args.add("-Dcheck.release=" + checkRelease());
         args.add("-Dgenerate.release=" + generateRelease());
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
 
     protected String checkRelease() {

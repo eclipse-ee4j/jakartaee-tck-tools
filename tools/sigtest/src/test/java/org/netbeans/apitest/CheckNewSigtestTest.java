@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -153,6 +154,29 @@ public class CheckNewSigtestTest extends NbTestCase {
         
         try {
             compareAPIs(1, 2, "-Dcheck.package=ahoj.*");
+            fail("Missing field has to be detected");
+        } catch (ExecuteUtils.ExecutionError ex) {
+            // ok
+        }
+    }
+
+    public void testMissingStaticFieldSubpackageDetected() throws Exception {
+        String c1 =
+                "package ahoj.subpackage;" +
+                        "public abstract class I {" +
+                        "  public static final int F = 1;" +
+                        "}";
+        createFile(1, "I.java", c1);
+
+
+        String c2 =
+                "package ahoj.subpackage;" +
+                        "public abstract class I {" +
+                        "}";
+        createFile(2, "I.java", c2);
+
+        try {
+            compareAPIs(1, 2, "-Dcheck.package=ahoj.**");
             fail("Missing field has to be detected");
         } catch (ExecuteUtils.ExecutionError ex) {
             // ok
@@ -283,7 +307,7 @@ public class CheckNewSigtestTest extends NbTestCase {
         args.add("compare");
         args.add("-Ddir1=" + d1);
         args.add("-Dsig=" + sigFile);
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
     public void testEnums() throws Exception {
         String c1 =
@@ -509,7 +533,8 @@ public class CheckNewSigtestTest extends NbTestCase {
         args.addAll(Arrays.asList(additionalArgs));
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d2);
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
+        getLog().write(ExecuteUtils.getStdOut().getBytes(StandardCharsets.UTF_8));
     }
 
     protected void checkAPIsEqual(String... additionalArgs) throws Exception {
@@ -523,7 +548,7 @@ public class CheckNewSigtestTest extends NbTestCase {
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d1);
         args.add("-Dcheck.type=check");
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
     
     private static final void copy(String txt, File f) throws Exception {

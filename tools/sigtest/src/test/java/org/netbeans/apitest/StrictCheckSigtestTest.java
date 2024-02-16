@@ -59,7 +59,7 @@ public class StrictCheckSigtestTest extends CheckNewSigtestTest {
         args.add("-Ddir1=" + d1);
         args.add("-Ddir2=" + d1);
         args.add("-Dcheck.type=strictcheck");
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
    
 }

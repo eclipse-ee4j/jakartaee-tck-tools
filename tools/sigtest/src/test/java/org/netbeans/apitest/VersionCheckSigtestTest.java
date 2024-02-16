@@ -67,6 +67,7 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
         if (
             getName().equals("testMissingFieldInAbstractClassIsDetected") ||
             getName().equals("testMissingStaticFieldDetected") ||
+            getName().equals("testMissingStaticFieldSubpackageDetected") ||
             getName().equals("testMissingConstructorInAbstractClassIsDetected") ||
             getName().equals("testConvertingNonFinalClassToAbstract") ||
             getName().equals("testAddInterfaceMethod")
@@ -78,7 +79,7 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
         }
         args.add("-Dcheck.type=versioncheck");
         
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
     
     @Override
@@ -96,7 +97,7 @@ public class VersionCheckSigtestTest extends CheckNewSigtestTest {
         args.add("-Ddir2=" + d1);
         args.add("-Dv2=1.0");
         args.add("-Dcheck.type=versioncheck");
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
    
 }

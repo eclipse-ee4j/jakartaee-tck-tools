@@ -109,7 +109,7 @@ public class GenerateJUnitReportTest extends NbTestCase {
         args.addAll(Arrays.asList(additionalArgs));
         args.add("generate");
         args.add("-Ddir1=" + d1);
-        ExecuteUtils.execute(build, args.toArray(new String[0]));
+        ExecuteUtils.execute(getLog(), build, args.toArray(new String[0]));
     }
 
     final File extractResource(String res, File f) throws Exception {
