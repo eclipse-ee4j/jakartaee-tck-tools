@@ -163,8 +163,11 @@ public class TigerRefgClassDescrLoader implements ClassDescriptionLoader, Loadin
                         fld.setAccessible(true);
                         Object v = fld.get(null);
                         fid.setConstantValue(MemberDescription.valueToString(v));
-                    }
-                    catch (Throwable e) {
+                    } catch (UnsupportedClassVersionError e) {
+                        System.err.printf("Constant value for field %s in type %s cannot be resolved.%n",
+                                fld, fqname);
+                        e.printStackTrace(System.err);
+                    } catch (Throwable e) {
                         // catch error or exception that may be thrown during static class initialization
                         if (debug) {
                             System.err.println("Error during reading field value " + fld.toString());
