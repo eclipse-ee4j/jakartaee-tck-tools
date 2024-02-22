@@ -6,7 +6,7 @@ updates as needed by the Jakarta projects. The GAV for this fork has changed to:
 <dependency>
     <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.1</version>
+    <version>2.2</version>
 </dependency>
 ```
 
@@ -31,7 +31,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 <plugin>
   <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>2.1</version>
+  <version>2.2</version>
   <executions>
     <execution>
       <goals>
@@ -65,7 +65,7 @@ Try the following:
 <plugin>
   <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>2.1</version>
+  <version>2.2</version>
   <executions>
     <execution>
       <goals>
