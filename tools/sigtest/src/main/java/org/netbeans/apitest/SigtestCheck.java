@@ -98,16 +98,13 @@ public final class SigtestCheck extends AbstractMojo {
     private File report;
     @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
-    /**
-     * ignore JDK classes entries
-     */
-    @Parameter
-    private String[] ignoreJDKClasses;
+    @Parameter(defaultValue = "false", property = "IgnoreJDKClass.")
+    private boolean ignoreJDKClass;
 
     public SigtestCheck() {
     }
 
-    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError) {
+    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError, boolean ignoreJDKClass) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
@@ -115,6 +112,7 @@ public final class SigtestCheck extends AbstractMojo {
         this.packages = packages;
         this.report = report;
         this.failOnError = failOnError;
+        this.ignoreJDKClass = ignoreJDKClass;
     }
 
 
@@ -192,8 +190,8 @@ public final class SigtestCheck extends AbstractMojo {
             }
 
             @Override
-            protected String[] getIgnoreJDKClassEntries() {
-                return ignoreJDKClasses;
+            protected boolean isJDKExcludeEnabled() {
+                return ignoreJDKClass;
             }
         };
         try {

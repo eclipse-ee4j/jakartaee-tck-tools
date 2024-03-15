@@ -9,7 +9,7 @@
 
     <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.2</version>
+    <version>2.3-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools/wiki</url>
@@ -216,10 +216,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-engine</artifactId>
+	    <version>5.10.2</version>
+	    <scope>test</scope>
+        </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -285,6 +291,21 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>jakarta.tck</groupId>
+                        <artifactId>sigtest-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <release>17</release> <!-- specify version of JDK API to use -->
+                            <packages>com.sun.tdk.signaturetest.classpath</packages>
+                        </configuration>
+                        </plugin>
                 </plugins>
             </build>
 

@@ -148,14 +148,15 @@ with the action option set to `strictcheck` the plugin will detect any API chang
 ## Relax verification of JDK signatures
 
 There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
-The `-IgnoreJDKClass` option can be used to specify a set of JDK classes that can benefit from relaxed signature verification rules when it comes to dealing with JDK 
+The `-IgnoreJDKClass` option can be used to ignore JDK java/javax.transaction.xa classes during signature verification checking when it comes to dealing with JDK 
 specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
-due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass java.lang.Deprecated` enabled, verification of the @Deprecated will only check that the tested class member has the 
+due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass specified, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 
 
+Note that previous releases allowed a list JDK classes to ignore to be specified after the -IgnoreJDKClass option but that is no longer allowed.
+
 ### Specify JDK classes to ignore in Maven plugin
-To configure the JDK classes to pass to the sigtest engine with a `-IgnoreJDKClass` option, use the ignoreJDKClasses
-configuration element and provide the classes to ignore using the include element as shown here:
+Specify the `-IgnoreJDKClass` option as shown below:
 
 ```xml
   <configuration>
@@ -163,10 +164,7 @@ configuration element and provide the classes to ignore using the include elemen
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
-    <ignoreJDKClasses>
-      <include>java.lang.Deprecated</include>
-      <include>java.lang.Object</include>
-    </ignoreJDKClasses>
+    <ignoreJDKClasses/>
   </configuration>
 ```
 
@@ -177,8 +175,8 @@ but has been adopted to suite the needs of a [NetBeans project](http://wiki.netb
 Since then it evolved into [general purpose tool](http://wiki.netbeans.org/SigTest). When NetBeans become
 Apache project, Emilian Bold converted the [original Hg repository](http://hg.netbeans.org/apitest/) to
 [Git repository](https://github.com/emilianbold/netbeans-apitest) to preserve the history. The development,
-including support for JDK11, etc. now continues at following GitHub
-[repository](https://github.com/jtulach/netbeans-apitest/).
+including support for JDK11, etc. then moved to [repository](https://github.com/jtulach/netbeans-apitest/).
+This tool has been forked (yet again) now to the [github repository](https://github.com/eclipse-ee4j/jakartaee-tck-tools/tree/master/tools/sigtest)
 
 # License
 

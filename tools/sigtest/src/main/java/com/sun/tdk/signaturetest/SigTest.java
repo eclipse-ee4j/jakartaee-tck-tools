@@ -40,6 +40,7 @@ import com.sun.tdk.signaturetest.sigfile.Format;
 import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
+import com.sun.tdk.signaturetest.util.OptionInfo;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -103,7 +104,7 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String TESTURL_OPTION = "-TestURL";
     public static final String PLUGIN_OPTION = "-Plugin";
     public static final String ERRORALL_OPTION = "-ErrorAll";
-
+    public static final String EXCLUDE_JDK_CLASS_OPTION = "-IgnoreJDKClass";
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(SigTest.class);
 
@@ -284,6 +285,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             excludedPackages.addPackages(CommandLineParser.parseListOption(args));
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
+        } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
+                JDKExclude.enable();
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
             if (args.length == 0) {
                 release = Release.BOOT_CLASS_PATH;
