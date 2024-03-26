@@ -27,9 +27,9 @@
 
 package com.sun.tdk.signaturetest.core;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <b>PackageGroup</b> is intended to maintain a list of packages
@@ -57,7 +57,7 @@ public class PackageGroup {
      *
      * @see #isSubpackagesUses
      */
-    private List group;
+    private final List group;
 
     /**
      * Create empty list of packages, and decide if subpackages
@@ -65,7 +65,7 @@ public class PackageGroup {
      */
     public PackageGroup(boolean isSubpackagesUses) {
         this.isSubpackagesUses = isSubpackagesUses;
-        group = new ArrayList();
+        group = new CopyOnWriteArrayList();
     }
 
     public boolean isEmpty() {
