@@ -84,24 +84,21 @@ public final class SigtestGenerate extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean attach;
     
-    /**
-     * ignore JDK classes entries
-     */
-    @Parameter
-    private String[] ignoreJDKClasses;
-
     private String version;
+
+    private boolean ignoreJDKClass;
 
     public SigtestGenerate() {
     }
 
-    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release) {
+    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release, boolean ignoreJDKClass) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
         this.packages = packages;
         this.version = version;
         this.release = release;
+        this.ignoreJDKClass = ignoreJDKClass;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -172,8 +169,8 @@ public final class SigtestGenerate extends AbstractMojo {
             }
             
             @Override
-            protected String[] getIgnoreJDKClassEntries() {
-                return ignoreJDKClasses;
+            protected boolean isJDKExcludeEnabled() {
+                return ignoreJDKClass;
             }
         };
         try {

@@ -214,7 +214,7 @@ public class Merge extends SigTest implements Log {
                 try {
                     if (in.isFeatureSupported(FeaturesHolder.BuildMembers))
                         builder.createMembers(c, true, true, false);
-                    normalizer.normThrows(c, true);
+                    normalizer.normThrows(c, true, false);
                 } catch (ClassNotFoundException e) {
                     //storeError(i18n.getString("Setup.error.message.classnotfound", e.getMessage()));
                 }
@@ -240,7 +240,7 @@ public class Merge extends SigTest implements Log {
             ClassDescription c = (ClassDescription) i.next();
             try {
                 builder.createMembers(c, false, true, false);
-                normalizer.normThrows(c, true);
+                normalizer.normThrows(c, true, false);
             } catch (ClassNotFoundException e) {
                 storeError(i18n.getString("Merge.warning.message.classnotfound", e.getMessage()), null);
             }

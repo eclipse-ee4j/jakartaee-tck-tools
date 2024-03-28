@@ -46,17 +46,15 @@ public class ThrowsNormalizer {
     public ThrowsNormalizer() {
         
     }
-    public ThrowsNormalizer(JDKExclude jdkExclude) {
-        this.jdkExclude = jdkExclude;
-    }
-    public void normThrows(ClassDescription c, boolean removeJLE) throws ClassNotFoundException {
+
+    public void normThrows(ClassDescription c, boolean removeJLE, boolean onlyRemoveJavaSEThrows) throws ClassNotFoundException {
 
         ClassHierarchy h = c.getClassHierarchy();
    
         for (Iterator e = c.getMembersIterator(); e.hasNext();) {
             MemberDescription mr = (MemberDescription) e.next();
             if (mr.isMethod() || mr.isConstructor()) {
-                normThrows(h, mr, removeJLE);
+                normThrows(h, mr, removeJLE, onlyRemoveJavaSEThrows);
             }
         }
     }
@@ -66,7 +64,7 @@ public class ThrowsNormalizer {
         return candidate.equals(matchedException) || h.isSubclass(candidate, matchedException);
     }
 
-    private void normThrows(ClassHierarchy h, MemberDescription mr, boolean removeJLE) throws ClassNotFoundException {
+    private void normThrows(ClassHierarchy h, MemberDescription mr, boolean removeJLE, boolean onlyRemoveJavaSEThrows) throws ClassNotFoundException {
         assert mr.isMethod() || mr.isConstructor();
 
         String throwables = mr.getThrowables();
@@ -99,8 +97,11 @@ public class ThrowsNormalizer {
                 if (s == null)
                     continue;
 
-
-                if (!jdkExclude.isJdkClass(s) && s.charAt(0) != '{' /* if not generic */) {
+                if (JDKExclude.isJdkClass(s) ) {
+                    xthrows.set(i, null);
+                    superfluousExceptionCount++;
+                }
+                else if (!onlyRemoveJavaSEThrows && s.charAt(0) != '{' /* if not generic */) {
 
                     if (checkException(h, s, "java.lang.RuntimeException") || (removeJLE && checkException(h, s, "java.lang.Error"))) {
                         xthrows.set(i, null);
@@ -152,10 +153,5 @@ public class ThrowsNormalizer {
     
     private List/*String*/ xthrows = new ArrayList();
     private StringBuffer sb = new StringBuffer();
-    private JDKExclude jdkExclude = new JDKExclude() {
-        @Override
-        public boolean isJdkClass(String name) {
-            return false;
-        }
-    };
+
 }
