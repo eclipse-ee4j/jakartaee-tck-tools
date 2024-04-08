@@ -145,7 +145,7 @@ with the action option set to `strictcheck` the plugin will detect any API chang
 ## Relax verification of JDK signatures
 
 There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
-The `-IgnoreJDKClass` option can be used to ignore JDK java,* classes as well as javax.transaction.xa.* classes during signature verification checking which helps avoid failures caused by 
+The `-IgnoreJDKClass` option will ignore (all) JDK java.* and javax.* classes during signature verification checking which helps avoid failures caused by 
 JDK specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
 due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass specified, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 

@@ -1442,24 +1442,24 @@ public class SignatureTest extends SigTest {
 
         while ((requiredPos < bl) && (foundPos < tl)) {
             int comp = 0;
-            if (JDKExclude.isJdkClass(baseAnnotList[requiredPos].getName()) ||
-                    JDKExclude.isJdkClass(testAnnotList[foundPos].getName())) {
-                // don't check excluded Annotation classes
-                return;
+            boolean isJDKExcludedClass = (JDKExclude.isJdkClass(baseAnnotList[requiredPos].getName()) ||
+                    JDKExclude.isJdkClass(testAnnotList[foundPos].getName()));
+            if (isJDKExcludedClass) {
+                // do comparison with just the JDK annotation name
+                comp = baseAnnotList[requiredPos].getName().compareTo(testAnnotList[foundPos].getName());
+            } else {
+                comp = baseAnnotList[requiredPos].compareTo(testAnnotList[foundPos]);
             }
-            comp = baseAnnotList[requiredPos].compareTo(testAnnotList[foundPos]);
 
             if (comp < 0) {
                 reportError(required, baseAnnotList[requiredPos].toString(), false);
                 requiredPos++;
+            } else if (comp > 0) {
+                reportError(found, testAnnotList[foundPos].toString(), true);
+                foundPos++;
             } else {
-                if (comp > 0) {
-                    reportError(found, testAnnotList[foundPos].toString(), true);
-                    foundPos++;
-                } else {
-                    foundPos++;
-                    requiredPos++;
-                }
+                foundPos++;
+                requiredPos++;
             }
         }
         while (requiredPos < bl) {

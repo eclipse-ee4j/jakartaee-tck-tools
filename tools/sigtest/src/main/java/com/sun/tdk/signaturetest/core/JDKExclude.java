@@ -27,8 +27,6 @@
 
 package com.sun.tdk.signaturetest.core;
 
-import com.sun.tdk.signaturetest.util.CommandLineParser;
-
 /**
  * JDKExclude represents the JDK classes to be excluded from signature testing.
  *
@@ -39,7 +37,7 @@ public class JDKExclude {
     private static PackageGroup excludedJdkClasses = new PackageGroup(true);
 
     public static void enable() {
-        excludedJdkClasses.addPackages(new String[] {"java", "javax.transaction.xa" });
+        excludedJdkClasses.addPackages(new String[] {"java", "javax" });
     }
 
     /**
