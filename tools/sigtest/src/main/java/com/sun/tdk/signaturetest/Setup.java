@@ -228,6 +228,7 @@ public class Setup extends SigTest {
 
         parser.addOption(ERRORALL_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
+        parser.addOption(EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         try {
             parser.processArgs(args);
         }
@@ -481,7 +482,7 @@ public class Setup extends SigTest {
 
                 try {
                     testableMCBuilder.createMembers(c, addInherited(), true, false);
-                    normalizer.normThrows(c, true);
+                    normalizer.normThrows(c, true, false);
                     removeUndocumentedAnnotations(c, testableHierarchy);
                 } catch (ClassNotFoundException e) {
                     if (SigTest.debug) {

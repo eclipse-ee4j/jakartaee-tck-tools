@@ -1,7 +1,7 @@
 # SigTest
 
-**_NOTE:_**  This is a fork of the https://github.com/jtulach/netbeans-apitest project to allow for
-updates as needed by the Jakarta projects. The GAV for this fork has changed to:
+**_NOTE:_**  This is a fork of the https://github.com/jtulach/netbeans-apitest (which was a fork of the now archived OpenJDK https://github.com/openjdk/sigtest) project.  
+The purpose of this project is to allow for updates as needed by the Jakarta projects. The GAV for this fork has changed to:
 ```xml
 <dependency>
     <groupId>jakarta.tck</groupId>
@@ -12,10 +12,7 @@ updates as needed by the Jakarta projects. The GAV for this fork has changed to:
 
 *SigTest* is the tool for checking incompatibilities between different versions of the same API. 
 It is possible to use it as a Maven plugin or an Ant task to check for binary backward 
-compatibility and mutual signature compatibility. The tool is known to work with JDK8 and JDK11 and is used by many projects including [Graal](https://github.com/oracle/graal/commit/6ca3d0458d108ba183997f09fa51596fbe503893#diff-6229fdf88aa48f7dda4de6126283c913),
-[Hibernate](https://github.com/hibernate/hibernate-validator/pull/831/files), Apache [NetBeans](https://github.com/apache/incubator-netbeans/pull/670), and [Jakarta EE](https://jakarta.ee).
-
-[![Travis Status](https://travis-ci.org/jtulach/netbeans-apitest.svg?branch=master)](https://travis-ci.org/jtulach/netbeans-apitest)
+compatibility and mutual signature compatibility. The tool is known to work with JDK11+.
 
 ## Use in Maven
 
@@ -40,7 +37,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
     </execution>
   </executions>
   <configuration>
-    <release>8</release> <!-- specify version of JDK API to use 8,11,...21 -->
+    <release>11</release> <!-- specify version of JDK API to use 11,...21 -->
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
   </configuration>
 </plugin>
@@ -76,7 +73,7 @@ Try the following:
   <configuration>
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
-    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
+    <release>11</release> <!-- specify version of JDK API to use 11,...21 -->
   </configuration>
 </plugin>
 ```
@@ -139,7 +136,7 @@ then try:
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
-    <release>8</release> <!-- specify version of JDK API to use 6,7,8,...15 -->
+    <release>11</release> <!-- specify version of JDK API to use 11,...21 -->
   </configuration>
 ```
 
@@ -148,14 +145,15 @@ with the action option set to `strictcheck` the plugin will detect any API chang
 ## Relax verification of JDK signatures
 
 There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
-The `-IgnoreJDKClass` option can be used to specify a set of JDK classes that can benefit from relaxed signature verification rules when it comes to dealing with JDK 
-specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
-due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass java.lang.Deprecated` enabled, verification of the @Deprecated will only check that the tested class member has the 
+The `-IgnoreJDKClass` option will ignore (all) JDK java.* and javax.* classes during signature verification checking which helps avoid failures caused by 
+JDK specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
+due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass specified, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 
 
+Note that previous releases allowed a list of JDK classes to be specified after the -IgnoreJDKClass option but that is no longer allowed.
+
 ### Specify JDK classes to ignore in Maven plugin
-To configure the JDK classes to pass to the sigtest engine with a `-IgnoreJDKClass` option, use the ignoreJDKClasses
-configuration element and provide the classes to ignore using the include element as shown here:
+Specify the `-IgnoreJDKClass` option as shown below:
 
 ```xml
   <configuration>
@@ -163,10 +161,7 @@ configuration element and provide the classes to ignore using the include elemen
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
-    <ignoreJDKClasses>
-      <include>java.lang.Deprecated</include>
-      <include>java.lang.Object</include>
-    </ignoreJDKClasses>
+    <ignoreJDKClasses/>
   </configuration>
 ```
 
@@ -177,8 +172,8 @@ but has been adopted to suite the needs of a [NetBeans project](http://wiki.netb
 Since then it evolved into [general purpose tool](http://wiki.netbeans.org/SigTest). When NetBeans become
 Apache project, Emilian Bold converted the [original Hg repository](http://hg.netbeans.org/apitest/) to
 [Git repository](https://github.com/emilianbold/netbeans-apitest) to preserve the history. The development,
-including support for JDK11, etc. now continues at following GitHub
-[repository](https://github.com/jtulach/netbeans-apitest/).
+including support for JDK11, etc. then moved to [repository](https://github.com/jtulach/netbeans-apitest/).
+This tool has been forked (yet again) now to the [github repository](https://github.com/eclipse-ee4j/jakartaee-tck-tools/tree/master/tools/sigtest)
 
 # License
 

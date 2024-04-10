@@ -32,13 +32,23 @@ package com.sun.tdk.signaturetest.core;
  *
  * @author Scott Marlow
  */
-public interface JDKExclude {
+public class JDKExclude {
+
+    private static PackageGroup excludedJdkClasses = new PackageGroup(true);
+
+    public static void enable() {
+        excludedJdkClasses.addPackages(new String[] {"java", "javax" });
+    }
 
     /**
      * Check for JDK classes that should be excluded from signature testing.
      * @param name is class name (with typical dot separators) to check.
      * @return true if the class should be excluded from signature testing.
      */
-    boolean isJdkClass(String name);
-   
+    public static boolean isJdkClass(String name) {
+        return name != null &&
+                excludedJdkClasses.checkName(name);
+
+    }
+
 }
