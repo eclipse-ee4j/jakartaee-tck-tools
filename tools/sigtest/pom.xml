@@ -32,6 +32,7 @@
         <!-- Require a Java 17 for testing and compiling -->
         <maven.compiler.testRelease>17</maven.compiler.testRelease>
         <jdk.min.version>${maven.compiler.testRelease}</jdk.min.version>
+        <skipITs>false</skipITs>
     </properties>
     <build>
         <plugins>
@@ -163,7 +164,88 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>8.0.2</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
+                    <!-- generate the git.properties file -->
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/git.properties</generateGitPropertiesFilename>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${project.build.outputDirectory}/META-INF/git.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Manifest-Version>1.0</Manifest-Version>
+                            <Main-Class>com.sun.tdk.signaturetest.Main</Main-Class>
+                            <Implementation-Title>Jakarta TCK Tools SigTest</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>Jakarta Eclipse WG</Implementation-Vendor>
+                            <!--suppress UnresolvedMavenProperty; comes from target/classes/META-INF/git.properties -->
+                            <Implementation-Build-Time>${git.commit.id.full}</Implementation-Build-Time>
+                            <Implementation-Build-OS>${os.name} ${os.version}</Implementation-Build-OS>
+                            <!-- Add more entries as needed -->
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.5</version>
+                <executions>
+                    <execution>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipITs>${skipITs}</skipITs>
+                </configuration>
+            </plugin>
         </plugins>
+
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
     </build>
     <dependencies>
         <dependency>
@@ -243,85 +325,5 @@
             <type>jar</type>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <inherited>true</inherited>
-                        <configuration>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <pushChanges>false</pushChanges>
-                            <localCheckout>true</localCheckout>
-                            <preparationGoals>clean install</preparationGoals>
-                            <releaseProfiles>gpg-sign,jboss-release</releaseProfiles>
-                            <tagNameFormat>@{project.version}</tagNameFormat>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <doclet>nl.talsmasoftware.umldoclet.UMLDoclet</doclet>
-                            <docletArtifact>
-                                <groupId>nl.talsmasoftware</groupId>
-                                <artifactId>umldoclet</artifactId>
-                                <version>2.0.18</version>
-                            </docletArtifact>
-                            <useStandardDocletOptions>true</useStandardDocletOptions>
-                            <charset>UTF-8</charset>
-                            <encoding>UTF-8</encoding>
-                            <docencoding>UTF-8</docencoding>
-                            <breakiterator>true</breakiterator>
-                            <version>true</version>
-                            <author>true</author>
-                            <keywords>true</keywords>
-                            <additionalOptions>
-                                <additionalOption>-sourceclasspath ${project.build.outputDirectory}</additionalOption>
-                            </additionalOptions>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>jakarta.tck</groupId>
-                        <artifactId>sigtest-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <release>17</release> <!-- specify version of JDK API to use -->
-                            <packages>com.sun.tdk.signaturetest.classpath</packages>
-                        </configuration>
-                        </plugin>
-                </plugins>
-            </build>
-
-            <distributionManagement>
-                <repository>
-                    <id>${jboss.releases.repo.id}</id>
-                    <name>JBoss Releases Repository</name>
-                    <url>${jboss.releases.repo.url}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>${jboss.snapshots.repo.id}</id>
-                    <name>JBoss Snapshots Repository</name>
-                    <url>${jboss.snapshots.repo.url}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
 
 </project>

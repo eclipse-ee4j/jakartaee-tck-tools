@@ -29,16 +29,52 @@ package com.sun.tdk.signaturetest;
 
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
+import java.io.InputStream;
+import java.util.Properties;
+
+/**
+ * Version information for the SignatureTest tool.
+ */
 public class Version {
 
     private static I18NResourceBundle i18n =
             I18NResourceBundle.getBundleForClass(Version.class);
 
-    // the following constatnts should be filled in by the build script
-    public static final String Number="2.2";
-    public static final String build_time="";
-    public static final String build_os="";
-    public static final String build_user="";
+    // the following constants are based on the maven build producing a git.properties file
+    // which is read by the static initializer below
+    public static final String Number;
+    public static final String build_time;
+    public static final String build_os;
+    public static final String build_user;
+
+    static {
+        // Defaults
+        String number = "Unknown";
+        String buildOS = System.getProperty("os.name") + " " + System.getProperty("os.version");
+        String buildUser = System.getProperty("user.name");
+        String buildTime = "Unknown";
+        // Look for build info from the jar manifest
+        try {
+            // Read in the git.properties file
+            Properties properties = new Properties();
+            try(InputStream is = Version.class.getResourceAsStream("/META-INF/git.properties")) {
+                if(is != null) {
+                    properties.load(is);
+                    number = properties.getProperty("git.build.version");
+                    buildTime = properties.getProperty("git.commit.id.full");
+                    buildUser = properties.getProperty("git.build.user.name");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Set the values read from manifest or the defaults
+            Number = number;
+            build_os = buildOS;
+            build_time = buildTime;
+            build_user = buildUser;
+        }
+    }
 
     public static String getVersionInfo() {
         StringBuffer sb = new StringBuffer();
