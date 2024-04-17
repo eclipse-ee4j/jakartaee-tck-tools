@@ -34,27 +34,23 @@ import static org.junit.Assert.assertNotNull;
 public class VersionIT {
     @Test
     public void testVersionDefaults() throws IOException {
-        // Load the filtered VersionIT.properties file for the maven build timestamp and project version
-        URL versionInfo = VersionIT.class.getResource("/VersionIT.properties");
+        // Load the generated git.properties file for the maven build timestamp and project version
+        URL versionInfo = VersionIT.class.getResource("/META-INF/git.properties");
         InputStream is = versionInfo.openStream();
-        assertNotNull("VersionIT.properties not found", is);
+        assertNotNull("/META-INF/git.properties not found", is);
         Properties props = new Properties();
         try (is){
             props.load(versionInfo.openStream());
         }
 
-        String number = props.getProperty("build.version");
+        String number = props.getProperty("git.build.version");
+        String buildTime = props.getProperty("git.commit.id.full");
+        String buildUser = props.getProperty("git.build.user.name");
         String buildOS = System.getProperty("os.name") + " " + System.getProperty("os.version");
-        String buildUser = System.getProperty("user.name");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("GMT"));
-        String buildTime = props.getProperty("build.timestamp");
-        ZonedDateTime gmt = ZonedDateTime.parse(buildTime, formatter);
-        ZonedDateTime gmtTest = ZonedDateTime.parse(Version.build_time, formatter);
 
         assertEquals(number, Version.Number);
         assertEquals(buildOS, Version.build_os);
         assertEquals(buildUser, Version.build_user);
-        // Could be a problem on an overloaded CI server
-        assertEquals("Expect build timestamp diff < 5 secs", gmt.toEpochSecond(), gmtTest.toEpochSecond(), 5);
+        assertEquals(buildTime, Version.build_time);
     }
 }

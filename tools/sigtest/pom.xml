@@ -32,7 +32,6 @@
         <!-- Require a Java 17 for testing and compiling -->
         <maven.compiler.testRelease>17</maven.compiler.testRelease>
         <jdk.min.version>${maven.compiler.testRelease}</jdk.min.version>
-        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
         <skipITs>false</skipITs>
     </properties>
     <build>
@@ -166,6 +165,44 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>8.0.2</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
+                    <!-- generate the git.properties file -->
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/git.properties</generateGitPropertiesFilename>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${project.build.outputDirectory}/META-INF/git.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.2.0</version>
@@ -176,8 +213,9 @@
                             <Main-Class>com.sun.tdk.signaturetest.Main</Main-Class>
                             <Implementation-Title>Jakarta TCK Tools SigTest</Implementation-Title>
                             <Implementation-Version>${project.version}</Implementation-Version>
-                            <Implementation-Vendor>${user.name}</Implementation-Vendor>
-                            <Implementation-Build-Time>${maven.build.timestamp}</Implementation-Build-Time>
+                            <Implementation-Vendor>Jakarta Eclipse WG</Implementation-Vendor>
+                            <!--suppress UnresolvedMavenProperty; comes from target/classes/META-INF/git.properties -->
+                            <Implementation-Build-Time>${git.commit.id.full}</Implementation-Build-Time>
                             <Implementation-Build-OS>${os.name} ${os.version}</Implementation-Build-OS>
                             <!-- Add more entries as needed -->
                         </manifestEntries>

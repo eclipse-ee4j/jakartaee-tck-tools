@@ -29,71 +29,41 @@ package com.sun.tdk.signaturetest;
 
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
 
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import java.io.InputStream;
+import java.util.Properties;
 
+/**
+ * Version information for the SignatureTest tool.
+ */
 public class Version {
 
     private static I18NResourceBundle i18n =
             I18NResourceBundle.getBundleForClass(Version.class);
 
-    // the following constants should be filled in by the build script
+    // the following constants are based on the maven build producing a git.properties file
+    // which is read by the static initializer below
     public static final String Number;
     public static final String build_time;
     public static final String build_os;
     public static final String build_user;
-
-    public static final String IMPLEMENTATION_BUILD_OS = "Implementation-Build-OS";
-
-    public static final String IMPLEMENTATION_BUILD_TIME = "Implementation-Build-Time";
 
     static {
         // Defaults
         String number = "Unknown";
         String buildOS = System.getProperty("os.name") + " " + System.getProperty("os.version");
         String buildUser = System.getProperty("user.name");
-        ZonedDateTime gmt = ZonedDateTime.now(ZoneId.of("GMT"));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        String buildTime = gmt.format(formatter);
+        String buildTime = "Unknown";
         // Look for build info from the jar manifest
         try {
-            // Get the URL of the jar file from the CodeSource
-            ProtectionDomain pd = Version.class.getProtectionDomain();
-            CodeSource cs = pd.getCodeSource();
-            URL url = cs.getLocation();
-            // Open a JarURLConnection to the jar file's URL
-            if(url.getProtocol().equals("file")) {
-                // If the URL is a file URL, convert it to a jar URL if it is actually a jar file
-                String path = url.getPath();
-                if(path.endsWith(".jar")) {
-                    url = new URL("jar:file:" + path + "!/");
-                } else {
-                    throw new IllegalStateException(String.format("Warning: %s is not a jar file\n", path));
+            // Read in the git.properties file
+            Properties properties = new Properties();
+            try(InputStream is = Version.class.getResourceAsStream("/META-INF/git.properties")) {
+                if(is != null) {
+                    properties.load(is);
+                    number = properties.getProperty("git.build.version");
+                    buildTime = properties.getProperty("git.commit.id.full");
+                    buildUser = properties.getProperty("git.build.user.name");
                 }
-            }
-            JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
-            // Get the Manifest from the JarURLConnection
-            Manifest mf = jarConnection.getManifest();
-            // Read the attributes from the Manifest
-            Attributes attrs = mf.getMainAttributes();
-            if(attrs.containsKey(Attributes.Name.IMPLEMENTATION_VERSION)) {
-                number = attrs.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-            }
-            if(attrs.containsKey(Attributes.Name.IMPLEMENTATION_VENDOR)) {
-                buildUser = attrs.getValue(Attributes.Name.IMPLEMENTATION_VENDOR);
-            }
-            if(attrs.containsKey(IMPLEMENTATION_BUILD_OS)) {
-                buildOS = attrs.getValue(IMPLEMENTATION_BUILD_OS);
-            }
-            if(attrs.containsKey(IMPLEMENTATION_BUILD_TIME)) {
-                buildTime = attrs.getValue(IMPLEMENTATION_BUILD_TIME);
             }
         } catch (Exception e) {
             e.printStackTrace();
