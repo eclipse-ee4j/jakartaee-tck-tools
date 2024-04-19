@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Set;
 
+import jakartatck.jar2shrinkwrap.ClassNameRemapping;
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
 import org.junit.jupiter.api.Test;

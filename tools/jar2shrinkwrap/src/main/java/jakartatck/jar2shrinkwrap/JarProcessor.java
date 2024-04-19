@@ -15,7 +15,7 @@ import java.util.zip.ZipInputStream;
  */
 public interface JarProcessor {
 
-    void process(final ZipInputStream zipInputStream, final ZipEntry entry);
+    void process(final ZipInputStream zipInputStream, final ZipEntry entry, ClassNameRemapping classNameRemapping);
 
     /**
      * Write the Arquillian @Deployment method java code into the given StringWriter.

@@ -10,9 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -28,6 +26,7 @@ public class Jar2ShrinkWrap {
     private static final String legacyTCKZip = "jakarta-jakartaeetck-10.0.2.zip";
     private static final URL tckurl;
     private static File legacyTckRoot;
+    private static String technology = System.getProperty("jar2shrinkwrap.technology","jpa");
 
     static {
         try {
@@ -79,7 +78,37 @@ public class Jar2ShrinkWrap {
         legacyTckRoot = target;
         return target;
     }
+
+    public static boolean isLegacyTestPackage(String packageName) {
+        if (packageName.startsWith("ee.jakarta.tck")) {
+            throw new RuntimeException("EE 11 package name passed that should of been converted to EE 10 before calling.  Package name = " + packageName);
+        }
+        String packageNameWithSlashs = packageName.replace(".","/");
+        File srcFolder = new File (maybeDownloadTck(), "jakartaeetck/src/" + packageNameWithSlashs);
+        boolean testPackageExists = srcFolder.exists();
+        if (packageName.contains(technology)) {
+            if (testPackageExists) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static File getEETestVehiclesFile() {
+        return new File (maybeDownloadTck(), "jakartaeetck/src/vehicle.properties");
+    }
+
+
+    public static boolean isNewTestPackage(String packageName) {
+        // TODO: add hard coded checks here for specific new test packages
+        return false;
+    }
+
+
     public static JarProcessor fromPackage(String packageName) {
+        return fromPackage(packageName, new ClassNameRemapping() {});
+    }
+    public static JarProcessor fromPackage(String packageName, ClassNameRemapping classNameRemapping) {
         // Locate or download the legacy TCK
         File target = maybeDownloadTck();
         System.out.println("Locate the TCK archive that contains the test for package " + packageName);
@@ -88,7 +117,7 @@ public class Jar2ShrinkWrap {
         }
         target = new File(target, unzippedLegacyTCK);
         File targetArchiveFile = locateTargetPackageFolder(target, packageName);
-        JarVisit visitor = new JarVisit(targetArchiveFile);
+        JarVisit visitor = new JarVisit(targetArchiveFile, classNameRemapping);
         return visitor.execute();
     }
 

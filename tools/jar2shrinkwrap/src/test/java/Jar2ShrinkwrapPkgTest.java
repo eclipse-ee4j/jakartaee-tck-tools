@@ -27,12 +27,12 @@ public class Jar2ShrinkwrapPkgTest {
 
     @Test
     public void canLocateTestDefinitions() {
-        String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer",
-                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener",
-                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet",
-                "com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet",
-                "com.sun.ts.tests.servlet.common.util.Data",
-                "com.sun.ts.tests.servlet.common.util.ServletTestUtil"};
+        String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer.class",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener.class",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet.class",
+                "com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet.class",
+                "com.sun.ts.tests.servlet.common.util.Data.class",
+                "com.sun.ts.tests.servlet.common.util.ServletTestUtil.class"};
 
         JarProcessor war = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes");
         ArrayList<String> classes = war.getClasses();
@@ -42,7 +42,7 @@ public class Jar2ShrinkwrapPkgTest {
         Iterator<String> iterator = classesSet.iterator();
         while(iterator.hasNext()) {
             String c = iterator.next();
-            assertTrue(warClassesSet.contains(c));
+            assertTrue(warClassesSet.contains(c), c + " not found in " + warClassesSet );
             iterator.remove();
         }
         assertTrue(classesSet.size() == 0);

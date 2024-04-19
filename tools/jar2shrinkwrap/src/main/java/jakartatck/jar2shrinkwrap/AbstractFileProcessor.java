@@ -40,9 +40,14 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
     private Map<String, JarProcessor> libraryContent = new HashMap<>();
 
+    private ClassNameRemapping classNameRemapping;
+
 
     @Override
-    public void process(ZipInputStream zipInputStream, ZipEntry entry) {
+    public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
+        if (this.classNameRemapping != classNameRemapping) {
+            this.classNameRemapping = classNameRemapping;
+        }
 
         if (entry.isDirectory()) {
             // ignore
@@ -59,7 +64,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         }
     }
 
-    protected void processLibrary(String jarName, File libFile, ZipInputStream zipInputStream) {
+    protected void processLibrary(String jarName, File libFile, ZipInputStream zipInputStream, ClassNameRemapping classNameRemapping) {
         if (!libFile.exists()) { // Typical usage for EAR is that module/library entries archives will already exist in test folder but if not, create them)
             try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
                 byte[] libContent = zipInputStream.readAllBytes();
@@ -69,7 +74,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             }
         }
         // load the library content
-        JarVisit visit = new JarVisit(libFile);
+        JarVisit visit = new JarVisit(libFile, classNameRemapping);
         JarProcessor jar = visit.execute();
         libraryContent.put(jarName, jar);
         addLibrary(libFile.getName());
@@ -137,11 +142,16 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected void addLibrary(String name) {
         if (name.startsWith(WEB_INF_LIB))
             name = name.substring(WEB_INF_LIB.length());
-        libraries.add(name);
+        if (!libraries.contains(name)) {
+            libraries.add(name);
+        }
     }
 
     protected void addModule(String name) {
-        subModules.add(name);
+        if (!subModules.contains(name)) {
+            subModules.add(name);
+        }
+
     }
 
 
@@ -151,6 +161,13 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         if (name.endsWith(CLASS))
             name = name.substring(0, name.length() - CLASS.length());
         name = name.replace('/', '.');
+        if (classNameRemapping.shouldBeIgnored(name)) {
+            return;
+        }
+        if (!name.endsWith(CLASS)) {
+            name = name + CLASS; // add .class extension
+        }
+        name = classNameRemapping.getName(name);
         classes.add(name);
     }
 
@@ -196,10 +213,11 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
         for (String warlibrary : getLibraries()) {
             JarProcessor warLibraryProcessor = getLibrary(warlibrary);
+            printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
             printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
             for (String className: warLibraryProcessor.getClasses()) {
                 if (!ignoreFile(className)) {
-                    printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(warlibrary), className));
+                    printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(warlibrary), className));
                 }
             }
             for (String otherFile: warLibraryProcessor.getOtherFiles()) {
@@ -213,15 +231,15 @@ public abstract class AbstractFileProcessor implements JarProcessor {
                 }
             }
             printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),archiveName(warlibrary)));
+            printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
         }
         // add classes
         for (String className: getClasses()) {
             if (!ignoreFile(className)) {
-                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
             }
         }
 
-        printWriter.println(indent + "return %s;".formatted(archiveName(archiveName)));
     }
 
     protected boolean ignoreFile(String filename) {

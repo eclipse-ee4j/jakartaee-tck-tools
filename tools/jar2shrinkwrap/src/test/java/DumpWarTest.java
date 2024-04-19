@@ -1,3 +1,4 @@
+import jakartatck.jar2shrinkwrap.ClassNameRemapping;
 import jakartatck.jar2shrinkwrap.EarFileProcessor;
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;

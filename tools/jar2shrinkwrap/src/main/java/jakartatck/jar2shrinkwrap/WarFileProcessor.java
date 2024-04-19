@@ -32,7 +32,7 @@ public class WarFileProcessor extends AbstractFileProcessor {
     }
 
     @Override
-    public void process(ZipInputStream zipInputStream, ZipEntry entry) {
+    public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
 
         if (entry.isDirectory()) {
             // ignore
@@ -41,11 +41,11 @@ public class WarFileProcessor extends AbstractFileProcessor {
         } else if (entry.toString().startsWith("WEB-INF/lib/")) {
             String jarName = entry.getName().substring("WEB-INF/lib/".length());
             File libFile = new File(baseDir, jarName);
-            processLibrary(jarName, libFile, zipInputStream);
+            processLibrary(jarName, libFile, zipInputStream, classNameRemapping);
         } else if (entry.toString().startsWith("WEB-INF/")) {
             addWebinf(entry.getName().substring("WEB-INF/".length()));
         } else {
-            super.process(zipInputStream, entry);
+            super.process(zipInputStream, entry, classNameRemapping);
         }
     }
 

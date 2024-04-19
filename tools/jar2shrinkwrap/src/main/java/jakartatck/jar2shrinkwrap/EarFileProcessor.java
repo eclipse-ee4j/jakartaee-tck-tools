@@ -19,9 +19,11 @@ import java.util.zip.ZipInputStream;
  */
 public class EarFileProcessor extends AbstractFileProcessor {
     private Map<String, JarProcessor> subModuleContent = new HashMap<>();
+    private ClassNameRemapping classNameRemapping;
 
-    public EarFileProcessor(File archiveFile) {
+    public EarFileProcessor(File archiveFile, ClassNameRemapping classNameRemapping) {
         this.archiveFile = archiveFile;
+        this.classNameRemapping = classNameRemapping;
         baseDir = new File(archiveFile.getParentFile().getAbsolutePath());
         if(!baseDir.exists()) {
             baseDir.mkdirs();
@@ -34,7 +36,8 @@ public class EarFileProcessor extends AbstractFileProcessor {
     }
 
     @Override
-    public void process(ZipInputStream zipInputStream, ZipEntry entry) {
+    public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
+        this.classNameRemapping = classNameRemapping;
 
         if (entry.isDirectory()) {
             // ignore
@@ -42,7 +45,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
             int prefix = entry.getName().indexOf('/');
             String jarName = entry.getName().substring(prefix+1);
             File libFile = new File(baseDir, jarName);
-            processLibrary(jarName, libFile, zipInputStream);
+            processLibrary(jarName, libFile, zipInputStream, classNameRemapping);
         } else if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".war") ) {
             String jarName = entry.getName();
             File libFile = new File(baseDir, jarName);
@@ -55,12 +58,12 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 }
             }
             // Load the submodule content
-            JarVisit visit = new JarVisit(libFile);
+            JarVisit visit = new JarVisit(libFile, classNameRemapping);
             JarProcessor jar = visit.execute();
             subModuleContent.put(jarName, jar);
             addModule(libFile.getName());
         } else {
-            super.process(zipInputStream, entry);
+            super.process(zipInputStream, entry, classNameRemapping);
         }
     }
 
@@ -92,13 +95,15 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 List<File> libraryFiles = new ArrayList<>();
                 for (String archiveName : getLibraries()) {
                     JarProcessor jarProcessor = getLibrary(archiveName);
+                    printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
                     printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                     for (String className: jarProcessor.getClasses()) {
                         if (!ignoreFile(className)) {
-                            printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                            printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
                         }
                     }
                     printWriter.println(indent.repeat(1)+"ear.addAsLibrary(%s);".formatted(archiveName(archiveName)));
+                    printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
                 }
 
             }
@@ -107,6 +112,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 printWriter.println(indent.repeat(1) + "// Add ear submodules");
                 for (String archiveName : getSubModules()) {
                     JarProcessor jarProcessor = getSubmodule(archiveName);
+                    printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
                     if ( jarProcessor instanceof WarFileProcessor) {
                         jarProcessor.saveOutputWar(printWriter,includeImports, archiveName);
                     } else {
@@ -114,12 +120,13 @@ public class EarFileProcessor extends AbstractFileProcessor {
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                         for (String className: jarProcessor.getClasses()) {
                             if (!ignoreFile(className)) {
-                                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                                printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
                             }
                         }
                     }
                     // add war/jar to ear
                     printWriter.println(indent+"ear.addAsModule(%s);".formatted(archiveName(archiveName)));
+                    printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
                 }
             }
 

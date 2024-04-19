@@ -61,7 +61,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
                 if (!ignoreFile(name)) {
                     printWriter.print(indent.repeat(3) + ".addClass(");
                     printWriter.print(name);
-                    printWriter.println(".class)");
+                    printWriter.println(")");
                 }
             }
             for (String name : webinf) {
