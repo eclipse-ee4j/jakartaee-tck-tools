@@ -8,7 +8,6 @@ import com.sun.ts.lib.harness.EETest;
 import com.sun.ts.lib.util.TSNamingContext;
 import com.sun.ts.lib.util.TestUtil;
 import com.sun.ts.tests.assembly.altDD.PainterBean;
-import com.sun.ts.tests.assembly.altDD.PainterBeanHome;
 import org.junit.jupiter.api.Disabled;
 
 @Disabled
@@ -82,8 +81,6 @@ public class ClientBefore extends EETest {
      *                 at deployment time.
      */
     public void testAppClient() throws Fault {
-        PainterBeanHome home = null;
-        PainterBean bean = null;
         String entryValue;
         boolean pass = false;
 
@@ -151,15 +148,14 @@ public class ClientBefore extends EETest {
      *                 DD3 at deployment time.
      */
     public void testEJB() throws Fault {
-        PainterBeanHome home = null;
         PainterBean bean = null;
         String nameValue;
         boolean pass = false;
 
         try {
             logTrace("[Client] Looking up " + beanLookup);
-            home = (PainterBeanHome) nctx.lookup(beanLookup, PainterBeanHome.class);
-            bean = home.create();
+            bean = (PainterBean) nctx.lookup(beanLookup, PainterBean.class);
+            bean.createNamingContext();
             bean.initLogging(props);
 
             logTrace("[Client] Checking referenced EJB...");
@@ -175,16 +171,6 @@ public class ClientBefore extends EETest {
         } catch (Exception e) {
             logErr("[Client] Caught exception: " + e);
             throw new Fault("Alternative DD test failed!" + e, e);
-        } finally {
-            try {
-                if (null != bean) {
-                    TestUtil.logTrace("[Client] Removing bean...");
-                    bean.remove();
-                }
-            } catch (Exception e) {
-                TestUtil
-                        .logTrace("[Client] Ignoring exception on " + " bean remove: " + e);
-            }
         }
     }
 

@@ -8,7 +8,6 @@ import com.sun.ts.lib.harness.EETest;
 import com.sun.ts.lib.util.TSNamingContext;
 import com.sun.ts.lib.util.TestUtil;
 import com.sun.ts.tests.assembly.altDD.PainterBean;
-import com.sun.ts.tests.assembly.altDD.PainterBeanHome;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,13 +28,11 @@ public class ClientAfter extends EETest {
         JavaArchive assembly_altDD_client_jar = ShrinkWrap.create(JavaArchive.class, "assembly_altDD_client_jar");
         assembly_altDD_client_jar.addClass(com.sun.ts.tests.assembly.altDD.Client.class);
         assembly_altDD_client_jar.addClass(com.sun.ts.tests.assembly.altDD.PainterBean.class);
-        assembly_altDD_client_jar.addClass(com.sun.ts.tests.assembly.altDD.PainterBeanHome.class);
         ear.addAsModule(assembly_altDD_client_jar);
 
         JavaArchive assembly_altDD_ejb_jar = ShrinkWrap.create(JavaArchive.class, "assembly_altDD_ejb_jar");
         assembly_altDD_ejb_jar.addClass(com.sun.ts.tests.assembly.altDD.PainterBean.class);
         assembly_altDD_ejb_jar.addClass(com.sun.ts.tests.assembly.altDD.PainterBeanEJB.class);
-        assembly_altDD_ejb_jar.addClass(com.sun.ts.tests.assembly.altDD.PainterBeanHome.class);
         assembly_altDD_ejb_jar.addClass(com.sun.ts.tests.assembly.util.shared.ejbref.common.ReferencedBeanCode.class);
         assembly_altDD_ejb_jar.addClass(com.sun.ts.tests.common.ejb.wrappers.StatelessWrapper.class);
         ear.addAsModule(assembly_altDD_ejb_jar);
@@ -111,8 +108,6 @@ public class ClientAfter extends EETest {
      */
     @Test
     public void testAppClient() throws Fault {
-        PainterBeanHome home = null;
-        PainterBean bean = null;
         String entryValue;
         boolean pass = false;
 
@@ -181,15 +176,14 @@ public class ClientAfter extends EETest {
      */
     @Test
     public void testEJB() throws Fault {
-        PainterBeanHome home = null;
         PainterBean bean = null;
         String nameValue;
         boolean pass = false;
 
         try {
             logTrace("[Client] Looking up " + beanLookup);
-            home = (PainterBeanHome) nctx.lookup(beanLookup, PainterBeanHome.class);
-            bean = home.create();
+            bean = (PainterBean) nctx.lookup(beanLookup, PainterBean.class);
+            bean.createNamingContext();
             bean.initLogging(props);
 
             logTrace("[Client] Checking referenced EJB...");
@@ -205,17 +199,8 @@ public class ClientAfter extends EETest {
         } catch (Exception e) {
             logErr("[Client] Caught exception: " + e);
             throw new Fault("Alternative DD test failed!" + e, e);
-        } finally {
-            try {
-                if (null != bean) {
-                    TestUtil.logTrace("[Client] Removing bean...");
-                    bean.remove();
-                }
-            } catch (Exception e) {
-                TestUtil
-                        .logTrace("[Client] Ignoring exception on " + " bean remove: " + e);
-            }
         }
+
     }
 
     public void cleanup() {

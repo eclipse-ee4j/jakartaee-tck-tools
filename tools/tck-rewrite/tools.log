@@ -1,0 +1,111 @@
+Jun 05, 2024 12:44:42 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod), comments=1
+Jun 05, 2024 12:44:42 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{test.somepkg.SomeTestClass{name=someTestMethod,return=void,parameters=[]}}
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod) skipped due to @Test
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod), comments=1
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{test.somepkg.SomeTestClass{name=someTestMethod,return=void,parameters=[]}}
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(anotherTestMethod), comments=2
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{test.somepkg.SomeTestClass{name=anotherTestMethod,return=void,parameters=[]}}
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod) skipped due to @Test
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(anotherTestMethod) skipped due to @Test
+Jun 05, 2024 12:44:43 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: Client isEETest=true, isAbstract=false
+
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+INFO: Added @Deployment method to class: com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.Client
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod), comments=1
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.Client{name=someTestMethod,return=void,parameters=[]}}
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: @Deployment annotated method exists, return existing class def
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(someTestMethod) skipped due to @Test
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: Client isEETest=true, isAbstract=false
+
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+INFO: Added @Deployment method to class: com.sun.ts.tests.assembly.altDD.Client
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(main), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(setup), comments=1
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testAppClient), comments=1
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.assembly.altDD.Client{name=testAppClient,return=void,parameters=[]}}
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testEJB), comments=1
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.assembly.altDD.Client{name=testEJB,return=void,parameters=[]}}
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(cleanup), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: @Deployment annotated method exists, return existing class def
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(main), comments=0
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(setup), comments=1
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testAppClient) skipped due to @Test
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testEJB) skipped due to @Test
+Jun 05, 2024 12:44:44 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(cleanup), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: LargeCase isEETest=true, isAbstract=false
+
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+INFO: Added @Deployment method to class: com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.LargeCase
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(main), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(setup), comments=1
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulRemote), comments=1
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.LargeCase{name=testStatefulRemote,return=void,parameters=[]}}
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulLocal), comments=1
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.LargeCase{name=testStatefulLocal,return=void,parameters=[]}}
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulBoth), comments=1
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Added @Test annotation to: MethodDeclaration{com.sun.ts.tests.ejb.ee.bb.session.stateless.argsemantics.LargeCase{name=testStatefulBoth,return=void,parameters=[]}}
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(cleanup), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.AddArquillianDeployMethod visitClassDeclaration
+FINE: @Deployment annotated method exists, return existing class def
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(deployment), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(main), comments=0
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(setup), comments=1
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulRemote) skipped due to @Test
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulLocal) skipped due to @Test
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(testStatefulBoth) skipped due to @Test
+Jun 05, 2024 12:44:45 PM tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor visitMethodDeclaration
+FINE: Visting(cleanup), comments=0
