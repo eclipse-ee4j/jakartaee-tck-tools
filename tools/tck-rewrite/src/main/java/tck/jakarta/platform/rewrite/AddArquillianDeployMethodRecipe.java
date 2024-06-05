@@ -145,6 +145,10 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
 
             Set<String> vehicleNames = testVehicles(ee10pkg);
             System.out.println("xxx vehicleNames for " + ee10pkg + " = " + vehicleNames);
+            // app client container vehicles are named: appclient, appmanaged, appmanagedNoTx, ejb, stateful3, stateless3, wsappclient, wsejb
+            // see https://github.com/jakartaee/platform-tck/tree/tckrefactor/common/src/main/java/com/sun/ts/tests/common/vehicle for each test vehicle
+
+            // Generate deployment method
             String methodCode = TestGenerator.saveOutput(jarProcessor);
 
             if (methodCode.length() == 0) {

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakartatck.jar2shrinkwrap.EarFileProcessor;
-import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarFileProcessor;
 import jakartatck.jar2shrinkwrap.JarProcessor;
 import jakartatck.jar2shrinkwrap.WarFileProcessor;
@@ -223,7 +222,8 @@ public class TestGenerator {
     }
 
     protected static boolean ignoreFile(String filename) {
-        return filename.isEmpty() || filename.endsWith(".java") || filename.contains("com.sun.ts.lib.");
+        return filename.isEmpty() || filename.endsWith(".java");
+                // || filename.contains("com.sun.ts.lib.");
     }
 
 }
