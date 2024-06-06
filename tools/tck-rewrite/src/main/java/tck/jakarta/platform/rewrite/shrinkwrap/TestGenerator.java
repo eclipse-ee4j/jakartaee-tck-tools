@@ -222,8 +222,7 @@ public class TestGenerator {
     }
 
     protected static boolean ignoreFile(String filename) {
-        return filename.isEmpty() || filename.endsWith(".java");
-                // || filename.contains("com.sun.ts.lib.");
+        return filename.isEmpty() || filename.endsWith(".java") || filename.contains("com.sun.ts.lib.harness");
     }
 
 }

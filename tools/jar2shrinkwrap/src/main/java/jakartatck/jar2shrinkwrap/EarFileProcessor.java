@@ -19,11 +19,9 @@ import java.util.zip.ZipInputStream;
  */
 public class EarFileProcessor extends AbstractFileProcessor {
     private Map<String, JarProcessor> subModuleContent = new HashMap<>();
-    private ClassNameRemapping classNameRemapping;
 
-    public EarFileProcessor(File archiveFile, ClassNameRemapping classNameRemapping) {
+    public EarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
-        this.classNameRemapping = classNameRemapping;
         baseDir = new File(archiveFile.getParentFile().getAbsolutePath());
         if(!baseDir.exists()) {
             baseDir.mkdirs();
@@ -37,7 +35,6 @@ public class EarFileProcessor extends AbstractFileProcessor {
 
     @Override
     public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
-        this.classNameRemapping = classNameRemapping;
 
         if (entry.isDirectory()) {
             // ignore
@@ -60,7 +57,11 @@ public class EarFileProcessor extends AbstractFileProcessor {
             // Load the submodule content
             JarVisit visit = new JarVisit(libFile, classNameRemapping);
             JarProcessor jar = visit.execute();
-            subModuleContent.put(jarName, jar);
+            JarProcessor previousJar = subModuleContent.put(jarName, jar);
+            if (previousJar != null) {
+                throw new RuntimeException("attempted to add the same module " + jarName + " in " + archiveFile.getName() +
+                        " previousJar: " + previousJar.getName() + " this jar: " + jar.getName());
+            }
             addModule(libFile.getName());
         } else {
             super.process(zipInputStream, entry, classNameRemapping);

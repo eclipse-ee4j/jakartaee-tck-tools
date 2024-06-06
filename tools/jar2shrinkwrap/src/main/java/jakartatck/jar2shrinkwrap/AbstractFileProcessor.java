@@ -150,6 +150,8 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected void addModule(String name) {
         if (!subModules.contains(name)) {
             subModules.add(name);
+        } else {
+            throw new RuntimeException("attempted to add the same module " + name + " in " + archiveFile.getName());
         }
 
     }

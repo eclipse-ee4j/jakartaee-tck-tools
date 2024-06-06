@@ -53,9 +53,9 @@ public class ClassNameRemappingImpl implements ClassNameRemapping {
     @Override
     public boolean shouldBeIgnored(String className) {
         // do not put TCK vehicle classes in the (ShrinkWrap) test deployment archives
-        if(className != null && className.startsWith("com.sun.ts.tests.common.vehicle")) {
-            return true;
-        }
+        //if(className != null && className.startsWith("com.sun.ts.tests.common.vehicle")) {
+        //    return true;
+        // }
         return false;
     }
 
