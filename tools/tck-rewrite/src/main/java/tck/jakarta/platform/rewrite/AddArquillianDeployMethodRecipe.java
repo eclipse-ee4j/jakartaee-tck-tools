@@ -225,11 +225,8 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
                 }
             }
             if (vehicles == null) {
-                if (ee10pkg.contains("jstl")) {
-                    throw new IllegalStateException("Add web handling for the jstl tests in package " + ee10pkg);
-                } else {
-                    throw new IllegalStateException("no test vehicles found for package " + ee10pkg);
-                }
+                // TODO: instead of returning empty vehicle list, return an indicator that the default should be used which should at least cover web deployment archives which have no test vehicles included
+                return new HashSet<String>();
             }
             return new HashSet<String>(Arrays.asList(vehicles.split(" ")));
         }
