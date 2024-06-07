@@ -32,30 +32,18 @@ public class JarFileProcessor extends AbstractFileProcessor {
 
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
-        String testclient = "Client";
         String indent = " ";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
-                printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;\n");
                 printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;\n");
 
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            /* The library jars
-            // Class thisClass = MethodHandles.lookup().lookupClass();
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
-
-            // Start war creation
-            printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + testclient + ".war\")");
-
-            printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
-            */
+            printWriter.println(indent+"public static JavaArchive getJarTestArchive() throws Exception {");
 
             for (String name : classes) {
                 if (!ignoreFile(name)) {
@@ -64,9 +52,9 @@ public class JarFileProcessor extends AbstractFileProcessor {
                     printWriter.println(")");
                 }
             }
-            for (String name : webinf) {
+            for (String name : metainf) {
                 if (!ignoreFile(name)) {
-                    printWriter.print(indent.repeat(3) + ".addAsWebInfResource(\"");
+                    printWriter.print(indent.repeat(3) + ".addAsManifestResource(\"");
                     printWriter.print(name);
                     printWriter.println("\")");
                 }

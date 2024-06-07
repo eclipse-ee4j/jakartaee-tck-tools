@@ -46,18 +46,7 @@ public class TestGenerator {
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            /* The library jars
-            // Class thisClass = MethodHandles.lookup().lookupClass();
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
-
-            // Start war creation
-            printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + testclient + ".war\")");
-
-            printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
-            */
-
+            printWriter.println(indent+"public static JarArchive getJarTestArchive() throws Exception {");
             for (String name : jarProcessor.getClasses()) {
                 if (!ignoreFile(name)) {
                     printWriter.print(indent.repeat(3) + ".addClass(");
@@ -65,9 +54,9 @@ public class TestGenerator {
                     printWriter.println(")");
                 }
             }
-            for (String name : jarProcessor.getWebinf()) {
+            for (String name : jarProcessor.getMetainf()) {
                 if (!ignoreFile(name)) {
-                    printWriter.print(indent.repeat(3) + ".addAsWebInfResource(\"");
+                    printWriter.print(indent.repeat(3) + ".addAsManifestResource(\"");
                     printWriter.print(name);
                     printWriter.println("\")");
                 }
@@ -140,7 +129,7 @@ public class TestGenerator {
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
+            printWriter.println(indent+"public static WebArchive getWarTestArchive() throws Exception {");
             saveOutputWar(warProcessor, printWriter);
             printWriter.println("}");
             return writer.toString();
@@ -163,7 +152,7 @@ public class TestGenerator {
             }
 
             printWriter.println("@Deployment(testable = false)");
-            printWriter.println("public static Archive<?> deployment() {");
+            printWriter.println("public static Archive<?> getEarTestArchive() {");
             printWriter.println(newLine + indent.repeat(1) + "final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\");".formatted(earProcessor.getArchivePath().toFile().getName()));
             // The EAR library jars
             if (earProcessor.getLibraries().size() > 0) {

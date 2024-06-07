@@ -83,7 +83,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
             }
 
             printWriter.println("@Deployment(testable = false)");
-            printWriter.println("public static Archive<?> deployment() {");
+            printWriter.println("public static Archive<?> getEarTestArchive() {");
             printWriter.println(newLine + indent.repeat(1) +"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\");".formatted(archiveFile.getName()));
             // The EAR library jars
             if(getLibraries().size() > 0) {
@@ -93,7 +93,6 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 printWriter.println(indent.repeat(1) + "// TODO: filter/eliminate the library jar classes that shouldn't be included");
                 printWriter.println(indent.repeat(1) + "// Add ear/lib jars");
                 // Write out the classes seen in the EE10 jars in a comment as a hint
-                List<File> libraryFiles = new ArrayList<>();
                 for (String archiveName : getLibraries()) {
                     JarProcessor jarProcessor = getLibrary(archiveName);
                     printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block

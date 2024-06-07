@@ -108,7 +108,9 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
             boolean deploymentMethodExists = classDecl.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
                     .map(J.MethodDeclaration.class::cast)
-                    .anyMatch(methodDeclaration -> methodDeclaration.getName().getSimpleName().equals("deployment"));
+                    .anyMatch(methodDeclaration -> methodDeclaration.getName().getSimpleName().equals("getEarTestArchive") ||
+                            methodDeclaration.getName().getSimpleName().equals("getWarTestArchive") ||
+                            methodDeclaration.getName().getSimpleName().equals("getJarTestArchive"));
 
             // If the class already has a `deployment()` method, don't make any changes to it.
             if (deploymentMethodExists) {
@@ -135,7 +137,7 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
             }
 
             Set<String> vehicleNames = testVehicles(ee10pkg);
-            System.out.println("xxx vehicleNames for " + ee10pkg + " = " + vehicleNames);
+            System.out.println("vehicleNames for " + ee10pkg + " = " + vehicleNames);
             // app client container vehicles are named: appclient, appmanaged, appmanagedNoTx, ejb, stateful3, stateless3, wsappclient, wsejb
             // see https://github.com/jakartaee/platform-tck/tree/tckrefactor/common/src/main/java/com/sun/ts/tests/common/vehicle for each test vehicle
 
