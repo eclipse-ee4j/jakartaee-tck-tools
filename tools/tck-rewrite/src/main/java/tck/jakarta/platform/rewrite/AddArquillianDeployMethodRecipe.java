@@ -32,7 +32,7 @@ import tck.jakarta.platform.rewrite.shrinkwrap.TestGenerator;
  */
 public class AddArquillianDeployMethodRecipe extends Recipe implements Serializable {
 
-    private static ThreadLocal<Set> methodNamesSet = new ThreadLocal<>();
+    private static ThreadLocal<Set> threadLocalMethodNamesSet = new ThreadLocal<>();
 
     static final long serialVersionUID = 427023419L;
     private static String fullyQualifiedClassName = AddArquillianDeployMethodRecipe.class.getCanonicalName();
@@ -87,31 +87,22 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
             }
 
             boolean isEETest = classDecl.getSimpleName().contains("Client"); // this will match too much but still try
-            if (isEETest) {
-                Set<String> methodNameSet = new HashSet<>(); // will contain set of methods in the current classDecl
-                methodNamesSet.set(methodNameSet);
-                super.visitClassDeclaration(classDecl, executionContext);
-                isEETest = methodNameSet.stream().anyMatch(str -> str.contains("test"));
-                //for(Iterator<String> iter = methodNameSet.iterator(); iter.hasNext(); ) {
-                //    if (iter.next().contains("test")) {
-                //        isEETest = true;
-                //        break;
-                //    }
-                // }
-                methodNamesSet.set(null);
+            if (!isEETest) {
+                return classDecl;
             }
 
+            // will populate methodNameSet in visitMethodDeclaration method
+            Set<String> methodNameSet = new HashSet<>(); // will contain set of methods in the current classDecl
+            threadLocalMethodNamesSet.set(methodNameSet);
+            super.visitClassDeclaration(classDecl, executionContext);
+            isEETest = methodNameSet.stream().anyMatch(str -> str.contains("test"));
+            threadLocalMethodNamesSet.set(null);
+            methodNameSet = null;
 
             // return if this is not an EE test
             if (!isEETest) {
                 return classDecl;
             }
-
-            // Don't make changes to classes that don't match the fully qualified name
-            //if (classDecl.getType() == null || !classDecl.getType().getFullyQualifiedName().equals(fullyQualifiedClassName)) {
-            //    System.out.println("classDecl.getType() (" +classDecl.getType() + ") is not equal to " + fullyQualifiedClassName);
-            //    return classDecl;
-            // }
 
             // Check if the class already has a method named "deployment".
             boolean deploymentMethodExists = classDecl.getBody().getStatements().stream()
@@ -233,7 +224,7 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
 
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
-            Set<String> methodNameSet = methodNamesSet.get();
+            Set<String> methodNameSet = threadLocalMethodNamesSet.get();
             if (methodNameSet != null) {
                 methodNameSet.add(method.getSimpleName().toLowerCase());
             }
