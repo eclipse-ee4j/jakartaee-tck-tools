@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -52,7 +53,7 @@ public interface JarProcessor {
 
     ArrayList<String> getWebinf();
 
-    ArrayList<String> getClasses();
+    Set<String> getClasses();
 
     ArrayList<String> getOtherFiles();
 

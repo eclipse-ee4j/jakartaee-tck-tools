@@ -5,11 +5,12 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -32,7 +33,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected final ArrayList<String> libraries = new ArrayList<>();
     protected final ArrayList<String> metainf = new ArrayList<>();
     protected final ArrayList<String> webinf = new ArrayList<>();
-    protected final ArrayList<String> classes = new ArrayList<>();
+    protected final Set<String> classes = new HashSet<>();
     protected final ArrayList<String> otherFiles = new ArrayList<>();
     protected File archiveFile;
     protected File baseDir;
@@ -124,7 +125,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     }
 
     @Override
-    public ArrayList<String> getClasses() {
+    public Set<String> getClasses() {
         return classes;
     }
 

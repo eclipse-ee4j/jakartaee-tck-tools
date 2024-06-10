@@ -35,7 +35,7 @@ public class Jar2ShrinkwrapPkgTest {
                 "com.sun.ts.tests.servlet.common.util.ServletTestUtil.class"};
 
         JarProcessor war = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes");
-        ArrayList<String> classes = war.getClasses();
+        Set<String> classes = war.getClasses();
         System.out.printf("Classes: %s\n", classes);
         HashSet<String> classesSet = new HashSet<>(Arrays.asList(expectedClasses));
         HashSet<String> warClassesSet = new HashSet<>(classes);
