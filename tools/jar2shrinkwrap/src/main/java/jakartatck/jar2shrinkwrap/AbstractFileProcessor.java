@@ -25,7 +25,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     public static final String CLASS = ".class";
     public static final String WEB_INF = "WEB-INF/";
     public static final String WEB_INF_LIB = "WEB-INF/lib/";
-    public static final String META_INF = "META-INF";
+    public static final String META_INF = "META-INF/";
     /**
      * This is a list of jar names in a unique directory for a given package that
      * need to be loaded as JavaArchive files in the deployment method.
@@ -52,7 +52,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
         if (entry.isDirectory()) {
             // ignore
-        } else if (entry.toString().startsWith("META-INF/")) {
+        } else if (entry.toString().startsWith(META_INF)) {
             addMetainf(entry.getName());
         } else if (entry.getName().endsWith(".jar")) {
 
@@ -93,6 +93,8 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected void addMetainf(String name) {
         if (name.startsWith(WEB_INF))
             name = name.substring(WEB_INF.length());
+        if (name.startsWith(META_INF))
+            name = name.substring(META_INF.length());
         metainf.add(name);
     }
 
@@ -159,8 +161,15 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
 
     protected void addClass(String name) {
+
         if (name.startsWith(WEB_INF_CLASSES))
             name = name.substring(WEB_INF_CLASSES.length());
+
+        if (name.startsWith(META_INF)) { // handle resources like META-INF/persistence.xml
+            name = name.substring(META_INF.length());
+            webinf.add(name);
+            return;
+        }
         if (name.endsWith(CLASS))
             name = name.substring(0, name.length() - CLASS.length());
         name = name.replace('/', '.');

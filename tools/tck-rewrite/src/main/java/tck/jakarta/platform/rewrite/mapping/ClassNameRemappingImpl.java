@@ -33,7 +33,9 @@ public class ClassNameRemappingImpl implements ClassNameRemapping {
     public String getName(String className) {
 
         className = className.replace("com.sun.ts.tests.jpa.common.schema30", "ee.jakarta.tck.persistence.common.schema30").
+                replace("com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager","ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager").
                 replace("com.sun.ts.tests.jpa", "ee.jakarta.tck.persistence");
+
         // TODO: also handle ee.jakarta.tck.pages
         return className;
 

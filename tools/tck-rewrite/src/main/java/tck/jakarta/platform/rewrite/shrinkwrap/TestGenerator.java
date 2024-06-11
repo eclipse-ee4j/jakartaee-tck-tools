@@ -66,7 +66,7 @@ public class TestGenerator {
         }
     }
 
-    public static void saveOutputWar(WarFileProcessor warProcessor, PrintWriter printWriter ) {
+    public static void saveOutputWar(WarFileProcessor warProcessor, PrintWriter printWriter, boolean retWarArchive ) {
         String archiveName =  warProcessor.getArchivePath().toFile().getName();
         final String newLine = "\n";
         final String indent = " ";
@@ -111,6 +111,9 @@ public class TestGenerator {
                     printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
                 }
             }
+            if (retWarArchive) {
+                printWriter.println(indent + "return %s;".formatted(archiveName(archiveName)));
+            }
     }
 
     public static String saveOutput(WarFileProcessor warProcessor) {
@@ -130,7 +133,7 @@ public class TestGenerator {
 
             printWriter.println(indent+"@Deployment(testable = false)");
             printWriter.println(indent+"public static WebArchive getWarTestArchive() throws Exception {");
-            saveOutputWar(warProcessor, printWriter);
+            saveOutputWar(warProcessor, printWriter, true);
             printWriter.println("}");
             return writer.toString();
         }
@@ -184,7 +187,7 @@ public class TestGenerator {
                     JarProcessor jarProcessor = earProcessor.getSubmodule(archiveName);
                     printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
                     if (jarProcessor instanceof WarFileProcessor) {
-                        saveOutputWar((WarFileProcessor)jarProcessor, printWriter);
+                        saveOutputWar((WarFileProcessor)jarProcessor, printWriter, false);
                      } else {
                         // JavaArchive jar  = ShrinkWrap.create(JavaArchive.class);
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
