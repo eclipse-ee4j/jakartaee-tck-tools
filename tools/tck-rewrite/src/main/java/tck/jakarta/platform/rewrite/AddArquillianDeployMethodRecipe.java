@@ -104,7 +104,7 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
                 return classDecl;
             }
 
-            // Check if the class already has a method named "deployment".
+            // Check if the class already has a method that handles EE "deployment".
             boolean deploymentMethodExists = classDecl.getBody().getStatements().stream()
                     .filter(statement -> statement instanceof J.MethodDeclaration)
                     .map(J.MethodDeclaration.class::cast)
@@ -112,7 +112,7 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
                             methodDeclaration.getName().getSimpleName().equals("getWarTestArchive") ||
                             methodDeclaration.getName().getSimpleName().equals("getJarTestArchive"));
 
-            // If the class already has a `deployment()` method, don't make any changes to it.
+            // If the class already has an `ee deployment()` method, don't make any changes to it.
             if (deploymentMethodExists) {
                 return classDecl;
             }
