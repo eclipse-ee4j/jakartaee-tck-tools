@@ -171,6 +171,16 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             name = name + CLASS; // add .class extension
         }
         name = classNameRemapping.getName(name);
+
+        if(name.startsWith(classNameRemapping.getTargetClassNamePackage())) {
+            String nameNoclass = name.substring(0, name.length() - CLASS.length());
+            // reduce to just the class name
+            nameNoclass = nameNoclass.substring(nameNoclass.lastIndexOf(".")+1,nameNoclass.length());
+            if (nameNoclass.equals("Client")) {
+                // replace typical Client.class test client with the actual Test client source file
+                name = classNameRemapping.getTargetClassName();
+            }
+        }
         classes.add(name);
     }
 

@@ -15,4 +15,6 @@ public interface ClassNameRemapping {
     }
 
     default String getTargetClassName() { return ""; }
+
+    default String getTargetClassNamePackage() { return ""; }
 }

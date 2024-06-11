@@ -11,6 +11,9 @@ public class ClassNameRemappingImpl implements ClassNameRemapping {
 
     private String classBeingUpdated;
     private String getClassBeingUpdatedNoClass;
+
+    private String targetClassPackage;
+
     static final String CLASS = ".class";
 
     public ClassNameRemappingImpl(String classBeingUpdated) {
@@ -19,6 +22,7 @@ public class ClassNameRemappingImpl implements ClassNameRemapping {
         }
         this.classBeingUpdated = classBeingUpdated;
         this.getClassBeingUpdatedNoClass = classBeingUpdated.substring(0, classBeingUpdated.length() - CLASS.length());
+        this.targetClassPackage = getClassBeingUpdatedNoClass.substring(0,getClassBeingUpdatedNoClass.lastIndexOf("."));
     }
 
     /**
@@ -52,4 +56,9 @@ public class ClassNameRemappingImpl implements ClassNameRemapping {
     public String getTargetClassName() {
         return classBeingUpdated;
     }
+
+    public String getTargetClassPackage() {
+        return targetClassPackage;
+    }
+
 }
