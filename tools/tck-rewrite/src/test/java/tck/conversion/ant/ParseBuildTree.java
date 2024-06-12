@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -115,7 +116,7 @@ public class ParseBuildTree {
      *
      * @param buildXml
      */
-    static void parseBuildXml(Path buildXml) {
+    static Project parseBuildXml(Path buildXml) {
         Project project = new Project();
         project.init();
         System.out.printf("Parsing(%s)\n", buildXml);
@@ -124,7 +125,10 @@ public class ParseBuildTree {
         System.out.println(project.getBaseDir());
         // The package targets are what build the test artifacts
         Target pkg = project.getTargets().get("package");
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        System.out.printf("--- Dependencies: %s", asList(pkg.getDependencies()));
         System.out.println("--- Tasks in package target:");
+
         for(Task t : pkg.getTasks()) {
             System.out.printf("--- ---%s/%s\n", t.getTaskName(), t.getTaskType());
             System.out.println(t.getRuntimeConfigurableWrapper().getAttributeMap());
@@ -137,10 +141,14 @@ public class ParseBuildTree {
                 }
             }
         }
+        return project;
     }
     static void printEjbJarTask(RuntimeConfigurable taskRC) {
         EjbJar ejbJar = new EjbJar(taskRC);
         System.out.println(ejbJar);
+    }
+    public static <T> List<T> asList(final Enumeration<T> e) {
+        return Collections.list(e);
     }
     public static <T> Iterable<T> asIterable(final Enumeration<T> e) {
         if (e == null)

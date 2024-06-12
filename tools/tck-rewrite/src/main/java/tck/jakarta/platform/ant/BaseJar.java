@@ -8,6 +8,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
+/**
+ * Represents the common base of the CTS artifact tasks
+ */
 public abstract class BaseJar {
     String descriptor;
     String manifest;

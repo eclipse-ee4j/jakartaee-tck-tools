@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * fileset and zipfileset
+ * org.apache.tools.ant.types.FileSet
+ * org.apache.tools.ant.types.ZipFileSet
  */
 public class FileSet {
     String dir;
