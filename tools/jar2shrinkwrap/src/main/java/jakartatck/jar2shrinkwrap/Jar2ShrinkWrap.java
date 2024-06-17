@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,6 +22,7 @@ import java.util.zip.ZipInputStream;
  */
 public class Jar2ShrinkWrap {
 
+    private static final Logger log = Logger.getLogger(Jar2ShrinkWrap.class.getName());
     private static final String LegacyTCKFolderPropName = "LegacyTCKFolder";
     private static final String defaultFolderName = "legacytck";
     private static final String legacyTCKZip = "jakarta-jakartaeetck-10.0.2.zip";
@@ -49,31 +51,31 @@ public class Jar2ShrinkWrap {
             return legacyTckRoot;
         }
 
-        System.out.println("looking for existing copy of jakarta-jakartaeetck-10.0.2.zip in folder " + LegacyTCKFolderName);
+        log.fine("looking for existing copy of jakarta-jakartaeetck-10.0.2.zip in folder " + LegacyTCKFolderName);
         if (System.getProperty("java.io.tmpdir") == null) {
             System.out.println("java.io.tmpdir needs to point to temp folder, exiting with failure code 3");
             System.exit(3);
         }
         if (LegacyTCKFolderName == null) {
             LegacyTCKFolderName = System.getProperty("java.io.tmpdir") + File.separator + defaultFolderName;
-            System.out.println(LegacyTCKFolderPropName + "wasn't specified so will instead use " + LegacyTCKFolderName);
+            log.info(LegacyTCKFolderPropName + "wasn't specified so will instead use " + LegacyTCKFolderName);
         }
         File legacyTCKFolder = new File(LegacyTCKFolderName);
         legacyTCKFolder.mkdirs();
-        System.out.println("looking for existing extracted " + legacyTCKZip + " in folder " + LegacyTCKFolderName);
+        log.info("looking for existing extracted " + legacyTCKZip + " in folder " + LegacyTCKFolderName);
 
         File target = new File(legacyTCKFolder, "LegacyTCKFolderName");
         target.mkdirs();
         File targetTCKZipFile = new File(target, legacyTCKZip);
         if (targetTCKZipFile.exists()) {
-            System.out.println("already downloaded " + targetTCKZipFile.getName());
+            log.info("already downloaded " + targetTCKZipFile.getName());
         } else {
-            System.out.println("will download " + legacyTCKZipDownload + " and extract contents into " + target.getName());
+            log.info("will download " + legacyTCKZipDownload + " and extract contents into " + target.getName());
             downloadUsingStream(tckurl, target);
 
-            System.out.println("will unzip " + legacyTCKZipDownload + " into " + target.getName());
+            log.info("will unzip " + legacyTCKZipDownload + " into " + target.getName());
             unzip(target);
-            System.out.println("one time setup is complete");
+            log.info("one time setup is complete");
         }
         legacyTckRoot = target;
         return target;
@@ -111,10 +113,7 @@ public class Jar2ShrinkWrap {
     public static JarProcessor fromPackage(String packageName, ClassNameRemapping classNameRemapping) {
         // Locate or download the legacy TCK
         File target = maybeDownloadTck();
-        System.out.println("Locate the TCK archive that contains the test for package " + packageName);
-        if (packageName.startsWith("com.ibm")) {
-            System.out.println("ignoring the request for the Batch TCK tests as they were already rewritten and moved to Batch Specification");
-        }
+        log.fine("Locate the TCK archive that contains the test for package " + packageName);
         target = new File(target, unzippedLegacyTCK);
         File targetArchiveFile = locateTargetPackageFolder(target, packageName);
         JarVisit visitor = new JarVisit(targetArchiveFile, classNameRemapping);
@@ -134,7 +133,7 @@ public class Jar2ShrinkWrap {
         // Locate or download the legacy TCK
         File target = maybeDownloadTck();
         Path tckRoot = target.toPath().resolve(unzippedLegacyTCK).resolve("dist");
-        System.out.println("Searing in: "+tckRoot.toAbsolutePath());
+        log.fine("Searching in: "+tckRoot.toAbsolutePath());
         TestPkgVisitor visitor = new TestPkgVisitor(tckRoot, rootPkgName);
         Files.walkFileTree(tckRoot, visitor);
         return visitor.getTestPkgs();
@@ -145,8 +144,8 @@ public class Jar2ShrinkWrap {
     }
     private static File locateTargetPackageFolder(File target, String packageName) {
         File findTCKDistArchive = new File(target, "dist" + File.separator + package2Name(packageName));
-        System.out.println("locateTargetPackageFolder will look inside of " + target.getName() + " for findTCKDistArchive = " + findTCKDistArchive.getName());
-        System.out.println("looking inside of " + findTCKDistArchive.getName() + " for the archive that contains a test client for package " + packageName);
+        log.fine("locateTargetPackageFolder will look inside of " + target.getName() + " for findTCKDistArchive = " + findTCKDistArchive.getName());
+        log.fine("looking inside of " + findTCKDistArchive.getName() + " for the archive that contains a test client for package " + packageName);
         if (findTCKDistArchive.exists()) {
             File[] possibleMatches = findTCKDistArchive.listFiles(); // may contain EAR, WARs, JARs
             File matchWar = null;
@@ -172,7 +171,7 @@ public class Jar2ShrinkWrap {
     private static void unzip(File fileFolder) {
         File file = new File(fileFolder, legacyTCKZip);
         byte[] buffer = new byte[10240];
-        System.out.println("Unzipping " + file.getName());
+        log.info("Unzipping " + file.getName());
         try {
             ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
             ZipEntry zipEntry = zipInputStream.getNextEntry();
@@ -207,7 +206,7 @@ public class Jar2ShrinkWrap {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("Finished Unzipping " + file.getName());
+        log.info("Finished Unzipping " + file.getName());
     }
 
     private static void downloadUsingStream(URL url, File fileFolder) {
@@ -218,7 +217,7 @@ public class Jar2ShrinkWrap {
             byte[] buffer = new byte[10240];
             int count = 0;
             int loop = 0;
-            System.out.println("downloading from " + url + " to " + fileFolder.getName());
+            log.info("downloading from " + url + " to " + fileFolder.getName());
             while ((count = bis.read(buffer, 0, 10240)) != -1) {
                 fis.write(buffer, 0, count);
                 if (loop++ == 1024 ) {
@@ -228,7 +227,7 @@ public class Jar2ShrinkWrap {
             }
             fis.close();
             bis.close();
-            System.out.println("finished download of " + url);
+            log.info("finished download of " + url);
         } catch (Throwable e) {
             throw new RuntimeException(e.getMessage(), e);
         }

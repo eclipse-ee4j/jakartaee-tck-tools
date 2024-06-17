@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,6 +22,7 @@ import java.util.zip.ZipInputStream;
  * @author Scott Marlow
  */
 public abstract class AbstractFileProcessor implements JarProcessor {
+    private static final Logger log = Logger.getLogger(Jar2ShrinkWrap.class.getName());
     public static final String WEB_INF_CLASSES = "WEB-INF/classes/";
     public static final String CLASS = ".class";
     public static final String WEB_INF = "WEB-INF/";
@@ -206,7 +208,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     public void saveOutput(final File fileInputArchive) {
         String testclient = "Client";
         File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
+        log.fine("generating " + output.getName() + " for input file " + fileInputArchive.getName());
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             saveOutput(fileWriter, true);

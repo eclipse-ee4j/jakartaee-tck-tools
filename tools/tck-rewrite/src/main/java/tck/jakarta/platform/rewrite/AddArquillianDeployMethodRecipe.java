@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
@@ -31,14 +33,16 @@ import tck.jakarta.platform.rewrite.shrinkwrap.TestGenerator;
  * @author Scott Marlow
  */
 public class AddArquillianDeployMethodRecipe extends Recipe implements Serializable {
-
+    private static final Logger log = Logger.getLogger(AddArquillianDeployMethodRecipe.class.getName());
     private static ThreadLocal<Set> threadLocalMethodNamesSet = new ThreadLocal<>();
 
     static final long serialVersionUID = 427023419L;
     private static String fullyQualifiedClassName = AddArquillianDeployMethodRecipe.class.getCanonicalName();
 
     static {
-        System.out.println("AddArquillianDeployMethodRecipe: Preparing to use " + fullyQualifiedClassName);
+        if(log.isLoggable(Level.FINEST)) {
+            log.finest("AddArquillianDeployMethodRecipe: Preparing to process " + fullyQualifiedClassName);
+        }
     }
 
     @Override
@@ -127,7 +131,9 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
                     // Generate the deployment() method
                     jarProcessor = Jar2ShrinkWrap.fromPackage(ee10pkg, new ClassNameRemappingImpl(classDecl.getType().getFullyQualifiedName()));
                 } else {
-                    System.out.println("AddArquillianDeployMethodRecipe: ignoring package " + ee10pkg);
+                    if(log.isLoggable(Level.FINEST)) {
+                        log.finest("AddArquillianDeployMethodRecipe: ignoring package " + ee10pkg);
+                    }
                     return classDecl;
                 }
             } catch (RuntimeException e) {
@@ -137,7 +143,9 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
             }
 
             Set<String> vehicleNames = testVehicles(ee10pkg);
-            System.out.println("vehicleNames for " + ee10pkg + " = " + vehicleNames);
+            if(log.isLoggable(Level.FINEST)) {
+                log.finest("vehicleNames for " + ee10pkg + " = " + vehicleNames);
+            }
             // app client container vehicles are named: appclient, appmanaged, appmanagedNoTx, ejb, stateful3, stateless3, wsappclient, wsejb
             // see https://github.com/jakartaee/platform-tck/tree/tckrefactor/common/src/main/java/com/sun/ts/tests/common/vehicle for each test vehicle
 
@@ -180,9 +188,8 @@ public class AddArquillianDeployMethodRecipe extends Recipe implements Serializa
                 classDecl = classDecl.withBody(deploymentTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
                         classDecl.getBody().getCoordinates().firstStatement()));
             } catch (RuntimeException e) {
-                System.out.println("AddArquillianDeployMethodRecipe: error " + e.getMessage() + "occurred for (EE11) " + pkg + " (EE10) " + ee10pkg +
-                        " classDecl.getType() = " + classDecl.getType() + "methodCode " + methodCode);
-                e.printStackTrace();
+                throw new RuntimeException("AddArquillianDeployMethodRecipe: error " + e.getMessage() + "occurred for (EE11) " + pkg + " (EE10) " + ee10pkg +
+                                        " classDecl.getType() = " + classDecl.getType() + "methodCode " + methodCode, e);
             }
             return classDecl;
         }

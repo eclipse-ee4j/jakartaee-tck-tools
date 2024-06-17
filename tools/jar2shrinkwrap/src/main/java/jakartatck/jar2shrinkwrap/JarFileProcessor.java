@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.logging.Logger;
 
 /**
  * JarFileProcessor
@@ -12,7 +13,7 @@ import java.io.Writer;
  * @author Scott Marlow
  */
 public class JarFileProcessor extends AbstractFileProcessor {
-
+    private static final Logger log = Logger.getLogger(Jar2ShrinkWrap.class.getName());
     public JarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
     }
@@ -21,7 +22,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
     public void saveOutput(final File fileInputArchive) {
         String testclient = "Client";
         File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
+        log.fine("generating " + output.getName() + " for input file " + fileInputArchive.getName());
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             saveOutput(fileWriter, true);

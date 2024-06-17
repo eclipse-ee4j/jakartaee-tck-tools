@@ -4,7 +4,6 @@ import org.openrewrite.*;
 import org.openrewrite.config.Environment;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.tree.J;
 
 import java.io.File;
 import java.io.IOException;

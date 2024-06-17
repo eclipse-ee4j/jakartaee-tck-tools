@@ -5,9 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -90,8 +88,6 @@ public class EarFileProcessor extends AbstractFileProcessor {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
              */
-                printWriter.println(indent.repeat(1) + "// TODO: filter/eliminate the library jar classes that shouldn't be included");
-                printWriter.println(indent.repeat(1) + "// Add ear/lib jars");
                 // Write out the classes seen in the EE10 jars in a comment as a hint
                 for (String archiveName : getLibraries()) {
                     JarProcessor jarProcessor = getLibrary(archiveName);

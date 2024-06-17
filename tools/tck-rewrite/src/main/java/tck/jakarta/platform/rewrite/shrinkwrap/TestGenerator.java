@@ -162,8 +162,6 @@ public class TestGenerator {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
              */
-                printWriter.println(indent.repeat(1) + "// TODO: filter/eliminate the library jar classes that shouldn't be included");
-                printWriter.println(indent.repeat(1) + "// Add ear/lib jars");
                 // Write out the classes seen in the EE10 jars in a comment as a hint
                 List<File> libraryFiles = new ArrayList<>();
                 for (String archiveName : earProcessor.getLibraries()) {
@@ -180,7 +178,6 @@ public class TestGenerator {
                 }
 
             }
-            // TODO: these need to be built up the same as library jars
             if (earProcessor.getSubModules().size() > 0) {
                 printWriter.println(indent.repeat(1) + "// Add ear submodules");
                 for (String archiveName : earProcessor.getSubModules()) {

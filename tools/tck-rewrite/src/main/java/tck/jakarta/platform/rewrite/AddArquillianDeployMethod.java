@@ -10,8 +10,6 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import tck.jakarta.platform.rewrite.mapping.ClassNameRemappingImpl;
-import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
