@@ -1,9 +1,13 @@
 package tck.jakarta.platform.rewrite;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -15,14 +19,13 @@ import java.util.logging.Logger;
 
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import tck.jakarta.platform.rewrite.mapping.ClassNameRemappingImpl;
 import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
 import tck.jakarta.platform.rewrite.shrinkwrap.TestGenerator;
@@ -36,6 +39,7 @@ import tck.jakarta.platform.rewrite.shrinkwrap.TestGenerator;
 public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static final Logger log = Logger.getLogger(GenerateNewTestClassRecipe.class.getName());
     private static ThreadLocal<Set> threadLocalMethodNamesSet = new ThreadLocal<>();
+    private static File generateTestFile = null;
 
     static final long serialVersionUID = 427023419L;
     private static String fullyQualifiedClassName = GenerateNewTestClassRecipe.class.getCanonicalName();
@@ -79,7 +83,37 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     }
 
     public class testClassVisitor extends JavaIsoVisitor<ExecutionContext> {
+        /**
+         * Called after visitClassDeclaration which we will use to determine the file path of the Test Client class
+         * just processed last.
+         * @param tree
+         * @param executionContext
+         * @return
+         */
+        @Override
+        public @Nullable J postVisit(J tree, ExecutionContext executionContext) {
 
+            if (tree instanceof JavaSourceFile && generateTestFile != null) {
+                JavaSourceFile c = (JavaSourceFile) requireNonNull(tree);
+                System.out.println("postVisit source file source path = " + c.getSourcePath().toFile().getAbsolutePath());// ((CompilationUnit)c).sourcePath.toFile().getAbsolutePath()
+                // c.getSourcePath().toFile().getAbsolutePath() = jpa/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/StoredProcedureQuery/Client.java
+                // c.getSourcePath().getParent().toFile().getAbsolutePath() = /home/smarlow/tck/platformtck/jpa/spec-tests/src/main/java/ee/jakarta/tck/persistence/core/EntityGraph
+                //
+                try {
+                    // move generated EE test client file to same package location as the test client currently is in
+                    Path newFile = Files.move(generateTestFile.toPath(), Path.of(c.getSourcePath().getParent().toString(), generateTestFile.getName()));
+                    System.out.println("new test file location is " + newFile + " which should be same location as " + c.getSourcePath().toFile());
+                    generateTestFile = null;
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+            return super.postVisit(tree, executionContext);
+
+        }
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
@@ -91,8 +125,8 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 return classDecl;
             }
 
-            boolean isEETest = classDecl.getSimpleName().contains("Client"); // this will match too much but still try
-            if (!isEETest) {
+            boolean isTest = classDecl.getSimpleName().contains("Client"); // this will match too much but still try
+            if (!isTest) {
                 return classDecl;
             }
 
@@ -100,28 +134,14 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             Set<String> methodNameSet = new HashSet<>(); // will contain set of methods in the current classDecl
             threadLocalMethodNamesSet.set(methodNameSet);
             super.visitClassDeclaration(classDecl, executionContext);
-            isEETest = methodNameSet.stream().anyMatch(str -> str.contains("test"));
+            isTest = methodNameSet.stream().anyMatch(str -> str.contains("test"));
             threadLocalMethodNamesSet.set(null);
 
 
-            // return if this is not an EE test
-            if (!isEETest) {
+            // return if this is not a test client class
+            if (!isTest) {
                 return classDecl;
             }
-
-            // Check if the class already has a method that handles EE "deployment" we likely already generated it.
-            boolean deploymentMethodExists = classDecl.getBody().getStatements().stream()
-                    .filter(statement -> statement instanceof J.MethodDeclaration)
-                    .map(J.MethodDeclaration.class::cast)
-                    .anyMatch(methodDeclaration -> methodDeclaration.getName().getSimpleName().equals("getEarTestArchive") ||
-                            methodDeclaration.getName().getSimpleName().equals("getWarTestArchive") ||
-                            methodDeclaration.getName().getSimpleName().equals("getJarTestArchive"));
-
-            // If the class already has an `ee deployment()` method, don't make any changes to it.
-            if (deploymentMethodExists) {
-                return classDecl;
-            }
-
 
             String pkg = classDecl.getType().getPackageName();
             String ee10pkg = EE11_2_EE10.mapEE11toEE10(pkg);
@@ -152,46 +172,17 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             // see https://github.com/jakartaee/platform-tck/tree/tckrefactor/common/src/main/java/com/sun/ts/tests/common/vehicle for each test vehicle
 
             // Generate deployment method
-            String methodCode = TestGenerator.saveOutput(jarProcessor);
 
-            if (methodCode.length() == 0) {
-                // we shouldn't hit this case but still check for it
-                throw new RuntimeException("AddArquillianDeployMethodRecipe generated empty code block that is supposed to handle deployment of " + classDecl.getType().getFullyQualifiedName());
+            try {
+                generateTestFile = TestGenerator.generateJavaSourceFileContent(jarProcessor, methodNameSet, pkg, classDecl.getType().getClassName());
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
 
-
-            final JavaTemplate deploymentTemplate =
-                    JavaTemplate.builder(methodCode).imports()
-                            .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
-                            .imports(
-                                    "org.jboss.arquillian.container.test.api.Deployment",
-                                    "org.jboss.shrinkwrap.api.Archive",
-                                    "org.jboss.shrinkwrap.api.ShrinkWrap",
-                                    "org.jboss.shrinkwrap.api.spec.EnterpriseArchive",
-                                    "org.jboss.shrinkwrap.api.spec.JavaArchive",
-                                    "org.jboss.shrinkwrap.api.spec.EnterpriseArchive",
-                                    "org.jboss.shrinkwrap.api.spec.WebArchive",
-                                    "org.jboss.shrinkwrap.api.spec.JavaArchive"
-                            )
-                            .build();
-            maybeAddImport("org.jboss.arquillian.container.test.api.Deployment");
-            maybeAddImport("org.jboss.shrinkwrap.api.Archive");
-            maybeAddImport("org.jboss.shrinkwrap.api.ShrinkWrap");
-            maybeAddImport("org.jboss.shrinkwrap.api.spec.EnterpriseArchive");
-            maybeAddImport("org.jboss.shrinkwrap.api.spec.WebArchive");
-            maybeAddImport("org.jboss.shrinkwrap.api.spec.JavaArchive");
-
-            // Interpolate the fullyQualifiedClassName into the template and use the resulting LST to update the class body
-            try {
-
-                //classDecl = classDecl.withBody(deploymentTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
-                //        classDecl.getBody().getCoordinates().lastStatement(),
-                //        fullyQualifiedClassName));
-                classDecl = classDecl.withBody(deploymentTemplate.apply(new Cursor(getCursor(), classDecl.getBody()),
-                        classDecl.getBody().getCoordinates().firstStatement()));
-            } catch (RuntimeException e) {
-                throw new RuntimeException("AddArquillianDeployMethodRecipe: error " + e.getMessage() + "occurred for (EE11) " + pkg + " (EE10) " + ee10pkg +
-                                        " classDecl.getType() = " + classDecl.getType() + "methodCode " + methodCode, e);
+            if (generateTestFile == null || !generateTestFile.exists()) {
+                // we shouldn't hit this case but still check for it
+                throw new RuntimeException("generateJavaSourceFileContent output doesn't exist for" + classDecl.getType().getFullyQualifiedName());
             }
             return classDecl;
         }
