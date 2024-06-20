@@ -7,11 +7,13 @@ package tck.jakarta.platform.rewrite.mapping;
  */
 public class EE11_2_EE10 {
     public static String mapEE11toEE10(String classname) {
-        // TODO: also map ee.jakarta.tck.pages to equivalent EE 10 package(s)
+        //
         return classname.replace("ee.jakarta.tck.persistence.core", "com.sun.ts.tests.jpa.core").
                 replace("ee.jakarta.tck.persistence.entitytest", "com.sun.ts.tests.jpa.core.entitytest").
                 replace("ee.jakarta.tck.persistence.jpa22", "com.sun.ts.tests.jpa.jpa22").
-                replace("ee.jakarta.tck.persistence.se.cache.inherit", "com.sun.ts.tests.jpa.common.schema30").
-                replace("ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa");  // invoke use this catch all for persistence last
+                // TODO: correct or remove replace("ee.jakarta.tck.persistence.se.cache.inherit", "com.sun.ts.tests.jpa.common.schema30").
+                replace("ee.jakarta.tck.persistence.common.schema30","com.sun.ts.tests.jpa.common.schema30").
+                replace("ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa").  // invoke use this catch all for persistence last
+                replace("ee.jakarta.tck.pages","com.sun.ts.tests.jsp");
     }
 }

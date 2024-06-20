@@ -1,5 +1,6 @@
 package tck.jakarta.platform.rewrite;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
 
 import java.io.File;
@@ -101,7 +102,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 //
                 try {
                     // move generated EE test client file to same package location as the test client currently is in
-                    Path newFile = Files.move(generateTestFile.toPath(), Path.of(c.getSourcePath().getParent().toString(), generateTestFile.getName()));
+                    Path newFile = Files.move(generateTestFile.toPath(), Path.of(c.getSourcePath().getParent().toString(), generateTestFile.getName()),REPLACE_EXISTING);
                     System.out.println("new test file location is " + newFile + " which should be same location as " + c.getSourcePath().toFile());
                     generateTestFile = null;
 
