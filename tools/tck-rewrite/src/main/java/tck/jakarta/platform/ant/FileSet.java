@@ -15,16 +15,10 @@ public class FileSet {
     String prefix;
     List<String> includes;
 
-    FileSet(RuntimeConfigurable fileset) {
-        Object dir = fileset.getAttributeMap().get("dir");
-        if(dir != null) {
-            this.dir = dir.toString();
-        }
-        Object prefix = fileset.getAttributeMap().get("prefix");
-        if(prefix != null) {
-            this.prefix = prefix.toString();
-        }
-        String includes = fileset.getAttributeMap().get("includes").toString();
+    FileSet(AttributeMap fileset) {
+        this.dir = fileset.getAttribute("dir");
+        this.prefix = fileset.getAttribute("prefix");
+        String includes = fileset.getAttribute("includes");
         String[] asArray = includes.split(",");
         this.includes = Arrays.asList(asArray);
     }

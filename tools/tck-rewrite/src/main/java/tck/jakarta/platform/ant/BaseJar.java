@@ -1,7 +1,11 @@
 package tck.jakarta.platform.ant;
 
+import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.A;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -24,49 +28,31 @@ public abstract class BaseJar {
     boolean update;
     List<String> excludedFiles;
     List<FileSet> fileSets = new ArrayList<>();
+    Project project;
 
-    public BaseJar(RuntimeConfigurable taskRC) {
+    public BaseJar(Project project, RuntimeConfigurable taskRC) {
+        this.project = project;
         Hashtable<String,Object> attrs = taskRC.getAttributeMap();
-        Object archive = attrs.get("archivename");
-        if(archive != null) {
-            setArchiveName(archive.toString());
-        }
-        Object archivesuffix = attrs.get("archivesuffix");
-        if(archivesuffix != null) {
-            setArchiveSuffix(archivesuffix.toString());
-        }
-        Object archivefile = attrs.get("archivefile");
-        if(archivefile != null) {
-            setArchiveFile(archivefile.toString());
-        }
+        AttributeMap attrsMap = new AttributeMap(project, attrs);
+        setArchiveName(attrsMap.getAttribute("archivename"));
+        setArchiveSuffix(attrsMap.getAttribute("archivesuffix"));
+        setArchiveFile(attrsMap.getAttribute("archivefile"));
+        this.manifest = attrsMap.getAttribute("manifest");
+        setDescriptor(attrsMap.getAttribute("descriptor"));
+        setDescriptorDir(attrsMap.getAttribute("descriptordir"));
+        this.includedefaultfiles = Boolean.parseBoolean(attrsMap.getAttribute("includedefaultfiles"));
 
-        Object manifest = attrs.get("manifest");
-        if(manifest != null) {
-            this.manifest = manifest.toString();
-        }
-        Object descriptor = attrs.get("descriptor");
-        if(descriptor != null) {
-            setDescriptor(descriptor.toString());
-        }
-        Object descriptordir = attrs.get("descriptordir");
-        if(descriptordir != null) {
-            setDescriptorDir(descriptordir.toString());
-        }
-        Object flag = attrs.get("includedefaultfiles");
-        if(flag != null) {
-            this.includedefaultfiles = Boolean.parseBoolean(flag.toString());
-        }
-        Object excludes = attrs.get("excludedfiles");
+        Object excludes = attrsMap.getAttribute("excludedfiles");
         if(excludes != null) {
             String[] excludeFiles = excludes.toString().split(", ");
             setExcludedFiles(Arrays.asList(excludeFiles));
         }
         Enumeration<RuntimeConfigurable> children = taskRC.getChildren();
-        RuntimeConfigurable fileset = null;
         while(children.hasMoreElements()) {
             RuntimeConfigurable rc = children.nextElement();
+            AttributeMap attrsMaps = new AttributeMap(project, rc.getAttributeMap());
             if(rc.getElementTag().equals("fileset")) {
-                addFileSet(new FileSet(rc));
+                addFileSet(new FileSet(attrsMaps));
             }
         }
     }
@@ -151,8 +137,37 @@ public abstract class BaseJar {
     public void addFileSet(FileSet fs) {
         fileSets.add(fs);
     }
+
+    public String getRelativeDescriptorPath() {
+        return null;
+    }
+    /**
+     * Combine all fileset contents that are *.class files into a comma separted string of dot package name
+     * class file references, one per line. This can be passed to a {@link org.jboss.shrinkwrap.api.spec.JavaArchive#addClasses(Class[])}
+     * method.
+     * @return string of dot package class files, one per line
+     */
+    public String getClassFilesString() {
+        StringBuilder sb = new StringBuilder();
+        for(FileSet fs : fileSets) {
+            for(String f : fs.includes) {
+                if(f.endsWith(".class")) {
+                    String clazz = f.replace('/', '.');
+                    sb.append(clazz);
+                    sb.append(",\n");
+                }
+            }
+        }
+        return sb.toString();
+    }
     @Override
     public String toString() {
-        return "%s{descriptor=%s, archiveName=%s, excludedFiles=%s}".formatted(getType(), descriptor, archiveName, excludedFiles);
+        StringBuilder tmp = new StringBuilder();
+        tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, excludedFiles=%s}".formatted(getType(), descriptor, descriptordir, archiveName, excludedFiles));
+        for(FileSet fs : fileSets) {
+            tmp.append('\n');
+            tmp.append(fs);
+        }
+        return tmp.toString();
     }
 }

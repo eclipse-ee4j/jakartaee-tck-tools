@@ -134,7 +134,7 @@ public class ParseBuildTree {
             System.out.println(t.getRuntimeConfigurableWrapper().getAttributeMap());
             Enumeration<RuntimeConfigurable> children = t.getRuntimeConfigurableWrapper().getChildren();
             if(t.getTaskName().equals("ts.ejbjar")) {
-                printEjbJarTask(t.getRuntimeConfigurableWrapper());
+                printEjbJarTask(project, t.getRuntimeConfigurableWrapper());
             } else {
                 for (RuntimeConfigurable rc : asIterable(children)) {
                     System.out.printf("\t%s:\n%s\n", rc.getElementTag(), rc.getAttributeMap());
@@ -143,8 +143,8 @@ public class ParseBuildTree {
         }
         return project;
     }
-    static void printEjbJarTask(RuntimeConfigurable taskRC) {
-        EjbJar ejbJar = new EjbJar(taskRC);
+    static void printEjbJarTask(Project project, RuntimeConfigurable taskRC) {
+        EjbJar ejbJar = new EjbJar(project, taskRC);
         System.out.println(ejbJar);
     }
     public static <T> List<T> asList(final Enumeration<T> e) {

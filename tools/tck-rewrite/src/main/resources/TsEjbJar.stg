@@ -1,0 +1,21 @@
+delimiters "#", "#"
+
+
+// ejbjar is an tck.jakarta.platform.ant.EjbJar instance
+genJar(ejbjar, testClass) ::= <<
+          // the jar with the correct archive name
+          JavaArchive ejbArchive = ShrinkWrap.create(JavaArchive.class, "#ejbjar.archiveName#_ejb.jar");
+          // The class files
+          ejbArchive.addClasses(
+            #ejbjar.classFilesString#
+          );
+          // The ejb-jar.xml descriptor
+          String pkg = #testClass#.class.getPackage().getName();
+          String pkgPath  = pkg.replace('.', '/');
+          String ejbXmlPath = "/"+pkgPath+"/#ejbjar.descriptor#";
+          URL resURL = #testClass#.class.getResource(ejbXmlPath);
+          if(resURL != null) {
+              ejbArchive.addAsManifestResource(resURL, "ejb-jar.xml");
+          }
+          // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+>>
