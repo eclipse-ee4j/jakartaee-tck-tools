@@ -27,9 +27,9 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import tck.jakarta.platform.rewrite.createtestsource.CreateNewEETest;
 import tck.jakarta.platform.rewrite.mapping.ClassNameRemappingImpl;
 import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
-import tck.jakarta.platform.rewrite.shrinkwrap.TestGenerator;
 
 /**
  * GenerateNewTestClassRecipe is a fork of AddArquillianDeployMethodRecipe that is used to generate new EE test classes
@@ -175,7 +175,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             // Generate deployment method
 
             try {
-                generateTestFile = TestGenerator.generateJavaSourceFileContent(jarProcessor, methodNameSet, pkg, classDecl.getType().getClassName());
+                generateTestFile = CreateNewEETest.generateJavaSourceFileContent(jarProcessor, methodNameSet, pkg, classDecl.getType().getClassName());
 
             } catch (IOException e) {
                 throw new RuntimeException(e);

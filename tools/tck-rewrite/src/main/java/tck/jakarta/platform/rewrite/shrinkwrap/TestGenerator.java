@@ -16,7 +16,7 @@ import jakartatck.jar2shrinkwrap.JarProcessor;
 import jakartatck.jar2shrinkwrap.WarFileProcessor;
 
 /**
- * TestGenerator
+ * CreateNewEETest
  *
  * @author Scott Marlow
  */
