@@ -6,12 +6,16 @@ import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import tck.jakarta.platform.ant.EjbJar;
+import tck.jakarta.platform.ant.PackageTarget;
+import tck.jakarta.platform.ant.ProjectWrapper;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -20,9 +24,14 @@ import java.util.List;
 /**
  * Parses the build.xml files in the Jakarta EE 10 platform TCK dist src directory. One way
  * to get the src is to run the tools/jar2shrinkwrap/src/test/java/Jar2ShrinkwrapPkgTest.java#canLocateTestDefinitions
- * method. It will download the source to /tmp/legacytck/LegacyTCKFolderName/jakartaeetck
+ * method. It will download the source to /tmp/legacytck/LegacyTCKFolderName/jakartaeetck.
+ * Also available from the downloads page:
+ * https://www.eclipse.org/downloads/download.php?file=/ee4j/jakartaee-tck/jakartaee10/promoted/eftl/jakarta-jakartaeetck-10.0.0.zip
+ *
+ * This version attempts to parse all build.xml files into a {@link tck.jakarta.platform.ant.PackageTarget}
  */
-public class ParseBuildTree {
+public class ParseBuildTree2 {
+    static ArrayList<PackageTarget> targetsWithUnhandledTasks = new ArrayList<>();
     /**
      * The required arguments include:
      * ts.home = points to an EE10 source tree
@@ -32,13 +41,15 @@ public class ParseBuildTree {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        String tsHome = "/tmp/legacytck/LegacyTCKFolderName/jakartaeetck";
+        String tsHome = "/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck";
         if(args.length != 0) {
             tsHome = getArg("ts.home", tsHome, args);
-
+        }
+        if(!Files.exists(Paths.get(tsHome))) {
+            throw new FileNotFoundException(tsHome + " does not exist, pass in a valid EE 10 TCK root directory");
         }
         System.setProperty("ts.home", tsHome);
-        //
+        // Create/link directories that are needed to parse the build.xml files
         System.setProperty("deliverabledir", "tck");
 
         File deliveryDir = new File(tsHome+"/install/tck");
@@ -75,13 +86,13 @@ public class ParseBuildTree {
         for(Path buildXml : buildXmls) {
             parseBuildXml(buildXml);
         }
+        // Write out build.xml paths for package targets with unhandled tasks
+        targetsWithUnhandledTasks.forEach(pt -> System.out.println(pt.getPkgTarget().getLocation()));
     }
 
     /**
      * Given a build.xml file path, parse the file using the ant {@link Project}
-     * and {@link ProjectHelper}. This currently is just run for the side effect
-     * of printing out the ts.ejbjar tasks found as a starting point for understanding
-     * the CTS ant structure and whether this parsing provides a complete description.
+     * and {@link ProjectHelper} and print a summary of the parsed {@link PackageTarget}
      *
      * @param buildXml
      */
@@ -94,52 +105,18 @@ public class ParseBuildTree {
         System.out.println(project.getBaseDir());
         // The package targets are what build the test artifacts
         Target pkg = project.getTargets().get("package");
-        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
-        System.out.printf("--- Dependencies: %s", asList(pkg.getDependencies()));
-        System.out.println("--- Tasks in package target:");
+        if(pkg == null) {
+            return null;
+        }
 
-        for(Task t : pkg.getTasks()) {
-            System.out.printf("--- ---%s/%s\n", t.getTaskName(), t.getTaskType());
-            System.out.println(t.getRuntimeConfigurableWrapper().getAttributeMap());
-            Enumeration<RuntimeConfigurable> children = t.getRuntimeConfigurableWrapper().getChildren();
-            if(t.getTaskName().equals("ts.ejbjar")) {
-                printEjbJarTask(project, t.getRuntimeConfigurableWrapper());
-            } else {
-                for (RuntimeConfigurable rc : asIterable(children)) {
-                    System.out.printf("\t%s:\n%s\n", rc.getElementTag(), rc.getAttributeMap());
-                }
-            }
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        if(pkgTarget.getUnhandledTaks().size() > 0) {
+            targetsWithUnhandledTasks.add(pkgTarget);
         }
         return project;
     }
-    static void printEjbJarTask(Project project, RuntimeConfigurable taskRC) {
-        EjbJar ejbJar = new EjbJar(project, taskRC);
-        System.out.println(ejbJar);
-    }
-    public static <T> List<T> asList(final Enumeration<T> e) {
-        return Collections.list(e);
-    }
-    public static <T> Iterable<T> asIterable(final Enumeration<T> e) {
-        if (e == null)
-            return null;
-        return new Iterable<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    @Override
-                    public boolean hasNext() {
-                        return e.hasMoreElements();
-                    }
-                    @Override
-                    public T next() {
-                        return e.nextElement();
-                    }
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-        };
-    }
+
 }

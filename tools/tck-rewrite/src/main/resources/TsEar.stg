@@ -1,0 +1,7 @@
+// A Stringtemplate4 group for the ts.ear.xml logic for creating a application artifact
+delimiters "#", "#"
+
+// ear is a tck.jakarta.platform.ant.Ear instance
+genEar(ear) ::= <<
+
+>>

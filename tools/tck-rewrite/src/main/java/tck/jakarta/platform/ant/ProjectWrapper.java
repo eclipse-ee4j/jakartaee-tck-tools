@@ -1,9 +1,11 @@
 package tck.jakarta.platform.ant;
 
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
 
 /**
@@ -37,5 +39,29 @@ public class ProjectWrapper {
             }
         }
         return importFiles;
+    }
+
+    public PackageTarget getPackageTarget() {
+        Target packageTgt = project.getTargets().get("package");
+        PackageTarget packageTarget = null;
+        if(packageTgt != null) {
+            packageTarget = new PackageTarget(this, packageTgt);
+        }
+        return packageTarget;
+    }
+
+    public Hashtable<String, Target> getTargets() {
+        return project.getTargets();
+    }
+
+    public String getProperty(String key) {
+        return project.getProperty(key);
+    }
+    public boolean isDefined(String property) {
+        return project.getProperty(property) != null;
+    }
+
+    public Project getProject() {
+        return project;
     }
 }

@@ -1,11 +1,8 @@
 package tck.jakarta.platform.ant;
 
-import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.A;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -138,8 +135,19 @@ public abstract class BaseJar {
         fileSets.add(fs);
     }
 
+    /**
+     * The path of the descriptor based on descriptorDir with everything before the com/sun/ts/... path removed
+     * @return possibly null path to jar descriptor
+     */
     public String getRelativeDescriptorPath() {
-        return null;
+        String relativePath = getDescriptorDir();
+        if(relativePath != null) {
+            // Start is the com/sun/... path
+            int start = relativePath.lastIndexOf("com");
+            relativePath = relativePath.substring(start);
+            relativePath += "/" + getDescriptor();
+        }
+        return relativePath;
     }
     /**
      * Combine all fileset contents that are *.class files into a comma separted string of dot package name
@@ -152,13 +160,21 @@ public abstract class BaseJar {
         for(FileSet fs : fileSets) {
             for(String f : fs.includes) {
                 if(f.endsWith(".class")) {
-                    String clazz = f.replace('/', '.');
+                    String clazz = f.replace('/', '.').replace('$', '.');
                     sb.append(clazz);
                     sb.append(",\n");
                 }
             }
         }
         return sb.toString();
+    }
+
+    public String getArtifactName() {
+        String artifactName = null;
+        if(archiveName != null) {
+            artifactName = archiveName + archiveSuffix;
+        }
+        return artifactName;
     }
     @Override
     public String toString() {

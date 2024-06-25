@@ -3,6 +3,7 @@ package tck.conversion.ant;
 import com.sun.ts.lib.harness.VehicleVerifier;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
@@ -18,9 +19,11 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 import tck.jakarta.platform.ant.AttributeMap;
+import tck.jakarta.platform.ant.ClientJar;
+import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
-import tck.jakarta.platform.ant.FileSet;
-import tck.jakarta.platform.ant.Helper;
+import tck.jakarta.platform.ant.PackageTarget;
+import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.Vehicles;
 import tck.jakarta.platform.vehicles.VehicleType;
 
@@ -30,7 +33,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -40,7 +42,7 @@ import java.util.Properties;
  * These tests only run if there is ts.home property set.
  */
 @EnabledIfSystemProperty(named = "ts.home", matches = ".*")
-public class VehiclesArtifactTest {
+public class TsArtifactsTest {
     static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
     /**
@@ -244,6 +246,7 @@ public class VehiclesArtifactTest {
             }
         }
 
+        // package.ejb.jar target
         Target pkgEjbJar = project.getTargets().get("package.ejb.jar");
         // Need to execute the dirname, basename tasks to set properties used by the ts.ejbjar
         Task dirname = pkgEjbJar.getTasks()[0];
@@ -262,11 +265,11 @@ public class VehiclesArtifactTest {
         Task tsEjbJarTask = pkgEjbJar.getTasks()[2];
         EjbJar ejbJarDef = new EjbJar(project, tsEjbJarTask.getRuntimeConfigurableWrapper());
         System.out.println(ejbJarDef);
+        String relativePath = (ejbJarDef.getRelativeDescriptorPath());
+        System.out.println("ejb-jar relative path: "+relativePath);
 
         System.out.printf("ejb.jar.classes: %s\n", toDotClassList(project.getProperty("ejb.jar.classes")));
         System.out.printf("appclient.jar.classes: %s\n", toDotClassList(project.getProperty("appclient.jar.classes")));
-        Path descriptordir = Paths.get(ejbJarDef.getDescriptorDir());
-        //System.out.println("descriptordir relative path: "+descriptordir.(Paths.get(project.getBaseDir().toURI())));
 
         String archiveName = ejbJarDef.getArchiveName();
         JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, archiveName+"_.jar");
@@ -279,5 +282,193 @@ public class VehiclesArtifactTest {
         genRepo.add("testClass", "ClientTest");
         String ejbJarCode = genRepo.render();
         System.out.println(ejbJarCode);
+
+        // package.appclient.jar target
+        Target pkgClientJar = project.getTargets().get("package.appclient.jar");
+        // Need to execute the dirname, basename tasks to set properties used by the ts.ejbjar
+        Task dirname2 = pkgClientJar.getTasks()[0];
+        dirname2.maybeConfigure();
+        dirname2.execute();
+        Task basename2 = pkgClientJar.getTasks()[1];
+        basename2.maybeConfigure();
+        basename2.execute();
+        // Now these properties should be set
+        System.out.printf("Post dirname2/basename2 task execution:\n");
+        System.out.printf("application.client.xml.dir=%s\n", project.getProperty("application.client.xml.dir"));
+        System.out.printf("application.client.xml.base=%s\n", project.getProperty("application.client.xml.base"));
+
+        pkgLocation = pkgEjbJar.getLocation();
+        System.out.printf("package.appclient.jar build.xml: %s\n", pkgLocation.getFileName());
+        Task tsClientJarTask = pkgClientJar.getTasks()[2];
+        ClientJar clientJarDef = new ClientJar(project, tsClientJarTask.getRuntimeConfigurableWrapper());
+        System.out.println(clientJarDef);
+
+        STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
+        //System.out.println(ejbJarGroup.show());
+        ST clientRepo = clientJarGroup.getInstanceOf("genJar");
+        clientRepo.add("client", clientJarDef);
+        clientRepo.add("testClass", "ClientTest");
+        String clientJarCode = clientRepo.render();
+        System.out.println(clientJarCode);
+
+        Target pkgWar = project.getTargets().get("package.war");
+
+
+        // package.ear target
+        Target pkgEar = project.getTargets().get("package.ear");
+        pkgLocation = pkgEar.getLocation();
+        System.out.printf("package.ear build.xml: %s\n", pkgLocation.getFileName());
+        Task tsEarTask = pkgEar.getTasks()[0];
+        Ear earDef = new Ear(project, tsEarTask.getRuntimeConfigurableWrapper());
+        System.out.println(earDef);
+        System.out.printf("build.level: %s\n", project.getProperty("build.level"));
+        System.out.printf("build.vi: %s\n", project.getProperty("build.vi"));
+        System.out.printf("dist.dir: %s\n", project.getProperty("dist.dir"));
+        System.out.printf("pkg.dir: %s\n", project.getProperty("pkg.dir"));
+        System.out.printf("tmp.dir: %s\n", project.getProperty("tmp.dir"));
+        System.out.printf("keep.archives: %s\n", project.getProperty("keep.archives"));
+        System.out.printf("update: %s\n", project.getProperty("update"));
+
+
+        // The contents of the ear is based on previous ts.clientjar, ts.ejbjar and ts.war tasks
+
+    }
+
+    // src/com/sun/ts/tests/appclient/deploy/ejblink/casesens/build.xml
+    @Test
+    public void test_ejblink_casesens() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/casesens/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+    }
+    // src/com/sun/ts/tests/appclient/deploy/ejblink/path/build.xml
+    @Test
+    public void test_ejblink_path() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/path/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        System.out.println(pkgTarget.getEjbJarDefs());
+    }
+
+    // src/com/sun/ts/tests/ejb/ee/tx/txbean/build.xml
+    @Test
+    public void test_two_ears() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/path/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        System.out.println(pkgTarget.getEjbJarDefs());
+    }
+
+    // src/com/sun/ts/tests/assembly/classpath/ejb/build.xml
+    @Test
+    public void test_has_jar_task() {
+        // This build.xml has an extra ant and jar task to create jars that are added as libs to ts.ear outtput
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/assembly/classpath/ejb/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        System.out.println(pkgTarget.getUnhandledTaks());
+    }
+
+    // src/com/sun/ts/tests/assembly/compat/cocktail/compat12_13/build.xml
+    @Test
+    public void test_direct_jar_ear_usage() {
+        // This build.xml does not use ts.ejbjar, ts.ear, rather it directly calls jar and ear tasks
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/assembly/compat/cocktail/compat12_13/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        System.out.println(pkgTarget.getUnhandledTaks());
+    }
+
+    // src/com/sun/ts/tests/common/connector/whitebox/annotated/build.xml
+    @Test
+    public void test_rar() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/common/connector/whitebox/annotated/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        // ts.javac, mkdir, delete
+        System.out.println(pkgTarget.getUnhandledTaks());
+
+    }
+
+    @Test
+    public void test_localTx_conn() {
+        // src/com/sun/ts/tests/connector/localTx/connection/build.xml
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/connector/localTx/connection/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        // build.common.apps dependency uses ant task
+        System.out.println(pkgTarget.getUnhandledTaks());
+    }
+
+    // src/com/sun/ts/tests/appclient/deploy/compat12_13/build.xml
+    @Test
+    public void test_x() {
+
     }
 }

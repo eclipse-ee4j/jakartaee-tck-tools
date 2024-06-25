@@ -1,3 +1,4 @@
+// A Stringtemplate4 group for the ts.ejbjar.xml logic for creating a ejb-jar artifact
 delimiters "#", "#"
 
 
@@ -10,10 +11,7 @@ genJar(ejbjar, testClass) ::= <<
             #ejbjar.classFilesString#
           );
           // The ejb-jar.xml descriptor
-          String pkg = #testClass#.class.getPackage().getName();
-          String pkgPath  = pkg.replace('.', '/');
-          String ejbXmlPath = "/"+pkgPath+"/#ejbjar.descriptor#";
-          URL resURL = #testClass#.class.getResource(ejbXmlPath);
+          URL resURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPath#");
           if(resURL != null) {
               ejbArchive.addAsManifestResource(resURL, "ejb-jar.xml");
           }

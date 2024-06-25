@@ -64,17 +64,9 @@ public class PathTests {
         }
         System.out.println("done4, "+resolve);
 
-        target = Paths.get("/home/starksm/tmp/legacytck/LegacyTCKFolderName/jakartaeetck/src/com/sun/ts/tests/ejb30/bb/session/stateless/basic/build.xml");
-        Path ejbJar = Paths.get("/home/starksm/tmp/legacytck/LegacyTCKFolderName/jakartaeetck/src/com/sun/ts/tests/ejb30/bb/session/stateless/basic/ejb3_bb_stateless_basic_ejb.xml");
-        URL jarURL = new URL("jar:file:/home/starksm/.m2/repository/jakarta/tck/ejb30/11.0.0-SNAPSHOT/ejb30-11.0.0-SNAPSHOT.jar!/com/sun/ts/tests/ejb30/bb/session/stateless/basic/ejb3_bb_stateless_basic_ejb.xml");
-        Path ejbJar2 = Paths.get(jarURL.toURI());
-        // Find the com path
-        int index = 0;
-        for(;!ejbJar2.getName(index).toString().equals("com"); index ++) {
-        }
-        System.out.println("com/sun/.../ejb-jar.xml, "+ejbJar2.subpath(index, ejbJar2.getNameCount()));
-
-        System.out.println("being5, "+target);
-        System.out.println("done4, "+resolve);
+        target = Paths.get("/home/starksm/Dev/Jakarta/platform-tck/src/com/sun/ts/tests/appclient/deploy/ejbref/scope/build.xml");
+        Files.walk(target.getParent(), 1).forEach(System.out::println);
+        long subdirs = Files.walk(target.getParent(), 1).filter(Files::isDirectory).count();
+        System.out.println("done6, "+subdirs);
     }
 }
