@@ -1,7 +1,6 @@
 package tck.jakarta.platform.ant;
 
 import org.apache.tools.ant.Location;
-import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 
@@ -22,9 +21,12 @@ public class PackageTarget {
     List<Ear> ears;
     EjbJar ejbJarDef;
     List<EjbJar> ejbJars;
+    Par parDef;
+    List<Par> pars;
     War warDef;
     List<War> wars;
     Rar rarDef;
+    List<Rar> rars;
     Vehicles vehiclesDef;
     List<TaskInfo> unhandledTaks = new ArrayList<>();
 
@@ -67,6 +69,15 @@ public class PackageTarget {
         return ejbJarDef != null;
     }
 
+    public Par getParDef() {
+        return parDef;
+    }
+    public boolean hasParDef() {
+        return parDef != null;
+    }
+    public List<Par> getPars() {
+        return pars;
+    }
     public War getWarDef() {
         return warDef;
     }
@@ -105,10 +116,10 @@ public class PackageTarget {
     }
 
     /**
-     *
-     * @param target
+     * Used to build the contents from the package target of a build.xml
+     * @param target ant "package" target
      */
-    void parseTarget(Target target) {
+    public void parseTarget(Target target) {
         Location location = target.getLocation();
         String ifProperty = target.getIf();
         if(ifProperty != null && !project.isDefined(ifProperty)) {
@@ -142,6 +153,9 @@ public class PackageTarget {
                 case "ts.ear":
                     parseTsEar(task, dirname, basename);
                     break;
+                case "ts.par":
+                    parseTsPar(task, dirname, basename);
+                    break;
                 case "ts.rar":
                     parseTsRar(task, dirname, basename);
                     break;
@@ -158,7 +172,56 @@ public class PackageTarget {
         }
     }
 
-    void parseTsClientjar(Task task, Task dirname, Task basename) {
+    /**
+     * Called by a {@link org.apache.tools.ant.BuildEvent} driven parser to add a task after it has finished
+     * executing. This invokes the corresponding parseTs* method with a null dirname and basename task since
+     * those will have already executed.
+     *
+     * @param task a ts.* task
+     * @return true if the task type was known, false if it was added to unhandled tasks list
+     */
+    public boolean addTask(Task task) {
+        boolean added = true;
+        switch (task.getTaskName()) {
+            case "ts.clientjar":
+                parseTsClientjar(task, null, null);
+                break;
+            case "ts.ejbjar":
+                parseTsEjbjar(task, null, null);
+                break;
+            case "ts.war":
+                parseTsWar(task, null, null);
+                break;
+            case "ts.ear":
+                parseTsEar(task, null, null);
+                break;
+            case "ts.par":
+                parseTsPar(task, null, null);
+                break;
+            case "ts.rar":
+                parseTsRar(task, null, null);
+                break;
+            case "ts.vehicles":
+                parseTsVehicles(task, null, null);
+                break;
+            case "echo":
+                // Ignore
+                break;
+            default:
+                unhandledTaks.add(new TaskInfo(task.getTaskName(), task.getLocation()));
+                added = false;
+                break;
+        }
+        return added;
+    }
+
+    /**
+     * Parse a ts.clientjar task into a pojo form
+     * @param task a ts.clientjar task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsClientjar(Task task, Task dirname, Task basename) {
         if(clientJarDef != null) {
             // There are multiple app clients in the package
             clientJars = new ArrayList<>();
@@ -179,7 +242,13 @@ public class PackageTarget {
         }
     }
 
-    void parseTsEjbjar(Task task, Task dirname, Task basename) {
+    /**
+     * Parse a ts.ejbjar task into a pojo form
+     * @param task a ts.ejbjar task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsEjbjar(Task task, Task dirname, Task basename) {
         if(ejbJarDef != null) {
             // There are multiple ts.ejbjar tasks
             ejbJars = new ArrayList<>();
@@ -200,7 +269,13 @@ public class PackageTarget {
         }
     }
 
-    void parseTsWar(Task task, Task dirname, Task basename) {
+    /**
+     * Parse a ts.war task into a pojo form
+     * @param task a ts.war task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsWar(Task task, Task dirname, Task basename) {
         if(warDef != null) {
             // Multiple wars
             wars = new ArrayList<>();
@@ -221,7 +296,13 @@ public class PackageTarget {
         }
     }
 
-    void parseTsEar(Task task, Task dirname, Task basename) {
+    /**
+     * Parse a ts.ear task into a pojo form
+     * @param task a ts.ear task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsEar(Task task, Task dirname, Task basename) {
         if(earDef != null) {
             // Multiple ears
             ears = new ArrayList<>();
@@ -242,7 +323,41 @@ public class PackageTarget {
         }
     }
 
-    void parseTsRar(Task task, Task dirname, Task basename) {
+    /**
+     * Parse a ts.par task into a pojo form
+     * @param task a ts.par task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsPar(Task task, Task dirname, Task basename) {
+        if(parDef != null) {
+            // Multiple pars
+            pars = new ArrayList<>();
+            pars.add(parDef);
+        }
+        if(dirname != null) {
+            dirname.maybeConfigure();
+            dirname.execute();
+        }
+        if(basename != null) {
+            basename.maybeConfigure();
+            basename.execute();
+        }
+
+        parDef = new Par(project.getProject(), task.getRuntimeConfigurableWrapper());
+        if(pars != null) {
+            pars.add(parDef);
+        }
+    }
+
+    /**
+     * Parse a ts.rar task into a pojo form
+     * @param task a ts.rar task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+
+    public void parseTsRar(Task task, Task dirname, Task basename) {
         if(rarDef != null) {
             throw new RuntimeException("multiple RARs is not supported");
         }
@@ -258,7 +373,13 @@ public class PackageTarget {
         rarDef = new Rar(project.getProject(), task.getRuntimeConfigurableWrapper());
     }
 
-    void parseTsVehicles(Task task, Task dirname, Task basename) {
+    /**
+     * Parse a ts.vehicles task into a pojo form
+     * @param task a ts.vehicles task
+     * @param dirname - optional dirname task that needs to run to set properties
+     * @param basename - optional basename task that needs to run to set properties
+     */
+    public void parseTsVehicles(Task task, Task dirname, Task basename) {
         if(vehiclesDef != null) {
             throw new RuntimeException("vehiclesDef is already set");
         }
@@ -278,8 +399,8 @@ public class PackageTarget {
         tmp.append(String.format("Package(%s), loc=%s", project.getProject().getName(), pkgTarget.getLocation()));
         String depends = Utils.toList(pkgTarget.getDependencies()).toString();
         tmp.append(" [").append(depends).append("]; ");
-        tmp.append(String.format("{hasClient=%s, hasEjb=%s, hasWar=%s, hasEar=%s, hasVehicles=%s}; ",
-                hasClientJarDef(), hasEjbJarDef(), hasWarDef(), hasEarDef(), hasVehiclesDef()));
+        tmp.append(String.format("{hasClient=%s, hasEjb=%s, hasWar=%s, hasEar=%s, hasPar=%s, hasRar=%s, hasVehicles=%s}; ",
+                hasClientJarDef(), hasEjbJarDef(), hasWarDef(), hasEarDef(), hasParDef(), hasRarDef(), hasVehiclesDef()));
         tmp.append("unhandledTaks=").append(unhandledTaks);
         return tmp.toString();
     }

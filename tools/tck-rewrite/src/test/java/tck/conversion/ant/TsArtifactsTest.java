@@ -1,6 +1,9 @@
 package tck.conversion.ant;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
+import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.B;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
@@ -24,6 +27,8 @@ import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
 import tck.jakarta.platform.ant.PackageTarget;
 import tck.jakarta.platform.ant.ProjectWrapper;
+import tck.jakarta.platform.ant.TsTaskListener;
+import tck.jakarta.platform.ant.Utils;
 import tck.jakarta.platform.ant.Vehicles;
 import tck.jakarta.platform.vehicles.VehicleType;
 
@@ -464,6 +469,209 @@ public class TsArtifactsTest {
         System.out.println(pkgTarget.toSummary());
         // build.common.apps dependency uses ant task
         System.out.println(pkgTarget.getUnhandledTaks());
+    }
+
+    // src/com/sun/ts/tests/ejb/ee/tx/session/stateless/bm/TxN_Single/build.xml
+    @Test
+    public void test_ejb_ee_tx_session_stateless_bm_txn_single() {
+        // src/com/sun/ts/tests/ejb/ee/tx/session/stateless/bm/TxN_Single/build.xml
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb/ee/tx/session/stateless/bm/TxN_Single/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        // build.common.apps dependency uses ant task
+        System.out.println(pkgTarget.getUnhandledTaks());
+    }
+
+    /**
+     * src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml
+     * The tcxk dist artifacts:
+     [starksm@scottryzen jakartaeetck]$ ls dist/com/sun/ts/tests/jms/core/bytesMsgTopic/
+     bytesMsgTopic_appclient_vehicle_client.jar
+     bytesMsgTopic_appclient_vehicle_client.jar.jboss-client.xml
+     bytesMsgTopic_appclient_vehicle_client.jar.sun-application-client.xml
+     bytesMsgTopic_appclient_vehicle.ear
+     bytesMsgTopic_ejb_vehicle_client.jar
+     bytesMsgTopic_ejb_vehicle_client.jar.jboss-client.xml
+     bytesMsgTopic_ejb_vehicle_client.jar.sun-application-client.xml
+     bytesMsgTopic_ejb_vehicle.ear
+     bytesMsgTopic_ejb_vehicle_ejb.jar
+     bytesMsgTopic_ejb_vehicle_ejb.jar.jboss-ejb3.xml
+     bytesMsgTopic_ejb_vehicle_ejb.jar.jboss-webservices.xml
+     bytesMsgTopic_ejb_vehicle_ejb.jar.sun-ejb-jar.xml
+     bytesMsgTopic_jsp_vehicle.ear
+     bytesMsgTopic_jsp_vehicle_web.war
+     bytesMsgTopic_jsp_vehicle_web.war.jboss-webservices.xml
+     bytesMsgTopic_jsp_vehicle_web.war.jboss-web.xml
+     bytesMsgTopic_jsp_vehicle_web.war.sun-web.xml
+     bytesMsgTopic_servlet_vehicle.ear
+     bytesMsgTopic_servlet_vehicle_web.war
+     bytesMsgTopic_servlet_vehicle_web.war.jboss-webservices.xml
+     bytesMsgTopic_servlet_vehicle_web.war.jboss-web.xml
+     bytesMsgTopic_servlet_vehicle_web.war.sun-web.xml
+     */
+    @Test
+    public void test_jms_core_bytesMsgTopic() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        // Capture the ts.* tasks using a BuildListener
+        project.addBuildListener(new BuildListener() {
+
+            @Override
+            public void buildStarted(BuildEvent event) {
+                System.out.printf("buildStarted: %s\n", event);
+            }
+
+            @Override
+            public void buildFinished(BuildEvent event) {
+                System.out.printf("buildFinished: %s\n", event);
+            }
+
+            @Override
+            public void targetStarted(BuildEvent event) {
+                //System.out.printf("targetStarted: %s\n", event);
+            }
+
+            @Override
+            public void targetFinished(BuildEvent event) {
+                //System.out.printf("targetFinished: %s\n", event);
+            }
+
+            @Override
+            public void taskStarted(BuildEvent event) {
+                //System.out.printf("taskStarted: %s\n", event);
+            }
+
+            @Override
+            public void taskFinished(BuildEvent event) {
+                Task task = event.getTask();
+                String name = task.getTaskName();
+                if(name.startsWith("ts.")) {
+                    if(name.equals("ts.verbose")) {
+                        System.out.printf("ts.verbose: %s\n", task.getRuntimeConfigurableWrapper().getAttributeMap().get("message"));
+                    } else {
+                        System.out.printf("taskFinished: %s\n", name);
+                        if (task.getTaskName().equals("ts.clientjar")) {
+                            ClientJar clientJarDef = new ClientJar(project, task.getRuntimeConfigurableWrapper());
+                            System.out.printf("ClientJar: %s\n", clientJarDef);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void messageLogged(BuildEvent event) {
+
+            }
+        });
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
+        pkg.execute();
+
+        // Walk through the ts.vehicles task contents
+        RuntimeConfigurable rc = tsVehicles.getRuntimeConfigurableWrapper();
+        System.out.printf("ts.vehicles root RC: %s, attrs=%s\n", rc.getElementTag(), rc.getAttributeMap());
+        for (RuntimeConfigurable rcc : Utils.asList(rc.getChildren())) {
+            System.out.printf("+++ child RC: %s, attrs=%s\n", rcc.getElementTag(), rcc.getAttributeMap());
+            for (RuntimeConfigurable rccc : Utils.asList(rcc.getChildren())) {
+                System.out.printf("+++ +++ nested RC: %s, attrs=%s\n", rccc.getElementTag(), rccc.getAttributeMap());
+            }
+        }
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.parse();
+        System.out.println(pkgTarget.toSummary());
+        Vehicles vehiclesDef = pkgTarget.getVehiclesDef();
+        System.out.printf("Vehicles: %s\n", vehiclesDef);
+    }
+
+    /**
+     * Alternate test_jms_core_bytesMsgTopic using a TsTaskListener
+     */
+    @Test
+    public void test_jms_core_bytesMsgTopic_tslistener() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
+        pkg.execute();
+
+        System.out.println("Post package execute:");
+        System.out.println(pkgTarget.toSummary());
+        Assertions.assertTrue(pkgTarget.hasClientJarDef(), "Client jar definition should be present");
+        Assertions.assertTrue(pkgTarget.hasEarDef(), "Ear definition should be present");
+        Assertions.assertTrue(pkgTarget.hasVehiclesDef(), "Vehicles definition should be present");
+        System.out.println(pkgTarget.getClientJarDef());
+        System.out.println(pkgTarget.getEarDef());
+        System.out.println(pkgTarget.getVehiclesDef());
+    }
+
+    // com/sun/ts/tests/jpa/core/annotations/access/field/build.xml
+    @Test
+    public void test_par_tslistener() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jpa/core/annotations/access/field/build.xml");
+        Project project = new Project();
+        project.init();
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[1];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "stateless3");
+        pkg.execute();
+
+        System.out.println("Post package execute:");
+        System.out.println(pkgTarget.toSummary());
+        Assertions.assertTrue(pkgTarget.hasParDef(), "Persistence jar definition should be present");
+        Assertions.assertTrue(pkgTarget.hasEarDef(), "Ear definition should be present");
+        Assertions.assertTrue(pkgTarget.hasVehiclesDef(), "Vehicles definition should be present");
+        System.out.println(pkgTarget.getParDef());
+        System.out.println(pkgTarget.getEarDef());
+        System.out.println(pkgTarget.getVehiclesDef());
     }
 
     // src/com/sun/ts/tests/appclient/deploy/compat12_13/build.xml

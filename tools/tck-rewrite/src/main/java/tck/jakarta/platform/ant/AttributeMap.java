@@ -62,4 +62,8 @@ public class AttributeMap {
     public boolean containsKey(String key) {
         return attributes.containsKey(key);
     }
+
+    public Project getProject() {
+        return project;
+    }
 }

@@ -63,6 +63,8 @@ public class Vehicles {
 
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, RuntimeConfigurable rc, Location location) {
         this(name, vehiclePkgDir, attributes, location.getFileName());
+        // Need to parse the child RuntimeConfigurables
+        addFileSets(rc);
     }
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, String testDir) {
         this.name = name;
@@ -74,8 +76,14 @@ public class Vehicles {
             String level = attributes.getAttribute("buildleveloverride");
             this.buildleveloverride = Integer.parseInt(level);
         }
+        this.includedefaultfiles = Boolean.parseBoolean(attributes.getAttribute("includedefaultfiles"));
+        this.singleear = Boolean.parseBoolean(attributes.getAttribute("singleear"));
         this.classes = attributes.getAttribute("classes");
+        this.excludedfiles = attributes.getAttribute("excludedfiles");
+        this.manifest = attributes.getAttribute("manifest");
         this.earpermissionsdescriptor = attributes.getAttribute("earpermissionsdescriptor", earpermissionsdescriptor);
+        this.vehicleoverride = attributes.getAttribute("vehicleoverride");
+
     }
 
     /**
@@ -142,5 +150,53 @@ public class Vehicles {
                 ", earElements=" + earElements +
                 ", jarElements=" + jarElements +
                 '}';
+    }
+
+    /**
+     * TODO, probably need to handle multiple fileset/zipfileset elements in a child
+     * @param rc the ts.vehicles RuntimeConfigurable
+     */
+    private void addFileSets(RuntimeConfigurable rc) {
+        for (RuntimeConfigurable rcc : Utils.asList(rc.getChildren())) {
+            String childTag = rcc.getElementTag();
+            switch (childTag) {
+                case "ejb-elements":
+                    this.ejbElements = extractFileSets(rcc);
+                    break;
+                case "client-elements":
+                    this.clientElements = extractFileSets(rcc);
+                    break;
+                case "servlet-elements":
+                    this.servletElements = extractFileSets(rcc);
+                    break;
+                case "jsp-elements":
+                    this.jspElements = extractFileSets(rcc);
+                    break;
+                case "wsservlet-elements":
+                    this.wservletElements = extractFileSets(rcc);
+                    break;
+                case "wsejb-elements":
+                    this.wsejbElements = extractFileSets(rcc);
+                    break;
+                case "ear-elements":
+                    this.earElements = extractFileSets(rcc);
+                    break;
+                case "jar-elements":
+                    this.jarElements = extractFileSets(rcc);
+                    break;
+            }
+            for (RuntimeConfigurable rccc : Utils.asList(rcc.getChildren())) {
+                System.out.printf("+++ +++ nested RC: %s, attrs=%s\n", rccc.getElementTag(), rccc.getAttributeMap());
+            }
+        }
+
+    }
+    private FileSet extractFileSets(RuntimeConfigurable rcc) {
+        FileSet theSet = null;
+        for (RuntimeConfigurable fsRC : Utils.asList(rcc.getChildren())) {
+            AttributeMap fsMap = new AttributeMap(attributes.getProject(), fsRC.getAttributeMap());
+            theSet = new FileSet(fsMap);
+        }
+        return theSet;
     }
 }
