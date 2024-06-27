@@ -62,12 +62,12 @@ public class CreateTestSourceFile {
     }
 
     public CreateTestSourceFile methodAnnotation(String annotationName) {
-        printWriter.printf("\n@%s", annotationName );
+        printWriter.printf("\n%s", annotationName );
         return this;
     }
 
     public CreateTestSourceFile addMethod(String methodName) {
-        printWriter.printf("\npublic void %s() throws Exception ", methodName );
+        printWriter.printf("\n%s", methodName );
         return startBlock();
     }
 
@@ -83,6 +83,11 @@ public class CreateTestSourceFile {
     public CreateTestSourceFile addStatement(String statement) {
         indent();
         printWriter.print(statement);
+        return this;
+    }
+
+    public CreateTestSourceFile addTestMethod(String methodName) {
+        printWriter.printf("\npublic void %s() throws Exception ", methodName );
         return this;
     }
 }

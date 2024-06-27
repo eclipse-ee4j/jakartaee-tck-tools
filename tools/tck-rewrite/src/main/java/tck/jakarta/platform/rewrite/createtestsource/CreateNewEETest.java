@@ -47,9 +47,12 @@ public class CreateNewEETest {
                     addImport("org.jboss.shrinkwrap.api.ShrinkWrap").
                     addImport("org.jboss.shrinkwrap.api.spec.JavaArchive").
                     addImport("org.jboss.shrinkwrap.api.spec.WebArchive").
+                    addImport("org.jboss.shrinkwrap.api.spec.EnterpriseArchive").
                     // addImport("org.jboss.arquillian.protocol.appclient.AppClientProtocolConfiguration").
-                            addImport("org.junit.Assert").
-                    addImport("org.junit.Test").
+                    // addImport("org.junit.Assert").
+                    addImport("org.junit.jupiter.api.Assertions").
+                    addImport("org.junit.jupiter.api.Test").
+                    // addImport("org.junit.Test").
                     emptyLine().
                     addImport("java.io.File").
                     addImport("java.io.IOException").
@@ -67,8 +70,9 @@ public class CreateNewEETest {
                 saveOutput(jarFileProcessor, testSourceFile);
             }
             for (String methodName : testMethodNameSet) {
-                testSourceFile.methodAnnotation("Test").
-                        addMethod(methodName).
+                testSourceFile.methodAnnotation("@Test").
+                        addTestMethod(methodName).
+                        startBlock().
                         endBlock();
             }
             testSourceFile.endBlock();
@@ -131,8 +135,7 @@ public class CreateNewEETest {
     public static void saveOutput(WarFileProcessor warProcessor, CreateTestSourceFile createTestSourceFile) {
 
         createTestSourceFile.methodAnnotation("@Deployment(testable = false)").
-                addMethod("public static WebArchive getWarTestArchive() throws Exception ").
-                startBlock();
+                addMethod("public static WebArchive getWarTestArchive() throws Exception ");
         saveOutputWar(warProcessor, createTestSourceFile, true);
         createTestSourceFile.endBlock();
     }
