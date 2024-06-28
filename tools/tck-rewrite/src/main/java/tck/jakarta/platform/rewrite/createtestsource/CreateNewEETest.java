@@ -135,7 +135,7 @@ public class CreateNewEETest {
     public static void saveOutput(WarFileProcessor warProcessor, CreateTestSourceFile createTestSourceFile) {
 
         createTestSourceFile.methodAnnotation("@Deployment(testable = false)").
-                addMethod("public static WebArchive getWarTestArchive() throws Exception ");
+                addMethod("public static WebArchive getWarTestArchive   () throws Exception ");
         saveOutputWar(warProcessor, createTestSourceFile, true);
         createTestSourceFile.endBlock();
     }
