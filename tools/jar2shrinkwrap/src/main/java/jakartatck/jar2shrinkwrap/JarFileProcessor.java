@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.logging.Logger;
 
 /**
  * JarFileProcessor
@@ -12,7 +13,7 @@ import java.io.Writer;
  * @author Scott Marlow
  */
 public class JarFileProcessor extends AbstractFileProcessor {
-
+    private static final Logger log = Logger.getLogger(Jar2ShrinkWrap.class.getName());
     public JarFileProcessor(File archiveFile) {
         this.archiveFile = archiveFile;
     }
@@ -21,7 +22,7 @@ public class JarFileProcessor extends AbstractFileProcessor {
     public void saveOutput(final File fileInputArchive) {
         String testclient = "Client";
         File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
+        log.fine("generating " + output.getName() + " for input file " + fileInputArchive.getName());
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             saveOutput(fileWriter, true);
@@ -32,41 +33,29 @@ public class JarFileProcessor extends AbstractFileProcessor {
 
     @Override
     public void saveOutput(Writer writer, boolean includeImports) {
-        String testclient = "Client";
         String indent = " ";
         try (PrintWriter printWriter = new PrintWriter(writer)) {
             if(includeImports) {
                 printWriter.println("import org.jboss.arquillian.container.test.api.Deployment;");
                 printWriter.println("import org.jboss.shrinkwrap.api.ShrinkWrap;");
                 printWriter.println("import org.jboss.shrinkwrap.api.spec.JavaArchive;");
-                printWriter.println("import org.jboss.shrinkwrap.api.spec.WebArchive;\n");
                 printWriter.println("import jakartatck.jar2shrinkwrap.LibraryUtil;\n");
 
             }
 
             printWriter.println(indent+"@Deployment(testable = false)");
-            printWriter.println(indent+"public static WebArchive getTestArchive() throws Exception {");
-            /* The library jars
-            // Class thisClass = MethodHandles.lookup().lookupClass();
-            printWriter.println(indent.repeat(2)+"List<JavaArchive> warJars = LibraryUtil.getJars(#{});\n");
-
-            // Start war creation
-            printWriter.print(indent.repeat(2)+"return ShrinkWrap.create(WebArchive.class, ");
-            printWriter.println("\"" + testclient + ".war\")");
-
-            printWriter.println(indent.repeat(3)+".addAsLibraries(warJars)");
-            */
+            printWriter.println(indent+"public static JavaArchive getJarTestArchive() throws Exception {");
 
             for (String name : classes) {
                 if (!ignoreFile(name)) {
                     printWriter.print(indent.repeat(3) + ".addClass(");
                     printWriter.print(name);
-                    printWriter.println(".class)");
+                    printWriter.println(")");
                 }
             }
-            for (String name : webinf) {
+            for (String name : metainf) {
                 if (!ignoreFile(name)) {
-                    printWriter.print(indent.repeat(3) + ".addAsWebInfResource(\"");
+                    printWriter.print(indent.repeat(3) + ".addAsManifestResource(\"");
                     printWriter.print(name);
                     printWriter.println("\")");
                 }

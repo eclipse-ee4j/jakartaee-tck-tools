@@ -3,24 +3,16 @@ package tck.conversion.rewrite;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.*;
 import org.openrewrite.config.CompositeRecipe;
-import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import org.openrewrite.xml.ChangeTagContentVisitor;
-import tck.jakarta.platform.rewrite.AddArquillianDeployMethod;
 import tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe;
-import tck.jakarta.platform.rewrite.ConvertJavaTestNameVisitor;
 import tck.jakarta.platform.rewrite.JavaTestToArquillianShrinkwrap;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.openrewrite.java.Assertions.java;
 

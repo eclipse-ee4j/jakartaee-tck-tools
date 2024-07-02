@@ -6,11 +6,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static org.openrewrite.java.Assertions.java;
 
 class ConvertTestNameTest implements RewriteTest {
