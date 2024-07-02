@@ -97,7 +97,7 @@ abstract class SigtestHandler {
             arg.add(getVersion());
         }
         if (isJDKExcludeEnabled()) {
-            arg.add("-IgnoreJDKClass");
+            arg.add("-IgnoreJDKClasses");
         }
 
         logInfo("Packages: " + getPackages());

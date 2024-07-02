@@ -74,8 +74,8 @@ public final class SigtestCompare extends AbstractMojo {
     private File report;
     @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
-    @Parameter(defaultValue = "false", property = "IgnoreJDKClass.")
-    private boolean ignoreJDKClass;
+    @Parameter(defaultValue = "false", property = "IgnoreJDKClasses.")
+    private boolean ignoreJDKClasses;
 
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -97,10 +97,10 @@ public final class SigtestCompare extends AbstractMojo {
             throw new MojoExecutionException("Cannot resolve " + artifact, ex);
         }
 
-        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion, release, ignoreJDKClass);
+        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion, release, ignoreJDKClasses);
         generate.execute();
 
-        SigtestCheck check = new SigtestCheck(prj, classes, sigfile, action, packages, report, failOnError, ignoreJDKClass);
+        SigtestCheck check = new SigtestCheck(prj, classes, sigfile, action, packages, report, failOnError, ignoreJDKClasses);
         check.execute();
     }
 }
