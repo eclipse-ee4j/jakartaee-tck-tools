@@ -290,8 +290,6 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
                 JDKExclude.enable();
         } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
             JDKExclude.enable();
-           // ignore this option and Java class name specified after it
-           CommandLineParser.parseListOption(args);
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
             if (args.length == 0) {
                 release = Release.BOOT_CLASS_PATH;

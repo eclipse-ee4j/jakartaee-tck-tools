@@ -150,7 +150,7 @@ JDK specific signature changes introduced by a later JDK version. As an example,
 due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClasses specified, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 
 
-Note that the `-IgnoreJDKClass` option can still be specified and that is treated the same as `-IgnoreJDKClasses` (regardless of whether a JDKClass name is specified after the `-IgnoreJDKClass` or not).
+Note that the `-IgnoreJDKClass` option can still be specified only if no JDK Class name is included after the `-IgnoreJDKClass`.  You will get a failure if you try to use `-IgnoreJDKClass JDKClassName`.
 
 ### Specify JDK classes to ignore in Maven plugin
 Specify the `-IgnoreJDKClasses` option as shown below:

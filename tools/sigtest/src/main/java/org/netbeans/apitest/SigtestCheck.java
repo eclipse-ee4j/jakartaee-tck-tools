@@ -98,10 +98,10 @@ public final class SigtestCheck extends AbstractMojo {
     private File report;
     @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
-    @Parameter(defaultValue = "false", property = "IgnoreJDKClasses.")
+    @Parameter(defaultValue = "false", property = "IgnoreJDKClasses")
     private boolean ignoreJDKClasses;
-    @Parameter(defaultValue = "false", property = "IgnoreJDKClass.")
-    private boolean ignorethis; // represents the old -IgnoreJDKClass option which is now ignored if specified. 
+    @Parameter(defaultValue = "false", property = "IgnoreJDKClass")
+    private boolean legacyIgnoreJDKClasses; 
 
     public SigtestCheck() {
     }
@@ -193,7 +193,7 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected boolean isJDKExcludeEnabled() {
-                return ignoreJDKClasses;
+                return ignoreJDKClasses || legacyIgnoreJDKClasses;
             }
         };
         try {

@@ -379,7 +379,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(MODE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(ALLPUBLIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(EXCLUDE_JDK_CLASS_OPTION,OptionInfo.optionalFlag(), optionsDecoder);
-        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionVariableParams(0, OptionInfo.UNLIMITED), optionsDecoder);
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(VERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -503,7 +503,6 @@ public class SignatureTest extends SigTest {
             JDKExclude.enable();
         } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
             JDKExclude.enable();
-           // ignore optional class name specified after it
         } else {
             super.decodeCommonOptions(optionName, args);
         }
