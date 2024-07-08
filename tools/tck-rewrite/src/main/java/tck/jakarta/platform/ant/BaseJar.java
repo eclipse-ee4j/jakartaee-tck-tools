@@ -2,6 +2,7 @@ package tck.jakarta.platform.ant;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
+import org.apache.tools.ant.types.Resource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,21 +11,32 @@ import java.util.Hashtable;
 import java.util.List;
 
 /**
- * Represents the common base of the CTS artifact tasks
+ * Represents the common base of the ts.* artifact tasks
  */
 public abstract class BaseJar {
+    // Deployment descriptor added to the archive if the archive requires a deployment descriptor
     String descriptor;
+    // Manifest to be used within the archive, optional
     String manifest;
+    // Archive name minus the file suffix
     String archiveName;
+    // Suffix for the archive name
     String archiveSuffix;
+    // Full path to archive to be created, default="${dist.dir}/${pkg.dir}/@{archivename}@{archivesuffix}"
     String archiveFile;
+    // Directory containing the deployment descriptor, default = ${src.dir}/${pkg.dir}
     String descriptordir;
+    // Descriptor path and name within the archive
     String internaldescriptorname;
+    // Permissions descriptor path and name within the archive
     String internalpermissionsdescriptorname = "META-INF/permissions.xml";
     boolean includedefaultfiles;
+    // Update an archive if it exists
     boolean update;
+    // A comma separated list of file expressions to exclude from the set of default included files  This list of file expressions is relative to the TS_HOME/classes directory.
     List<String> excludedFiles;
-    List<FileSet> fileSets = new ArrayList<>();
+    //
+    List<TSFileSet> fileSets = new ArrayList<>();
     Project project;
 
     public BaseJar(Project project, RuntimeConfigurable taskRC) {
@@ -49,7 +61,7 @@ public abstract class BaseJar {
             RuntimeConfigurable rc = children.nextElement();
             AttributeMap attrsMaps = new AttributeMap(project, rc.getAttributeMap());
             if(rc.getElementTag().equals("fileset")) {
-                addFileSet(new FileSet(attrsMaps));
+                addFileSet(new TSFileSet(attrsMaps));
             }
         }
     }
@@ -112,6 +124,19 @@ public abstract class BaseJar {
         this.descriptor = descriptor;
     }
 
+    /**
+     * @return the archiveName + archiveSuffix
+     */
+    public String getFullArchiveName() {
+        return archiveName + archiveSuffix;
+    }
+    /**
+     * @return the archiveName + '_' + getType()
+     */
+    public String getTypedArchiveName() {
+        return archiveName + '_' + getType();
+    }
+
     public String getArchiveName() {
         return archiveName;
     }
@@ -128,11 +153,22 @@ public abstract class BaseJar {
         this.excludedFiles = excludedFiles;
     }
 
-    public List<FileSet> getFileSets() {
+    public List<TSFileSet> getFileSets() {
         return fileSets;
     }
-    public void addFileSet(FileSet fs) {
+    public void addFileSet(TSFileSet fs) {
         fileSets.add(fs);
+    }
+
+    /**
+     * Override the parsed definition of the filesets with the exact resources that went into
+     * the jar based on the jar task information
+     * @param taskInfo - the resources are those found in the last jar task build event
+     */
+    public void addJarResources(TsTaskInfo taskInfo) {
+        this.archiveName = taskInfo.getArchiveName();
+        fileSets.clear();
+        fileSets.addAll(taskInfo.getResources());
     }
 
     /**
@@ -157,9 +193,11 @@ public abstract class BaseJar {
      */
     public String getClassFilesString() {
         StringBuilder sb = new StringBuilder();
-        for(FileSet fs : fileSets) {
+        for(TSFileSet fs : fileSets) {
+            String dir = fs.dir + '/';
             for(String f : fs.includes) {
                 if(f.endsWith(".class")) {
+                    f = f.replace(dir, "");
                     String clazz = f.replace('/', '.').replace('$', '.');
                     sb.append(clazz);
                     sb.append(",\n");
@@ -180,7 +218,7 @@ public abstract class BaseJar {
     public String toString() {
         StringBuilder tmp = new StringBuilder();
         tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, excludedFiles=%s}".formatted(getType(), descriptor, descriptordir, archiveName, excludedFiles));
-        for(FileSet fs : fileSets) {
+        for(TSFileSet fs : fileSets) {
             tmp.append('\n');
             tmp.append(fs);
         }

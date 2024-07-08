@@ -1,7 +1,6 @@
 package tck.conversion.ant;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
-import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.B;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Location;
@@ -10,6 +9,8 @@ import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.UnknownElement;
+import org.apache.tools.ant.types.Resource;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,11 +41,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 /**
- * These tests only run if there is ts.home property set.
+ * These tests only run if there is ts.home property set. The ts.home property needs to be set to an EE10 TCK
+ * distribution and a glassfish7 distribution unbundled as a peer directory:
+ * workingdir/glassfish7
+ * workingdir/jakartaeetck
  */
 @EnabledIfSystemProperty(named = "ts.home", matches = ".*")
 public class TsArtifactsTest {
@@ -64,6 +69,8 @@ public class TsArtifactsTest {
         Path ejbliteServlet = tsHome.resolve("src/com/sun/ts/tests/common/vehicle/ejbliteservlet/EJBLiteServletVehicle.java.txt");
         Path dist = tsHome.resolve("dist");
         Path war = tsHome.resolve("dist/com/sun/ts/tests/ejb32/timer/service/stateless/ejb32_timer_service_stateless_ejbliteservlet_vehicle_web.war");
+        Path glassfish = tsHome.resolve("../glassfish7/glassfish");
+
         // Validate that there are dist, src and src/vehicle.properties
         Assertions.assertTrue(Files.exists(tsHome), tsHome+" exists");
         Assertions.assertTrue(Files.exists(bin), bin+" exists");
@@ -72,6 +79,7 @@ public class TsArtifactsTest {
         Assertions.assertTrue(Files.exists(vehicles), vehicles+" exists");
         Assertions.assertTrue(Files.exists(dist), dist+" exists");
         Assertions.assertTrue(Files.exists(war), war+" exists");
+        Assertions.assertTrue(Files.exists(glassfish), war+" exists");
     }
 
     /**
@@ -614,6 +622,8 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
         Project project = new Project();
         project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -639,6 +649,290 @@ public class TsArtifactsTest {
         System.out.println(pkgTarget.getClientJarDef());
         System.out.println(pkgTarget.getEarDef());
         System.out.println(pkgTarget.getVehiclesDef());
+        System.out.println("ModuleNames: "+pkgTarget.getModuleNames());
+
+        // Generate code for appclient vehicle test archive
+        STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
+        ST genClient = clientJarGroup.getInstanceOf("genJar");
+        genClient.add("client", pkgTarget.getClientJarDef());
+        genClient.add("testClass", "ClientTest");
+        String clientJarCode = genClient.render();
+        System.out.println(clientJarCode);
+
+        STGroup earGroup = new STGroupFile("TsEar.stg");
+        ST genEar = earGroup.getInstanceOf("genEar");
+        genEar.add("ear", pkgTarget.getEarDef());
+        genEar.add("pkg", pkgTarget);
+        String earCode = genEar.render();
+        System.out.println(earCode);
+
+
+        PackageTarget pkgTarget2 = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener2 = new TsTaskListener(pkgTarget2);
+        project.removeBuildListener(buildListener);
+        project.addBuildListener(buildListener2);
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejb");
+        pkg.execute();
+
+        System.out.println("Post package execute2:");
+        System.out.println(pkgTarget2.toSummary());
+        Assertions.assertTrue(pkgTarget2.hasClientJarDef(), "Client jar definition should be present");
+        String clientClasses = pkgTarget2.getClientJarDef().getClassFilesString();
+        System.out.printf("clientClasses: %s\n", clientClasses);
+        Assertions.assertTrue(clientClasses.contains("com.sun.ts.tests.jms.common.JmsTool.class"),
+                "Client jar contains com.sun.ts.tests.jms.common.JmsTool.class");
+        Assertions.assertTrue(clientClasses.contains("com.sun.ts.lib.harness.ServiceEETest.class"),
+                "Client jar contains com.sun.ts.lib.harness.ServiceEETest.class");
+        Assertions.assertTrue(pkgTarget2.hasEjbJarDef(), "Ejb jar definition should be present");
+        Assertions.assertTrue(pkgTarget2.hasEarDef(), "Ear definition should be present");
+        Assertions.assertTrue(pkgTarget2.hasVehiclesDef(), "Vehicles definition should be present");
+        System.out.println(pkgTarget2.getClientJarDef());
+        System.out.println(pkgTarget2.getEjbJarDef());
+        System.out.println(pkgTarget2.getEarDef());
+        System.out.println(pkgTarget2.getVehiclesDef());
+        System.out.println("ModuleNames: "+pkgTarget2.getModuleNames());
+
+        // Generate the ejb vehicle code
+        STGroup clientJarGroup2 = new STGroupFile("TsClientJar.stg");
+        ST genClient2 = clientJarGroup2.getInstanceOf("genJar");
+        genClient2.add("client", pkgTarget2.getClientJarDef());
+        genClient2.add("testClass", "ClientTest");
+        String clientJarCode2 = genClient.render();
+        System.out.println(clientJarCode2);
+
+        STGroup ejbJarGroup = new STGroupFile("TsEjbJar.stg");
+        ST genEjb = ejbJarGroup.getInstanceOf("genJar");
+        genEjb.add("ejbjar", pkgTarget2.getEjbJarDef());
+        genEjb.add("testClass", "ClientTest");
+        String ejbJarCode = genEjb.render();
+        System.out.println(ejbJarCode);
+
+        STGroup earGroup2 = new STGroupFile("TsEar.stg");
+        ST genEar2 = earGroup2.getInstanceOf("genEar");
+        genEar2.add("ear", pkgTarget2.getEarDef());
+        genEar2.add("pkg", pkgTarget2);
+        String earCode2 = genEar2.render();
+        System.out.println(earCode2);
+
+    }
+
+    @Test
+    public void testAntFileSet_appclient() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
+        pkg.execute();
+        List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
+        for (RuntimeConfigurable child : children) {
+            System.out.printf("Child: %s\n", child.getElementTag());
+            List<RuntimeConfigurable> children2 = Utils.asList(child.getChildren());
+            for (RuntimeConfigurable child2 : children2) {
+                Object proxy = child2.getProxy();
+                System.out.printf("Child2: %s, proxy: %s\n", child2.getElementTag(), proxy);
+                if(proxy instanceof UnknownElement) {
+                    UnknownElement unknownElement = (UnknownElement) proxy;
+                    unknownElement.maybeConfigure();
+                    Object realThing = unknownElement.getRealThing();
+                    if(realThing instanceof org.apache.tools.ant.types.FileSet) {
+                        org.apache.tools.ant.types.FileSet fileSet = (org.apache.tools.ant.types.FileSet) realThing;
+                        for (Iterator<Resource> it = fileSet.iterator(); it.hasNext(); ) {
+                            Resource r = it.next();
+                            System.out.printf("Resource: %s\n", r);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.printf("Client.classes: %s\n", pkgTarget.getClientJarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
+    }
+
+    @Test
+    public void testAntFileSet_servlet() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "servlet");
+        pkg.execute();
+        List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
+        for (RuntimeConfigurable child : children) {
+            System.out.printf("Child: %s\n", child.getElementTag());
+            List<RuntimeConfigurable> children2 = Utils.asList(child.getChildren());
+            for (RuntimeConfigurable child2 : children2) {
+                Object proxy = child2.getProxy();
+                System.out.printf("Child2: %s, proxy: %s\n", child2.getElementTag(), proxy);
+                if(proxy instanceof UnknownElement) {
+                    UnknownElement unknownElement = (UnknownElement) proxy;
+                    unknownElement.maybeConfigure();
+                    Object realThing = unknownElement.getRealThing();
+                    if(realThing instanceof org.apache.tools.ant.types.FileSet) {
+                        org.apache.tools.ant.types.FileSet fileSet = (org.apache.tools.ant.types.FileSet) realThing;
+                        for (Iterator<Resource> it = fileSet.iterator(); it.hasNext(); ) {
+                            Resource r = it.next();
+                            System.out.printf("Resource: %s\n", r);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Print out the package target tasks
+
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.printf("War.classes: %s\n", pkgTarget.getWarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
+    }
+
+    @Test
+    public void testAntFileSet_jsp() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "jsp");
+        pkg.execute();
+        List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
+        for (RuntimeConfigurable child : children) {
+            System.out.printf("Child: %s\n", child.getElementTag());
+            List<RuntimeConfigurable> children2 = Utils.asList(child.getChildren());
+            for (RuntimeConfigurable child2 : children2) {
+                Object proxy = child2.getProxy();
+                System.out.printf("Child2: %s, proxy: %s\n", child2.getElementTag(), proxy);
+                if(proxy instanceof UnknownElement) {
+                    UnknownElement unknownElement = (UnknownElement) proxy;
+                    unknownElement.maybeConfigure();
+                    Object realThing = unknownElement.getRealThing();
+                    if(realThing instanceof org.apache.tools.ant.types.FileSet) {
+                        org.apache.tools.ant.types.FileSet fileSet = (org.apache.tools.ant.types.FileSet) realThing;
+                        for (Iterator<Resource> it = fileSet.iterator(); it.hasNext(); ) {
+                            Resource r = it.next();
+                            System.out.printf("Resource: %s\n", r);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Print out the package target tasks
+
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.printf("War.classes: %s\n", pkgTarget.getWarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
+    }
+
+    @Test
+    public void testAntFileSet_ejb() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejb");
+        pkg.execute();
+        List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
+        for (RuntimeConfigurable child : children) {
+            System.out.printf("Child: %s\n", child.getElementTag());
+            List<RuntimeConfigurable> children2 = Utils.asList(child.getChildren());
+            for (RuntimeConfigurable child2 : children2) {
+                Object proxy = child2.getProxy();
+                System.out.printf("Child2: %s, proxy: %s\n", child2.getElementTag(), proxy);
+                if(proxy instanceof UnknownElement) {
+                    UnknownElement unknownElement = (UnknownElement) proxy;
+                    unknownElement.maybeConfigure();
+                    Object realThing = unknownElement.getRealThing();
+                    if(realThing instanceof org.apache.tools.ant.types.FileSet) {
+                        org.apache.tools.ant.types.FileSet fileSet = (org.apache.tools.ant.types.FileSet) realThing;
+                        for (Iterator<Resource> it = fileSet.iterator(); it.hasNext(); ) {
+                            Resource r = it.next();
+                            System.out.printf("Resource: %s\n", r);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.printf("Client.classes: %s\n", pkgTarget.getClientJarDef().getClassFilesString());
+        System.out.println("Ejb: "+pkgTarget.getEjbJarDef());
+        System.out.printf("Ejb.classes: %s\n", pkgTarget.getEjbJarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
     }
 
     // com/sun/ts/tests/jpa/core/annotations/access/field/build.xml

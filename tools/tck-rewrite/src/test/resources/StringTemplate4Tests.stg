@@ -23,3 +23,21 @@ int #name#(int #arg#) {
 mult2x(arg) ::= <<
 #method(name="mult2x", body={x*=2;}, return={return x;}, arg="x")#
 >>
+
+/*
+ example of generating the code to add modules to an ear
+ ear = EnterpriseArchive module var name
+ modules = list of other archive module names
+ */
+addModules(ear, modules) ::= <<
+#modules :{ m |
+    #ear#.addAsModule(#m#);
+    }
+#
+>>
+addModulesFromPkg(ear, pkg) ::= <<
+#pkg.modules :{ m |
+    #ear#.addAsModule(#m#);
+    }
+#
+>>

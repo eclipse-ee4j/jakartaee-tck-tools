@@ -1,11 +1,15 @@
 package tck.conversion.ant.st4;
 
 import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.B;
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+
+import java.util.List;
 
 /**
  * Tests of stringtemplate4 features
@@ -100,4 +104,47 @@ int mult2x(int x) {
 """;
         Assertions.assertEquals(expected.trim(), out);
     }
+
+    @Test
+    public void testAddModules() {
+        ST template = testGroup.getInstanceOf("addModules");
+        template.add("ear", "earArchive");
+        template.add("modules", new String[]{"ejbJar1", "clientJar", "war1"});
+        String out = template.render().trim();
+        System.out.println(out);
+        String expected = """
+earArchive.addAsModule(ejbJar1);
+    earArchive.addAsModule(clientJar);
+    earArchive.addAsModule(war1);
+""";
+        Assertions.assertEquals(expected.trim(), out);
+
+        // Try using a List for modules
+        template.remove("modules");
+        List modules = Arrays.asList(new String[]{"ejbJar1", "clientJar", "war1"});
+        template.add("modules", modules);
+        out = template.render().trim();
+        System.out.println(out);
+        Assertions.assertEquals(expected.trim(), out);
+    }
+    @Test
+    public void testAddModulesFromPkg() {
+        record Pkg(String[] modules){};
+        STGroup.trackCreationEvents = true;
+        testGroup.registerModelAdaptor(Pkg.class, new RecordAdaptor<Pkg>());
+        STGroup.verbose = true;
+        Interpreter.trace = true;
+        ST template = testGroup.getInstanceOf("addModulesFromPkg");
+        template.add("ear", "earArchive");
+        template.add("pkg", new Pkg(new String[]{"ejbJar1", "clientJar", "war1"}));
+        String out = template.render().trim();
+        System.out.println(out);
+        String expected = """
+earArchive.addAsModule(ejbJar1);
+    earArchive.addAsModule(clientJar);
+    earArchive.addAsModule(war1);
+""";
+        Assertions.assertEquals(expected.trim(), out);
+    }
+
 }

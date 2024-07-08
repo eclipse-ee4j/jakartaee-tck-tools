@@ -7,8 +7,8 @@ import java.util.Hashtable;
 
 public class Ear extends BaseJar {
     boolean deletecomponentarchives;
-    FileSet modules;
-    FileSet libs;
+    TSFileSet modules;
+    TSFileSet libs;
 
     public Ear(Project project, RuntimeConfigurable taskRC) {
         super(project, taskRC);
@@ -21,7 +21,7 @@ public class Ear extends BaseJar {
     }
 
     public String getType() {
-        return "EAR";
+        return "ear";
     }
     public boolean isDeleteComponentArchives() {
         return deletecomponentarchives;

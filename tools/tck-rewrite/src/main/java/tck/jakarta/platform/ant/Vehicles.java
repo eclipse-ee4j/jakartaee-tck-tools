@@ -45,21 +45,21 @@ public class Vehicles {
     //    be used for each vehicle component archive.  The default is false
     private boolean singleear;
     // Set of filesets and/or zipfilesets to be added to the ejb component archive
-    private FileSet ejbElements;
+    private List<TSFileSet> ejbElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the client component archive, the component archive in the EJB vehicle as well as the appclient vehicle
-    private FileSet clientElements;
+    private TSFileSet clientElements;
     // Set of filesets and/or zipfilesets to be added to the servlet vehicle archive
-    private FileSet servletElements;
+    private List<TSFileSet> servletElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the jsp vehicle archive
-    private FileSet jspElements;
+    private TSFileSet jspElements;
     // Set of filesets and/or zipfilesets to be added to the wsservlet vehicle archive
-    private FileSet wservletElements;
+    private TSFileSet wservletElements;
     // Set of filesets and/or zipfilesets to be added to the wsejb vehicle archive
-    private FileSet wsejbElements;
+    private TSFileSet wsejbElements;
     // Set of filesets and/or zipfilesets to be added to all ear vehicle archive
-    private FileSet earElements;
+    private List<TSFileSet> earElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to all vehicle archives
-    private FileSet jarElements;
+    private TSFileSet jarElements;
 
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, RuntimeConfigurable rc, Location location) {
         this(name, vehiclePkgDir, attributes, location.getFileName());
@@ -127,6 +127,71 @@ public class Vehicles {
         String vehiclePrefix = vehicleName + '_' + type.name();
     }
 
+    public String getVehicleoverride() {
+        return vehicleoverride;
+    }
+
+    public int getBuildleveloverride() {
+        return buildleveloverride;
+    }
+
+    public boolean isSingleear() {
+        return singleear;
+    }
+
+    public List<TSFileSet> getEjbElements() {
+        return ejbElements;
+    }
+
+    public TSFileSet getClientElements() {
+        return clientElements;
+    }
+
+    public List<TSFileSet> getServletElements() {
+        return servletElements;
+    }
+
+    public TSFileSet getJspElements() {
+        return jspElements;
+    }
+
+    public TSFileSet getWservletElements() {
+        return wservletElements;
+    }
+
+    public TSFileSet getWsejbElements() {
+        return wsejbElements;
+    }
+
+    public List<TSFileSet> getEarElements() {
+        return earElements;
+    }
+
+    public TSFileSet getJarElements() {
+        return jarElements;
+    }
+
+    /**
+     * Override the parsed definition of the filesets with the exact resources that went into
+     * the jar based on the jar task information
+     * @param taskInfo - the resources are those found in the last jar task build event
+     */
+    public void addJarResources(TsTaskInfo taskInfo) {
+        String archiveName = taskInfo.getArchiveName();
+        if(archiveName.contains("ear")) {
+            earElements.clear();
+            earElements.addAll(taskInfo.getResources());
+        } else if(archiveName.contains("ejb")) {
+            ejbElements.clear();
+            ejbElements.addAll(taskInfo.getResources());
+        } else if(archiveName.contains("war")) {
+            servletElements.clear();
+            servletElements.addAll(taskInfo.getResources());
+        } else {
+            throw new RuntimeException("Unhandled archive type" + archiveName);
+        }
+    }
+
     @Override
     public String toString() {
         return "Vehicles{" +
@@ -158,31 +223,32 @@ public class Vehicles {
      */
     private void addFileSets(RuntimeConfigurable rc) {
         for (RuntimeConfigurable rcc : Utils.asList(rc.getChildren())) {
+            TSFileSet fileSet = extractFileSets(rcc);
             String childTag = rcc.getElementTag();
             switch (childTag) {
                 case "ejb-elements":
-                    this.ejbElements = extractFileSets(rcc);
+                    this.ejbElements.add(fileSet);
                     break;
                 case "client-elements":
-                    this.clientElements = extractFileSets(rcc);
+                    this.clientElements = fileSet;
                     break;
                 case "servlet-elements":
-                    this.servletElements = extractFileSets(rcc);
+                    this.servletElements.add(fileSet);
                     break;
                 case "jsp-elements":
-                    this.jspElements = extractFileSets(rcc);
+                    this.jspElements = fileSet;
                     break;
                 case "wsservlet-elements":
-                    this.wservletElements = extractFileSets(rcc);
+                    this.wservletElements = fileSet;
                     break;
                 case "wsejb-elements":
-                    this.wsejbElements = extractFileSets(rcc);
+                    this.wsejbElements = fileSet;
                     break;
                 case "ear-elements":
-                    this.earElements = extractFileSets(rcc);
+                    this.earElements.add(fileSet);
                     break;
                 case "jar-elements":
-                    this.jarElements = extractFileSets(rcc);
+                    this.jarElements = fileSet;
                     break;
             }
             for (RuntimeConfigurable rccc : Utils.asList(rcc.getChildren())) {
@@ -191,12 +257,13 @@ public class Vehicles {
         }
 
     }
-    private FileSet extractFileSets(RuntimeConfigurable rcc) {
-        FileSet theSet = null;
+    private TSFileSet extractFileSets(RuntimeConfigurable rcc) {
+        TSFileSet theSet = null;
         for (RuntimeConfigurable fsRC : Utils.asList(rcc.getChildren())) {
             AttributeMap fsMap = new AttributeMap(attributes.getProject(), fsRC.getAttributeMap());
-            theSet = new FileSet(fsMap);
+            theSet = new TSFileSet(fsMap);
         }
         return theSet;
     }
+
 }

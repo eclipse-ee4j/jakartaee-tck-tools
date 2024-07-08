@@ -14,13 +14,17 @@
 
   <!-- Artifact Configuration -->
   <groupId>jakarta.tck.arquillian</groupId>
-  <artifactId>arquillian-protocol-appclient</artifactId>
-  <name>Arquillian Protocol AppClient</name>
-  <description>Protocol handler for communicating using console output</description>
+  <artifactId>arquillian-protocol-javatest</artifactId>
+  <name>Arquillian Protocol JavaTest</name>
+  <description>Protocol handler for communicating JavaTest CTS Vehicles</description>
 
   <!-- Properties -->
   <properties>
+    <!-- There are post SE 11 language features used -->
+    <maven.compiler.release>17</maven.compiler.release>
     <!-- Versioning -->
+    <javatest.version>5.0</javatest.version>
+    <ee.tck.version>11.0.0-SNAPSHOT</ee.tck.version>
   </properties>
 
   <!-- Dependencies -->
@@ -54,6 +58,17 @@
       <groupId>org.jboss.shrinkwrap.descriptors</groupId>
       <artifactId>shrinkwrap-descriptors-spi</artifactId>
       <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javatest</groupId>
+      <artifactId>javatest</artifactId>
+      <version>${javatest.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.tck</groupId>
+      <artifactId>common</artifactId>
+      <version>${ee.tck.version}</version>
     </dependency>
 
     <dependency>

@@ -1,15 +1,24 @@
-package org.jboss.arquillian.protocol.appclient;
+package tck.arquillian.protocol.appclient;
 
+import org.jboss.arquillian.container.spi.client.deployment.Deployment;
+import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
+import tck.arquillian.protocol.common.TsTestPropsBuilder;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class AppClientMethodExecutor implements ContainerMethodExecutor {
     static Logger log = Logger.getLogger(AppClientMethodExecutor.class.getName());
     private AppClientCmd appClient;
     private AppClientProtocolConfiguration config;
+    @Inject
+    @DeploymentScoped
+    private Instance<Deployment> deploymentInstance;
 
     static enum MainStatus {
         PASSED,
@@ -44,7 +53,10 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         if (config.isRunClient()) {
             log.info("Running appClient for: " + testMethod);
             try {
-                appClient.run("-t", testMethod);
+                Deployment deployment = deploymentInstance.get();
+                String vehicleArchiveName = TsTestPropsBuilder.vehicleArchiveName(deployment);
+                String[] additionalAgrs = TsTestPropsBuilder.runArgs(config, deployment, testMethodExecutor);
+                appClient.run(vehicleArchiveName, additionalAgrs);
             } catch (Exception ex) {
                 result = TestResult.failed(ex);
                 return result;
@@ -52,7 +64,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         } else {
             log.info("Not running appClient for: " + testMethod);
         }
-        String[] lines = appClient.readAll(5000);
+        String[] lines = appClient.readAll(config.getClientTimeout());
 
         log.info(String.format("AppClient(%s) readAll returned %d lines\n", testMethod, lines.length));
         boolean sawStatus = false;

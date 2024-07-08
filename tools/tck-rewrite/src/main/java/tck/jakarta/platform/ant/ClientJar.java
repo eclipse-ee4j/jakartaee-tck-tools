@@ -5,7 +5,11 @@ import org.apache.tools.ant.RuntimeConfigurable;
 
 import java.util.Hashtable;
 
+/**
+ * ts.clientar representation
+ */
 public class ClientJar extends BaseJar {
+    // main-class MANIFEST entry for the appclient archive
     String mainClass;
 
     public ClientJar(Project project, RuntimeConfigurable taskRC) {
@@ -18,7 +22,7 @@ public class ClientJar extends BaseJar {
     }
 
     public String getType() {
-        return "ClienetJar";
+        return "client";
     }
     public String getMainClass() {
         return mainClass;

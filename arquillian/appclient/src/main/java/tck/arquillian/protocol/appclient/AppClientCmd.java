@@ -8,17 +8,20 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package org.jboss.arquillian.protocol.appclient;
+package tck.arquillian.protocol.appclient;
+
+import org.jboss.arquillian.config.impl.extension.StringPropertyReplacer;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -43,6 +46,9 @@ public class AppClientCmd {
     private String[] clientCmdLine = {};
     private String[] clientEnvp = null;
     private File clientDir = null;
+    private String clientEarDir;
+    private CompletableFuture<Process> onExit;
+
 
     /**
      * Parse the provided configuration to determine the clientCmdLine, optional clientEnvp and optional clientDir.
@@ -52,6 +58,7 @@ public class AppClientCmd {
         clientCmdLine = config.clientCmdLineAsArray();
         clientEnvp = config.clientEnvAsArray();
         clientDir = config.clientDirAsFile();
+        clientEarDir = config.getClientEarDir();
     }
 
     public boolean waitForExit(long timeout, TimeUnit units) throws InterruptedException {
@@ -70,13 +77,13 @@ public class AppClientCmd {
         String line = null;
         do {
             try {
-                line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
+                line = outputQueue.poll(100, TimeUnit.MILLISECONDS);
                 if (line != null)
                     lines.add(line);
             } catch (InterruptedException ioe) {
             }
 
-        } while (line != null);
+        } while (onExit.isDone() == false);
         return lines.toArray(new String[] {});
     }
 
@@ -101,15 +108,33 @@ public class AppClientCmd {
      *                       pass in the name of the test to run using this.
      * @throws Exception - on failure
      */
-    public void run(String... additionalArgs) throws Exception {
+    public void run(String vehicleArchiveName, String... additionalArgs) throws Exception {
+        // Need to replace any property refs on command line
+        File earDir = new File(clientEarDir);
+        if(earDir.isAbsolute()) {
+            earDir = new File(clientDir, clientEarDir);
+        }
+        String[] cmdLine = Arrays.copyOf(clientCmdLine, clientCmdLine.length);
+        for (int n = 0; n < cmdLine.length; n ++) {
+            String arg = cmdLine[n];
+            if(arg.contains("${clientEarDir}")) {
+                arg = arg.replaceAll("\\$\\{clientEarDir}", earDir.getAbsolutePath());
+                cmdLine[n] = arg;
+            }
+            if(arg.contains("${vehicleArchiveName}")) {
+                arg = arg.replaceAll("\\$\\{vehicleArchiveName}", vehicleArchiveName);
+                cmdLine[n] = arg;
+            }
+        }
         if (additionalArgs != null) {
-            String[] newCmdLine = new String[clientCmdLine.length + additionalArgs.length];
-            System.arraycopy(clientCmdLine, 0, newCmdLine, 0, clientCmdLine.length);
-            System.arraycopy(additionalArgs, 0, newCmdLine, clientCmdLine.length, additionalArgs.length);
-            clientCmdLine = newCmdLine;
+            String[] newCmdLine = new String[cmdLine.length + additionalArgs.length];
+            System.arraycopy(cmdLine, 0, newCmdLine, 0, cmdLine.length);
+            System.arraycopy(additionalArgs, 0, newCmdLine, cmdLine.length, additionalArgs.length);
+            cmdLine = newCmdLine;
         }
 
-        appClientProcess = Runtime.getRuntime().exec(clientCmdLine, clientEnvp, clientDir);
+        appClientProcess = Runtime.getRuntime().exec(cmdLine, clientEnvp, clientDir);
+        onExit = appClientProcess.onExit();
         LOGGER.info("Created process" + appClientProcess.info());
         outputReader = new BufferedReader(new InputStreamReader(appClientProcess.getInputStream(), StandardCharsets.UTF_8));
         errorReader = new BufferedReader(new InputStreamReader(appClientProcess.getErrorStream(), StandardCharsets.UTF_8));

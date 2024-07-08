@@ -13,6 +13,6 @@ public class EjbJar extends BaseJar {
     }
 
     public String getType() {
-        return "EjbJar";
+        return "ejb";
     }
 }

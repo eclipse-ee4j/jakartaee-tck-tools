@@ -1,4 +1,4 @@
-package org.jboss.arquillian.protocol.appclient;
+package tck.arquillian.protocol.appclient;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
@@ -13,7 +13,6 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -28,11 +27,21 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
         ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
+        File javatestJar = new File("target/appclient/javatest.jar");
+        File libcommonJar = new File("target/appclient/libcommon.jar");
+        File libutilJar = new File("target/appclient/libutil.jar");
+        ear.addAsLibraries(javatestJar, libcommonJar, libutilJar);
+
         String mainClass = extractAppMainClient(ear);
         log.info("mainClass: " + mainClass);
 
         // Write out the ear with the test dependencies for use by the appclient launcher
-        File appclient = new File("target", "appclient");
+        AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
+        String extractDir = config.getClientEarDir();
+        if(extractDir == null) {
+            extractDir = "target/appclient";
+        }
+        File appclient = new File(extractDir);
         File archiveOnDisk = new File(appclient, ear.getName());
         final ZipExporter exporter = ear.as(ZipExporter.class);
         exporter.exportTo(archiveOnDisk, true);

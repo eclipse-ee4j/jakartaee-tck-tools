@@ -11,6 +11,6 @@ public class Par extends BaseJar {
 
     @Override
     public String getType() {
-        return "Par";
+        return "par";
     }
 }

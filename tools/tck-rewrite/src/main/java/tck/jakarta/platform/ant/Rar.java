@@ -11,6 +11,6 @@ public class Rar extends BaseJar {
 
     @Override
     public String getType() {
-        return "Rar";
+        return "rar";
     }
 }

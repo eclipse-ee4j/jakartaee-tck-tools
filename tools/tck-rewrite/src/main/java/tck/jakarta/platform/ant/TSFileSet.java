@@ -1,7 +1,5 @@
 package tck.jakarta.platform.ant;
 
-import org.apache.tools.ant.RuntimeConfigurable;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,17 +8,26 @@ import java.util.List;
  * org.apache.tools.ant.types.FileSet
  * org.apache.tools.ant.types.ZipFileSet
  */
-public class FileSet {
+public class TSFileSet {
     String dir;
     String prefix;
     List<String> includes;
 
-    FileSet(AttributeMap fileset) {
+    /**
+     * Build up the fileset from the attributes on the fileset element
+     * @param fileset - a fileset configuration map
+     */
+    TSFileSet(AttributeMap fileset) {
         this.dir = fileset.getAttribute("dir");
         this.prefix = fileset.getAttribute("prefix");
         String includes = fileset.getAttribute("includes");
         String[] asArray = includes.split(",");
         this.includes = Arrays.asList(asArray);
+    }
+    TSFileSet(String dir, String prefix, List<String> includes) {
+        this.dir = dir;
+        this.prefix = prefix;
+        this.includes = includes;
     }
 
     @Override

@@ -5,18 +5,18 @@ delimiters "#", "#"
 // client is an tck.jakarta.platform.ant.client instance
 genJar(client, testClass) ::= <<
           // the jar with the correct archive name
-          JavaArchive clientArchive = ShrinkWrap.create(JavaArchive.class, "#client.archiveName#_client.jar");
+          JavaArchive #client.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#client.fullArchiveName#");
           // The class files
-          clientArchive.addClasses(
+          #client.typedArchiveName#.addClasses(
             #client.classFilesString#
           );
           // The application-client.xml descriptor
           URL resURL = #testClass#.class.getResource("/#client.relativeDescriptorPath#");
           if(resURL != null) {
-              clientArchive.addAsManifestResource(resURL, "application-client.xml");
+              #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
           }
           // TODO, does the sun-client-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
 
-          clientArchive.addAsManifestResource(new StringAsset("Main-Class: " + #testClass#.class.getName() + "\n"), "MANIFEST.MF");
+          #client.typedArchiveName#.addAsManifestResource(new StringAsset("Main-Class: " + #testClass#.class.getName() + "\n"), "MANIFEST.MF");
 
 >>

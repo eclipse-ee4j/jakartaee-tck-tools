@@ -5,15 +5,15 @@ delimiters "#", "#"
 // ejbjar is an tck.jakarta.platform.ant.EjbJar instance
 genJar(ejbjar, testClass) ::= <<
           // the jar with the correct archive name
-          JavaArchive ejbArchive = ShrinkWrap.create(JavaArchive.class, "#ejbjar.archiveName#_ejb.jar");
+          JavaArchive #ejbjar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#ejbjar.fullArchiveName#");
           // The class files
-          ejbArchive.addClasses(
+          #ejbjar.typedArchiveName#.addClasses(
             #ejbjar.classFilesString#
           );
           // The ejb-jar.xml descriptor
           URL resURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPath#");
           if(resURL != null) {
-              ejbArchive.addAsManifestResource(resURL, "ejb-jar.xml");
+              #ejbjar.typedArchiveName#.addAsManifestResource(resURL, "ejb-jar.xml");
           }
           // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
 >>
