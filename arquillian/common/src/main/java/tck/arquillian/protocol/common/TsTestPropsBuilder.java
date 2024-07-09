@@ -56,6 +56,12 @@ public class TsTestPropsBuilder {
             "ws_wait",
     };
 
+    /**
+     * Get the deployment vehicle archive name from the deployment archive. This needs to be a vehicle deployment
+     * for the result to be value.
+     * @param deployment - current test deployment
+     * @return base vehicle archive name
+     */
     public static String vehicleArchiveName(Deployment deployment) {
         // Get deployment archive name and remove the .* suffix
         String vehicleArchiveName = deployment.getDescription().getArchive().getName();
@@ -65,18 +71,33 @@ public class TsTestPropsBuilder {
         }
         return vehicleArchiveName;
     }
+
+    /**
+     * Get the test runs args for the vehicle or appclient. If this is a non-vehicle appclient tests, the args
+     * @param config
+     * @param deployment
+     * @param testMethodExecutor
+     * @return
+     * @throws IOException
+     */
     public static String[] runArgs(ProtocolCommonConfig config, Deployment deployment,
                                    TestMethodExecutor testMethodExecutor) throws IOException {
         Class<?> testSuperclass = testMethodExecutor.getMethod().getDeclaringClass().getSuperclass();
         TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
-        log.info(String.format("Base class: %s, vehicle: %s", testSuperclass.getName(), testVehicle.value()));
-        String testMethodName = testMethodExecutor.getMethod().getName();
         // Remove the _ testVehicle
+        String testMethodName = testMethodExecutor.getMethod().getName();
         int index = testMethodName.lastIndexOf('_');
         String tsTestMethodName = testMethodName;
         if(index != -1) {
             tsTestMethodName = testMethodName.substring(0, index);
         }
+        // The none vehicle is a basic appclient test, not a vehicle based test
+        String vehicle = "none";
+        if(testVehicle != null) {
+            vehicle = testVehicle.value();
+        }
+
+        log.info(String.format("Base class: %s, vehicle: %s", testSuperclass.getName(), vehicle));
         // Get deployment archive name and remove the .* suffix
         String vehicleArchiveName = vehicleArchiveName(deployment);
 
@@ -93,8 +114,8 @@ public class TsTestPropsBuilder {
         // A property set by the TSScript class
         props.setProperty("finder", "cts");
         // Vehicle
-        props.setProperty("service_eetest.vehicles", testVehicle.value());
-        props.setProperty("vehicle", testVehicle.value());
+        props.setProperty("service_eetest.vehicles", vehicle);
+        props.setProperty("vehicle", vehicle);
         props.setProperty("vehicle_archive_name", vehicleArchiveName);
         //
         props.setProperty("harness.log.delayseconds", "0");
@@ -132,7 +153,7 @@ public class TsTestPropsBuilder {
                 "-p", testProps.toFile().getAbsolutePath(),
                 "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
                 "-t", tsTestMethodName,
-                "-vehicle", testVehicle.value(),
+                "-vehicle", vehicle,
         };
         return args;
     }
