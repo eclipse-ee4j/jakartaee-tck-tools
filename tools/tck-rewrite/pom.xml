@@ -18,6 +18,7 @@
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
         <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
+        <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 
     <dependencyManagement>
@@ -37,6 +38,11 @@
             <groupId>org.openrewrite</groupId>
             <artifactId>rewrite-java-17</artifactId>
             <version>${version.openrewrite}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.10.14</version>
         </dependency>
         <dependency>
             <groupId>org.openrewrite</groupId>
@@ -86,44 +92,44 @@
             <version>${version.javatest}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>libutil</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>assembly</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>runtime</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
-            <artifactId>jsp</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <groupId>jakarta.tck</groupId>
+            <artifactId>jakarta-pages-tck</artifactId>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>common</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>servlet</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>ejb</artifactId>
-            <version>10.0.0-SNAPSHOT</version>
+            <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.8.1</version>
+            <version>5.10.2</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

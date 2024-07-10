@@ -1,0 +1,18 @@
+// A Stringtemplate4 group for the ts.war.xml logic for creating a war artifact
+delimiters "#", "#"
+
+// war is an tck.jakarta.platform.ant.War instance
+genJar(war, testClass) ::= <<
+          // the jar with the correct archive name
+          JavaArchive #war.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#war.fullArchiveName#");
+          // The class files
+          #war.typedArchiveName#.addClasses(
+            #war.classFilesString#
+          );
+          // The ejb-jar.xml descriptor
+          URL resURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
+          if(resURL != null) {
+              #war.typedArchiveName#.addAsManifestResource(resURL, "ejb-jar.xml");
+          }
+          // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+>>

@@ -1,15 +1,13 @@
 package org.jboss.arquillian.protocol;
 
-import org.jboss.arquillian.config.descriptor.api.DefaultProtocolDef;
 import org.jboss.arquillian.config.impl.extension.ConfigurationRegistrar;
 import org.jboss.arquillian.config.descriptor.api.ArquillianDescriptor;
 import org.jboss.arquillian.container.test.impl.MapObject;
-import org.jboss.arquillian.protocol.appclient.AppClientProtocolConfiguration;
+import tck.arquillian.protocol.appclient.AppClientProtocolConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 public class AppClientConfigTest {

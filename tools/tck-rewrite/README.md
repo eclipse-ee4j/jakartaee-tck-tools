@@ -6,4 +6,7 @@ There are two rules:
 
 There is also a `tck.jakarta.platform.rewrite.JavaTestToArquillianShrinkwrap` recipe that combines these rules to cover both rewrite steps.
 
+# Prerequisites
+This requires that the platform-tck artifacts have been installed, including the one-time javatest:javatest:5.0 jar. This currently requires running `mvn -Pstaging install` from the platform-tck repo on the tckrefactor branch.
 
+The README there describes how to install the javatest artifact.

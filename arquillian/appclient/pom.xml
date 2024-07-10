@@ -26,6 +26,12 @@
   <!-- Dependencies -->
   <dependencies>
 
+    <dependency>
+      <groupId>jakarta.tck.arquillian</groupId>
+      <artifactId>arquillian-protocol-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- org.jboss.arquillian -->
     <dependency>
       <groupId>org.jboss.arquillian.container</groupId>

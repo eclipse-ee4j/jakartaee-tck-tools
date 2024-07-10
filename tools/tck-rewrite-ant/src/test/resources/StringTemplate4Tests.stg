@@ -1,0 +1,43 @@
+// Use the same delimiters as used in the java CTS templates
+delimiters "#", "#"
+
+testIf(attr1, attr2) ::= <<
+#if(attr1)#Saw #attr1#
+#elseif(attr2)#Saw #attr2#
+#else#Saw default
+#endif#
+
+>>
+
+testAltIf(a, b, c, d) ::= <<
+#if((!a||b)&&!(c||d))#broken#else#works#endif#
+>>
+
+method(name,body,return,arg) ::= <<
+int #name#(int #arg#) {
+  #body#
+  #return#
+}
+>>
+
+mult2x(arg) ::= <<
+#method(name="mult2x", body={x*=2;}, return={return x;}, arg="x")#
+>>
+
+/*
+ example of generating the code to add modules to an ear
+ ear = EnterpriseArchive module var name
+ modules = list of other archive module names
+ */
+addModules(ear, modules) ::= <<
+#modules :{ m |
+    #ear#.addAsModule(#m#);
+    }
+#
+>>
+addModulesFromPkg(ear, pkg) ::= <<
+#pkg.modules :{ m |
+    #ear#.addAsModule(#m#);
+    }
+#
+>>

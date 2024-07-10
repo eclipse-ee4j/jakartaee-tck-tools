@@ -29,7 +29,7 @@
     <!-- Properties -->
     <properties>
         <!-- Versioning -->
-        <version.arquillian_core>1.8.0.Final</version.arquillian_core>
+        <version.arquillian_core>1.9.0.Final</version.arquillian_core>
         <version.shrinkwrap>3.2.1</version.shrinkwrap>
 
         <maven.compiler.release>17</maven.compiler.release>
@@ -62,7 +62,9 @@
     </dependencyManagement>
 
     <modules>
+        <module>common</module>
         <module>appclient</module>
+        <module>javatest</module>
     </modules>
 
 </project>
