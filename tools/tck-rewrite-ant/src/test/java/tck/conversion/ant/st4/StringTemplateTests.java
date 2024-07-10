@@ -1,7 +1,5 @@
 package tck.conversion.ant.st4;
 
-import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.B;
-import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stringtemplate.v4.Interpreter;
@@ -9,6 +7,7 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**

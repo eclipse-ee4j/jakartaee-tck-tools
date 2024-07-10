@@ -2,10 +2,7 @@ package tck.conversion.ant;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
-import org.apache.tools.ant.Task;
-import tck.jakarta.platform.ant.EjbJar;
 import tck.jakarta.platform.ant.PackageTarget;
 import tck.jakarta.platform.ant.ProjectWrapper;
 
@@ -16,9 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 /**

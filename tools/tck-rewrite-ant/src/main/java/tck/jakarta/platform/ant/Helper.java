@@ -2,7 +2,6 @@ package tck.jakarta.platform.ant;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
 import com.sun.ts.lib.util.ConfigUtil;
-import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;

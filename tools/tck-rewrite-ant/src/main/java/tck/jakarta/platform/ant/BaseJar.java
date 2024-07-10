@@ -2,7 +2,6 @@ package tck.jakarta.platform.ant;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
-import org.apache.tools.ant.types.Resource;
 
 import java.util.ArrayList;
 import java.util.Arrays;

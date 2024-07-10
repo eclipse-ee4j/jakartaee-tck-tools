@@ -1,25 +1,20 @@
 package tck.conversion.ant;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
-import org.apache.tools.ant.IntrospectionHelper;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.MacroDef;
-import org.apache.tools.ant.taskdefs.MacroInstance;
 import tck.jakarta.platform.ant.AttributeMap;
 import tck.jakarta.platform.ant.Helper;
 import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.Vehicles;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Vector;
 
 /**
