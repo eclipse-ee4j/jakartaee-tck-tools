@@ -5,6 +5,7 @@ import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPacka
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -17,8 +18,13 @@ public class JavaTestDeploymentPackager implements DeploymentPackager {
         Archive<?> archive = testDeployment.getApplicationArchive();
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
-        EnterpriseArchive ear = (EnterpriseArchive) archive;
-        ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
+        if(archive instanceof EnterpriseArchive) {
+            EnterpriseArchive ear = (EnterpriseArchive) archive;
+            ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
+        } else if(archive instanceof WebArchive) {
+            WebArchive war = (WebArchive) archive;
+            war.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
+        }
 
         return archive;
     }
