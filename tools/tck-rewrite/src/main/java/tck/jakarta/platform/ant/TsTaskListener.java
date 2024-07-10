@@ -3,9 +3,8 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.PropertyHelper;
-import org.apache.tools.ant.RuntimeConfigurable;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.UnknownElement;
 import org.apache.tools.ant.taskdefs.Jar;
@@ -33,7 +32,6 @@ public class TsTaskListener implements BuildListener {
 
     @Override
     public void buildFinished(BuildEvent event) {
-
     }
 
     @Override
@@ -43,6 +41,8 @@ public class TsTaskListener implements BuildListener {
 
     @Override
     public void targetFinished(BuildEvent event) {
+        Target target = event.getTarget();
+        System.out.printf("--- targetFinished %s\n", target.getName(), target.getLocation());
 
     }
 

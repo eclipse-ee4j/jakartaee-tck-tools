@@ -935,6 +935,61 @@ public class TsArtifactsTest {
         System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
     }
 
+    @Test
+    public void testAntFileSet_ejbliteservlet() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb30/lite/view/singleton/annotated/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        Task tsVehicles = pkg.getTasks()[0];
+        tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejbliteservlet");
+        pkg.execute();
+        //project.executeTarget("package");
+        List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
+        for (RuntimeConfigurable child : children) {
+            System.out.printf("Child: %s\n", child.getElementTag());
+            List<RuntimeConfigurable> children2 = Utils.asList(child.getChildren());
+            for (RuntimeConfigurable child2 : children2) {
+                Object proxy = child2.getProxy();
+                System.out.printf("Child2: %s, proxy: %s\n", child2.getElementTag(), proxy);
+                if(proxy instanceof UnknownElement) {
+                    UnknownElement unknownElement = (UnknownElement) proxy;
+                    unknownElement.maybeConfigure();
+                    Object realThing = unknownElement.getRealThing();
+                    if(realThing instanceof org.apache.tools.ant.types.FileSet) {
+                        org.apache.tools.ant.types.FileSet fileSet = (org.apache.tools.ant.types.FileSet) realThing;
+                        for (Iterator<Resource> it = fileSet.iterator(); it.hasNext(); ) {
+                            Resource r = it.next();
+                            System.out.printf("Resource: %s\n", r);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.println("War.classes: "+pkgTarget.getWarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
+    }
+
     // com/sun/ts/tests/jpa/core/annotations/access/field/build.xml
     @Test
     public void test_par_tslistener() {
@@ -966,6 +1021,22 @@ public class TsArtifactsTest {
         System.out.println(pkgTarget.getParDef());
         System.out.println(pkgTarget.getEarDef());
         System.out.println(pkgTarget.getVehiclesDef());
+    }
+
+    @Test
+    public void testTestVehicleForTestDir() {
+        printVehicles("src/com/sun/ts/tests/ejb30/bb/session/stateless/basic/build.xml");
+        printVehicles("src/com/sun/ts/tests/ejb30/bb/session/stateful/concurrency/metadata/annotated/build.xml");
+        printVehicles("src/com/sun/ts/tests/appclient/deploy/ejbref/scope/build.xml");
+        printVehicles("src/com/sun/ts/tests/ejb30/bb/async/singleton/annotated/build.xml");
+        printVehicles("src/com/sun/ts/tests/ejb30/lite/view/singleton/annotated/build.xml");
+    }
+    private void printVehicles(String testpath) {
+        Path buildXml = tsHome.resolve(testpath);
+        VehicleVerifier verifier = VehicleVerifier.getInstance(buildXml.toFile());
+        String[] vehicles = verifier.getVehicleSet();
+        System.out.printf("Vehicles(%s): %s\n", testpath.substring(21, testpath.length()-10), Arrays.asList(vehicles));
+
     }
 
     // src/com/sun/ts/tests/appclient/deploy/compat12_13/build.xml

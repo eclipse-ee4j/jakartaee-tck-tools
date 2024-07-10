@@ -41,10 +41,23 @@ public class PathsTest {
     @Test
     public void testRelative() throws IOException {
         String tsHome = System.getProperty("ts.home");
-        Path target = Paths.get(tsHome, "src/com/sun/ts/tests/appclient/deploy/ejbref/scope/build.xml");
+        Path target = Paths.get(tsHome, "src/com/sun/ts/tests/ejb30/bb/session/stateful/concurrency/metadata/annotated/build.xml");
         Files.walk(target.getParent(), 1).forEach(System.out::println);
         long subdirs = Files.walk(target.getParent(), 1).filter(Files::isDirectory).count();
         System.out.printf("expect 1 subdir: %d\n", subdirs);
+    }
+
+    @Test
+    public void testResolveTestPath() throws IOException {
+        String tsHome = System.getProperty("ts.home");
+        Path sourceRoot = Paths.get(tsHome, "src");
+        Path ee10testpkg = Paths.get(tsHome, "src/com/sun/ts/tests/appclient/deploy/ejbref/scope/single/build.xml").getParent();
+        Path pkgPath = sourceRoot.relativize(ee10testpkg);
+        // Get the package name from the test directory path
+        String pkg = pkgPath.toString().replace('/', '.');
+        // The tckrefactor branch has separated the tests into modules. The module name is pkg[4]
+        String moduleName = pkgPath.getName(4).toString();
+        System.out.printf("maps to pkg: %s, module: %s\n", pkg, moduleName);
     }
 
     /**

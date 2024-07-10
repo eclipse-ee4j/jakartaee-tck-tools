@@ -179,7 +179,7 @@ public abstract class BaseJar {
         String relativePath = getDescriptorDir();
         if(relativePath != null) {
             // Start is the com/sun/... path
-            int start = relativePath.lastIndexOf("com");
+            int start = relativePath.indexOf("com/");
             relativePath = relativePath.substring(start);
             relativePath += "/" + getDescriptor();
         }

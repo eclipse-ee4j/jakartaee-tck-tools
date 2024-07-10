@@ -13,7 +13,7 @@ import java.util.List;
  * A {@link java.nio.file.SimpleFileVisitor} to look for build.xml files while skipping
  * any target dirs
  */
-class BuildXmlFilter extends SimpleFileVisitor<Path> {
+public class BuildXmlFilter extends SimpleFileVisitor<Path> {
     private ArrayList<Path> buildXmls = new ArrayList<>();
 
     @Override
