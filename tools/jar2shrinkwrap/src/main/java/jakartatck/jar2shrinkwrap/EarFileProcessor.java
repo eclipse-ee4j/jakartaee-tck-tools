@@ -5,9 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -34,7 +32,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
     }
 
     @Override
-    public void process(ZipInputStream zipInputStream, ZipEntry entry) {
+    public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
 
         if (entry.isDirectory()) {
             // ignore
@@ -42,7 +40,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
             int prefix = entry.getName().indexOf('/');
             String jarName = entry.getName().substring(prefix+1);
             File libFile = new File(baseDir, jarName);
-            processLibrary(jarName, libFile, zipInputStream);
+            processLibrary(jarName, libFile, zipInputStream, classNameRemapping);
         } else if (entry.getName().endsWith(".jar") || entry.getName().endsWith(".war") ) {
             String jarName = entry.getName();
             File libFile = new File(baseDir, jarName);
@@ -55,12 +53,16 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 }
             }
             // Load the submodule content
-            JarVisit visit = new JarVisit(libFile);
+            JarVisit visit = new JarVisit(libFile, classNameRemapping);
             JarProcessor jar = visit.execute();
-            subModuleContent.put(jarName, jar);
+            JarProcessor previousJar = subModuleContent.put(jarName, jar);
+            if (previousJar != null) {
+                throw new RuntimeException("attempted to add the same module " + jarName + " in " + archiveFile.getName() +
+                        " previousJar: " + previousJar.getName() + " this jar: " + jar.getName());
+            }
             addModule(libFile.getName());
         } else {
-            super.process(zipInputStream, entry);
+            super.process(zipInputStream, entry, classNameRemapping);
         }
     }
 
@@ -79,26 +81,25 @@ public class EarFileProcessor extends AbstractFileProcessor {
             }
 
             printWriter.println("@Deployment(testable = false)");
-            printWriter.println("public static Archive<?> deployment() {");
+            printWriter.println("public static Archive<?> getEarTestArchive() {");
             printWriter.println(newLine + indent.repeat(1) +"final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, \"%s\");".formatted(archiveFile.getName()));
             // The EAR library jars
             if(getLibraries().size() > 0) {
             /* The #{} here is a parameter substitution indicator for the test class being processed
             https://docs.openrewrite.org/concepts-explanations/javatemplate#untyped-substitution-indicators
              */
-                printWriter.println(indent.repeat(1) + "// TODO: filter/eliminate the library jar classes that shouldn't be included");
-                printWriter.println(indent.repeat(1) + "// Add ear/lib jars");
                 // Write out the classes seen in the EE10 jars in a comment as a hint
-                List<File> libraryFiles = new ArrayList<>();
                 for (String archiveName : getLibraries()) {
                     JarProcessor jarProcessor = getLibrary(archiveName);
+                    printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
                     printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                     for (String className: jarProcessor.getClasses()) {
                         if (!ignoreFile(className)) {
-                            printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                            printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
                         }
                     }
                     printWriter.println(indent.repeat(1)+"ear.addAsLibrary(%s);".formatted(archiveName(archiveName)));
+                    printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
                 }
 
             }
@@ -107,6 +108,7 @@ public class EarFileProcessor extends AbstractFileProcessor {
                 printWriter.println(indent.repeat(1) + "// Add ear submodules");
                 for (String archiveName : getSubModules()) {
                     JarProcessor jarProcessor = getSubmodule(archiveName);
+                    printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
                     if ( jarProcessor instanceof WarFileProcessor) {
                         jarProcessor.saveOutputWar(printWriter,includeImports, archiveName);
                     } else {
@@ -114,12 +116,13 @@ public class EarFileProcessor extends AbstractFileProcessor {
                         printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(archiveName), archiveName(archiveName)));
                         for (String className: jarProcessor.getClasses()) {
                             if (!ignoreFile(className)) {
-                                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                                printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
                             }
                         }
                     }
                     // add war/jar to ear
                     printWriter.println(indent+"ear.addAsModule(%s);".formatted(archiveName(archiveName)));
+                    printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
                 }
             }
 

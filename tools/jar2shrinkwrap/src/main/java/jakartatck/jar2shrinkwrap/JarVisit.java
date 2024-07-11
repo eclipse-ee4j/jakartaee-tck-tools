@@ -15,10 +15,17 @@ import java.util.zip.ZipInputStream;
 public class JarVisit {
 
     private final File archiveFile;
-
+    private ClassNameRemapping classNameRemapping;
 
     public JarVisit(File target) {
         this.archiveFile = target;
+        this.classNameRemapping = new ClassNameRemapping() {};
+    }
+
+
+    public JarVisit(File target, ClassNameRemapping classNameRemapping) {
+        this.archiveFile = target;
+        this.classNameRemapping = classNameRemapping;
     }
 
     public JarProcessor execute() {
@@ -36,12 +43,11 @@ public class JarVisit {
             jarProcessor = new EarFileProcessor(archiveFile);
         else
             throw new IllegalStateException("unsupported file type extension: " + archiveFile);
-        final byte[] buffer = new byte[100 * 1024];
         try {
             ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(archiveFile));
             ZipEntry entry = zipInputStream.getNextEntry();
             while (entry != null) {
-                jarProcessor.process(zipInputStream, entry);
+                jarProcessor.process(zipInputStream, entry, classNameRemapping);
                 entry = zipInputStream.getNextEntry();
             }
             zipInputStream.closeEntry();

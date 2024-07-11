@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -15,7 +16,7 @@ import java.util.zip.ZipInputStream;
  */
 public interface JarProcessor {
 
-    void process(final ZipInputStream zipInputStream, final ZipEntry entry);
+    void process(final ZipInputStream zipInputStream, final ZipEntry entry, ClassNameRemapping classNameRemapping);
 
     /**
      * Write the Arquillian @Deployment method java code into the given StringWriter.
@@ -52,7 +53,7 @@ public interface JarProcessor {
 
     ArrayList<String> getWebinf();
 
-    ArrayList<String> getClasses();
+    Set<String> getClasses();
 
     ArrayList<String> getOtherFiles();
 

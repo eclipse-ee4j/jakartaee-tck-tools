@@ -15,7 +15,7 @@
         <version.arquillian>1.7.0.Final</version.arquillian>
         <version.http-commons>3.1</version.http-commons>
         <version.javatest>5.0</version.javatest>
-        <version.openrewrite>8.7.2</version.openrewrite>
+        <version.openrewrite>8.24.0</version.openrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
         <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
         <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
@@ -180,6 +180,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openrewrite</groupId>
+            <artifactId>rewrite-core</artifactId>
+            <version>${version.openrewrite}</version>
         </dependency>
     </dependencies>
 

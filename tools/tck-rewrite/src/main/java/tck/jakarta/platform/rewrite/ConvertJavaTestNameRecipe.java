@@ -3,7 +3,6 @@ package tck.jakarta.platform.rewrite;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import java.time.Duration;
 
 /**

@@ -5,11 +5,13 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -20,11 +22,12 @@ import java.util.zip.ZipInputStream;
  * @author Scott Marlow
  */
 public abstract class AbstractFileProcessor implements JarProcessor {
+    private static final Logger log = Logger.getLogger(Jar2ShrinkWrap.class.getName());
     public static final String WEB_INF_CLASSES = "WEB-INF/classes/";
     public static final String CLASS = ".class";
     public static final String WEB_INF = "WEB-INF/";
     public static final String WEB_INF_LIB = "WEB-INF/lib/";
-    public static final String META_INF = "META-INF";
+    public static final String META_INF = "META-INF/";
     /**
      * This is a list of jar names in a unique directory for a given package that
      * need to be loaded as JavaArchive files in the deployment method.
@@ -32,7 +35,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected final ArrayList<String> libraries = new ArrayList<>();
     protected final ArrayList<String> metainf = new ArrayList<>();
     protected final ArrayList<String> webinf = new ArrayList<>();
-    protected final ArrayList<String> classes = new ArrayList<>();
+    protected final Set<String> classes = new HashSet<>();
     protected final ArrayList<String> otherFiles = new ArrayList<>();
     protected File archiveFile;
     protected File baseDir;
@@ -40,13 +43,18 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
     private Map<String, JarProcessor> libraryContent = new HashMap<>();
 
+    private ClassNameRemapping classNameRemapping;
+
 
     @Override
-    public void process(ZipInputStream zipInputStream, ZipEntry entry) {
+    public void process(ZipInputStream zipInputStream, ZipEntry entry, ClassNameRemapping classNameRemapping) {
+        if (this.classNameRemapping != classNameRemapping) {
+            this.classNameRemapping = classNameRemapping;
+        }
 
         if (entry.isDirectory()) {
             // ignore
-        } else if (entry.toString().startsWith("META-INF/")) {
+        } else if (entry.toString().startsWith(META_INF)) {
             addMetainf(entry.getName());
         } else if (entry.getName().endsWith(".jar")) {
 
@@ -59,7 +67,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
         }
     }
 
-    protected void processLibrary(String jarName, File libFile, ZipInputStream zipInputStream) {
+    protected void processLibrary(String jarName, File libFile, ZipInputStream zipInputStream, ClassNameRemapping classNameRemapping) {
         if (!libFile.exists()) { // Typical usage for EAR is that module/library entries archives will already exist in test folder but if not, create them)
             try (FileOutputStream libFileOS = new FileOutputStream(libFile)) {
                 byte[] libContent = zipInputStream.readAllBytes();
@@ -69,7 +77,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
             }
         }
         // load the library content
-        JarVisit visit = new JarVisit(libFile);
+        JarVisit visit = new JarVisit(libFile, classNameRemapping);
         JarProcessor jar = visit.execute();
         libraryContent.put(jarName, jar);
         addLibrary(libFile.getName());
@@ -87,6 +95,8 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected void addMetainf(String name) {
         if (name.startsWith(WEB_INF))
             name = name.substring(WEB_INF.length());
+        if (name.startsWith(META_INF))
+            name = name.substring(META_INF.length());
         metainf.add(name);
     }
 
@@ -119,7 +129,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     }
 
     @Override
-    public ArrayList<String> getClasses() {
+    public Set<String> getClasses() {
         return classes;
     }
 
@@ -137,20 +147,51 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     protected void addLibrary(String name) {
         if (name.startsWith(WEB_INF_LIB))
             name = name.substring(WEB_INF_LIB.length());
-        libraries.add(name);
+        if (!libraries.contains(name)) {
+            libraries.add(name);
+        }
     }
 
     protected void addModule(String name) {
-        subModules.add(name);
+        if (!subModules.contains(name)) {
+            subModules.add(name);
+        } else {
+            throw new RuntimeException("attempted to add the same module " + name + " in " + archiveFile.getName());
+        }
+
     }
 
 
     protected void addClass(String name) {
+
         if (name.startsWith(WEB_INF_CLASSES))
             name = name.substring(WEB_INF_CLASSES.length());
+
+        if (name.startsWith(META_INF)) { // handle resources like META-INF/persistence.xml
+            name = name.substring(META_INF.length());
+            webinf.add(name);
+            return;
+        }
         if (name.endsWith(CLASS))
             name = name.substring(0, name.length() - CLASS.length());
         name = name.replace('/', '.');
+        if (classNameRemapping.shouldBeIgnored(name)) {
+            return;
+        }
+        if (!name.endsWith(CLASS)) {
+            name = name + CLASS; // add .class extension
+        }
+        name = classNameRemapping.getName(name);
+
+        if(name.startsWith(classNameRemapping.getTargetClassNamePackage())) {
+            String nameNoclass = name.substring(0, name.length() - CLASS.length());
+            // reduce to just the class name
+            nameNoclass = nameNoclass.substring(nameNoclass.lastIndexOf(".")+1,nameNoclass.length());
+            if (nameNoclass.equals("Client")) {
+                // replace typical Client.class test client with the actual Test client source file
+                name = classNameRemapping.getTargetClassName();
+            }
+        }
         classes.add(name);
     }
 
@@ -167,7 +208,7 @@ public abstract class AbstractFileProcessor implements JarProcessor {
     public void saveOutput(final File fileInputArchive) {
         String testclient = "Client";
         File output = new File(fileInputArchive.getParentFile(), testclient + ".java");
-        System.out.println("generating " + output.getName() + " for input file " + fileInputArchive.getName());
+        log.fine("generating " + output.getName() + " for input file " + fileInputArchive.getName());
         output.getParentFile().mkdirs();
         try (FileWriter fileWriter = new FileWriter(output)) {
             saveOutput(fileWriter, true);
@@ -196,10 +237,11 @@ public abstract class AbstractFileProcessor implements JarProcessor {
 
         for (String warlibrary : getLibraries()) {
             JarProcessor warLibraryProcessor = getLibrary(warlibrary);
+            printWriter.println(newLine + indent + "{");  // we can add multiple variations of the same archive so enclose it in a code block
             printWriter.println(newLine + indent + "JavaArchive %s = ShrinkWrap.create(JavaArchive.class, \"%s\");".formatted(archiveName(warlibrary), warlibrary));
             for (String className: warLibraryProcessor.getClasses()) {
                 if (!ignoreFile(className)) {
-                    printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(warlibrary), className));
+                    printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(warlibrary), className));
                 }
             }
             for (String otherFile: warLibraryProcessor.getOtherFiles()) {
@@ -213,15 +255,15 @@ public abstract class AbstractFileProcessor implements JarProcessor {
                 }
             }
             printWriter.println(indent.repeat(1)+"%s.addAsLibrary(%s);".formatted(archiveName(archiveName),archiveName(warlibrary)));
+            printWriter.println(newLine + indent + "}");  // we can add multiple variations of the same archive so enclose it in a code block
         }
         // add classes
         for (String className: getClasses()) {
             if (!ignoreFile(className)) {
-                printWriter.println(indent + "%s.addClass(%s.class);".formatted(archiveName(archiveName), className));
+                printWriter.println(indent + "%s.addClass(%s);".formatted(archiveName(archiveName), className));
             }
         }
 
-        printWriter.println(indent + "return %s;".formatted(archiveName(archiveName)));
     }
 
     protected boolean ignoreFile(String filename) {

@@ -27,22 +27,22 @@ public class Jar2ShrinkwrapPkgTest {
 
     @Test
     public void canLocateTestDefinitions() {
-        String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer",
-                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener",
-                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet",
-                "com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet",
-                "com.sun.ts.tests.servlet.common.util.Data",
-                "com.sun.ts.tests.servlet.common.util.ServletTestUtil"};
+        String[] expectedClasses = {"com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TCKServletContainerInitializer.class",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestListener.class",
+                "com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes.TestServlet.class",
+                "com.sun.ts.tests.servlet.common.servlets.GenericTCKServlet.class",
+                "com.sun.ts.tests.servlet.common.util.Data.class",
+                "com.sun.ts.tests.servlet.common.util.ServletTestUtil.class"};
 
         JarProcessor war = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.servlet.api.jakarta_servlet.scinitializer.setsessiontrackingmodes");
-        ArrayList<String> classes = war.getClasses();
+        Set<String> classes = war.getClasses();
         System.out.printf("Classes: %s\n", classes);
         HashSet<String> classesSet = new HashSet<>(Arrays.asList(expectedClasses));
         HashSet<String> warClassesSet = new HashSet<>(classes);
         Iterator<String> iterator = classesSet.iterator();
         while(iterator.hasNext()) {
             String c = iterator.next();
-            assertTrue(warClassesSet.contains(c));
+            assertTrue(warClassesSet.contains(c), c + " not found in " + warClassesSet );
             iterator.remove();
         }
         assertTrue(classesSet.size() == 0);

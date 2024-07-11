@@ -1,11 +1,8 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Set;
 
 import jakartatck.jar2shrinkwrap.Jar2ShrinkWrap;
 import jakartatck.jar2shrinkwrap.JarProcessor;
@@ -77,4 +74,17 @@ public class Jar2ShrinkwrapEarTest {
         System.out.printf("\nJavaSource:\n%s\n", result);
     }
 
+    @Test void locate_VehicleClasses() {
+            JarProcessor ear = Jar2ShrinkWrap.fromPackage("com.sun.ts.tests.jpa.jpa22.repeatable.attroverride");
+            List<String> subModules = ear.getSubModules();
+            System.out.printf("EAR Modules: %s\n", subModules);
+            assertEquals(10, subModules.size());
+            StringWriter src = new StringWriter();
+            ear.saveOutput(src, true);
+            String result = src.toString();
+            assertTrue(result.contains("com.sun.ts.tests.common.vehicle.VehicleClient.class"));
+            assertTrue(result.contains("com.sun.ts.tests.common.vehicle.appmanagedNoTx.AppManagedNoTxVehicleRunner.class"));
+
+            System.out.printf("\nJavaSource:\n%s\n", result);
+        }
 }
