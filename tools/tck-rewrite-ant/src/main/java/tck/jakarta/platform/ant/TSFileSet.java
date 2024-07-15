@@ -24,7 +24,7 @@ public class TSFileSet {
         String[] asArray = includes.split(",");
         this.includes = Arrays.asList(asArray);
     }
-    TSFileSet(String dir, String prefix, List<String> includes) {
+    public TSFileSet(String dir, String prefix, List<String> includes) {
         this.dir = dir;
         this.prefix = prefix;
         this.includes = includes;

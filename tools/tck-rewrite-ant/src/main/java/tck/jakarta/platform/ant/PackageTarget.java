@@ -3,6 +3,7 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -14,19 +15,19 @@ import java.util.List;
  */
 public class PackageTarget {
     ProjectWrapper project;
+    TsTaskListener buildListener;
     Target pkgTarget;
     ClientJar clientJarDef;
-    List<ClientJar> clientJars;
+    List<ClientJar> clientJars = new ArrayList<>();
     Ear earDef;
-    List<Ear> ears;
+    List<Ear> ears = new ArrayList<>();
     EjbJar ejbJarDef;
-    List<EjbJar> ejbJars;
+    List<EjbJar> ejbJars = new ArrayList<>();
     Par parDef;
-    List<Par> pars;
+    List<Par> pars = new ArrayList<>();
     War warDef;
-    List<War> wars;
+    List<War> wars = new ArrayList<>();
     Rar rarDef;
-    List<Rar> rars;
     Vehicles vehiclesDef;
     List<TaskInfo> unhandledTaks = new ArrayList<>();
 
@@ -126,7 +127,7 @@ public class PackageTarget {
         addModuleNames(moduleNames, clientJarDef, clientJars);
         addModuleNames(moduleNames, parDef, pars);
         addModuleNames(moduleNames, warDef, wars);
-        addModuleNames(moduleNames, rarDef, rars);
+        addModuleNames(moduleNames, rarDef, null);
         return moduleNames;
     }
     private void addModuleNames(ArrayList<String> moduleNames, BaseJar jar, List<? extends BaseJar> jars) {
@@ -230,11 +231,6 @@ public class PackageTarget {
      * @param basename - optional basename task that needs to run to set properties
      */
     public BaseJar parseTsClientjar(Task task, Task dirname, Task basename) {
-        if(clientJarDef != null) {
-            // There are multiple app clients in the package
-            clientJars = new ArrayList<>();
-            clientJars.add(clientJarDef);
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -245,9 +241,7 @@ public class PackageTarget {
         }
 
         clientJarDef = new ClientJar(project.getProject(), task.getRuntimeConfigurableWrapper());
-        if(clientJars != null) {
-            clientJars.add(clientJarDef);
-        }
+        clientJars.add(clientJarDef);
         return clientJarDef;
     }
 
@@ -258,11 +252,6 @@ public class PackageTarget {
      * @param basename - optional basename task that needs to run to set properties
      */
     public BaseJar parseTsEjbjar(Task task, Task dirname, Task basename) {
-        if(ejbJarDef != null) {
-            // There are multiple ts.ejbjar tasks
-            ejbJars = new ArrayList<>();
-            ejbJars.add(ejbJarDef);
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -273,9 +262,7 @@ public class PackageTarget {
         }
 
         ejbJarDef = new EjbJar(project.getProject(), task.getRuntimeConfigurableWrapper());
-        if(ejbJars != null) {
-            ejbJars.add(ejbJarDef);
-        }
+        ejbJars.add(ejbJarDef);
         return ejbJarDef;
     }
 
@@ -286,11 +273,6 @@ public class PackageTarget {
      * @param basename - optional basename task that needs to run to set properties
      */
     public BaseJar parseTsWar(Task task, Task dirname, Task basename) {
-        if(warDef != null) {
-            // Multiple wars
-            wars = new ArrayList<>();
-            wars.add(warDef);
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -301,9 +283,7 @@ public class PackageTarget {
         }
 
         warDef = new War(project.getProject(), task.getRuntimeConfigurableWrapper());
-        if(wars != null) {
-            wars.add(warDef);
-        }
+        wars.add(warDef);
         return warDef;
     }
 
@@ -314,11 +294,6 @@ public class PackageTarget {
      * @param basename - optional basename task that needs to run to set properties
      */
     public BaseJar parseTsEar(Task task, Task dirname, Task basename) {
-        if(earDef != null) {
-            // Multiple ears
-            ears = new ArrayList<>();
-            ears.add(earDef);
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -329,9 +304,7 @@ public class PackageTarget {
         }
 
         earDef = new Ear(project.getProject(), task.getRuntimeConfigurableWrapper());
-        if(ears != null) {
-            ears.add(earDef);
-        }
+        ears.add(earDef);
         return earDef;
     }
 
@@ -342,11 +315,6 @@ public class PackageTarget {
      * @param basename - optional basename task that needs to run to set properties
      */
     public BaseJar parseTsPar(Task task, Task dirname, Task basename) {
-        if(parDef != null) {
-            // Multiple pars
-            pars = new ArrayList<>();
-            pars.add(parDef);
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -357,9 +325,7 @@ public class PackageTarget {
         }
 
         parDef = new Par(project.getProject(), task.getRuntimeConfigurableWrapper());
-        if(pars != null) {
-            pars.add(parDef);
-        }
+        pars.add(parDef);
         return parDef;
     }
 
@@ -417,5 +383,65 @@ public class PackageTarget {
                 hasClientJarDef(), hasEjbJarDef(), hasWarDef(), hasEarDef(), hasParDef(), hasRarDef(), hasVehiclesDef()));
         tmp.append("unhandledTaks=").append(unhandledTaks);
         return tmp.toString();
+    }
+
+    public void execute() {
+        TsTaskListener buildListener = new TsTaskListener(this);
+        project.addBuildListener(buildListener);
+        pkgTarget.execute();
+    }
+    public void execute(VehicleType vehicleType) {
+        clearParseState();
+        if(buildListener == null) {
+            buildListener = new TsTaskListener(this);
+            project.addBuildListener(buildListener);
+        }
+        setVehicleOverride(vehicleType.name());
+        pkgTarget.execute();
+    }
+
+    public void setVehicleOverride(String name) {
+        Task[] tasks = pkgTarget.getTasks();
+        for(Task task : tasks) {
+            if(task.getTaskName().equals("ts.vehicles")) {
+                task.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", name);
+            }
+        }
+    }
+
+    /**
+     * Obtain the base deployment name from the package target elements that have been parsed.
+     * This is only value after an execute method has been called.
+     * @return archive name of vehicles, ear, war or clientJar in that order
+     */
+    public String getDeploymentName() {
+        String name = null;
+        if(vehiclesDef != null) {
+            name = vehiclesDef.getName();
+        }
+        else if(earDef != null) {
+            name = earDef.getArchiveName();
+        } else if(warDef != null) {
+            name = warDef.getArchiveName();
+        } else if (clientJarDef != null) {
+            name = clientJarDef.getArchiveName();
+        }
+        return name;
+    }
+
+    private void clearParseState() {
+        this.vehiclesDef = null;
+        this.warDef = null;
+        this.wars.clear();
+        this.ejbJarDef = null;
+        this.ejbJars.clear();
+        this.earDef = null;
+        this.ears.clear();
+        this.parDef = null;
+        this.pars.clear();
+        this.clientJarDef = null;
+        this.clientJars.clear();
+        this.rarDef = null;
+        this.unhandledTaks.clear();
     }
 }

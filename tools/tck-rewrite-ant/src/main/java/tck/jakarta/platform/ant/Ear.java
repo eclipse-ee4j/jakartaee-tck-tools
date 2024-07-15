@@ -26,4 +26,5 @@ public class Ear extends BaseJar {
     public boolean isDeleteComponentArchives() {
         return deletecomponentarchives;
     }
+
 }

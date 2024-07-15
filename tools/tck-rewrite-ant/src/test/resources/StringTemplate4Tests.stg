@@ -41,3 +41,42 @@ addModulesFromPkg(ear, pkg) ::= <<
     }
 #
 >>
+
+// deployment is an tck.conversion.ant.st4.DeploymentRecord instance
+genMethodVehicle(deployment, testClass) ::= <<
+    static final String VEHICLE_ARCHIVE = "#deployment.name#_#deployment.vehcile#_vehicle";
+    @TargetsContainer("tck-#deployment.protocol#")
+    @OverProtocol("#deployment.protocol#"")
+    @Deployment(name = VEHICLE_ARCHIVE)
+#if(deployment.hasEar)#Saw #attr1#
+    public static EnterpriseArchive createDeploymentVehicle() {
+#else#
+    public static WebArchive createDeploymentVehicle() {
+#endif#
+#if(deployment.hasWar)#
+    #genWar(deployment.war, testClass)#
+#endif#
+
+#if(deployment.hasEar)#Saw #attr1#
+        reeturn #deployment.ear.typedArchiveName#;
+#else#
+        reeturn #deployment.war.typedArchiveName#;
+#endif#
+    }
+>>
+
+// war is an tck.jakarta.platform.ant.War instance
+genWar(war, testClass) ::= <<
+      // the war with the correct archive name
+      WebArchive #war.typedArchiveName# = ShrinkWrap.create(WebArchive.class, VEHICLE_ARCHIVE+"#war.archiveSuffix#");
+      // The class files
+      #war.typedArchiveName#.addClasses(
+        #war.classFilesString#
+      );
+      // The ejb-jar.xml descriptor
+      URL resURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
+      if(resURL != null) {
+          #war.typedArchiveName#.addAsWebInfResource(resURL, "#war.internalDescriptorName#");
+      }
+      // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+>>

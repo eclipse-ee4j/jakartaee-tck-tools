@@ -290,7 +290,7 @@ public class TsArtifactsTest {
 
         STGroup ejbJarGroup = new STGroupFile("TsEjbJar.stg");
         //System.out.println(ejbJarGroup.show());
-        ST genRepo = ejbJarGroup.getInstanceOf("genJar");
+        ST genRepo = ejbJarGroup.getInstanceOf("genEjbJar");
         genRepo.add("ejbjar", ejbJarDef);
         genRepo.add("testClass", "ClientTest");
         String ejbJarCode = genRepo.render();
@@ -318,7 +318,7 @@ public class TsArtifactsTest {
 
         STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
         //System.out.println(ejbJarGroup.show());
-        ST clientRepo = clientJarGroup.getInstanceOf("genJar");
+        ST clientRepo = clientJarGroup.getInstanceOf("genClienJar");
         clientRepo.add("client", clientJarDef);
         clientRepo.add("testClass", "ClientTest");
         String clientJarCode = clientRepo.render();
@@ -653,7 +653,7 @@ public class TsArtifactsTest {
 
         // Generate code for appclient vehicle test archive
         STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
-        ST genClient = clientJarGroup.getInstanceOf("genJar");
+        ST genClient = clientJarGroup.getInstanceOf("genClienJar");
         genClient.add("client", pkgTarget.getClientJarDef());
         genClient.add("testClass", "ClientTest");
         String clientJarCode = genClient.render();
@@ -695,14 +695,14 @@ public class TsArtifactsTest {
 
         // Generate the ejb vehicle code
         STGroup clientJarGroup2 = new STGroupFile("TsClientJar.stg");
-        ST genClient2 = clientJarGroup2.getInstanceOf("genJar");
+        ST genClient2 = clientJarGroup2.getInstanceOf("genClienJar");
         genClient2.add("client", pkgTarget2.getClientJarDef());
         genClient2.add("testClass", "ClientTest");
         String clientJarCode2 = genClient.render();
         System.out.println(clientJarCode2);
 
         STGroup ejbJarGroup = new STGroupFile("TsEjbJar.stg");
-        ST genEjb = ejbJarGroup.getInstanceOf("genJar");
+        ST genEjb = ejbJarGroup.getInstanceOf("genEjbJar");
         genEjb.add("ejbjar", pkgTarget2.getEjbJarDef());
         genEjb.add("testClass", "ClientTest");
         String ejbJarCode = genEjb.render();
@@ -823,6 +823,7 @@ public class TsArtifactsTest {
         System.out.println("Ear: "+pkgTarget.getEarDef());
         System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
         System.out.println("Vehicles: "+pkgTarget.getVehiclesDef());
+
     }
 
     @Test

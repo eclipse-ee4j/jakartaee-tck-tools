@@ -1,5 +1,6 @@
 package tck.jakarta.platform.ant;
 
+import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Task;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class TsTaskInfo {
     private String archiveName;
     // The current Jar task FileSets resources
     private List<TSFileSet> resources;
+    private AttributeMap componetAttributes;
 
     public TsTaskInfo(Task task) {
         this.task = task;
@@ -50,4 +52,11 @@ public class TsTaskInfo {
         return task.getTaskName();
     }
 
+    public AttributeMap getComponetAttributes() {
+        return componetAttributes;
+    }
+
+    public void setComponentAttributes(RuntimeConfigurable rc) {
+        this.componetAttributes = new AttributeMap(task.getProject(), rc.getAttributeMap());
+    }
 }
