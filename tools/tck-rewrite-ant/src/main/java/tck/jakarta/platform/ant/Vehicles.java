@@ -6,9 +6,11 @@ import org.apache.tools.ant.RuntimeConfigurable;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * ts.vehicles representation
@@ -18,6 +20,7 @@ import java.util.List;
  * vehicle.pkg.dir = the package dir for vehicles classes as a relative path, e.g., com/sun/ts/tests/common/vehicle
  */
 public class Vehicles {
+    private static final Logger log = Logger.getLogger(Vehicles.class.getName());
     private VehicleVerifier vehicleVerifier;
 
     // Name used to construct vehicle archive names
@@ -107,24 +110,8 @@ public class Vehicles {
         return result;
     }
 
-    public void buildTestVehicles() {
-        List<VehicleType> testVehicles = determineVehicleToBuild();
-        if(testVehicles.isEmpty()) {
-            return;
-        }
-
-        for (VehicleType testVehicle : testVehicles) {
-            buildTestVehicle(testVehicle);
-        }
-    }
-    public void buildTestVehicle(VehicleType type) {
-        // These are the EE 10 ${vehicle.pkg.dir}/**/*Runner.class values
-        Class<?>[] runnerClasses = {com.sun.ts.tests.common.vehicle.EmptyVehicleRunner.class, com.sun.ts.tests.common.vehicle.VehicleRunnerFactory.class};
-
-        // appclient_vehicle
-        String vehicleName = type.name() + "_vehicle";
-        // appclient_vehicle_appclient
-        String vehiclePrefix = vehicleName + '_' + type.name();
+    public String getName() {
+        return name;
     }
 
     public String getVehicleoverride() {
@@ -252,7 +239,7 @@ public class Vehicles {
                     break;
             }
             for (RuntimeConfigurable rccc : Utils.asList(rcc.getChildren())) {
-                System.out.printf("+++ +++ nested RC: %s, attrs=%s\n", rccc.getElementTag(), rccc.getAttributeMap());
+                debug("+++ +++ nested RC: %s, attrs=%s\n", rccc.getElementTag(), rccc.getAttributeMap());
             }
         }
 
@@ -266,4 +253,8 @@ public class Vehicles {
         return theSet;
     }
 
+    private void debug(String format, Object ... args) {
+        String msg = String.format(format, args);
+        log.fine(msg);
+    }
 }

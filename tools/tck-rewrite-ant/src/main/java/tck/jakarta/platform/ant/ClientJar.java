@@ -27,4 +27,7 @@ public class ClientJar extends BaseJar {
     public String getMainClass() {
         return mainClass;
     }
+    public void setMainClass(String mainClass) {
+        this.mainClass = mainClass;
+    }
 }

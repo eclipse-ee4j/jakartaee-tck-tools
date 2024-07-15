@@ -4,6 +4,7 @@ import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
+import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.UnknownElement;
@@ -14,13 +15,17 @@ import org.apache.tools.ant.types.ZipFileSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 /**
  * An ant BuildListener used to capture the ts.* task information when executing the package target
  * of the TCK build.xml
  */
 public class TsTaskListener implements BuildListener {
+    private static Logger log = Logger.getLogger(TsTaskListener.class.getName());
+    // The ant 'package' target wrapper
     private PackageTarget packageTarget;
+    // A stack to track information for the active ts.* task
     private LinkedList<TsTaskInfo> tsTaskStack = new LinkedList<>();
 
     public TsTaskListener(PackageTarget packageTarget) {
@@ -42,20 +47,35 @@ public class TsTaskListener implements BuildListener {
     @Override
     public void targetFinished(BuildEvent event) {
         Target target = event.getTarget();
-        System.out.printf("--- targetFinished %s\n", target.getName(), target.getLocation());
+        debug("--- targetFinished %s\n", target.getName(), target.getLocation());
 
     }
 
+    /**
+     * Here we capture the start of a ts.* task if it is not ts.verbose and push a TsTaskInfo onto
+     * the tsTaskStack
+     *
+     * @param event An event for the start of an ant Task
+     */
     @Override
     public void taskStarted(BuildEvent event) {
         Task task = event.getTask();
         String name = task.getTaskName();
         if(name.startsWith("ts.") && !name.startsWith("ts.verbose")) {
-            System.out.printf("+++ Started %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
+            debug("+++ Started %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
             tsTaskStack.push(new TsTaskInfo(task));
+        } else {
+            trace("+++ Started %s: %s\n", task.getTaskName(), task.getLocation());
         }
     }
 
+    /**
+     * Notification that the Task has complated. If it is a ts.* task, we print information about, pop the
+     * matching TsTaskInfo from the stack if this is not ts.verbose and update the BaseJar or Vehicles
+     * information.
+     *
+     * @param event An event for the start of an ant Task
+     */
     @Override
     public void taskFinished(BuildEvent event) {
         Task task = event.getTask();
@@ -67,42 +87,46 @@ public class TsTaskListener implements BuildListener {
                 PropertyHelper helper = PropertyHelper.getPropertyHelper(project);
                 msg = helper.parseProperties(msg).toString();
 
-                System.out.printf("ts.verbose: %s\n", msg);
+                debug("ts.verbose: %s\n", msg);
             } else {
                 TsTaskInfo taskInfo = tsTaskStack.pop();
                 boolean isTsVehicles = name.equals("ts.vehicles");
-                System.out.printf("+++ Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
+                debug("+++ Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
                 if(event.getMessage() != null) {
-                    System.out.printf("\t%s\n", event.getMessage());
+                    debug("\t%s\n", event.getMessage());
                 }
                 if(event.getException() != null) {
-                    System.out.printf("\t%s\n", event.getException());
+                    debug("\t%s\n", event.getException());
                 }
+                // Add the task to the package target wrapper
                 BaseJar taskJar = packageTarget.addTask(task);
-                if (taskJar == null && !isTsVehicles) {
-                    System.out.printf("Unhandled task: %s\n", name);
-                } else if(isTsVehicles) {
-
-                } else if(!taskInfo.getResources().isEmpty()) {
-                    if(isTsVehicles) {
-                        Vehicles vehiclesDef = packageTarget.getVehiclesDef();
-                        vehiclesDef.addJarResources(taskInfo);
-                    } else {
-                        taskJar.addJarResources(taskInfo);
+                if(isTsVehicles && taskInfo.getArchiveName() != null) {
+                    Vehicles vehiclesDef = packageTarget.getVehiclesDef();
+                    vehiclesDef.addJarResources(taskInfo);
+                } else if(taskJar == null) {
+                    debug("Unhandled task: %s\n", name);
+                } else {
+                    taskJar.addJarResources(taskInfo);
+                    // Update attributes from the component info
+                    if(taskInfo.getComponetAttributes() != null) {
+                        debug("Updating attributes from component map: %s\n", taskInfo.getComponetAttributes());
+                        taskJar.updateFromComponentAttrs(taskInfo.getComponetAttributes());
                     }
                 }
             }
         } else if(name.contains("fileset")) {
-            System.out.printf("Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
+            debug("Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
         } else if(name.contains("jar")) {
-            System.out.printf("%s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
+            // Here we capture information about a test archive that uses the fully resolved files and attributes
+            debug("%s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
             if(task instanceof UnknownElement) {
                 UnknownElement ue = (UnknownElement) task;
                 ue.maybeConfigure();
                 Object realThing = ue.getRealThing();
                 if(realThing instanceof Jar) {
+                    // This is any archive, client, ejb, ear, par, rar, war
                     Jar jar = (Jar) realThing;
-                    System.out.printf("+++ jar: %s\n", jar.getDestFile());
+                    debug("+++ jar: %s\n", jar.getDestFile());
                     ArrayList<TSFileSet> fileSets = new ArrayList<>();
                     for (UnknownElement uec : ue.getChildren()) {
                         Object proxy = uec.getWrapper().getProxy();
@@ -120,18 +144,52 @@ public class TsTaskListener implements BuildListener {
                             fileSets.add(tsFileSet);
                         }
                     }
-                    System.out.printf("\tfiles: %s\n", fileSets);
+                    debug("\tfiles: %s\n", fileSets);
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
-                    lastTsTask.addResources(fileSets);
-                    lastTsTask.setArchiveName(jar.getDestFile().getName());
-                    System.out.printf("--- jar(%s): %s\n", lastTsTask.getTaskName(), jar.getDestFile());
+                    if(lastTsTask != null) {
+                        lastTsTask.addResources(fileSets);
+                        lastTsTask.setArchiveName(jar.getDestFile().getName());
+                        debug("--- jar(%s): %s\n", lastTsTask.getTaskName(), jar.getDestFile());
+                    }
+                } else if(name.startsWith("component.")) {
+                    // This is an instance of the ts.common.xml _component macrodef that has jar in the name, e.g., component.clientjar
+                    RuntimeConfigurable rc = task.getRuntimeConfigurableWrapper();
+                    TsTaskInfo lastTsTask = tsTaskStack.peek();
+                    if(lastTsTask != null) {
+                        lastTsTask.setComponentAttributes(rc);
+                    }
                 }
+
             }
+        } else if(name.startsWith("component.")) {
+            // This is an instance of the ts.common.xml _component macrodef that does not have jar in the name, e.g., component.ear
+            RuntimeConfigurable rc = task.getRuntimeConfigurableWrapper();
+            TsTaskInfo lastTsTask = tsTaskStack.peek();
+            lastTsTask.setComponentAttributes(rc);
+        } else {
+            trace("Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
         }
     }
 
     @Override
     public void messageLogged(BuildEvent event) {
-        System.out.println(event.getMessage());
+        Task task = event.getTask();
+        if(task == null) {
+            log.finer(event.getMessage()+"\n");
+        } else {
+            debug("%s msg: %s\n", task.getTaskName(), event.getMessage());
+        }
+    }
+    private void info(String format, Object ... args) {
+        String msg = String.format(format, args);
+        log.info(msg);
+    }
+    private void debug(String format, Object ... args) {
+        String msg = String.format(format, args);
+        log.fine(msg);
+    }
+    private void trace(String format, Object ... args) {
+        String msg = String.format(format, args);
+        log.finer(msg);
     }
 }

@@ -63,4 +63,8 @@ public class ProjectWrapper {
     public Project getProject() {
         return project;
     }
+
+    public void addBuildListener(TsTaskListener buildListener) {
+        project.addBuildListener(buildListener);
+    }
 }

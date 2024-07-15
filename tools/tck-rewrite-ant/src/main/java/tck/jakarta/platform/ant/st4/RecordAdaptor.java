@@ -1,4 +1,4 @@
-package tck.conversion.ant.st4;
+package tck.jakarta.platform.ant.st4;
 
 import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;

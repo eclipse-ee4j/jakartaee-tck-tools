@@ -2,17 +2,22 @@
 delimiters "#", "#"
 
 // war is an tck.jakarta.platform.ant.War instance
-genJar(war, testClass) ::= <<
-          // the jar with the correct archive name
-          JavaArchive #war.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#war.fullArchiveName#");
-          // The class files
-          #war.typedArchiveName#.addClasses(
-            #war.classFilesString#
-          );
-          // The ejb-jar.xml descriptor
-          URL resURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
-          if(resURL != null) {
-              #war.typedArchiveName#.addAsManifestResource(resURL, "ejb-jar.xml");
-          }
-          // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+genWar(war, testClass) ::= <<
+    // the war with the correct archive name
+    WebArchive #war.typedArchiveName# = ShrinkWrap.create(WebArchive.class, "#war.fullArchiveName#");
+    // The class files
+    #war.typedArchiveName#.addClasses(
+    #war.classFilesString#
+    );
+    // The web.xml descriptor
+    URL warResURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
+    if(warResURL != null) {
+      #war.typedArchiveName#.addAsWebInfResource(warResURL, "web.xml");
+    }
+    // TODO, does the sun-web.xml file need to be added or should this be in in the vendor Arquillian extension?
+    // Web content
+#war.webContent :{ c |
+    warResURL = #testClass#.class.getResource("/#c.resPath#");
+    #war.typedArchiveName#.addAsWebResource(warResURL, "/#c.target#");
+}#
 >>

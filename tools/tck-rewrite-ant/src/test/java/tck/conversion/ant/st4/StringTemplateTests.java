@@ -1,12 +1,16 @@
 package tck.conversion.ant.st4;
 
+import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.A;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import tck.jakarta.platform.ant.TSFileSet;
+import tck.jakarta.platform.ant.War;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -146,4 +150,33 @@ earArchive.addAsModule(ejbJar1);
         Assertions.assertEquals(expected.trim(), out);
     }
 
+    @Test
+    public void testDeploymentMethod() {
+        War warDef = new War();
+        warDef.setArchiveName("bytesMsgTopic");
+        warDef.setArchiveSuffix("_web.war");
+        warDef.setDescriptor("servlet_vehicle_web.xml");
+        warDef.setDescriptorDir("/jms/core/bytesMsgTopic");
+        warDef.setInternalDescriptorName("web.xml");
+        ArrayList<String> includes = new ArrayList<>();
+        includes.add("com/sun/ts/tests/jms/core/bytesMsgTopic/BytesMsgTopicTests.class");
+        includes.add("com/sun/ts/tests/jms/common/JmsTool.class");
+        TSFileSet classes = new TSFileSet("classes", "WEB-INF/classes", includes);
+        warDef.addFileSet(classes);
+
+        System.out.printf("%s\n", warDef.getRelativeDescriptorPath());
+        System.out.printf("%s\n", warDef.getInternalDescriptorName());
+
+        DeploymentRecord deployment = new DeploymentRecord("bytesMsgTopic", "javatest", "servlet");
+        deployment.setWar(warDef);
+
+        STGroup.verbose = true;
+        Interpreter.trace = true;
+        ST template = testGroup.getInstanceOf("genMethodVehicle");
+        template.add("deployment", deployment);
+        template.add("testClass", "ClientServletTest");
+        String out = template.render().trim();
+        System.out.println(out);
+
+    }
 }

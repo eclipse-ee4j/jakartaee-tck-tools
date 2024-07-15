@@ -1,5 +1,0 @@
-// An StringTemplate group for the ejbliteservlet vehicle artifact @Deployment method
-delimiters "#", "#"
-
-genJar(x) ::= <<
->>

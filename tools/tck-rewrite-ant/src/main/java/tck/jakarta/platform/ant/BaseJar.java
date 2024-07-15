@@ -3,9 +3,14 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -37,6 +42,10 @@ public abstract class BaseJar {
     //
     List<TSFileSet> fileSets = new ArrayList<>();
     Project project;
+    // An override to descriptor that can be set by vehicles
+    String vehicleDescriptor;
+
+    public BaseJar() {}
 
     public BaseJar(Project project, RuntimeConfigurable taskRC) {
         this.project = project;
@@ -44,6 +53,9 @@ public abstract class BaseJar {
         AttributeMap attrsMap = new AttributeMap(project, attrs);
         setArchiveName(attrsMap.getAttribute("archivename"));
         setArchiveSuffix(attrsMap.getAttribute("archivesuffix"));
+        if(this.archiveSuffix == null) {
+            this.archiveSuffix = "_"+getType();
+        }
         setArchiveFile(attrsMap.getAttribute("archivefile"));
         this.manifest = attrsMap.getAttribute("manifest");
         setDescriptor(attrsMap.getAttribute("descriptor"));
@@ -66,6 +78,41 @@ public abstract class BaseJar {
     }
 
     public abstract String getType();
+
+    public void updateFromComponentAttrs(AttributeMap attrs) {
+        for (String key : attrs.getAttributes().keySet()) {
+            String value = attrs.getAttribute(key);
+            switch (key) {
+                case "archivename":
+                    setArchiveName(value);
+                    break;
+                case "archivesuffix":
+                    setArchiveSuffix(value);
+                    break;
+                case "descriptor":
+                    setDescriptor(value);
+                    break;
+                case "manifest":
+                    setManifest(value);
+                    break;
+                case "descriptordir":
+                    break;
+                case "internaldescriptorname":
+                    setInternalDescriptorName(value);
+                    break;
+                case "mainclass":
+                    MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
+                    MethodType mt = MethodType.methodType(void.class, String.class);
+                    try {
+                        MethodHandle setMainClass = publicLookup.findVirtual(getClass(), "setMainClass", mt);
+                        setMainClass.invokeExact(this, value);
+                    } catch (Throwable e) {
+                        // Ignore
+                    }
+                    break;
+            }
+        }
+    }
 
     public String getDescriptor() {
         return descriptor;
@@ -123,6 +170,14 @@ public abstract class BaseJar {
         this.descriptor = descriptor;
     }
 
+    public String getInternalDescriptorName() {
+        return internaldescriptorname;
+    }
+
+    public void setInternalDescriptorName(String internaldescriptorname) {
+        this.internaldescriptorname = internaldescriptorname;
+    }
+
     /**
      * @return the archiveName + archiveSuffix
      */
@@ -156,7 +211,12 @@ public abstract class BaseJar {
         return fileSets;
     }
     public void addFileSet(TSFileSet fs) {
-        fileSets.add(fs);
+        if(fs != null) {
+            fileSets.add(fs);
+        }
+    }
+    public void addFileSet(Collection<TSFileSet> fs) {
+        fileSets.addAll(fs);
     }
 
     /**
@@ -165,9 +225,16 @@ public abstract class BaseJar {
      * @param taskInfo - the resources are those found in the last jar task build event
      */
     public void addJarResources(TsTaskInfo taskInfo) {
-        this.archiveName = taskInfo.getArchiveName();
+        //this.archiveName = taskInfo.getArchiveName();
         fileSets.clear();
         fileSets.addAll(taskInfo.getResources());
+    }
+
+    public void setVehicleDescriptor(String resPath) {
+        this.vehicleDescriptor = resPath;
+        if(this.vehicleDescriptor.startsWith("/")) {
+            this.vehicleDescriptor = this.vehicleDescriptor.substring(1);
+        }
     }
 
     /**
@@ -175,12 +242,22 @@ public abstract class BaseJar {
      * @return possibly null path to jar descriptor
      */
     public String getRelativeDescriptorPath() {
+        // If there is a vehicleDescriptor just use that
+        if(vehicleDescriptor != null) {
+            return vehicleDescriptor;
+        }
+
         String relativePath = getDescriptorDir();
         if(relativePath != null) {
             // Start is the com/sun/... path
             int start = relativePath.indexOf("com/");
-            relativePath = relativePath.substring(start);
+            if(start != -1) {
+                relativePath = relativePath.substring(start);
+            }
             relativePath += "/" + getDescriptor();
+            if(relativePath.startsWith("/")) {
+                relativePath = relativePath.substring(1);
+            }
         }
         return relativePath;
     }
@@ -191,18 +268,26 @@ public abstract class BaseJar {
      * @return string of dot package class files, one per line
      */
     public String getClassFilesString() {
-        StringBuilder sb = new StringBuilder();
+        // Capture unique classes
+        HashSet<String> classes = new HashSet<>();
         for(TSFileSet fs : fileSets) {
             String dir = fs.dir + '/';
             for(String f : fs.includes) {
-                if(f.endsWith(".class")) {
+                // Skip the obsolete EJBHomes
+                if(f.endsWith(".class") && !f.endsWith("Home.class")) {
                     f = f.replace(dir, "");
                     String clazz = f.replace('/', '.').replace('$', '.');
-                    sb.append(clazz);
-                    sb.append(",\n");
+                    classes.add(clazz);
                 }
             }
         }
+        // Build up a string that can be passed to an archive addClasses method
+        StringBuilder sb = new StringBuilder();
+        for(String clazz : classes) {
+            sb.append(clazz);
+            sb.append(",\n");
+        }
+        sb.setLength(sb.length() - 2);
         return sb.toString();
     }
 
@@ -216,11 +301,13 @@ public abstract class BaseJar {
     @Override
     public String toString() {
         StringBuilder tmp = new StringBuilder();
-        tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, excludedFiles=%s}".formatted(getType(), descriptor, descriptordir, archiveName, excludedFiles));
+        tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, archivesuffix=%s, fullArchiveName=%s, excludedFiles=%s}".formatted(getType(),
+                descriptor, descriptordir, archiveName, archiveSuffix, getFullArchiveName(), excludedFiles));
         for(TSFileSet fs : fileSets) {
             tmp.append('\n');
             tmp.append(fs);
         }
         return tmp.toString();
     }
+
 }

@@ -1,0 +1,101 @@
+package tck.jakarta.platform.ant.api;
+
+import tck.jakarta.platform.ant.ClientJar;
+import tck.jakarta.platform.ant.Ear;
+import tck.jakarta.platform.ant.EjbJar;
+import tck.jakarta.platform.ant.War;
+import tck.jakarta.platform.vehicles.VehicleType;
+
+/**
+ * A summary of the parsed information for a given test artifact deployment.
+ */
+public class DeploymentInfo {
+    final String name;
+    final String protocol;
+    final VehicleType vehicle;
+    Class<?> testClass;
+    ClientJar clientJarDef;
+    EjbJar ejbJarDef;
+    War warDef;
+    Ear earDef;
+
+    public DeploymentInfo(Class<?> testClass, String name, String protocol, VehicleType vehicle) {
+        this.testClass = testClass;
+        this.name = name;
+        this.protocol = protocol;
+        this.vehicle = vehicle;
+    }
+
+    public Class<?> getTestClass() {
+        return testClass;
+    }
+    public String getName() {
+        return name;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public VehicleType getVehicle() {
+        return vehicle;
+    }
+
+    public boolean getHasWar() {
+        return warDef != null;
+    }
+    public War getWar() {
+        return warDef;
+    }
+
+    public void setWar(War warDef) {
+        this.warDef = warDef;
+    }
+
+    public boolean getHasEar() {
+        return earDef != null;
+    }
+    public Ear getEar() {
+        return earDef;
+    }
+
+    public void setEar(Ear earDef) {
+        this.earDef = earDef;
+    }
+
+    public boolean getHasClientJar() {
+        return clientJarDef != null;
+    }
+    public ClientJar getClientJar() {
+        return clientJarDef;
+    }
+
+    public void setClientJar(ClientJar clientJarDef) {
+        this.clientJarDef = clientJarDef;
+    }
+
+    public boolean getHasEjbJar() {
+        return ejbJarDef != null;
+    }
+    public EjbJar getEjbJar() {
+        return ejbJarDef;
+    }
+
+    public void setEjbJar(EjbJar ejbJarDef) {
+        this.ejbJarDef = ejbJarDef;
+    }
+
+    public String toString() {
+        StringBuilder tmp = new StringBuilder();
+        tmp.append(String.format("DeploymentInfo [name=%s, protocol=%s, vehicle=%s, testClass=%s]\n", name, protocol, vehicle, testClass));
+        tmp.append(clientJarDef == null ? "No client" : clientJarDef.toString());
+        tmp.append('\n');
+        tmp.append(ejbJarDef == null ? "No ejb" : ejbJarDef.toString());
+        tmp.append('\n');
+        tmp.append(warDef == null ? "No war" : warDef.toString());
+        tmp.append('\n');
+        tmp.append(earDef == null ? "No ear" : earDef.toString());
+        tmp.append('\n');
+        return tmp.toString();
+    }
+}

@@ -8,8 +8,7 @@ delimiters "#", "#"
 genEar(pkg, ear) ::= <<
     EnterpriseArchive #ear.typedArchiveName# = ShrinkWrap.create(EnterpriseArchive.class, "#ear.fullArchiveName#");
     // The compnent jars built by the package target
-    #pkg.moduleNames :{ m |
-     #ear.typedArchiveName#.addAsModule(#m#);
-     }
-    #
+#pkg.moduleNames :{ m |
+    #ear.typedArchiveName#.addAsModule(#m#);
+}#
 >>
