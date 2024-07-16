@@ -55,14 +55,13 @@ public class Vehicles {
     private List<TSFileSet> servletElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the jsp vehicle archive
     private TSFileSet jspElements;
-    // Set of filesets and/or zipfilesets to be added to the wsservlet vehicle archive
-    private TSFileSet wservletElements;
-    // Set of filesets and/or zipfilesets to be added to the wsejb vehicle archive
-    private TSFileSet wsejbElements;
     // Set of filesets and/or zipfilesets to be added to all ear vehicle archive
     private List<TSFileSet> earElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to all vehicle archives
     private TSFileSet jarElements;
+    private List<Lib> earLibs = new ArrayList<>();
+    private List<Lib> warLibs = new ArrayList<>();
+
 
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, RuntimeConfigurable rc, Location location) {
         this(name, vehiclePkgDir, attributes, location.getFileName());
@@ -142,14 +141,6 @@ public class Vehicles {
         return jspElements;
     }
 
-    public TSFileSet getWservletElements() {
-        return wservletElements;
-    }
-
-    public TSFileSet getWsejbElements() {
-        return wsejbElements;
-    }
-
     public List<TSFileSet> getEarElements() {
         return earElements;
     }
@@ -179,6 +170,27 @@ public class Vehicles {
         }
     }
 
+    /**
+     *
+     * @param packageInfo
+     */
+    public void addJarResources(TsPackageInfo packageInfo) {
+        String name = packageInfo.getTargeName();
+        if(name.contains("ear")) {
+            Lib lib = new Lib();
+            lib.setArchiveName(packageInfo.getArchiveName());
+            lib.addResources(packageInfo.getResources());
+            earLibs.add(lib);
+        } else if(name.contains("war")) {
+            Lib lib = new Lib();
+            lib.setArchiveName(packageInfo.getArchiveName());
+            lib.addResources(packageInfo.getResources());
+            warLibs.add(new Lib());
+        } else {
+            throw new RuntimeException("Unhandled archive type" + name);
+        }
+    }
+
     @Override
     public String toString() {
         return "Vehicles{" +
@@ -197,8 +209,6 @@ public class Vehicles {
                 ", clientElements=" + clientElements +
                 ", servletElements=" + servletElements +
                 ", jspElements=" + jspElements +
-                ", wservletElements=" + wservletElements +
-                ", wsejbElements=" + wsejbElements +
                 ", earElements=" + earElements +
                 ", jarElements=" + jarElements +
                 '}';
@@ -224,12 +234,6 @@ public class Vehicles {
                     break;
                 case "jsp-elements":
                     this.jspElements = fileSet;
-                    break;
-                case "wsservlet-elements":
-                    this.wservletElements = fileSet;
-                    break;
-                case "wsejb-elements":
-                    this.wsejbElements = fileSet;
                     break;
                 case "ear-elements":
                     this.earElements.add(fileSet);

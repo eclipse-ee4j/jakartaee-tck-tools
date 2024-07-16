@@ -19,6 +19,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -31,6 +32,9 @@ import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.TsTaskListener;
 import tck.jakarta.platform.ant.Utils;
 import tck.jakarta.platform.ant.Vehicles;
+import tck.jakarta.platform.ant.War;
+import tck.jakarta.platform.ant.api.DeploymentInfo;
+import tck.jakarta.platform.ant.st4.RecordAdaptor;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
@@ -1040,9 +1044,69 @@ public class TsArtifactsTest {
 
     }
 
-    // src/com/sun/ts/tests/appclient/deploy/compat12_13/build.xml
+    // src/main/java/com/sun/ts/tests/ejb30/assembly/initorder/warejb/build.xml
     @Test
-    public void test_x() {
+    public void testClientInitOrderWarejb() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb30/assembly/initorder/warejb/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
 
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        List<String> dependencies = toList(pkg.getDependencies());
+        System.out.printf("package dependencies: %s\n", dependencies);
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        // Build the dependencies firt
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        for (String dep : dependencies) {
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                target.performTasks();
+            }
+        }
+        pkg.performTasks();
+
+        // Print out the package target tasks
+
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.printf("War.classes: %s\n", pkgTarget.getWarDef().getClassFilesString());
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.println("Ejb: "+pkgTarget.getEjbJarDef());
+        System.out.println("Ejb.classes: "+pkgTarget.getEjbJarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.printf("Ear.descriptorPath: %s\n", pkgTarget.getEarDef().getRelativeDescriptorPath());
+        System.out.println("Pkg.moduleNames: "+pkgTarget.getModuleNames());
+
+        STGroup earGroup = new STGroupFile("TsEar.stg");
+        ST genEar = earGroup.getInstanceOf("genEar");
+        genEar.add("ear", pkgTarget.getEarDef());
+        genEar.add("pkg", pkgTarget);
+        String earCode = genEar.render();
+        System.out.println(earCode);
+
+        Class<?> clazz = com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class;
+        DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTarget.getDeploymentName(), "javatest", VehicleType.none);
+        deployment.setWar(pkgTarget.getWarDef());
+        deployment.setEjbJar(pkgTarget.getEjbJarDef());
+        deployment.setEar(pkgTarget.getEarDef());
+        STGroup.verbose = true;
+        //Interpreter.trace = true;
+        STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
+        deploymentMethodGroup.registerModelAdaptor(War.Content.class, new RecordAdaptor<War.Content>());
+        ST template = deploymentMethodGroup.getInstanceOf("genMethodNonVehicle");
+        template.add("pkg", pkgTarget);
+        template.add("deployment", deployment);
+        template.add("testClass", "ClientTest");
+        String methodCode = template.render().trim();
+        System.out.println(methodCode);
     }
 }

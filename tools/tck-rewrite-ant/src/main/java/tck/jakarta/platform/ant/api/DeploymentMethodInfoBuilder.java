@@ -63,48 +63,6 @@ public class DeploymentMethodInfoBuilder {
     }
 
     /**
-     * Validate that a tsHome path contains:
-     * tsHome/bin
-     * tsHome/classes
-     * tsHome/classes/com/sun/ts/tests/common/vehicle
-     * tsHome/dist
-     * tsHome/src/vehicle.properties
-     * tsHome/../glassfish7/glassfish/modules
-     *
-     * @param tsHome - path to EE10 TCK dist
-     */
-    public static void validateTSHome(Path tsHome) throws FileNotFoundException {
-        if(!tsHome.toFile().exists()) {
-            throw new FileNotFoundException("The tsHome path does not exist: "+tsHome);
-        }
-        Path bin = tsHome.resolve("bin");
-        if(!bin.toFile().exists()) {
-            throw new FileNotFoundException("The tsHome path does not contain a bin directory: "+bin);
-        }
-        Path classes = tsHome.resolve("classes");
-        if(!classes.toFile().exists()) {
-            throw new FileNotFoundException("The tsHome path does not contain a classes directory: "+classes);
-        }
-        Path vehicles = tsHome.resolve("classes/com/sun/ts/tests/common/vehicle");
-        if(!classes.toFile().exists()) {
-            throw new FileNotFoundException("The tsHome path does not contain a vehicle classes directory: "+vehicles);
-        }
-        Path dist = tsHome.resolve("dist");
-        if(!dist.toFile().exists()) {
-            throw new FileNotFoundException("The tsHome path does not contain a dist directory: "+dist);
-        }
-        Path vehicleProps = tsHome.resolve("src/vehicle.properties");
-        if(!vehicleProps.toFile().canRead()) {
-            throw new FileNotFoundException("The tsHome path does not contain a readable vehicle.properties: "+vehicleProps);
-        }
-        Path glassfish = tsHome.resolve("../glassfish7/glassfish/modules");
-        if(!vehicleProps.toFile().canRead()) {
-            String msg = "The tsHome path does not have a peer glassfish7 dist with a glassfish/modules directory.\n"+
-                    "The expected path is: "+glassfish.toAbsolutePath();
-            throw new FileNotFoundException(msg);
-        }
-    }
-    /**
      * Look for a TS_HOME environment variable or ts.home system property to obtain
      * the tsHome Path to a valid EE10 TCK distribution.
      * @return A DeploymentMethodInfoBuilder
@@ -119,7 +77,7 @@ public class DeploymentMethodInfoBuilder {
             throw new FileNotFoundException("Neither a TS_HOME environment variable or ts.home system property were set.");
         }
         Path tsHome = Paths.get(tsHomeProp);
-        validateTSHome(tsHome);
+        Utils.validateTSHome(tsHome);
         return new DeploymentMethodInfoBuilder(tsHome);
     }
 
@@ -173,8 +131,6 @@ public class DeploymentMethodInfoBuilder {
         return deploymentMethodInfos;
     }
     public DeploymentMethodInfo forTestClassAndVehicle(Class<?> testClass, VehicleType vehicleType) throws IOException {
-        // The simple name, e.g., MyTest for com.sun.*.MyTest
-        String testClassSimpleName = testClass.getSimpleName();
         String pkg = testClass.getPackageName();
         String pkgPath = pkg.replace('.', '/');
         Path srcDir = tsHome.resolve("src");
@@ -193,18 +149,41 @@ public class DeploymentMethodInfoBuilder {
         Target antPackageTarget = project.getTargets().get("package");
         PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
 
-        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(antPackageTarget.getLocation().getFileName()));
-        String[] vehicles = verifier.getVehicleSet();
-        debug("Vehicles: %s\n", Arrays.asList(vehicles));
+        DeploymentMethodInfo methodInfo;
+        if(vehicleType == null || vehicleType == VehicleType.none) {
+            methodInfo = parseNonVehiclePackage(pkgTargetWrapper, testClass);
+        } else {
+            VehicleVerifier verifier = VehicleVerifier.getInstance(new File(antPackageTarget.getLocation().getFileName()));
+            String[] vehicles = verifier.getVehicleSet();
+            debug("Vehicles: %s\n", Arrays.asList(vehicles));
 
-        DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, testClass, vehicleType);
+            methodInfo = parseVehiclePackage(pkgTargetWrapper, testClass, vehicleType);
+        }
         return methodInfo;
     }
 
-    private DeploymentMethodInfo parseNonVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> testClassSimpleName) {
+    private DeploymentMethodInfo parseNonVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz) {
         pkgTargetWrapper.execute();
-        pkgTargetWrapper.hasEarDef();
+        String protocol = pkgTargetWrapper.hasClientJarDef() ? "appclient" : "javatest";
+        String testClassSimpleName = clazz.getSimpleName();
+
+        // Extract the information for the current deployment from the parsed ts.vehicles info
+        DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTargetWrapper.getDeploymentName(), protocol, VehicleType.none);
+        populateDeployment(deployment, pkgTargetWrapper);
+
+        // Generate the deployment method
+        STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
+        deploymentMethodGroup.registerModelAdaptor(War.Content.class, new RecordAdaptor<War.Content>());
+        ST template = deploymentMethodGroup.getInstanceOf("genMethodNonVehicle");
+        template.add("pkg", pkgTargetWrapper);
+        template.add("deployment", deployment);
+        template.add("testClass", testClassSimpleName);
+        String methodCode = template.render().trim();
         DeploymentMethodInfo methodInfo = new DeploymentMethodInfo();
+        methodInfo.setVehicle(VehicleType.none);
+        methodInfo.setMethodCode(methodCode);
+        methodInfo.setImports(Arrays.asList(ARQUILLIAN_IMPORTS));
+
         return methodInfo;
     }
     private DeploymentMethodInfo parseVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz, VehicleType vehicleType) {
@@ -236,18 +215,20 @@ public class DeploymentMethodInfoBuilder {
         // Client
         if(pkgTargetWrapper.hasClientJarDef()) {
             ClientJar clientJarDef = pkgTargetWrapper.getClientJarDef();
-            clientJarDef.addFileSet(vehicleDef.getClientElements());
-            // common to all vehicles
-            if(vehicleDef.getJarElements() != null) {
-                TSFileSet jarElements = vehicleDef.getJarElements();
-                clientJarDef.addFileSet(jarElements);
-            }
-            // Look for a *_vehicle_client.xml descriptor since this get overriden to tsHome/tmp
-            try {
-                String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "client");
-                clientJarDef.setVehicleDescriptor(resPath);
-            } catch (MalformedURLException e) {
-                info("Failed to locate client jar descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+            if(vehicleDef != null) {
+                clientJarDef.addFileSet(vehicleDef.getClientElements());
+                // common to all vehicles
+                if (vehicleDef.getJarElements() != null) {
+                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    clientJarDef.addFileSet(jarElements);
+                }
+                // Look for a *_vehicle_client.xml descriptor since this get overriden to tsHome/tmp
+                try {
+                    String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "client");
+                    clientJarDef.setVehicleDescriptor(resPath);
+                } catch (MalformedURLException e) {
+                    info("Failed to locate client jar descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+                }
             }
             deployment.setClientJar(clientJarDef);
             info("Client jar added to deployment: %s\n", clientJarDef);
@@ -255,18 +236,20 @@ public class DeploymentMethodInfoBuilder {
         // EJB
         if(pkgTargetWrapper.hasEjbJarDef()) {
             EjbJar ejbJarDef = pkgTargetWrapper.getEjbJarDef();
-            ejbJarDef.addFileSet(vehicleDef.getEjbElements());
-            // common to all vehicles
-            if(vehicleDef.getJarElements() != null) {
-                TSFileSet jarElements = vehicleDef.getJarElements();
-                ejbJarDef.addFileSet(jarElements);
-            }
-            // Look for a *_vehicle_ejb.xml descriptor since this get overriden to tsHome/tmp
-            try {
-                String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "ejb");
-                ejbJarDef.setVehicleDescriptor(resPath);
-            } catch (MalformedURLException e) {
-                info("Failed to locate ejb jar descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+            if(vehicleDef != null) {
+                ejbJarDef.addFileSet(vehicleDef.getEjbElements());
+                // common to all vehicles
+                if (vehicleDef.getJarElements() != null) {
+                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    ejbJarDef.addFileSet(jarElements);
+                }
+                // Look for a *_vehicle_ejb.xml descriptor since this get overriden to tsHome/tmp
+                try {
+                    String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "ejb");
+                    ejbJarDef.setVehicleDescriptor(resPath);
+                } catch (MalformedURLException e) {
+                    info("Failed to locate ejb jar descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+                }
             }
             deployment.setEjbJar(ejbJarDef);
             info("Ejb jar added to deployment: %s\n", ejbJarDef);
@@ -274,25 +257,27 @@ public class DeploymentMethodInfoBuilder {
         // War
         if(pkgTargetWrapper.hasWarDef()) {
             War warDef = pkgTargetWrapper.getWarDef();
-            switch (deployment.getVehicle()) {
-                case servlet:
-                    warDef.addFileSet(vehicleDef.getServletElements());
-                    break;
-                case jsp:
-                    warDef.addFileSet(vehicleDef.getJspElements());
-                    break;
-            }
-            // common to all vehicles
-            if(vehicleDef.getJarElements() != null) {
-                TSFileSet jarElements = vehicleDef.getJarElements();
-                warDef.addFileSet(jarElements);
-            }
-            // Look for a *_vehicle_web.xml descriptor since this get overriden to tsHome/tmp
-            try {
-                String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "web");
-                warDef.setVehicleDescriptor(resPath);
-            } catch (MalformedURLException e) {
-                info("Failed to locate war descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+            if(vehicleDef != null) {
+                switch (deployment.getVehicle()) {
+                    case servlet:
+                        warDef.addFileSet(vehicleDef.getServletElements());
+                        break;
+                    case jsp:
+                        warDef.addFileSet(vehicleDef.getJspElements());
+                        break;
+                }
+                // common to all vehicles
+                if (vehicleDef.getJarElements() != null) {
+                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    warDef.addFileSet(jarElements);
+                }
+                // Look for a *_vehicle_web.xml descriptor since this get overriden to tsHome/tmp
+                try {
+                    String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "web");
+                    warDef.setVehicleDescriptor(resPath);
+                } catch (MalformedURLException e) {
+                    info("Failed to locate war descriptor for vehicle: %s\n%s" + deployment.vehicle, e);
+                }
             }
             deployment.setWar(warDef);
             info("War added to deployment: %s\n", warDef);
@@ -301,11 +286,13 @@ public class DeploymentMethodInfoBuilder {
         // Ear
         if(pkgTargetWrapper.hasEarDef()) {
             Ear earDef = pkgTargetWrapper.getEarDef();
-            earDef.addFileSet(vehicleDef.getEarElements());
-            // common to all vehicles
-            if(vehicleDef.getJarElements() != null) {
-                TSFileSet jarElements = vehicleDef.getJarElements();
-                earDef.addFileSet(jarElements);
+            if(vehicleDef != null) {
+                earDef.addFileSet(vehicleDef.getEarElements());
+                // common to all vehicles
+                if (vehicleDef.getJarElements() != null) {
+                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    earDef.addFileSet(jarElements);
+                }
             }
             deployment.setEar(earDef);
             debug("Ear added to deployment: %s\n", earDef);

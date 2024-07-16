@@ -223,6 +223,20 @@ public class PackageTarget {
         };
         return taskJar;
     }
+    public BaseJar getTaskJar(String targetName) {
+        BaseJar targetJar = switch (targetName) {
+            case "package.ejb.jar" -> ejbJarDef;
+            case "package.war" -> warDef;
+            case "package.appclient.jar" -> clientJarDef;
+            case "package.ear" -> earDef;
+            case "pre.package", "package" -> null;
+            default -> {
+                throw new RuntimeException("Unknown targetName: " + targetName);
+            }
+        };
+        return targetJar;
+    }
+
 
     /**
      * Parse a ts.clientjar task into a pojo form
@@ -388,7 +402,14 @@ public class PackageTarget {
     public void execute() {
         TsTaskListener buildListener = new TsTaskListener(this);
         project.addBuildListener(buildListener);
-        pkgTarget.execute();
+        List<String> dependencies = Utils.toList(pkgTarget.getDependencies());
+        for (String dep : dependencies) {
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                target.performTasks();
+            }
+        }
+        pkgTarget.performTasks();
     }
     public void execute(VehicleType vehicleType) {
         clearParseState();
@@ -397,7 +418,7 @@ public class PackageTarget {
             project.addBuildListener(buildListener);
         }
         setVehicleOverride(vehicleType.name());
-        pkgTarget.execute();
+        pkgTarget.performTasks();
     }
 
     public void setVehicleOverride(String name) {
@@ -444,4 +465,5 @@ public class PackageTarget {
         this.rarDef = null;
         this.unhandledTaks.clear();
     }
+
 }

@@ -15,8 +15,11 @@ genClientJar(client, testClass) ::= <<
     if(resURL != null) {
       #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
     }
-    // TODO, does the sun-client-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
-
+    // The sun-application-client.xml file need to be added or should this be in in the vendor Arquillian extension?
+    resURL = #testClass#.class.getResource("/#client.relativeDescriptorPathNoXml#.jar.sun-application-client.xml");
+    if(resURL != null) {
+      #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
+    }
     #client.typedArchiveName#.addAsManifestResource(new StringAsset("Main-Class: " + #testClass#.class.getName() + "\n"), "MANIFEST.MF");
 
 >>
