@@ -49,3 +49,38 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
 #endif#
     }
 >>
+
+genMethodNonVehicle(pkg, deployment, testClass) ::= <<
+    @TargetsContainer("tck-#deployment.protocol#")
+    @OverProtocol("#deployment.protocol#")
+    @Deployment(name = "#deployment.name#")
+#if(deployment.hasEar)#
+    public static EnterpriseArchive createDeploymentVehicle() {
+#else#
+    public static WebArchive createDeploymentVehicle() {
+#endif#
+
+#if(deployment.hasWar)#
+    // War
+    #genWar(deployment.war, testClass)#
+#endif#
+
+#if(deployment.hasClientJar)#
+    // Client
+    #genClientJar(deployment.clientJar, testClass)#
+#endif#
+
+#if(deployment.hasEjbJar)#
+    // Ejb
+    #genEjbJar(deployment.ejbJar, testClass)#
+#endif#
+
+#if(deployment.hasEar)#
+    // Ear
+    #genEar(pkg, deployment.ear)#
+    return #deployment.ear.typedArchiveName#;
+#else#
+    return #deployment.war.typedArchiveName#;
+#endif#
+    }
+>>

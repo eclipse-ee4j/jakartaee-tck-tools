@@ -17,7 +17,7 @@ public class War extends BaseJar {
 
     @Override
     public String getType() {
-        return "war";
+        return "web";
     }
 
     public record Content(String resPath, String target) {}

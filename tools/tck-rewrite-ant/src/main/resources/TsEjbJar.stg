@@ -15,5 +15,9 @@ genEjbJar(ejbjar, testClass) ::= <<
     if(ejbResURL != null) {
       #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL, "ejb-jar.xml");
     }
-    // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+    // The sun-ejb-jar.xml file
+    ejbResURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPathNoXml#.jar.sun-ejb-jar.xml");
+    if(ejbResURL != null) {
+      #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+    }
 >>

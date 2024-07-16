@@ -15,6 +15,7 @@ import org.apache.tools.ant.types.ZipFileSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -27,6 +28,8 @@ public class TsTaskListener implements BuildListener {
     private PackageTarget packageTarget;
     // A stack to track information for the active ts.* task
     private LinkedList<TsTaskInfo> tsTaskStack = new LinkedList<>();
+    // A stack to track information for the active package and dependent targets
+    private LinkedList<TsPackageInfo> tsTargetStack = new LinkedList<>();
 
     public TsTaskListener(PackageTarget packageTarget) {
         this.packageTarget = packageTarget;
@@ -41,14 +44,31 @@ public class TsTaskListener implements BuildListener {
 
     @Override
     public void targetStarted(BuildEvent event) {
-
+        Target target = event.getTarget();
+        debug("--- targetStarted %s, %s\n", target.getName(), target.getLocation());
+        TsPackageInfo tsPackageInfo = new TsPackageInfo(target);
+        tsTargetStack.push(tsPackageInfo);
     }
 
     @Override
     public void targetFinished(BuildEvent event) {
         Target target = event.getTarget();
-        debug("--- targetFinished %s\n", target.getName(), target.getLocation());
-
+        TsPackageInfo tsPackageInfo = tsTargetStack.pop();
+        debug("--- targetFinished %s, %s, %s\n", target.getName(), target.getLocation(), tsPackageInfo);
+        // We need to see if there are
+        List<TsTaskInfo> taskInfos = tsPackageInfo.getTsTaskInfos();
+        boolean isTsVehicles = tsPackageInfo.hasTsVehicles();
+        if(isTsVehicles && tsPackageInfo.getArchiveName() != null) {
+            Vehicles vehiclesDef = packageTarget.getVehiclesDef();
+            vehiclesDef.addJarResources(tsPackageInfo);
+        } else {
+            BaseJar taskJar = packageTarget.getTaskJar(tsPackageInfo.getTargeName());
+            if(taskJar == null) {
+                debug("Unhandled target: %s\n", tsPackageInfo.getTargeName());
+            } else {
+                taskJar.addJarResources(tsPackageInfo);
+            }
+        }
     }
 
     /**
@@ -63,7 +83,10 @@ public class TsTaskListener implements BuildListener {
         String name = task.getTaskName();
         if(name.startsWith("ts.") && !name.startsWith("ts.verbose")) {
             debug("+++ Started %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
-            tsTaskStack.push(new TsTaskInfo(task));
+            TsTaskInfo taskInfo = new TsTaskInfo(task);
+            tsTaskStack.push(taskInfo);
+            TsPackageInfo lastTsPackage = tsTargetStack.peek();
+            lastTsPackage.addTaskInfo(taskInfo);
         } else {
             trace("+++ Started %s: %s\n", task.getTaskName(), task.getLocation());
         }
@@ -146,10 +169,16 @@ public class TsTaskListener implements BuildListener {
                     }
                     debug("\tfiles: %s\n", fileSets);
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
+                    TsPackageInfo lastTsPackage = tsTargetStack.peek();
                     if(lastTsTask != null) {
                         lastTsTask.addResources(fileSets);
                         lastTsTask.setArchiveName(jar.getDestFile().getName());
                         debug("--- jar(%s): %s\n", lastTsTask.getTaskName(), jar.getDestFile());
+                    }
+                    else if(lastTsPackage != null) {
+                        lastTsPackage.addResources(fileSets);
+                        lastTsPackage.setArchiveName(jar.getDestFile().getName());
+                        debug("--- jar(%s): %s\n", lastTsPackage.getTargeName(), jar.getDestFile());
                     }
                 } else if(name.startsWith("component.")) {
                     // This is an instance of the ts.common.xml _component macrodef that has jar in the name, e.g., component.clientjar

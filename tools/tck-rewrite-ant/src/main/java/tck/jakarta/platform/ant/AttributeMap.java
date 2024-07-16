@@ -66,4 +66,8 @@ public class AttributeMap {
     public Project getProject() {
         return project;
     }
+
+    public String toString() {
+        return attributes.toString();
+    }
 }

@@ -14,7 +14,11 @@ genWar(war, testClass) ::= <<
     if(warResURL != null) {
       #war.typedArchiveName#.addAsWebInfResource(warResURL, "web.xml");
     }
-    // TODO, does the sun-web.xml file need to be added or should this be in in the vendor Arquillian extension?
+    // The sun-web.xml descriptor
+    warResURL = #testClass#.class.getResource("/#war.relativeDescriptorPathNoXml#.war.sun-web.xml");
+    if(warResURL != null) {
+      #war.typedArchiveName#.addAsWebInfResource(warResURL, "sun-web.xml");
+    }
     // Web content
 #war.webContent :{ c |
     warResURL = #testClass#.class.getResource("/#c.resPath#");

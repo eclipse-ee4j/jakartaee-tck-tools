@@ -96,6 +96,10 @@ public abstract class BaseJar {
                     setManifest(value);
                     break;
                 case "descriptordir":
+                    // If this is not under the src dir, ignore it
+                    if(value.contains("src/com/sun")) {
+                        setDescriptorDir(value);
+                    }
                     break;
                 case "internaldescriptorname":
                     setInternalDescriptorName(value);
@@ -229,6 +233,9 @@ public abstract class BaseJar {
         fileSets.clear();
         fileSets.addAll(taskInfo.getResources());
     }
+    public void addJarResources(TsPackageInfo pkgInfo) {
+
+    }
 
     public void setVehicleDescriptor(String resPath) {
         this.vehicleDescriptor = resPath;
@@ -261,6 +268,13 @@ public abstract class BaseJar {
         }
         return relativePath;
     }
+    public String getRelativeDescriptorPathNoXml() {
+        String relativePath = getRelativeDescriptorPath();
+        if(relativePath != null && relativePath.endsWith(".xml")) {
+            relativePath = relativePath.substring(0, relativePath.length()-4);
+        }
+        return relativePath;
+    }
     /**
      * Combine all fileset contents that are *.class files into a comma separted string of dot package name
      * class file references, one per line. This can be passed to a {@link org.jboss.shrinkwrap.api.spec.JavaArchive#addClasses(Class[])}
@@ -268,27 +282,7 @@ public abstract class BaseJar {
      * @return string of dot package class files, one per line
      */
     public String getClassFilesString() {
-        // Capture unique classes
-        HashSet<String> classes = new HashSet<>();
-        for(TSFileSet fs : fileSets) {
-            String dir = fs.dir + '/';
-            for(String f : fs.includes) {
-                // Skip the obsolete EJBHomes
-                if(f.endsWith(".class") && !f.endsWith("Home.class")) {
-                    f = f.replace(dir, "");
-                    String clazz = f.replace('/', '.').replace('$', '.');
-                    classes.add(clazz);
-                }
-            }
-        }
-        // Build up a string that can be passed to an archive addClasses method
-        StringBuilder sb = new StringBuilder();
-        for(String clazz : classes) {
-            sb.append(clazz);
-            sb.append(",\n");
-        }
-        sb.setLength(sb.length() - 2);
-        return sb.toString();
+        return Utils.getClassFilesString(fileSets);
     }
 
     public String getArtifactName() {

@@ -60,6 +60,16 @@ public class PathsTest {
         System.out.printf("maps to pkg: %s, module: %s\n", pkg, moduleName);
     }
 
+    @Test
+    public void testResolveTestClassname() {
+        String tsHome = System.getProperty("ts.home");
+        Path sourceRoot = Paths.get(tsHome, "src");
+        Path client = Paths.get(tsHome, "src/com/sun/ts/tests/ejb30/lite/view/singleton/annotated/Client.java");
+        Path clientPath = sourceRoot.relativize(client);
+        String className = clientPath.toString().replace('/', '.').replace(".java", "");
+        System.out.printf("className: %s\n", className);
+    }
+
     /**
      * Validate how to resolve relative paths with wildcards in them as used by the ant build.xml files
      * @throws IOException

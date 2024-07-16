@@ -3,12 +3,14 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 public class Ear extends BaseJar {
     boolean deletecomponentarchives;
     TSFileSet modules;
-    TSFileSet libs;
+    List<Lib> libs;
 
     public Ear(Project project, RuntimeConfigurable taskRC) {
         super(project, taskRC);
@@ -27,4 +29,34 @@ public class Ear extends BaseJar {
         return deletecomponentarchives;
     }
 
+    public void addJarResources(TsPackageInfo pkgInfo) {
+        if (libs == null) {
+            libs = new ArrayList<>();
+        }
+        Lib lib = new Lib();
+        lib.setArchiveName(pkgInfo.getArchiveName());
+        lib.addResources(pkgInfo.getResources());
+        libs.add(lib);
+    }
+    public List<Lib> getLibs() {
+        return libs;
+    }
+
+    public String toString() {
+        StringBuilder tmp = new StringBuilder();
+        tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, archivesuffix=%s, fullArchiveName=%s, excludedFiles=%s}".formatted(getType(),
+                descriptor, descriptordir, archiveName, archiveSuffix, getFullArchiveName(), excludedFiles));
+        tmp.append("module files:\n");
+        for(TSFileSet fs : fileSets) {
+            tmp.append('\n');
+            tmp.append(fs);
+        }
+        tmp.append("lib files:\n");
+        for (Lib lib : libs) {
+            tmp.append('\n');
+            tmp.append(lib);
+        }
+        return tmp.toString();
+
+    }
 }
