@@ -55,7 +55,7 @@ genMethodNonVehicle(pkg, deployment, testClass) ::= <<
     @OverProtocol("#deployment.protocol#")
     @Deployment(name = "#deployment.name#")
 #if(deployment.hasEar)#
-    public static EnterpriseArchive createDeploymentVehicle() {
+    public static EnterpriseArchive createDeployment() {
 #else#
     public static WebArchive createDeploymentVehicle() {
 #endif#

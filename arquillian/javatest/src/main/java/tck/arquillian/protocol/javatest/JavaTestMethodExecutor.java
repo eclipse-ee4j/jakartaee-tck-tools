@@ -10,13 +10,19 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
+import tck.arquillian.protocol.common.TargetVehicle;
 import tck.arquillian.protocol.common.TsTestPropsBuilder;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.logging.Logger;
 
 /**
- *
+ * A protocol that invokes that JavaTest CTS test client in the same JVM using the vehicle client or
+ * the non-vehicle client run method.
  */
 public class JavaTestMethodExecutor implements ContainerMethodExecutor {
     static Logger log = Logger.getLogger(JavaTestMethodExecutor.class.getName());
@@ -75,7 +81,11 @@ public class JavaTestMethodExecutor implements ContainerMethodExecutor {
         long start = System.currentTimeMillis();
         // Get deployment archive name and remove the .* suffix
         Deployment deployment = deploymentInstance.get();
-
+        TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
+        String vehicle = "none";
+        if(testVehicle != null) {
+            vehicle = testVehicle.value();
+        }
 
         String[] args;
         try {
@@ -86,98 +96,55 @@ public class JavaTestMethodExecutor implements ContainerMethodExecutor {
             return result;
         }
 
-        /*
-        Class<?> testSuperclass = testMethodExecutor.getMethod().getDeclaringClass().getSuperclass();
-        TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
-        log.info(String.format("Base class: %s, vehicle: %s", testSuperclass.getName(), testVehicle.value()));
-        String testMethodName = testMethodExecutor.getMethod().getName();
-        // Remove the _ testVehicle
-        int index = testMethodName.lastIndexOf('_');
-        String tsTestMethodName = testMethodName;
-        if(index != -1) {
-            tsTestMethodName = testMethodName.substring(0, index);
-        }
-        // Get deployment archive name and remove the .* suffix
-        String vehicleArchiveName = deploymentInstance.get().getDescription().getArchive().getName();
-        int dot = vehicleArchiveName.lastIndexOf('.');
-        if(dot != -1) {
-            vehicleArchiveName = vehicleArchiveName.substring(0, dot);
-        }
-
-        // We need the JavaTest ts.jte file for now
-        Path tsJte = Paths.get(config.getTsJteFile());
-        // Create a test properties file
-        Path testProps = Paths.get(config.getWorkDir(), "tstest.jte");
-
-        try {
-            // Seed the test properties file with select ts.jte file settings
-            Properties tsJteProps = new Properties();
-            tsJteProps.load(new FileReader(tsJte.toFile()));
-            // The test specific properties file
-            Properties props = new Properties();
-            // A property set by the TSScript class
-            props.setProperty("finder", "cts");
-            // Vehicle
-            props.setProperty("service_eetest.vehicles", testVehicle.value());
-            props.setProperty("vehicle", testVehicle.value());
-            props.setProperty("vehicle_archive_name", vehicleArchiveName);
-            //
-            props.setProperty("harness.log.delayseconds", "0");
-            if(config.isTrace()) {
-                // This overrides the ts.jte harness.log.traceflag value
-                props.setProperty("harness.log.traceflag", "true");
-            }
-            // Copy over common ts.jte settings
-            for (String propName : tsJtePropNames) {
-                String propValue = tsJteProps.getProperty(propName);
-                if(propValue != null) {
-                    if(propValue.startsWith("${") && propValue.endsWith("}")) {
-                        String refName = propValue.substring(2, propValue.length() - 1);
-                        propValue = tsJteProps.getProperty(refName);
-                        log.info(String.format("Setting property %s -> %s to %s", propName, refName, propValue));
-                        if(propValue == null) {
-                            continue;
-                        }
-                    }
-                    props.setProperty(propName, propValue);
-                }
-            }
-
-            // The vehicle harness operates on the legacy CTS superclass of the Junit5 class.
-            props.setProperty("test_classname", testSuperclass.getName());
-
-            // Write out the test properties file, overwriting any existing file
-            try(OutputStream out = Files.newOutputStream(testProps)) {
-                props.store(out, "Properties for test: "+testMethodName);
-                log.info(props.toString());
-            }
-        } catch (IOException e) {
-            TestResult result = TestResult.failed(e);
-            result.addDescription("Failed to write test properties to " + testProps);
-            return result;
-        }
-        String[] args = {
-          // test props are needed by EETest.run
-          "-p", testProps.toFile().getAbsolutePath(),
-          "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
-          "-t", tsTestMethodName,
-          "-vehicle", testVehicle.value(),
-        };
-        */
-
         // We are running in the same JVM, JavaTest CTS runs in a separate JVM
-        VehicleClient client = new VehicleClient();
-        Status s = client.run(args, System.out, System.err);
+        Status status;
+        if(!vehicle.equals("none")) {
+            status = runVehicleClient(args);
+        } else {
+            status = runClient(testMethodExecutor.getInstance(), args);
+        }
 
-        TestResult result = switch (s.getType()) {
-            case Status.PASSED -> TestResult.passed(s.getReason());
-            case Status.FAILED -> TestResult.failed(new Exception(s.getReason()));
-            case Status.ERROR -> TestResult.failed(new EETest.Fault(s.getReason()));
-            case Status.NOT_RUN -> TestResult.skipped(s.getReason());
-            default -> TestResult.failed(new IllegalStateException("Unkown status type: " + s.getType()));
+        TestResult result = switch (status.getType()) {
+            case Status.PASSED -> TestResult.passed(status.getReason());
+            case Status.FAILED -> TestResult.failed(new Exception(status.getReason()));
+            case Status.ERROR -> TestResult.failed(new EETest.Fault(status.getReason()));
+            case Status.NOT_RUN -> TestResult.skipped(status.getReason());
+            default -> TestResult.failed(new IllegalStateException("Unkown status type: " + status.getType()));
         };
         result.setStart(start);
         result.setEnd(System.currentTimeMillis());
         return result;
+    }
+
+    /**
+     * Run the vehicle client with the given arguments using the {@link VehicleClient} class.
+     * @param args - the arguments to pass to the client
+     * @return the status of the client run
+     */
+    Status runVehicleClient(String[] args) {
+        VehicleClient client = new VehicleClient();
+        return client.run(args, System.out, System.err);
+    }
+
+    /**
+     * Run a non-vehicle client with the given arguments using by invoking the run method on the client instance.
+     * @param client - the client instance to run
+     * @param args - the arguments to pass to the client
+     * @return the status of the client run
+     */
+    Status runClient(Object client, String[] args) {
+        try {
+            Class<?> baseTestClass = client.getClass();
+            MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
+            // Get the Status run(String[]) method from the base test class
+            MethodType methodType = MethodType.methodType(Status.class, String[].class, PrintWriter.class, PrintWriter.class);
+            MethodHandle run = publicLookup.findVirtual(baseTestClass, "run", methodType);
+            PrintWriter out = new PrintWriter(System.out, true);
+            PrintWriter err = new PrintWriter(System.err, true);
+            Status status = (Status) run.invoke(client, args, out, err);
+            return status;
+        } catch (Throwable e) {
+            return new Status(Status.ERROR, "Failed to run test client: " + e.getMessage());
+        }
     }
 }
