@@ -6,12 +6,17 @@ import com.sun.ts.tests.signaturetest.javaee.JavaEESigTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
-import tck.jakarta.platform.ant.api.DeploymentMethodInfoBuilder;
+import tck.jakarta.platform.ant.api.TestClientInfo;
+import tck.jakarta.platform.ant.api.TestPackageInfo;
+import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -29,30 +34,43 @@ public class DeploymentMethodTest {
 
     @Test
     public void testBytesMsgTopicTest_deployAppclientMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(BytesMsgTopicTests.class, VehicleType.appclient);
         System.out.printf("--- DeployMethod(%s):\n%s\n---\n", deployMethod.getVehicle(), deployMethod.getMethodCode());
+    }
+    @Test
+    public void testBytesMsgTopicTest_deployAppclientClass() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
+        TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(BytesMsgTopicTests.class, testMethods);
+        System.out.println(pkgInfo);
+
+        System.out.println("TestClasses:");
+        for (String testClient : pkgInfo.getTestClientsCode()) {
+            System.out.println(testClient);
+        }
     }
 
     @Test
     public void testBytesMsgTopicTest_deployEjbMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(BytesMsgTopicTests.class, VehicleType.ejb);
         System.out.printf("--- DeployMethod(%s):\n%s\n---\n", deployMethod.getVehicle(), deployMethod.getMethodCode());
     }
 
     @Test
     public void testBytesMsgTopicTest_deployMethods() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
-        List<DeploymentMethodInfo> deployMethods = builder.forTestClass(BytesMsgTopicTests.class);
-        for (DeploymentMethodInfo deployMethod : deployMethods) {
-            System.out.printf("--- DeployMethod(%s):\n%s\n---\n", deployMethod.getVehicle(), deployMethod.getMethodCode());
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
+        List<TestClientInfo> testClientInfos = builder.buildTestClients(BytesMsgTopicTests.class, testMethods);
+        for (TestClientInfo clientInfo : testClientInfos) {
+            System.out.println(clientInfo);
         }
     }
 
     @Test
     public void testJavaEESigTest_deployAppclientMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(JavaEESigTest.class, VehicleType.appclient);
         for(String imp : deployMethod.getImports()) {
             System.out.printf("import %s;\n", imp);
@@ -62,21 +80,21 @@ public class DeploymentMethodTest {
 
     @Test
     public void testJavaEESigTest_deployServletMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(JavaEESigTest.class, VehicleType.servlet);
         System.out.println(deployMethod);
     }
 
     @Test
     public void testJavaEESigTest_deployJspMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(JavaEESigTest.class, VehicleType.jsp);
         System.out.println(deployMethod);
     }
 
     @Test
     public void testJavaEESigTest_deployEjbMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(JavaEESigTest.class, VehicleType.ejb);
         System.out.println(deployMethod);
     }
@@ -90,7 +108,7 @@ public class DeploymentMethodTest {
      */
     @Test
     public void testClient_deployNoneMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(Client.class, VehicleType.none);
         System.out.println(deployMethod);
     }
@@ -102,7 +120,7 @@ public class DeploymentMethodTest {
      */
     @Test
     public void testClient2EjbJars_deployNoneMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(com.sun.ts.tests.ejb30.assembly.initorder.appclientejb.Client.class, VehicleType.none);
         System.out.println(deployMethod);
     }
@@ -121,8 +139,23 @@ public class DeploymentMethodTest {
      */
     @Test
     public void testClientInitOrderWarejb_deployNoneMethod() throws IOException {
-        DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class, VehicleType.none);
         System.out.println(deployMethod);
     }
+
+    /**
+     * The full com/sun/ts/tests/ejb30/assembly/initorder/warejb/ test class which includes a common deployment
+     * @throws IOException
+     */
+    @Test
+    public void testClientInitOrderWarejb_ClientTest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("initOrder", "appName");
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientsCode());
+    }
+
 }

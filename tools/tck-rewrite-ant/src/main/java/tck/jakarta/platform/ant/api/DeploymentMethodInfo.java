@@ -6,9 +6,24 @@ import java.util.Collections;
 import java.util.List;
 
 public class DeploymentMethodInfo {
-    private VehicleType vehicle;
-    private List<String> imports;
+    private String name;
+    private VehicleType vehicle = VehicleType.none;
+    private List<String> imports = Collections.emptyList();
     private String methodCode;
+
+    public DeploymentMethodInfo(VehicleType vehicle, List<String> imports, String methodCode) {
+        this.vehicle = vehicle;
+        this.imports = imports;
+        this.methodCode = methodCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public VehicleType getVehicle() {
         return vehicle;

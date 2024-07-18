@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Build the DeploymentMethodInfo(s) for a given test class/package that corresponds to an Arquillian
- * annotated {@link org.jboss.arquillian.container.test.api.Deployment} method. There can be multiple deployments
+ * Build the {@link TestPackageInfo} for a given test class/package. This contains the information needed to generate
+ * a Arquillian/Junit5 based subclass of the test class. There can be multiple {@link TestClientInfo} instances
  * for a given test class if there are multiple vehicle types associated with the test package.
  */
-public class DeploymentMethodInfoBuilder {
-    private static final Logger log = Logger.getLogger(DeploymentMethodInfoBuilder.class.getName());
+public class TestPackageInfoBuilder {
+    private static final Logger log = Logger.getLogger(TestPackageInfoBuilder.class.getName());
     private static final String[] ARQUILLIAN_IMPORTS = {
         "org.jboss.arquillian.container.test.api.Deployment",
         "org.jboss.arquillian.container.test.api.OperateOnDeployment",
@@ -50,6 +50,8 @@ public class DeploymentMethodInfoBuilder {
         "org.jboss.shrinkwrap.api.spec.JavaArchive",
         "org.jboss.shrinkwrap.api.spec.WebArchive",
         "java.net.URL",
+        "org.junit.jupiter.api.Test",
+        "org.junit.jupiter.api.extension.ExtendWith"
     };
     // Path to EE10 TCK dist
     private Path tsHome;
@@ -58,7 +60,7 @@ public class DeploymentMethodInfoBuilder {
      * Create a DeploymentMethodInfoBuilder for the given EE10 TCK dist path
      * @param tsHome - A valid EE10 TCK dist path
      */
-    public DeploymentMethodInfoBuilder(Path tsHome) {
+    public TestPackageInfoBuilder(Path tsHome) {
         this.tsHome = tsHome;
     }
 
@@ -68,7 +70,7 @@ public class DeploymentMethodInfoBuilder {
      * @return A DeploymentMethodInfoBuilder
      * @throws FileNotFoundException - if no valid env, or property maps to a valid EE10 TCK dist
      */
-    public static DeploymentMethodInfoBuilder fromSystemProperty() throws FileNotFoundException {
+    public static TestPackageInfoBuilder fromSystemProperty() throws FileNotFoundException {
         String tsHomeProp = System.getProperty("ts.home");
         if(tsHomeProp == null) {
             tsHomeProp = System.getenv("TS_HOME");
@@ -78,9 +80,25 @@ public class DeploymentMethodInfoBuilder {
         }
         Path tsHome = Paths.get(tsHomeProp);
         Utils.validateTSHome(tsHome);
-        return new DeploymentMethodInfoBuilder(tsHome);
+        return new TestPackageInfoBuilder(tsHome);
     }
 
+    /**
+     * Parses the ant build.xml file for the test directory associated with the pkg and returns the
+     * Arquillian deployment methods for the test deployment artifacts that should be generated.
+
+     * @param clazz - a test class in the EE10 TCK
+     * @param testMethods - the test methods to include in the test client
+     * @return
+     * @throws IOException - on failure to parse the build.xml file
+     */
+    public TestPackageInfo buildTestPackgeInfo(Class<?> clazz, List<String> testMethods) throws IOException {
+        TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods);
+        List<TestClientInfo> testClientInfos = buildTestClients(clazz, testMethods);
+        testPackageInfo.setTestClients(testClientInfos);
+
+        return testPackageInfo;
+    }
     /**
      * Parses the ant build.xml file for the test directory associated with the pkg and returns the
      * Arquillian deployment methods for the test deployment artifacts that should be generated.
@@ -89,12 +107,11 @@ public class DeploymentMethodInfoBuilder {
      * @return
      * @throws IOException - on failure to parse the build.xml file
      */
-    public List<DeploymentMethodInfo> forTestClass(Class<?> clazz) throws IOException {
-        String testClass = clazz.getPackage().getName();
-        int lastDot = testClass.lastIndexOf('.');
+    public List<TestClientInfo> buildTestClients(Class<?> clazz, List<String> testMethods) throws IOException {
+        ArrayList<TestClientInfo> testClientInfos = new ArrayList<>();
         // The simple name, e.g., MyTest for com.sun.*.MyTest
-        String testClassSimpleName = testClass.substring(lastDot + 1);
-        String pkg = testClass.substring(0, lastDot);
+        String testClassSimpleName = clazz.getSimpleName();
+        String pkg = clazz.getPackageName();
         String pkgPath = pkg.replace('.', '/');
         Path srcDir = tsHome.resolve("src");
         Path buildXml = srcDir.resolve(pkgPath+"/build.xml");
@@ -112,23 +129,43 @@ public class DeploymentMethodInfoBuilder {
         Target antPackageTarget = project.getTargets().get("package");
         PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
 
-        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(antPackageTarget.getLocation().getFileName()));
+        VehicleVerifier verifier = VehicleVerifier.getInstance(buildXml.toFile());
         String[] vehicles = verifier.getVehicleSet();
         debug("Vehicles: %s\n", Arrays.asList(vehicles));
 
-        ArrayList<DeploymentMethodInfo> deploymentMethodInfos = new ArrayList<>();
+        // Does this test class have a common deployment?
+        CommonApps commonApps = CommonApps.getInstance(tsHome);
+        DeploymentMethodInfo commonDeployment = commonApps.getCommonDeployment(buildXml);
+
+        // Generate the test deployment method
         if(vehicles.length == 0) {
             DeploymentMethodInfo methodInfo = parseNonVehiclePackage(pkgTargetWrapper, clazz);
-            deploymentMethodInfos.add(methodInfo);
+            // The class name of the generated clazz subclass
+            String genTestClassName = "ClientTest";
+            if(testClassSimpleName.equals("ClientTest")) {
+                genTestClassName = "ClientExtTest";
+            }
+            TestClientInfo testClientInfo = new TestClientInfo(genTestClassName, clazz, testMethods);
+            testClientInfo.setVehicle(VehicleType.none);
+            testClientInfo.setTestDeployment(methodInfo);
+            testClientInfo.setCommonDeployment(commonDeployment);
+            testClientInfos.add(testClientInfo);
         } else {
             for(String vehicle : vehicles) {
                 VehicleType vehicleType = VehicleType.valueOf(vehicle);
                 DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
-                deploymentMethodInfos.add(methodInfo);
+                // The class name of the generated clazz subclass
+                String vehicleName = capitalizeFirst(vehicleType.name());
+                String genTestClassName = "Client"+vehicleName+"Test";
+                TestClientInfo testClientInfo = new TestClientInfo(genTestClassName, clazz, testMethods);
+                testClientInfo.setVehicle(vehicleType);
+                testClientInfo.setTestDeployment(methodInfo);
+                testClientInfo.setCommonDeployment(commonDeployment);
+                testClientInfos.add(testClientInfo);
             }
         }
 
-        return deploymentMethodInfos;
+        return testClientInfos;
     }
     public DeploymentMethodInfo forTestClassAndVehicle(Class<?> testClass, VehicleType vehicleType) throws IOException {
         String pkg = testClass.getPackageName();
@@ -179,10 +216,8 @@ public class DeploymentMethodInfoBuilder {
         template.add("deployment", deployment);
         template.add("testClass", testClassSimpleName);
         String methodCode = template.render().trim();
-        DeploymentMethodInfo methodInfo = new DeploymentMethodInfo();
-        methodInfo.setVehicle(VehicleType.none);
-        methodInfo.setMethodCode(methodCode);
-        methodInfo.setImports(Arrays.asList(ARQUILLIAN_IMPORTS));
+        DeploymentMethodInfo methodInfo = new DeploymentMethodInfo(VehicleType.none, Arrays.asList(ARQUILLIAN_IMPORTS), methodCode);
+        methodInfo.setName(deployment.getName());
 
         return methodInfo;
     }
@@ -202,10 +237,8 @@ public class DeploymentMethodInfoBuilder {
         template.add("deployment", deployment);
         template.add("testClass", testClassSimpleName);
         String methodCode = template.render().trim();
-        DeploymentMethodInfo methodInfo = new DeploymentMethodInfo();
-        methodInfo.setVehicle(vehicleType);
-        methodInfo.setMethodCode(methodCode);
-        methodInfo.setImports(Arrays.asList(ARQUILLIAN_IMPORTS));
+        DeploymentMethodInfo methodInfo = new DeploymentMethodInfo(vehicleType, Arrays.asList(ARQUILLIAN_IMPORTS), methodCode);
+        methodInfo.setName(deployment.getName());
 
         return methodInfo;
     }
@@ -314,7 +347,10 @@ public class DeploymentMethodInfoBuilder {
         };
         return protocol;
     }
-
+    private String capitalizeFirst(String word) {
+        return word.substring(0, 1).toUpperCase()
+                + word.substring(1).toLowerCase();
+    }
     private void info(String format, Object ... args) {
         String msg = String.format(format, args);
         log.info(msg);
