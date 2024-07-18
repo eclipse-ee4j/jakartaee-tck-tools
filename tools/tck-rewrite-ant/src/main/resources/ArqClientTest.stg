@@ -1,0 +1,49 @@
+// A Stringtemplate4 group for generating the arquillian/junit 5 client test class
+delimiters "#", "#"
+
+/**
+    This template generates the Arquillian/JUnit 5 client test class based on the information in the testClient
+    parameter.
+
+    testClient is an tck.jakarta.platform.ant.api.TestClientInfo instance
+*/
+genClientTestClass(testClient) ::= <<
+package #testClient.packageName#;
+
+#genImports(testClient)#
+
+@ExtendWith(ArquillianExtension.class)
+public class #testClient.className# extends #testClient.baseClassName# {
+#if(testClient.hasCommonDeployment)#
+    #testClient.commonDeployment.methodCode#
+#endif#
+
+    #testClient.testDeployment.methodCode#
+
+    #genTestMethods(testClient)#
+}
+>>
+
+genImports(testClient) ::= <<
+#testClient.allImports :{ imp |
+import #imp#;
+}#
+
+>>
+
+genTestMethods(testClient) ::= <<
+#testClient.testMethods :{ method |
+    @Test
+    @Override
+#if(testClient.hasCommonDeployment)#
+    @OperateOnDeployment("#testClient.commonDeploymentName#")
+#endif#
+#if(testClient.hasVehicle)#
+    @TargetVehicle("#testClient.vehicle#")
+#endif#
+    public void #method#() throws Exception {
+        super.#method#();
+    \}
+
+}#
+>>

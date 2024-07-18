@@ -10,7 +10,7 @@ import java.util.List;
 public class Ear extends BaseJar {
     boolean deletecomponentarchives;
     TSFileSet modules;
-    List<Lib> libs;
+    List<Lib> libs = new ArrayList<>();
 
     public Ear(Project project, RuntimeConfigurable taskRC) {
         super(project, taskRC);
@@ -30,9 +30,6 @@ public class Ear extends BaseJar {
     }
 
     public void addJarResources(TsPackageInfo pkgInfo) {
-        if (libs == null) {
-            libs = new ArrayList<>();
-        }
         Lib lib = new Lib();
         lib.setArchiveName(pkgInfo.getArchiveName());
         lib.addResources(pkgInfo.getResources());
