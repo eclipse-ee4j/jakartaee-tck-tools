@@ -19,6 +19,12 @@ public class TestClientInfo {
     private DeploymentMethodInfo testDeployment;
     private VehicleType vehicle;
 
+    /**
+     * Capture information about a test client that extends a base test class and overrides test methods.
+     * @param className - simple class name of the test client
+     * @param baseTestClass - the base test class that the test client extends
+     * @param testMethods - the test methods to be overriden in the test client
+     */
     public TestClientInfo(String className, Class<?> baseTestClass, List<String> testMethods) {
         this.className = className;
         this.baseTestClass = baseTestClass;

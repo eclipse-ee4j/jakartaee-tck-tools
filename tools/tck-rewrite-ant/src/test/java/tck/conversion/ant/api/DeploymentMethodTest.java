@@ -6,17 +6,18 @@ import com.sun.ts.tests.signaturetest.javaee.JavaEESigTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
+import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestClientInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -39,15 +40,23 @@ public class DeploymentMethodTest {
         System.out.printf("--- DeployMethod(%s):\n%s\n---\n", deployMethod.getVehicle(), deployMethod.getMethodCode());
     }
     @Test
-    public void testBytesMsgTopicTest_deployAppclientClass() throws IOException {
+    public void testBytesMsgTopicTest_writeTestClasses() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
         TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(BytesMsgTopicTests.class, testMethods);
         System.out.println(pkgInfo);
 
         System.out.println("TestClasses:");
-        for (String testClient : pkgInfo.getTestClientsCode()) {
-            System.out.println(testClient);
+        // The test module src/main/java directory
+        Path srcDir = Paths.get("/tmp");
+        for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
+            // The test package dir under the test module src/main/java directory
+            Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
+            Files.createDirectories(testPkgDir);
+            // The test client .java file
+            Path tetClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
+            // Write out the test client .java file content
+            Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         }
     }
 
@@ -155,7 +164,7 @@ public class DeploymentMethodTest {
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class;
         TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
         System.out.println(packageInfo);
-        System.out.println(packageInfo.getTestClientsCode());
+        System.out.println(packageInfo.getTestClientFiles());
     }
 
 }
