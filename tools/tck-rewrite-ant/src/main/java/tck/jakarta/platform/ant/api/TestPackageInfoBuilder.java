@@ -12,6 +12,7 @@ import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
 import tck.jakarta.platform.ant.PackageTarget;
 import tck.jakarta.platform.ant.ProjectWrapper;
+import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.TSFileSet;
 import tck.jakarta.platform.ant.Utils;
 import tck.jakarta.platform.ant.Vehicles;
@@ -316,6 +317,13 @@ public class TestPackageInfoBuilder {
             info("War added to deployment: %s\n", warDef);
             info("War has content: %s\n", warDef.getWebContent());
         }
+        // Rar
+        if(pkgTargetWrapper.hasRarDef()) {
+            Rar rarDef = pkgTargetWrapper.getRarDef();
+            deployment.setRar(rarDef);
+            info("Rar added to deployment: %s\n", rarDef);
+        }
+
         // Ear
         if(pkgTargetWrapper.hasEarDef()) {
             Ear earDef = pkgTargetWrapper.getEarDef();

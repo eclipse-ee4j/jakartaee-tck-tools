@@ -1,6 +1,7 @@
 package tck.conversion.ant.st4;
 
 import tck.jakarta.platform.ant.Ear;
+import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.War;
 
 public class DeploymentRecord {
@@ -8,6 +9,7 @@ public class DeploymentRecord {
     String protocol;
     String vehcile;
     War warDef;
+    Rar rarDef;
     Ear earDef;
 
 
@@ -29,13 +31,22 @@ public class DeploymentRecord {
         return vehcile;
     }
 
+    public boolean getHasRar() {
+        return rarDef != null;
+    }
+    public Rar getRar() {
+        return rarDef;
+    }
+    public void setRar(Rar rarDef) {
+        this.rarDef = rarDef;
+    }
+
     public boolean getHasWar() {
         return warDef != null;
     }
     public War getWar() {
         return warDef;
     }
-
     public void setWar(War warDef) {
         this.warDef = warDef;
     }

@@ -18,7 +18,11 @@ public class TSFileSet {
      * @param fileset - a fileset configuration map
      */
     TSFileSet(AttributeMap fileset) {
-        this.dir = fileset.getAttribute("dir");
+        String dir = fileset.getAttribute("dir");
+        if(dir == null) {
+            dir = fileset.getAttribute("basedir");
+        }
+        this.dir = dir;
         this.prefix = fileset.getAttribute("prefix");
         String includes = fileset.getAttribute("includes");
         String[] asArray = includes.split(",");
@@ -30,6 +34,15 @@ public class TSFileSet {
         this.includes = includes;
     }
 
+    public String getDir() {
+        return dir;
+    }
+    public String getPrefix() {
+        return prefix;
+    }
+    public List<String> getIncludes() {
+        return includes;
+    }
     @Override
     public String toString() {
         return "FileSet{" +

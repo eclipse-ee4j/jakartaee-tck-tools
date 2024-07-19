@@ -3,6 +3,7 @@ package tck.jakarta.platform.ant.api;
 import tck.jakarta.platform.ant.ClientJar;
 import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
+import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.War;
 import tck.jakarta.platform.vehicles.VehicleType;
 
@@ -17,6 +18,7 @@ public class DeploymentInfo {
     ClientJar clientJarDef;
     EjbJar ejbJarDef;
     War warDef;
+    Rar rarDef;
     Ear earDef;
 
     public DeploymentInfo(Class<?> testClass, String name, String protocol, VehicleType vehicle) {
@@ -50,6 +52,16 @@ public class DeploymentInfo {
 
     public void setWar(War warDef) {
         this.warDef = warDef;
+    }
+
+    public boolean getHasRar() {
+        return rarDef != null;
+    }
+    public Rar getRar() {
+        return rarDef;
+    }
+    public void setRar(Rar rarDef) {
+        this.rarDef = rarDef;
     }
 
     public boolean getHasEar() {
@@ -91,6 +103,8 @@ public class DeploymentInfo {
         tmp.append(clientJarDef == null ? "No client" : clientJarDef.toString());
         tmp.append('\n');
         tmp.append(ejbJarDef == null ? "No ejb" : ejbJarDef.toString());
+        tmp.append('\n');
+        tmp.append(rarDef == null ? "No rar" : rarDef.toString());
         tmp.append('\n');
         tmp.append(warDef == null ? "No war" : warDef.toString());
         tmp.append('\n');

@@ -22,4 +22,12 @@ public class TestClientFile {
     public String getContent() {
         return content;
     }
+
+    public String toString() {
+        StringBuilder tmp = new StringBuilder();
+        tmp.append(String.format("TestClientFile[%s, %s]\n", name, pkg));
+        tmp.append("code:\n");
+        tmp.append(content);
+        return tmp.toString();
+    }
 }

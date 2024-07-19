@@ -72,6 +72,7 @@ public class FixTCKTemplates {
         List<Path> buildXmls = scanBuildFiles(tsHome);
         int fixCount = 0;
         for (Path buildXml : buildXmls) {
+            System.out.printf("For test build.xml: %s\n", buildXml);
             VehicleVerifier verifier = VehicleVerifier.getInstance(buildXml.toFile());
             String[] vehicles = verifier.getVehicleSet();
             if(vehicles.length > 0) {
@@ -96,10 +97,14 @@ public class FixTCKTemplates {
                 }
                 if(Arrays.stream(vehicles).anyMatch(v -> v.equals("ejbliteservletcal"))) {
                     System.out.printf("+++ Fixing ejbliteservletcal templates.\n");
+                    List<TemplateInfo> infos = templates.get("ejbliteservletcal");
+                    writeTemplateToPath(buildXml, infos);
                     fixCount++;
                 }
                 if(Arrays.stream(vehicles).anyMatch(v -> v.equals("ejblitesecuredjsp"))) {
                     System.out.printf("+++ Fixing ejblitesecuredjsp templates.\n");
+                    List<TemplateInfo> infos = templates.get("ejblitesecuredjsp");
+                    writeTemplateToPath(buildXml, infos);
                     fixCount++;
                 }
             }
@@ -133,6 +138,11 @@ public class FixTCKTemplates {
         Path refactorModule = refactorRoot.resolve(moduleName);
         Path moduleSrcDir = refactorModule.resolve("src/main/java");
 
+        if(!moduleSrcDir.toFile().exists()) {
+            System.out.printf("Skipping missing module: %s\n", refactorModule);
+            return;
+        }
+
         for (TemplateInfo info : templates) {
 
             // Check for an existing override and do not overwrite it
@@ -140,6 +150,7 @@ public class FixTCKTemplates {
             Path dest = destDir.resolve(info.fileName);
             if(Files.exists(dest)) {
                 System.out.printf("Skipping existing: %s\n", dest);
+                continue;
             }
             // Write out the file line by line replacing all @package@ references
             StringBuilder contents = new StringBuilder();

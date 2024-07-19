@@ -1,25 +1,39 @@
 package tck.jakarta.rewrite.fx.dirview;
 
+import io.quarkus.logging.Log;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+
 
 public class FileTreeItem extends TreeItem<FileItem> {
     private boolean isFirstTimeChildren = true;
     private boolean isFirstTimeLeaf = true;
     private boolean isLeaf;
+    private int pathIndex;
 
     /**
      *
      * @param f File from which a tree should be built
+     * @param pathIndex index of the path to use for the node name
      */
-    public FileTreeItem(FileItem f) {
+    public FileTreeItem(FileItem f, int pathIndex) {
         super(f);
+        this.pathIndex = pathIndex;
     }
     public FileTreeItem(File f) {
-        this(new FileItem(f));
+        this(new FileItem(f), 0);
     }
 
     /*
@@ -53,6 +67,44 @@ public class FileTreeItem extends TreeItem<FileItem> {
         return isLeaf;
     }
 
+    // Path interface
+    public Path getFileName() {
+        return getValue().getFile().toPath().getName(pathIndex);
+    }
+    public int getNameCount() {
+        return pathIndex+1;
+    }
+    Path getPath() {
+        return getValue().getFile().toPath();
+    }
+
+    public FileTreeItem resolve(@NotNull Path other) {
+        if(other.isAbsolute()) {
+            throw new IllegalArgumentException("other is not a relative path");
+        }
+        String fileName = other.getName(0).toString();
+        if(fileName.isEmpty() || fileName.equals(".")) {
+            return this;
+        }
+        // Look for a child with the same name
+        Log.info("Looking for child with name: " + fileName);
+        for(TreeItem<FileItem> child : getChildren()) {
+            FileTreeItem childItem = (FileTreeItem) child;
+            Log.infof("childItem: %s", childItem.getFileName());
+            if(childItem.getFileName().toString().equals(fileName)) {
+                if(other.getNameCount() == 1) {
+                    return childItem;
+                }
+                return childItem.resolve(other.subpath(1, other.getNameCount()));
+            }
+        }
+
+        return null;
+    }
+
+
+    //
+
     /**
      * Returning a collection of type ObservableList containing TreeItems, which
      * represent all children available in handed TreeItem.
@@ -74,7 +126,7 @@ public class FileTreeItem extends TreeItem<FileItem> {
 
                 for (File childFile : files) {
                     FileItem treeItem = new FileItem(childFile);
-                    children.add(new FileTreeItem(treeItem));
+                    children.add(new FileTreeItem(treeItem, pathIndex+1));
                 }
 
                 return children;

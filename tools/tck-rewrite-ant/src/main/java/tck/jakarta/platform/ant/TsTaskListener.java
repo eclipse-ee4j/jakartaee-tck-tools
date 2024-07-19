@@ -64,8 +64,12 @@ public class TsTaskListener implements BuildListener {
         } else {
             BaseJar taskJar = packageTarget.getTaskJar(tsPackageInfo.getTargeName());
             if(taskJar == null) {
-                debug("Unhandled target: %s\n", tsPackageInfo.getTargeName());
-            } else {
+                if(tsPackageInfo.getArchiveName() != null) {
+                    packageTarget.addTargetJar(tsPackageInfo);
+                } else {
+                    debug("Unhandled target: %s\n", tsPackageInfo.getTargeName());
+                }
+            } else if(tsPackageInfo.getArchiveName() != null){
                 taskJar.addJarResources(tsPackageInfo);
             }
         }
@@ -151,22 +155,29 @@ public class TsTaskListener implements BuildListener {
                     Jar jar = (Jar) realThing;
                     debug("+++ jar: %s\n", jar.getDestFile());
                     ArrayList<TSFileSet> fileSets = new ArrayList<>();
-                    for (UnknownElement uec : ue.getChildren()) {
-                        Object proxy = uec.getWrapper().getProxy();
-                        if(proxy instanceof FileSet) {
-                            ArrayList<String> files = new ArrayList<>();
-                            FileSet fileSet = (FileSet) proxy;
-                            File dir = fileSet.getDir();
-                            String prefix = null;
-                            if(fileSet instanceof ZipFileSet) {
-                                ZipFileSet zipFileSet = (ZipFileSet) fileSet;
-                                prefix = zipFileSet.getPrefix(packageTarget.getProject().getProject());
+                    if(ue.getChildren() != null) {
+                        for (UnknownElement uec : ue.getChildren()) {
+                            Object proxy = uec.getWrapper().getProxy();
+                            if (proxy instanceof FileSet) {
+                                ArrayList<String> files = new ArrayList<>();
+                                FileSet fileSet = (FileSet) proxy;
+                                File dir = fileSet.getDir();
+                                String prefix = null;
+                                if (fileSet instanceof ZipFileSet) {
+                                    ZipFileSet zipFileSet = (ZipFileSet) fileSet;
+                                    prefix = zipFileSet.getPrefix(packageTarget.getProject().getProject());
+                                }
+                                fileSet.iterator().forEachRemaining(r -> files.add(r.toString()));
+                                TSFileSet tsFileSet = new TSFileSet(dir.getAbsolutePath(), prefix, files);
+                                fileSets.add(tsFileSet);
                             }
-                            fileSet.iterator().forEachRemaining(r -> files.add(r.toString()));
-                            TSFileSet tsFileSet = new TSFileSet(dir.getAbsolutePath(), prefix, files);
-                            fileSets.add(tsFileSet);
                         }
+                    } else {
+                        AttributeMap attrMap = new AttributeMap(packageTarget.getProject().getProject(), jar.getRuntimeConfigurableWrapper().getAttributeMap());
+                        TSFileSet tsFileSet = new TSFileSet(attrMap);
+                        fileSets.add(tsFileSet);
                     }
+
                     debug("\tfiles: %s\n", fileSets);
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
                     TsPackageInfo lastTsPackage = tsTargetStack.peek();

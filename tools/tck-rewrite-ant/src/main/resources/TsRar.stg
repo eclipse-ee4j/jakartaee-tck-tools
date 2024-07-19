@@ -1,0 +1,23 @@
+// A Stringtemplate4 group for the ts.rar.xml logic for creating a ra-jar artifact
+delimiters "#", "#"
+
+
+// rar is an tck.jakarta.platform.ant.Rar instance
+genRar(rar, testClass) ::= <<
+    // the jar with the correct archive name
+    JavaArchive #rar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#rar.fullArchiveName#");
+    // The class files
+    #rar.typedArchiveName#.addClasses(
+        #rar.classFilesString#
+    );
+    // The ra-jar.xml descriptor
+    URL raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPath#");
+    if(raResURL != null) {
+      #rar.typedArchiveName#.addAsManifestResource(raResURL, "ra.xml");
+    }
+    // The sun-ra.xml file
+    raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPathNoXml#.jar.sun-ra.xml");
+    if(raResURL != null) {
+      #rar.typedArchiveName#.addAsManifestResource(raResURL, "sun-ra.xml");
+    }
+>>

@@ -7,6 +7,7 @@ import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.TSFileSet;
 import tck.jakarta.platform.ant.War;
 
@@ -175,6 +176,39 @@ earArchive.addAsModule(ejbJar1);
         ST template = testGroup.getInstanceOf("genMethodVehicle");
         template.add("deployment", deployment);
         template.add("testClass", "ClientServletTest");
+        String out = template.render().trim();
+        System.out.println(out);
+
+    }
+
+    @Test
+    public void testRar() {
+        Rar rarDef = new Rar();
+        rarDef.setArchiveName("ejb32_mdb_modernconnector");
+        rarDef.setArchiveSuffix("_ra.rar");
+        rarDef.setDescriptor("ra.xml");
+        rarDef.setDescriptorDir("com/sun/ts/tests/ejb32/mdb/modernconnector/connector");
+        rarDef.setInternalDescriptorName("ra.xml");
+        ArrayList<String> includes = new ArrayList<>();
+        includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitor.class");
+        includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitorConfig.class");
+        includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/NoUseListener.class");
+        includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitorAdapter.class");
+        includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitorAdapter$ActivatedEndpoint.class");
+        TSFileSet classes = new TSFileSet("classes", "", includes);
+        rarDef.addFileSet(classes);
+
+        System.out.printf("%s\n", rarDef.getRelativeDescriptorPath());
+        System.out.printf("%s\n", rarDef.getInternalDescriptorName());
+
+        DeploymentRecord deployment = new DeploymentRecord("ejb32_mdb_modernconnector", "javatest", "none");
+        deployment.setRar(rarDef);
+
+        STGroup.verbose = true;
+        Interpreter.trace = true;
+        ST template = testGroup.getInstanceOf("genMethodNonVehicle");
+        template.add("deployment", deployment);
+        template.add("testClass", "ClientTest");
         String out = template.render().trim();
         System.out.println(out);
 
