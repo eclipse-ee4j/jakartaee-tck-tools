@@ -26,9 +26,10 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 // import tck.jakarta.platform.rewrite.createtestsource.CreateNewEETest;
 // import tck.jakarta.platform.rewrite.mapping.        ClassNameRemappingImpl;
+import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
-import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
-import tck.jakarta.platform.ant.api.DeploymentMethodInfoBuilder;
+import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
+// import tck.jakarta.platform.ant.api.DeploymentMethodInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 /**
@@ -162,9 +163,26 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 if (isLegacyTestPackage(ee10pkg)) {
                     // Generate the deployment() method
                     // jarProcessor = Jar2ShrinkWrap.fromPackage(ee10pkg, new ClassNameRemappingImpl(classDecl.getType().getFullyQualifiedName()));
-                    DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
-                    DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(classDecl.getClass(), VehicleType.appclient);
-                System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " deployMethod" + deployMethod                );
+                    //DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
+                    //DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(classDecl.getClass(), VehicleType.appclient);
+                    TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+                    List<String> testMethods = methodNameSet.stream().toList();
+                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(classDecl.getClass(), testMethods);
+                    System.out.println(pkgInfo);
+                    System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " builder" + builder);
+
+                    System.out.println("TestClasses:");
+                        // The test module src/main/java directory
+                        Path srcDir = Paths.get("/tmp");
+                            for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
+                            // The test package dir under the test module src/main/java directory
+                            Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
+                            Files.createDirectories(testPkgDir);
+                            // The test client .java file
+                            Path tetClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
+                            // Write out the test client .java file content
+                            Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                        }
 
                 } else {
                     if(log.isLoggable(Level.FINEST)) {
