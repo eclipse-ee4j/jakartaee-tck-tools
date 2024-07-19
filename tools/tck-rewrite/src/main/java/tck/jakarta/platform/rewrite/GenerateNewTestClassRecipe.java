@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 // import tck.jakarta.platform.rewrite.createtestsource.CreateNewEETest;
 // import tck.jakarta.platform.rewrite.mapping.        ClassNameRemappingImpl;
+import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
 import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
@@ -140,7 +142,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             threadLocalMethodNamesSet.set(methodNameSet);
             // TODO: return the value returned by super.visitClassDeclaration
             // classDecl = super.visitClassDeclaration(classDecl, executionContext);
-            super.visitClassDeclaration(classDecl, executionContext);
+            classDecl = super.visitClassDeclaration(classDecl, executionContext);
             isTest = methodNameSet.stream().anyMatch(str -> str.contains("test"));
             threadLocalMethodNamesSet.set(null);
 
@@ -165,9 +167,11 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     // jarProcessor = Jar2ShrinkWrap.fromPackage(ee10pkg, new ClassNameRemappingImpl(classDecl.getType().getFullyQualifiedName()));
                     //DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
                     //DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(classDecl.getClass(), VehicleType.appclient);
+                    String tckClassName = classDecl.getType().getFullyQualifiedName();
+                    Class tckClass = Class.forName(tckClassName);
                     TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
                     List<String> testMethods = methodNameSet.stream().toList();
-                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(classDecl.getClass(), testMethods);
+                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(tckClass, testMethods);
                     System.out.println(pkgInfo);
                     System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " builder" + builder);
 
@@ -196,6 +200,8 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 // just print exception call stack for now and skip test
                 return classDecl;
             } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
