@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,9 +51,14 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static String tcktestgroup = System.getProperty("tcktestgroup","jpa");
     private static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
+        private static Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
+
     static {
         if(log.isLoggable(Level.FINEST)) {
-            log.finest("GenerateNewTestClassRecipe              : Preparing to process " + fullyQualifiedClassName);
+            log.finest("Preparing to process with recipe " + fullyQualifiedClassName +
+                    " tcktestgroup = " + tcktestgroup + " ts.home = " + tsHome +
+                    " tcksourcepath = " + srcDir
+                    );
         }
     }
 
@@ -169,25 +175,26 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     //DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(classDecl.getClass(), VehicleType.appclient);
                     String tckClassName = classDecl.getType().getFullyQualifiedName();
                     Class tckClass = Class.forName(tckClassName);
+                    if (tckClass == null) {
+                        throw new RuntimeException("Could not load TCK test class name " + tckClassName);
+                    }
                     TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+                    methodNameSet = collectSuperClassTestMethods(tckClass, methodNameSet);
                     List<String> testMethods = methodNameSet.stream().toList();
                     TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(tckClass, testMethods);
-                    System.out.println(pkgInfo);
-                    System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " builder" + builder);
+                    // System.out.println(pkgInfo);
+                    //  System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " builder" + builder);
 
                     System.out.println("TestClasses:");
-                        // The test module src/main/java directory
-                        Path srcDir = Paths.get("/tmp");
-                            for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
-                            // The test package dir under the test module src/main/java directory
-                            Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
-                            Files.createDirectories(testPkgDir);
-                            // The test client .java file
-                            Path tetClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
-                            // Write out the test client .java file content
-                            Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                        }
-
+                    for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
+                        // The test package dir under the test module src/main/java directory
+                        Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
+                        Files.createDirectories(testPkgDir);
+                        // The test client .java file
+                        Path tetClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
+                        // Write out the test client .java file content
+                        Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                    }
                 } else {
                     if(log.isLoggable(Level.FINEST)) {
                         log.finest("AddArquillianDeployMethodRecipe: ignoring package " + ee10pkg);
@@ -226,6 +233,32 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             return classDecl;
         }
 
+        private Set<String> collectSuperClassTestMethods(Class tckClass, Set<String> methodNameSet) {
+            if (tckClass == null) {
+                throw new IllegalStateException("missing TCK class");
+            }
+
+            if (methodNameSet == null) {
+                throw new IllegalStateException("missing methodNameSet");
+            }
+
+            do {
+                tckClass = tckClass.getSuperclass();
+                if (tckClass == null) {
+                    return methodNameSet;
+                }
+                Method[] methods = tckClass.getMethods();
+                for(Method method: methods) {
+                    String name = method.getName();
+                    if ( name != null && (name.contains("test") || name.contains("Test"))) {
+                        methodNameSet.add(name);
+                    }
+                }
+            } while (tckClass != null && !tckClass.getName().equals("Ljava.lang.Object"));
+
+            return methodNameSet;
+        }
+
         private boolean isLegacyTestPackage(String packageName) {
 
             if (packageName.startsWith("ee.jakarta.tck")) {
@@ -240,8 +273,9 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
             Set<String> methodNameSet = threadLocalMethodNamesSet.get();
-            if (methodNameSet != null) {
-                methodNameSet.add(method.getSimpleName().toLowerCase());
+            String name = method.getSimpleName();
+            if (methodNameSet != null && (name.contains("test") || name.contains("Test"))) {
+                methodNameSet.add(name);
             }
             return super.visitMethodDeclaration(method, executionContext);
         }
