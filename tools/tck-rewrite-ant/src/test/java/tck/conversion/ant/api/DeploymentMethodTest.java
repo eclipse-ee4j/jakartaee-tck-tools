@@ -167,4 +167,33 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo.getTestClientFiles());
     }
 
+    /**
+     * The full com/sun/ts/tests/ejb32/mdb/modernconnector test class which includes a rar deployment built
+     * in a pre.package dependency
+     * @throws IOException
+     */
+    @Test
+    public void testEjb32MdbModernconnector_ClientTest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("testModernConnector");
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.mdb.modernconnector.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    /**
+     * The full com/sun/ts/tests/ejb32/mdb/modernconnector test class which includes a rar deployment built
+     * in a pre.package dependency
+     * @throws IOException
+     */
+    @Test
+    public void testEjb30MiscSameEjbClass_ClientTest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("checkEnvEntry", "testDTO");
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.misc.sameejbclass.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

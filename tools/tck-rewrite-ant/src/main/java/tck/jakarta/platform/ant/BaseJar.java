@@ -49,6 +49,10 @@ public abstract class BaseJar {
 
     public BaseJar(Project project, RuntimeConfigurable taskRC) {
         this.project = project;
+        if(taskRC == null) {
+            return;
+        }
+
         Hashtable<String,Object> attrs = taskRC.getAttributeMap();
         AttributeMap attrsMap = new AttributeMap(project, attrs);
         setArchiveName(attrsMap.getAttribute("archivename"));
@@ -234,7 +238,6 @@ public abstract class BaseJar {
         fileSets.addAll(taskInfo.getResources());
     }
     public void addJarResources(TsPackageInfo pkgInfo) {
-
     }
 
     public void setVehicleDescriptor(String resPath) {

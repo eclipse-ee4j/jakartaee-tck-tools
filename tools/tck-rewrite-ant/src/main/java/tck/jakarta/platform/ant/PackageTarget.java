@@ -198,6 +198,26 @@ public class PackageTarget {
         }
     }
 
+    public void addTargetJar(TsPackageInfo tsPackageInfo) {
+        String archiveName = tsPackageInfo.getArchiveName();
+        if(archiveName.endsWith(".rar")) {
+            rarDef = new Rar(project.getProject());
+            rarDef.setArchiveName(archiveName.substring(0, archiveName.length() - 7));
+            rarDef.setArchiveSuffix("_ra.rar");
+            rarDef.addFileSet(tsPackageInfo.getResources());
+            rarDef.setDescriptor("ra.xml");
+            // Since this is coming from a jar task, need to check fileset for ra.xml and set descriptordir
+            for(TSFileSet fileSet : rarDef.getFileSets()) {
+                for (String include : fileSet.getIncludes()) {
+                    if(include.endsWith("ra.xml")) {
+                        rarDef.setDescriptorDir(fileSet.getDir());
+                    }
+                }
+            }
+            System.out.printf("RAR(%s): %s\n", rarDef.getArchiveName(), rarDef.getRelativeDescriptorPath());
+        }
+    }
+
     /**
      * Called by a {@link org.apache.tools.ant.BuildEvent} driven parser to add a task after it has finished
      * executing. This invokes the corresponding parseTs* method with a null dirname and basename task since

@@ -65,6 +65,46 @@ genMethodVehicle(deployment, testClass) ::= <<
     }
 >>
 
+genMethodNonVehicle(pkg, deployment, testClass) ::= <<
+    @TargetsContainer("tck-#deployment.protocol#")
+    @OverProtocol("#deployment.protocol#")
+    @Deployment(name = "#deployment.name#")
+#if(deployment.hasEar)#
+    public static EnterpriseArchive createDeployment() {
+#else#
+    public static WebArchive createDeploymentVehicle() {
+#endif#
+
+#if(deployment.hasWar)#
+    // War
+    #genWar(deployment.war, testClass)#
+#endif#
+
+#if(deployment.hasClientJar)#
+    // Client
+    #genClientJar(deployment.clientJar, testClass)#
+#endif#
+
+#if(deployment.hasEjbJar)#
+    // Ejb
+    #genEjbJar(deployment.ejbJar, testClass)#
+#endif#
+
+#if(deployment.hasRar)#
+    // Rar
+    #genRar(deployment.rar, testClass)#
+#endif#
+
+#if(deployment.hasEar)#
+    // Ear
+    #genEar(pkg, deployment.ear)#
+    return #deployment.ear.typedArchiveName#;
+#else#
+    return #deployment.war.typedArchiveName#;
+#endif#
+    }
+>>
+
 // war is an tck.jakarta.platform.ant.War instance
 genWar(war, testClass) ::= <<
       // the war with the correct archive name
@@ -79,4 +119,24 @@ genWar(war, testClass) ::= <<
           #war.typedArchiveName#.addAsWebInfResource(resURL, "#war.internalDescriptorName#");
       }
       // TODO, does the sun-ejb-jar.xml file need to be added or should this be in in the vendor Arquillian extension?
+>>
+
+// rar is an tck.jakarta.platform.ant.Rar instance
+genRar(rar, testClass) ::= <<
+    // the jar with the correct archive name
+    JavaArchive #rar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#rar.fullArchiveName#");
+    // The class files
+    #rar.typedArchiveName#.addClasses(
+        #rar.classFilesString#
+    );
+    // The ra-jar.xml descriptor
+    URL raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPath#");
+    if(raResURL != null) {
+      #rar.typedArchiveName#.addAsManifestResource(raResURL, "ra.xml");
+    }
+    // The sun-ra.xml file
+    raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPathNoXml#.jar.sun-ra.xml");
+    if(raResURL != null) {
+      #rar.typedArchiveName#.addAsManifestResource(raResURL, "sun-ra.xml");
+    }
 >>
