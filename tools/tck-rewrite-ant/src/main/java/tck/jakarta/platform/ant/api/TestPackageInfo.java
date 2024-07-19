@@ -41,16 +41,18 @@ public class TestPackageInfo {
         this.testClients = testClients;
     }
 
-    public List<String> getTestClientsCode() {
-        ArrayList<String> testCode = new ArrayList<>();
+    public List<TestClientFile> getTestClientFiles() {
+        ArrayList<TestClientFile> testClientFiles = new ArrayList<>();
         STGroup arqClientGroup = new STGroupFile("ArqClientTest.stg");
         ST clientTemplate = arqClientGroup.getInstanceOf("/genClientTestClass");
         for (TestClientInfo testClient : testClients) {
             clientTemplate.remove("testClient");
             clientTemplate.add("testClient", testClient);
-            testCode.add(clientTemplate.render());
+            String content = clientTemplate.render();
+            TestClientFile testClientFile = new TestClientFile(testClient.getClassName(), testClient.getPackageName(), content);
+            testClientFiles.add(testClientFile);
         }
-        return testCode;
+        return testClientFiles;
     }
 
     public String toString() {
