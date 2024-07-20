@@ -7,6 +7,7 @@ import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import tck.jakarta.platform.ant.Lib;
 import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.TSFileSet;
 import tck.jakarta.platform.ant.War;
@@ -212,5 +213,35 @@ earArchive.addAsModule(ejbJar1);
         String out = template.render().trim();
         System.out.println(out);
 
+    }
+
+    @Test
+    public void testLibJars() {
+
+        ArrayList<Lib> libs = new ArrayList<>();
+
+        Lib lib1 = new Lib();
+        lib1.setArchiveName("second-level-jar");
+        TSFileSet txtFiles = new TSFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
+                Arrays.asList("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/common/foo.txt",
+                        "/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/foo.txt",
+                        "/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/foo.txt"));
+        lib1.addResources(txtFiles);
+        libs.add(lib1);
+
+        Lib lib2 = new Lib();
+        lib2.setArchiveName("second-level-jar");
+        TSFileSet txtFiles2 = new TSFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
+           List.of("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/second-level-jar.txt"));
+        lib2.addResources(txtFiles2);
+        libs.add(lib2);
+
+        STGroup.verbose = true;
+        Interpreter.trace = true;
+        ST template = testGroup.getInstanceOf("/genLibJars");
+        template.add("libs", libs);
+        template.add("testClass", "ClientTest");
+        String out = template.render().trim();
+        System.out.println(out);
     }
 }

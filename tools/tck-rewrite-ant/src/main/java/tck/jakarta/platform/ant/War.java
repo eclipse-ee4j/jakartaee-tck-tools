@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class War extends BaseJar {
+    List<Lib> libs = new ArrayList<>();
 
     public War() {
         setArchiveSuffix("war");
@@ -21,6 +22,10 @@ public class War extends BaseJar {
     }
 
     public record Content(String resPath, String target) {}
+
+    public void addJarResources(TsPackageInfo pkgInfo) {
+        libs.addAll(Utils.getJarLibs(pkgInfo));
+    }
 
     /**
      *

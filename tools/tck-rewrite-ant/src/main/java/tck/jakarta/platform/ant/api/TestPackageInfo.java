@@ -14,11 +14,11 @@ public class TestPackageInfo {
     // TCK test class
     private Class<?> baseTestClass;
     // Names of the test methods in the baseTestClass
-    private List<String> testMethods;
+    private List<TestMethodInfo> testMethods;
     // One for a non-vehicle client, and one or more for vehicle clients
     List<TestClientInfo> testClients;
 
-    public TestPackageInfo(Class<?> baseTestClass, List<String> testMethods) {
+    public TestPackageInfo(Class<?> baseTestClass, List<TestMethodInfo> testMethods) {
         this.baseTestClass = baseTestClass;
         this.testMethods = testMethods;
     }
@@ -27,10 +27,10 @@ public class TestPackageInfo {
         return baseTestClass;
     }
 
-    public List<String> getTestMethods() {
+    public List<TestMethodInfo> getTestMethods() {
         return testMethods;
     }
-    public void setTestMethods(List<String> testMethods) {
+    public void setTestMethods(List<TestMethodInfo> testMethods) {
         this.testMethods = testMethods;
     }
 

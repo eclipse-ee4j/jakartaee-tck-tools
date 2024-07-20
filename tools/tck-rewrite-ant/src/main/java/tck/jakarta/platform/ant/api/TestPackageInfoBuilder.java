@@ -45,8 +45,9 @@ public class TestPackageInfoBuilder {
         "org.jboss.arquillian.container.test.api.TargetsContainer",
         "org.jboss.arquillian.junit5.ArquillianExtension",
         "tck.arquillian.protocol.common.TargetVehicle",
-        "org.jboss.shrinkwrap.api.asset.StringAsset",
         "org.jboss.shrinkwrap.api.ShrinkWrap",
+        "org.jboss.shrinkwrap.api.asset.StringAsset",
+        "org.jboss.shrinkwrap.api.exporter.ZipExporter",
         "org.jboss.shrinkwrap.api.spec.EnterpriseArchive",
         "org.jboss.shrinkwrap.api.spec.JavaArchive",
         "org.jboss.shrinkwrap.api.spec.WebArchive",
@@ -92,23 +93,56 @@ public class TestPackageInfoBuilder {
      * @param testMethods - the test methods to include in the test client
      * @return
      * @throws IOException - on failure to parse the build.xml file
+     * @deprecated use {@link #buildTestPackgeInfoEx(Class, List)} instead
      */
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public TestPackageInfo buildTestPackgeInfo(Class<?> clazz, List<String> testMethods) throws IOException {
+        ArrayList<TestMethodInfo> testMethodInfos = new ArrayList<>();
+        for (String testMethod : testMethods) {
+            testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
+        }
+
+        return buildTestPackgeInfoEx(clazz, testMethodInfos);
+    }
+    public TestPackageInfo buildTestPackgeInfoEx(Class<?> clazz, List<TestMethodInfo> testMethods) throws IOException {
         TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods);
-        List<TestClientInfo> testClientInfos = buildTestClients(clazz, testMethods);
+        List<TestClientInfo> testClientInfos = buildTestClientsEx(clazz, testMethods);
         testPackageInfo.setTestClients(testClientInfos);
 
         return testPackageInfo;
     }
+
     /**
      * Parses the ant build.xml file for the test directory associated with the pkg and returns the
      * Arquillian deployment methods for the test deployment artifacts that should be generated.
+     * This builds a list of {@link TestClientInfo} instances for the test class with java.lang.Exception
+     * as the throws type and class {@link #buildTestClientsEx(Class, List)}
 
      * @param clazz - a test class in the EE10 TCK
+     * @param testMethods - the test method names to include in the test client
      * @return
      * @throws IOException - on failure to parse the build.xml file
      */
+    @Deprecated(since = "1.0.0", forRemoval = true)
     public List<TestClientInfo> buildTestClients(Class<?> clazz, List<String> testMethods) throws IOException {
+        ArrayList<TestMethodInfo> testMethodInfos = new ArrayList<>();
+        for (String testMethod : testMethods) {
+            testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
+        }
+        return buildTestClientsEx(clazz, testMethodInfos);
+    }
+
+    /**
+     * Parses the ant build.xml file for the test directory associated with the pkg and returns the
+     * Arquillian deployment methods for the test deployment artifacts that should be generated. This version
+     * allows for different throws types per test method.
+     *
+     * @param clazz - a test class in the EE10 TCK
+     * @param testMethods - the test method names and throws to include in the test client
+     * @return the list of {@link TestClientInfo} instances for the test class
+     * @throws IOException on failure to parse the build.xml file
+     */
+    public List<TestClientInfo> buildTestClientsEx(Class<?> clazz, List<TestMethodInfo> testMethods) throws IOException {
         ArrayList<TestClientInfo> testClientInfos = new ArrayList<>();
         // The simple name, e.g., MyTest for com.sun.*.MyTest
         String testClassSimpleName = clazz.getSimpleName();
@@ -200,8 +234,18 @@ public class TestPackageInfoBuilder {
         return methodInfo;
     }
 
+    /**
+     * Execute the package target and parse the deployment information for a non-vehicle test class.
+     * @param pkgTargetWrapper - the ant "package" target wrapper
+     * @param clazz - the EE10 tck test class
+     * @return the deployment method info for the test class
+     */
     private DeploymentMethodInfo parseNonVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz) {
+        // Run the ant "package" target
         pkgTargetWrapper.execute();
+        // Resolve any unprocessed TsArchiveInfoSets
+        pkgTargetWrapper.resolveTsArchiveInfoSets();
+
         String protocol = pkgTargetWrapper.hasClientJarDef() ? "appclient" : "javatest";
         String testClassSimpleName = clazz.getSimpleName();
 
@@ -222,6 +266,14 @@ public class TestPackageInfoBuilder {
 
         return methodInfo;
     }
+
+    /**
+     * Execute the package target and parse the deployment information for a test class with a target vehicle.
+     * @param pkgTargetWrapper - the ant "package" target wrapper
+     * @param clazz - the EE10 tck test class
+     * @param vehicleType - the TCK vehicle type
+     * @return the deployment method info for the test class + vehicle
+     */
     private DeploymentMethodInfo parseVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz, VehicleType vehicleType) {
         pkgTargetWrapper.execute(vehicleType);
         String protocol = getProtocolForVehicle(vehicleType);
@@ -244,6 +296,11 @@ public class TestPackageInfoBuilder {
         return methodInfo;
     }
 
+    /**
+     * Called after completion of the ant "package" target to populate the deployment information for the test class.
+     * @param deployment - deployment to populate with the information resulting from the "package" target execution
+     * @param pkgTargetWrapper - the ant "package" target wrapper
+     */
     private void populateDeployment(DeploymentInfo deployment, PackageTarget pkgTargetWrapper) {
         Vehicles vehicleDef = pkgTargetWrapper.getVehiclesDef();
         // Client

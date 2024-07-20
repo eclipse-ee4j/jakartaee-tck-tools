@@ -5,13 +5,19 @@ import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import tck.jakarta.platform.vehicles.VehicleType;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * An encapsulation of a build.xml package target used to create test deployment artifacts.
+ * An encapsulation of a build.xml "package" target used to create test deployment artifacts.
  */
 public class PackageTarget {
     ProjectWrapper project;
@@ -30,6 +36,7 @@ public class PackageTarget {
     Rar rarDef;
     Vehicles vehiclesDef;
     List<TaskInfo> unhandledTaks = new ArrayList<>();
+    List<TsArchiveInfoSet> targetArchives = new ArrayList<>();
 
     public PackageTarget(ProjectWrapper project, Target pkgTarget) {
         this.project = project;
@@ -198,24 +205,17 @@ public class PackageTarget {
         }
     }
 
+    /**
+     * Called when a target finishes and has unprocessed archives from jar tasks
+     * @param tsPackageInfo - the package target information
+     */
     public void addTargetJar(TsPackageInfo tsPackageInfo) {
-        String archiveName = tsPackageInfo.getArchiveName();
-        if(archiveName.endsWith(".rar")) {
-            rarDef = new Rar(project.getProject());
-            rarDef.setArchiveName(archiveName.substring(0, archiveName.length() - 7));
-            rarDef.setArchiveSuffix("_ra.rar");
-            rarDef.addFileSet(tsPackageInfo.getResources());
-            rarDef.setDescriptor("ra.xml");
-            // Since this is coming from a jar task, need to check fileset for ra.xml and set descriptordir
-            for(TSFileSet fileSet : rarDef.getFileSets()) {
-                for (String include : fileSet.getIncludes()) {
-                    if(include.endsWith("ra.xml")) {
-                        rarDef.setDescriptorDir(fileSet.getDir());
-                    }
-                }
-            }
-            System.out.printf("RAR(%s): %s\n", rarDef.getArchiveName(), rarDef.getRelativeDescriptorPath());
-        }
+        List<TsArchiveInfo> archives = tsPackageInfo.getArchives().values()
+                .stream()
+                .flatMap(Collection::stream)
+                .sorted((a, b) -> a.getOrder() - b.getOrder())
+                .collect(Collectors.toList());
+        targetArchives.add(new TsArchiveInfoSet(tsPackageInfo.getTargetName(), archives));
     }
 
     /**
@@ -408,6 +408,47 @@ public class PackageTarget {
         return null;
     }
 
+    /**
+     * Called after execute to resolve the archive information sets that were not part of a ts.* task. This is
+     * a bit of a hack to deal with situations where a pre.package target created archives rather than using
+     * the ts.* task or calling the jar task from within the ts.* task.
+     *
+     * Examples:
+     * src/com/sun/ts/tests/ejb32/mdb/modernconnector/build.xml - builds a rar in pre.package target rather than ts.rar
+     */
+    public void resolveTsArchiveInfoSets() {
+
+        for (TsArchiveInfoSet archiveInfoSet : targetArchives) {
+            // If the last archive is a rar, then build a Rar
+            List<TsArchiveInfo> archives = archiveInfoSet.archives();
+            TsArchiveInfo lastArchive = archives.get(archives.size() - 1);
+            if(lastArchive.getFullArchiveName().endsWith(".rar")) {
+                Rar rar = new Rar(project.getProject(), null);
+                String archiveName = lastArchive.getArchiveName();
+                // The archiveName includes the _ra part of the _ra.rar
+                if(archiveName.endsWith("_ra")) {
+                    archiveName = archiveName.substring(0, archiveName.length() - 3);
+                }
+                rar.setArchiveName(archiveName);
+                TSFileSet raDescriptor = lastArchive.getResources().get(0);
+                Path descriptor = Paths.get(raDescriptor.getIncludes().get(0));
+                rar.setDescriptorDir(descriptor.getParent().toString());
+                rar.setDescriptor(descriptor.getFileName().toString());
+                rarDef = rar;
+                // Put the remaining archives into the Rar lib
+                Lib rarLib = new Lib();
+                rarLib.setArchiveName(lastArchive.getArchiveName());
+                for(int i = 0; i < archives.size() - 1; i++) {
+                    TsArchiveInfo archive = archives.get(i);
+                    rarLib.addResources(archive.getResources());
+                }
+                rarDef.setRarLib(rarLib);
+            } else {
+                throw new IllegalStateException("Unhandled archive type: " + lastArchive.getFullArchiveName());
+            }
+        }
+    }
+
     public String toSummary() {
         StringBuilder tmp = new StringBuilder();
         tmp.append(String.format("Package(%s), loc=%s", project.getProject().getName(), pkgTarget.getLocation()));
@@ -419,6 +460,9 @@ public class PackageTarget {
         return tmp.toString();
     }
 
+    /**
+     * This should only be called once per instance
+     */
     public void execute() {
         TsTaskListener buildListener = new TsTaskListener(this);
         project.addBuildListener(buildListener);
@@ -431,6 +475,11 @@ public class PackageTarget {
         }
         pkgTarget.performTasks();
     }
+
+    /**
+     * This can be called multiple times to execute the package target with a specific vehicle type
+     * @param vehicleType
+     */
     public void execute(VehicleType vehicleType) {
         clearParseState();
         if(buildListener == null) {

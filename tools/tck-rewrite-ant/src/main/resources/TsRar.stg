@@ -3,13 +3,16 @@ delimiters "#", "#"
 
 
 // rar is an tck.jakarta.platform.ant.Rar instance
+// A rar is a jar inside of a rar with an ra.xml descriptor
 genRar(rar, testClass) ::= <<
     // the jar with the correct archive name
-    JavaArchive #rar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#rar.fullArchiveName#");
+    JavaArchive #rar.typedArchiveName#_jar = ShrinkWrap.create(JavaArchive.class, "#rar.typedArchiveName#.jar");
     // The class files
-    #rar.typedArchiveName#.addClasses(
+    #rar.typedArchiveName#_jar.addClasses(
         #rar.classFilesString#
     );
+    JavaArchive #rar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#rar.fullArchiveName#");
+    #rar.typedArchiveName#.add(#rar.typedArchiveName#_jar, #rar.typedArchiveName#_jar.getName(), ZipExporter.class);
     // The ra-jar.xml descriptor
     URL raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPath#");
     if(raResURL != null) {

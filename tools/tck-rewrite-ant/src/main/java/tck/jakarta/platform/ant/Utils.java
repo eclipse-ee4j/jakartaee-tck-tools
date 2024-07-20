@@ -14,8 +14,10 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -189,6 +191,26 @@ public class Utils {
             vehicleTypes.add(VehicleType.none);
         }
         return vehicleTypes;
+    }
+
+    public static Collection<Lib> getJarLibs(TsPackageInfo pkgInfo) {
+        HashMap<String, Lib> jarLibs = new HashMap<>();
+        for (List<TsArchiveInfo> archives : pkgInfo.getArchives().values()) {
+            for (TsArchiveInfo archive : archives) {
+                String fullArchiveName = archive.getFullArchiveName();
+                if(!fullArchiveName.endsWith(".jar")) {
+                    throw new IllegalStateException("Unexpected non-jar archive: " + fullArchiveName);
+                }
+                Lib lib = jarLibs.get(archive.getArchiveName());
+                if (lib == null) {
+                    lib = new Lib();
+                    lib.setArchiveName(archive.getArchiveName());
+                    jarLibs.put(archive.getArchiveName(), lib);
+                }
+                lib.addResources(archive.getResources());
+            }
+        }
+        return jarLibs.values();
     }
 
     public static String getClassFilesString(List<TSFileSet> fileSets) {
