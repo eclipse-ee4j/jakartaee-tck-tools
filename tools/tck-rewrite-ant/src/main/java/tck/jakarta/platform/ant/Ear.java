@@ -4,6 +4,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -29,11 +30,15 @@ public class Ear extends BaseJar {
         return deletecomponentarchives;
     }
 
+    /**
+     * Treat the lib jars created at the package.ear level as library jars in the ear
+     * @param pkgInfo
+     */
     public void addJarResources(TsPackageInfo pkgInfo) {
-        Lib lib = new Lib();
-        lib.setArchiveName(pkgInfo.getArchiveName());
-        lib.addResources(pkgInfo.getResources());
-        libs.add(lib);
+        libs.addAll(Utils.getJarLibs(pkgInfo));
+    }
+    public boolean getHasLibs() {
+        return !libs.isEmpty();
     }
     public List<Lib> getLibs() {
         return libs;

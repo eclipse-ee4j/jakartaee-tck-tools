@@ -6,9 +6,9 @@ import org.apache.tools.ant.RuntimeConfigurable;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -155,18 +155,21 @@ public class Vehicles {
      * @param taskInfo - the resources are those found in the last jar task build event
      */
     public void addJarResources(TsTaskInfo taskInfo) {
-        String archiveName = taskInfo.getArchiveName();
-        if(archiveName.contains("ear")) {
-            earElements.clear();
-            earElements.addAll(taskInfo.getResources());
-        } else if(archiveName.contains("ejb")) {
-            ejbElements.clear();
-            ejbElements.addAll(taskInfo.getResources());
-        } else if(archiveName.contains("war")) {
-            servletElements.clear();
-            servletElements.addAll(taskInfo.getResources());
-        } else {
-            throw new RuntimeException("Unhandled archive type" + archiveName);
+        List<TsArchiveInfo> allArchives = taskInfo.getArchives().values().stream().flatMap(Collection::stream).toList();
+        for(TsArchiveInfo lib : allArchives) {
+            String archiveName = lib.getFullArchiveName();
+            if (archiveName.contains("ear")) {
+                earElements.clear();
+                earElements.addAll(lib.getResources());
+            } else if (archiveName.contains("ejb")) {
+                ejbElements.clear();
+                ejbElements.addAll(lib.getResources());
+            } else if (archiveName.contains("war")) {
+                servletElements.clear();
+                servletElements.addAll(lib.getResources());
+            } else {
+                throw new RuntimeException("Unhandled archive type" + archiveName);
+            }
         }
     }
 
@@ -175,17 +178,34 @@ public class Vehicles {
      * @param packageInfo
      */
     public void addJarResources(TsPackageInfo packageInfo) {
-        String name = packageInfo.getTargeName();
+        String name = packageInfo.getTargetName();
+        List<TsArchiveInfo> allArchives = packageInfo.getArchives().values().stream().flatMap(Collection::stream).toList();
         if(name.contains("ear")) {
-            Lib lib = new Lib();
-            lib.setArchiveName(packageInfo.getArchiveName());
-            lib.addResources(packageInfo.getResources());
-            earLibs.add(lib);
+            for(TsArchiveInfo archiveInfo : allArchives) {
+                String archiveFullName = archiveInfo.getFullArchiveName();
+                String archiveName = archiveFullName;
+                int lastDot = archiveFullName.lastIndexOf('.');
+                if(lastDot != -1) {
+                    archiveName = archiveFullName.substring(0, lastDot);
+                }
+                Lib lib = new Lib();
+                lib.setArchiveName(archiveName);
+                lib.addResources(archiveInfo.getResources());
+                earLibs.add(lib);
+            }
         } else if(name.contains("war")) {
-            Lib lib = new Lib();
-            lib.setArchiveName(packageInfo.getArchiveName());
-            lib.addResources(packageInfo.getResources());
-            warLibs.add(new Lib());
+            for(TsArchiveInfo archiveInfo : allArchives) {
+                String archiveFullName = archiveInfo.getFullArchiveName();
+                String archiveName = archiveFullName;
+                int lastDot = archiveFullName.lastIndexOf('.');
+                if (lastDot != -1) {
+                    archiveName = archiveFullName.substring(0, lastDot);
+                }
+                Lib lib = new Lib();
+                lib.setArchiveName(archiveName);
+                lib.addResources(archiveInfo.getResources());
+                warLibs.add(lib);
+            }
         } else {
             throw new RuntimeException("Unhandled archive type" + name);
         }

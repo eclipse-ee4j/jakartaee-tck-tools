@@ -30,10 +30,18 @@ public class TsTaskListener implements BuildListener {
     private LinkedList<TsTaskInfo> tsTaskStack = new LinkedList<>();
     // A stack to track information for the active package and dependent targets
     private LinkedList<TsPackageInfo> tsTargetStack = new LinkedList<>();
+    private int archiveOrder = 0;
 
     public TsTaskListener(PackageTarget packageTarget) {
         this.packageTarget = packageTarget;
     }
+
+    public void reset() {
+        tsTaskStack.clear();
+        tsTargetStack.clear();
+        archiveOrder = 0;
+    }
+
     @Override
     public void buildStarted(BuildEvent event) {
     }
@@ -55,22 +63,26 @@ public class TsTaskListener implements BuildListener {
         Target target = event.getTarget();
         TsPackageInfo tsPackageInfo = tsTargetStack.pop();
         debug("--- targetFinished %s, %s, %s\n", target.getName(), target.getLocation(), tsPackageInfo);
-        // We need to see if there are
+        // We need to see if there are jars associated with the target or its task
         List<TsTaskInfo> taskInfos = tsPackageInfo.getTsTaskInfos();
         boolean isTsVehicles = tsPackageInfo.hasTsVehicles();
-        if(isTsVehicles && tsPackageInfo.getArchiveName() != null) {
+        if(isTsVehicles && !tsPackageInfo.getArchives().isEmpty()){
             Vehicles vehiclesDef = packageTarget.getVehiclesDef();
             vehiclesDef.addJarResources(tsPackageInfo);
         } else {
-            BaseJar taskJar = packageTarget.getTaskJar(tsPackageInfo.getTargeName());
+            BaseJar taskJar = packageTarget.getTaskJar(tsPackageInfo.getTargetName());
             if(taskJar == null) {
-                if(tsPackageInfo.getArchiveName() != null) {
+                if(!tsPackageInfo.getArchives().isEmpty()) {
                     packageTarget.addTargetJar(tsPackageInfo);
                 } else {
-                    debug("Unhandled target: %s\n", tsPackageInfo.getTargeName());
+                    debug("Target(%s) had no jars or taskJar\n", tsPackageInfo.getTargetName());
                 }
-            } else if(tsPackageInfo.getArchiveName() != null){
-                taskJar.addJarResources(tsPackageInfo);
+            } else {
+                if(!tsPackageInfo.getArchives().isEmpty()) {
+                    taskJar.addJarResources(tsPackageInfo);
+                } else {
+                    debug("Target(%s) had no jars\n", tsPackageInfo.getTargetName());
+                }
             }
         }
     }
@@ -127,7 +139,7 @@ public class TsTaskListener implements BuildListener {
                 }
                 // Add the task to the package target wrapper
                 BaseJar taskJar = packageTarget.addTask(task);
-                if(isTsVehicles && taskInfo.getArchiveName() != null) {
+                if(isTsVehicles && !taskInfo.getArchives().isEmpty()) {
                     Vehicles vehiclesDef = packageTarget.getVehiclesDef();
                     vehiclesDef.addJarResources(taskInfo);
                 } else if(taskJar == null) {
@@ -153,8 +165,10 @@ public class TsTaskListener implements BuildListener {
                 if(realThing instanceof Jar) {
                     // This is any archive, client, ejb, ear, par, rar, war
                     Jar jar = (Jar) realThing;
+                    File destFile =  jar.getDestFile();
+                    String jarName = destFile.getName();
                     debug("+++ jar: %s\n", jar.getDestFile());
-                    ArrayList<TSFileSet> fileSets = new ArrayList<>();
+                    TsArchiveInfo archiveInfo = new TsArchiveInfo(jarName, archiveOrder ++);
                     if(ue.getChildren() != null) {
                         for (UnknownElement uec : ue.getChildren()) {
                             Object proxy = uec.getWrapper().getProxy();
@@ -169,27 +183,25 @@ public class TsTaskListener implements BuildListener {
                                 }
                                 fileSet.iterator().forEachRemaining(r -> files.add(r.toString()));
                                 TSFileSet tsFileSet = new TSFileSet(dir.getAbsolutePath(), prefix, files);
-                                fileSets.add(tsFileSet);
+                                archiveInfo.addResource(tsFileSet);
                             }
                         }
                     } else {
                         AttributeMap attrMap = new AttributeMap(packageTarget.getProject().getProject(), jar.getRuntimeConfigurableWrapper().getAttributeMap());
                         TSFileSet tsFileSet = new TSFileSet(attrMap);
-                        fileSets.add(tsFileSet);
+                        archiveInfo.addResource(tsFileSet);
                     }
 
-                    debug("\tfiles: %s\n", fileSets);
+                    debug("jarLib: %s\n", archiveInfo);
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
                     TsPackageInfo lastTsPackage = tsTargetStack.peek();
                     if(lastTsTask != null) {
-                        lastTsTask.addResources(fileSets);
-                        lastTsTask.setArchiveName(jar.getDestFile().getName());
-                        debug("--- jar(%s): %s\n", lastTsTask.getTaskName(), jar.getDestFile());
+                        lastTsTask.addArchive(archiveInfo);
+                        debug("--- jar(%s): %s\n", lastTsTask.getTaskName(), archiveInfo);
                     }
                     else if(lastTsPackage != null) {
-                        lastTsPackage.addResources(fileSets);
-                        lastTsPackage.setArchiveName(jar.getDestFile().getName());
-                        debug("--- jar(%s): %s\n", lastTsPackage.getTargeName(), jar.getDestFile());
+                        lastTsPackage.addArchive(archiveInfo);
+                        debug("--- jar(%s): %s\n", lastTsPackage.getTargetName(), archiveInfo);
                     }
                 } else if(name.startsWith("component.")) {
                     // This is an instance of the ts.common.xml _component macrodef that has jar in the name, e.g., component.clientjar

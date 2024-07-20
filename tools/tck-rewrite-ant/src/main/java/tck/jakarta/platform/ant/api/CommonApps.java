@@ -1,6 +1,5 @@
 package tck.jakarta.platform.ant.api;
 
-import com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.jboss.arquillian.container.test.api.Deployment;

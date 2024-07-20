@@ -17,13 +17,22 @@ public class Lib {
         this.archiveName = archiveName;
     }
 
+    /**
+     * Used in the code as the variable name for the archive
+     * @return
+     */
     public String getTypedArchiveName() {
-        return archiveName + "_lib";
+        // archiveName can contain '-' characters, to map to '_' in the variable name
+        String varName = archiveName.replace('-', '_');
+        return varName + "_lib";
     }
     public String getFullArchiveName() {
         return archiveName + ".jar";
     }
 
+    public boolean getHasClassFiles() {
+        return !Utils.getClassFilesString(resources).trim().isEmpty();
+    }
     public String getClassFilesString() {
         return Utils.getClassFilesString(resources);
     }
@@ -43,6 +52,23 @@ public class Lib {
         }
         resources.addAll(fs);
     }
+    public boolean getHasResources() {
+        return !getResourceStrings().isEmpty();
+    }
+    public List<String> getResourceStrings() {
+        ArrayList<String> tmp = new ArrayList<>();
+        for(TSFileSet fs : resources) {
+            String dir = fs.dir + '/';
+            for(String f : fs.includes) {
+                if(!f.endsWith(".class")) {
+                    f = f.replace(dir, "");
+                    tmp.add(f);
+                }
+            }
+        }
+        return tmp;
+    }
+
     public String toString() {
         StringBuilder tmp = new StringBuilder();
         tmp.append("Lib{archiveName=%s}".formatted(archiveName));

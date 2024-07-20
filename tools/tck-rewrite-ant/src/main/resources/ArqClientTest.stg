@@ -31,18 +31,20 @@ import #imp#;
 
 >>
 
+// testClient is an tck.jakarta.platform.ant.api.TestClientInfo instance
+// testClient.testMethods is a list of TestMethodInfo instances
 genTestMethods(testClient) ::= <<
-#testClient.testMethods :{ method |
+#testClient.testMethods :{ methodInfo |
     @Test
     @Override
 #if(testClient.hasCommonDeployment)#
-    @OperateOnDeployment("#testClient.commonDeploymentName#")
+    @OperateOnDeployment("#testClient.testDeploymentName#")
 #endif#
 #if(testClient.hasVehicle)#
     @TargetVehicle("#testClient.vehicle#")
 #endif#
-    public void #method#() throws Exception {
-        super.#method#();
+    public void #methodInfo.methodName#() throws #methodInfo.throwsException# {
+        super.#methodInfo.methodName#();
     \}
 
 }#

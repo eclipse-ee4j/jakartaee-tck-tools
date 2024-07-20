@@ -12,6 +12,7 @@ import jakarta.inject.Singleton;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MultipleSelectionModel;
@@ -20,6 +21,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
@@ -191,6 +194,20 @@ public class AppController {
         }
     }
 
+    @FXML
+    private void onEditCopy() {
+        Tab selectedTab = codeTabPane.getSelectionModel().getSelectedItem();
+        if(selectedTab != null) {
+            JavaCodeView codeView = (JavaCodeView) selectedTab.getContent();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(codeView.getText());
+            Clipboard.getSystemClipboard().setContent(content);
+
+            Log.infof("Copy from %s", selectedTab.getText());
+        }
+    }
+
+
     private void fileSelected(ObservableValue<? extends TreeItem<FileItem>> changed, TreeItem<FileItem> old,
                               TreeItem<FileItem> newVal) {
         if (newVal != null) {
@@ -198,6 +215,7 @@ public class AppController {
             if(path.isFile() && path.getName().endsWith(".java")) {
                 Path testClassPath = path.toPath();
                 testClassSelected.fireAsync(testClassPath);
+                fileTreeView.getScene().setCursor(Cursor.WAIT);
             }
         }
     }
@@ -251,6 +269,7 @@ public class AppController {
             tab.setContent(codeView);
             codeTabPane.getTabs().add(tab);
         }
+        fileTreeView.getScene().setCursor(Cursor.DEFAULT);
     }
     private void updateVehicles(List<VehicleType> vehicles) {
         Log.infof("Vehicles: %s", vehicles);

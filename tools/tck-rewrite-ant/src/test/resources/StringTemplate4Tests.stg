@@ -140,3 +140,33 @@ genRar(rar, testClass) ::= <<
       #rar.typedArchiveName#.addAsManifestResource(raResURL, "sun-ra.xml");
     }
 >>
+
+genLibJars(libs, testClass) ::= <<
+#libs :{ lib |
+    JavaArchive #lib.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#lib.fullArchiveName#");
+    #addLibJarClasses(lib)#
+
+#if(lib.hasResources)#
+    // The resources
+    URL libURL;
+    #addLibJarResources(lib, testClass)#
+#endif#
+
+}#
+>>
+
+addLibJarClasses(lib) ::= <<
+#if(lib.hasClassFiles)#
+    // The class files
+    #lib.typedArchiveName#.addClasses(
+        #lib.classFilesString#
+    );
+#endif#
+>>
+
+addLibJarResources(lib, testClass) ::= <<
+    #lib.resourceStrings :{ r |
+    libURL = #testClass#.class.getResource("/#r#");
+    #lib.typedArchiveName#.addAsResource(libURL, "/#r#");
+    }#
+>>

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
 import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestClientInfo;
+import tck.jakarta.platform.ant.api.TestMethodInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
@@ -42,8 +43,10 @@ public class DeploymentMethodTest {
     @Test
     public void testBytesMsgTopicTest_writeTestClasses() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
-        List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
-        TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(BytesMsgTopicTests.class, testMethods);
+        List<TestMethodInfo> testMethods = Arrays.asList(new TestMethodInfo("bytesMsgNullStreamTopicTest", "Exception"),
+                new TestMethodInfo("bytesMessageTopicTestsFullMsg", "Exception"),
+                new TestMethodInfo("bytesMessageTNotWriteable", "Exception"));
+        TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(BytesMsgTopicTests.class, testMethods);
         System.out.println(pkgInfo);
 
         System.out.println("TestClasses:");
@@ -183,8 +186,7 @@ public class DeploymentMethodTest {
     }
 
     /**
-     * The full com/sun/ts/tests/ejb32/mdb/modernconnector test class which includes a rar deployment built
-     * in a pre.package dependency
+     * src/com/sun/ts/tests/ejb30/misc/sameejbclass/build.xml
      * @throws IOException
      */
     @Test
@@ -192,6 +194,61 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("checkEnvEntry", "testDTO");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.misc.sameejbclass.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    /**
+     * src/com/sun/ts/tests/ejb30/zombie/build.xml
+     * @throws IOException
+     */
+    @Test
+    public void testEjb30Zombie_ClientTest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("test1");
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.zombie.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    /**
+     * com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/build.xml
+     *
+     * [starksm@scottryzen wildflytck-new]$ ls jakartaeetck/dist/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/
+     * ejb3_assembly_librarydirectory_custom_client.jar
+     * ejb3_assembly_librarydirectory_custom_client.jar.jboss-client.xml
+     * ejb3_assembly_librarydirectory_custom_client.jar.sun-application-client.xml
+     * ejb3_assembly_librarydirectory_custom.ear
+     * ejb3_assembly_librarydirectory_custom_ejb.jar
+     * ejb3_assembly_librarydirectory_custom_ejb.jar.jboss-ejb3.xml
+     * ejb3_assembly_librarydirectory_custom_ejb.jar.jboss-webservices.xml
+     * ejb3_assembly_librarydirectory_custom_ejb.jar.sun-ejb-jar.xml
+     * hello-client-view.jar
+     * lib-shared.jar
+     * second-level-jar.jar
+     * shared.jar
+
+     * [starksm@scottryzen wildflytck-new]$ jar -tf jakartaeetck/dist/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/ejb3_assembly_librarydirectory_custom.ear
+     * META-INF/MANIFEST.MF
+     * 1/2/3/hello-client-view.jar
+     * 1/2/3/shared.jar
+     * lib/lib-shared.jar
+     * ejb3_assembly_librarydirectory_custom_client.jar
+     * ejb3_assembly_librarydirectory_custom_ejb.jar
+     * 1/2/3/4/second-level-jar.jar
+     * 1/2/3/second-level-dir/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/second-level-dir.txt
+     * META-INF/application.xml
+     * @throws IOException
+     */
+    @Test
+    public void testEjb30LibDirCustom_ClientTest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("libDirNotUsed", "libDirNotUsedEJB", "secondLevelJar",
+                "secondLevelJarEJB", "secondLevelDir", "secondLevelDirEJB", "postConstructInvokedInSuperElseWhere",
+                "remoteAdd", "remoteAddByHelloEJB", "remoteAddByHelloEJBFromAssemblyBean");
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.librarydirectory.custom.Client.class;
         TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());

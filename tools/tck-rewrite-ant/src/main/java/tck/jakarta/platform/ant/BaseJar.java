@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -233,9 +232,12 @@ public abstract class BaseJar {
      * @param taskInfo - the resources are those found in the last jar task build event
      */
     public void addJarResources(TsTaskInfo taskInfo) {
-        //this.archiveName = taskInfo.getArchiveName();
         fileSets.clear();
-        fileSets.addAll(taskInfo.getResources());
+        // TODO, verify that all archives have the same archiveName
+        List<TsArchiveInfo> allArchives = taskInfo.getArchives().values().stream().flatMap(Collection::stream).toList();
+        for(TsArchiveInfo archive : allArchives) {
+            fileSets.addAll(archive.getResources());
+        }
     }
     public void addJarResources(TsPackageInfo pkgInfo) {
     }

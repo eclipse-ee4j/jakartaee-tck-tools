@@ -48,7 +48,7 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
 
 #if(deployment.hasEar)#
     // Ear
-    #genEar(pkg, deployment.ear)#
+    #genEar(pkg, deployment.ear, testClass)#
     return #deployment.ear.typedArchiveName#;
 #else#
     return #deployment.war.typedArchiveName#;
@@ -88,7 +88,7 @@ genMethodNonVehicle(pkg, deployment, testClass) ::= <<
 
 #if(deployment.hasEar)#
     // Ear
-    #genEar(pkg, deployment.ear)#
+    #genEar(pkg, deployment.ear, testClass)#
     return #deployment.ear.typedArchiveName#;
 #else#
     return #deployment.war.typedArchiveName#;

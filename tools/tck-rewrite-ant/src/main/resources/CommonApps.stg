@@ -30,9 +30,8 @@ get_ejb3_common_helloejbjar_standalone_component() ::= <<
     }
 >>
 imports_ejb3_common_helloejbjar_standalone_component() ::= <<
-com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client;
-org.jboss.arquillian.container.test.api.Deployment;
-org.jboss.shrinkwrap.api.ShrinkWrap;
-org.jboss.shrinkwrap.api.spec.JavaArchive;
-java.net.URL;
+org.jboss.arquillian.container.test.api.Deployment
+org.jboss.shrinkwrap.api.ShrinkWrap
+org.jboss.shrinkwrap.api.spec.JavaArchive
+java.net.URL
 >>

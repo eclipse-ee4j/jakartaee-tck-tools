@@ -1,0 +1,8 @@
+.tree-cell {
+    -fx-background-color: #e1e1e1;
+    -fx-text-fill: #0000ff ;
+    -fx-font-family: "Cantarell Extra Bold";
+}
+.tree-cell:selected {
+    -fx-background-color: rgba(0, 128, 98, 0.64);
+}

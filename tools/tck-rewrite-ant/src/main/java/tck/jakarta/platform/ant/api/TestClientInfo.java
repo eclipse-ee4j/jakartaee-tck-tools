@@ -3,7 +3,10 @@ package tck.jakarta.platform.ant.api;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Information about an Arquillian/Junit 5 test client that extends the JavaTest test client. If this is a client
@@ -13,7 +16,7 @@ import java.util.List;
 public class TestClientInfo {
     private String className;
     private Class<?> baseTestClass;
-    private List<String> testMethods;
+    private List<TestMethodInfo> testMethods;
 
     private DeploymentMethodInfo commonDeployment;
     private DeploymentMethodInfo testDeployment;
@@ -25,7 +28,7 @@ public class TestClientInfo {
      * @param baseTestClass - the base test class that the test client extends
      * @param testMethods - the test methods to be overriden in the test client
      */
-    public TestClientInfo(String className, Class<?> baseTestClass, List<String> testMethods) {
+    public TestClientInfo(String className, Class<?> baseTestClass, List<TestMethodInfo> testMethods) {
         this.className = className;
         this.baseTestClass = baseTestClass;
         this.testMethods = testMethods;
@@ -40,15 +43,16 @@ public class TestClientInfo {
         return baseTestClass.getPackageName();
     }
     public List<String> getAllImports() {
-        ArrayList<String> allImports = new ArrayList<>();
+        HashSet<String> allImports = new HashSet<>();
         if(commonDeployment != null) {
             allImports.addAll(commonDeployment.getImports());
         }
         allImports.addAll(testDeployment.getImports());
         // Make sure the base class is imported
         allImports.add(baseTestClass.getName());
-        allImports.add("org.junit.jupiter.api.Test");
-        return allImports;
+        List<String> imports = new ArrayList<>(allImports);
+        Collections.sort(imports);
+        return imports;
     }
     public boolean getHasCommonDeployment() {
         return commonDeployment != null;
@@ -68,6 +72,9 @@ public class TestClientInfo {
     public void setTestDeployment(DeploymentMethodInfo testDeployment) {
         this.testDeployment = testDeployment;
     }
+    public String getTestDeploymentName() {
+        return testDeployment.getName();
+    }
     public boolean getHasVehicle() {
         return vehicle != VehicleType.none;
     }
@@ -78,7 +85,7 @@ public class TestClientInfo {
         this.vehicle = vehicle;
     }
 
-    public List<String> getTestMethods() {
+    public List<TestMethodInfo> getTestMethods() {
         return testMethods;
     }
 

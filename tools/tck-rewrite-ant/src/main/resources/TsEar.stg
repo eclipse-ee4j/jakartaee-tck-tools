@@ -5,23 +5,17 @@ delimiters "#", "#"
     pkg is a a tck.jakarta.platform.ant.PackageTarget instance
     ear is a tck.jakarta.platform.ant.Ear instance
 */
-genEar(pkg, ear) ::= <<
+genEar(pkg, ear, testClass) ::= <<
     EnterpriseArchive #ear.typedArchiveName# = ShrinkWrap.create(EnterpriseArchive.class, "#ear.fullArchiveName#");
-#ear.libs :{ lib |
-    JavaArchive #lib.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#lib.fullArchiveName#");
-    // The class files
-    #lib.typedArchiveName#.addClasses(
-        #lib.classFilesString#
-    );
-}#
+
+    // Any libraries added to the ear
+    #genLibJars(ear, testClass)#
+
     // The component jars built by the package target
 #pkg.moduleNames :{ m |
     #ear.typedArchiveName#.addAsModule(#m#);
 }#
-    // The libraries added to the ear
-#ear.libs :{ lib |
-   #ear.typedArchiveName#.addAsLibrary(#lib.typedArchiveName#);
-}#
+
     // The application.xml descriptor
     URL earResURL = #testClass#.class.getResource("/#ear.relativeDescriptorPath#");
     if(earResURL != null) {
@@ -32,4 +26,36 @@ genEar(pkg, ear) ::= <<
     if(earResURL != null) {
       #ear.typedArchiveName#.addAsManifestResource(earResURL, "sun-application.xml");
     }
+>>
+
+genLibJars(ear, testClass) ::= <<
+#if(ear.libs)#
+    URL libURL;
+#endif#
+#ear.libs :{ lib |
+    JavaArchive #lib.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#lib.fullArchiveName#");
+    #addLibJarClasses(lib)#
+
+#if(lib.hasResources)#
+    // The resources
+    #addLibJarResources(lib, testClass)#
+#endif#
+
+}#
+>>
+
+addLibJarClasses(lib) ::= <<
+#if(lib.hasClassFiles)#
+    // The class files
+    #lib.typedArchiveName#.addClasses(
+        #lib.classFilesString#
+    );
+#endif#
+>>
+
+addLibJarResources(lib, testClass) ::= <<
+    #lib.resourceStrings :{ r |
+    libURL = #testClass#.class.getResource("/#r#");
+    #lib.typedArchiveName#.addAsResource(libURL, "/#r#");
+    }#
 >>

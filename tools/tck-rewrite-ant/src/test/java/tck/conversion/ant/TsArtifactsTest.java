@@ -38,6 +38,7 @@ import tck.jakarta.platform.ant.st4.RecordAdaptor;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -667,6 +668,7 @@ public class TsArtifactsTest {
         ST genEar = earGroup.getInstanceOf("genEar");
         genEar.add("ear", pkgTarget.getEarDef());
         genEar.add("pkg", pkgTarget);
+        genEar.add("testClass", "ClientTest");
         String earCode = genEar.render();
         System.out.println(earCode);
 
@@ -716,6 +718,8 @@ public class TsArtifactsTest {
         ST genEar2 = earGroup2.getInstanceOf("genEar");
         genEar2.add("ear", pkgTarget2.getEarDef());
         genEar2.add("pkg", pkgTarget2);
+        genEar.add("testClass", "ClientTest");
+
         String earCode2 = genEar2.render();
         System.out.println(earCode2);
 
@@ -1090,6 +1094,8 @@ public class TsArtifactsTest {
         ST genEar = earGroup.getInstanceOf("genEar");
         genEar.add("ear", pkgTarget.getEarDef());
         genEar.add("pkg", pkgTarget);
+        genEar.add("testClass", "ClientTest");
+
         String earCode = genEar.render();
         System.out.println(earCode);
 
@@ -1108,5 +1114,69 @@ public class TsArtifactsTest {
         template.add("testClass", "ClientTest");
         String methodCode = template.render().trim();
         System.out.println(methodCode);
+    }
+
+    /**
+     * The full com/sun/ts/tests/ejb32/mdb/modernconnector test class which includes a rar deployment built
+     * in a pre.package dependency
+     * @throws IOException
+     */
+    @Test
+    public void testEjb32MdbModernconnector_rar() throws IOException {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb32/mdb/modernconnector/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        List<String> dependencies = toList(pkg.getDependencies());
+        System.out.printf("package dependencies: %s\n", dependencies);
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        // Build the dependencies first
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        for (String dep : dependencies) {
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                target.performTasks();
+            }
+        }
+        pkg.performTasks();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.printf("Client.classes: %s\n", pkgTarget.getClientJarDef().getClassFilesString());
+        System.out.println("Ejb: "+pkgTarget.getEjbJarDef());
+        System.out.println("Ejb.classes: "+pkgTarget.getEjbJarDef().getClassFilesString());
+        System.out.println("Rar: "+pkgTarget.getRarDef());
+        System.out.println("Rar.classes: "+pkgTarget.getRarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.printf("Ear.descriptorPath: %s\n", pkgTarget.getEarDef().getRelativeDescriptorPath());
+        System.out.println("Pkg.moduleNames: "+pkgTarget.getModuleNames());
+
+        STGroup rarGroup = new STGroupFile("TsRar.stg");
+        ST genRar = rarGroup.getInstanceOf("/genRar");
+        genRar.add("rar", pkgTarget.getRarDef());
+        genRar.add("testClass", "ClientTest");
+        String rarCode = genRar.render();
+        System.out.println("RarCode:\n"+rarCode);
+
+        STGroup earGroup = new STGroupFile("TsEar.stg");
+        ST genEar = earGroup.getInstanceOf("genEar");
+        genEar.add("ear", pkgTarget.getEarDef());
+        genEar.add("pkg", pkgTarget);
+        genEar.add("testClass", "ClientTest");
+        String earCode = genEar.render();
+        System.out.println("EarCode:\n"+earCode);
     }
 }
