@@ -108,11 +108,6 @@
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
-            <artifactId>jakarta-pages-tck</artifactId>
-            <version>4.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
             <artifactId>common</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>

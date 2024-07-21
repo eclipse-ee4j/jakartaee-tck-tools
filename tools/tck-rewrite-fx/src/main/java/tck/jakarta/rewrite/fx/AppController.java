@@ -53,6 +53,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Logger;
 
 @FxView("app")
 @Singleton
@@ -90,6 +91,16 @@ public class AppController {
 
     @FXML
     public void initialize() throws FileNotFoundException {
+        // Test JUL logging levels
+        Logger tmp = Logger.getLogger("tck.jakarta.rewrite.fx.AppController");
+        tmp.severe("JUL logging test at SEVERE level");
+        tmp.config("JUL logging test at CONFIG level");
+        tmp.warning("JUL logging test at WARN level");
+        tmp.info("JUL logging test at INFO level");
+        tmp.fine("JUL logging test at FINE level");
+        tmp.finer("JUL logging test at FINER level");
+        tmp.finest("JUL logging test at FINEST level");
+
         // Look for TS_HOME env
         String tsHome = System.getenv("TS_HOME");
         File rootFile;
@@ -244,6 +255,7 @@ public class AppController {
             lastTestPackageInfo = pkgInfo;
             setStatus("Done");
         } catch (Exception e) {
+            clearCursor();
             Log.errorf(e, "Error parsing test class: %s", testClassPath);
             showAlert(e, "Error parsing test class");
         }
@@ -267,6 +279,11 @@ public class AppController {
     @RunOnFxThread
     void updateTestClassSelectionView(Path testClassPath, String originalCode, List<TestClientFile> testFiles) {
         sourceViewController.updateTestClassSelectionView(testClassPath, originalCode, testFiles);
+        fileTreeView.getScene().setCursor(Cursor.DEFAULT);
+    }
+
+    @RunOnFxThread
+    void clearCursor() {
         fileTreeView.getScene().setCursor(Cursor.DEFAULT);
     }
 
