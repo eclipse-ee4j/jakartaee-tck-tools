@@ -13,6 +13,11 @@ import javafx.stage.Stage;
 
 import java.awt.*;
 
+/**
+ * A Quarkus FX application for testing the Jakarta TCK Rewrite libraries in an interactive manner.
+ *
+ * <a href="https://docs.quarkiverse.io/quarkus-fx/dev/index.html">Quarkus FX</a>
+ */
 @ApplicationScoped
 public class JavaFxRewriteApp {
     @Inject
