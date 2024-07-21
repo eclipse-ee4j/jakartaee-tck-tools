@@ -17,6 +17,10 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
 
+/**
+ * A wrapper around a File object that allows it to be used in a TreeView and
+ * that allows one to search for a child node by relative path.
+ */
 public class FileTreeItem extends TreeItem<FileItem> {
     private boolean isFirstTimeChildren = true;
     private boolean isFirstTimeLeaf = true;
@@ -87,10 +91,10 @@ public class FileTreeItem extends TreeItem<FileItem> {
             return this;
         }
         // Look for a child with the same name
-        Log.info("Looking for child with name: " + fileName);
+        //Log.info("Looking for child with name: " + fileName);
         for(TreeItem<FileItem> child : getChildren()) {
             FileTreeItem childItem = (FileTreeItem) child;
-            Log.infof("childItem: %s", childItem.getFileName());
+            //Log.infof("childItem: %s", childItem.getFileName());
             if(childItem.getFileName().toString().equals(fileName)) {
                 if(other.getNameCount() == 1) {
                     return childItem;

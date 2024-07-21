@@ -1,9 +1,9 @@
 package tck.jakarta.rewrite.fx;
 
+import io.quarkiverse.fx.FxStartupEvent;
 import io.quarkiverse.fx.RunOnFxThread;
 import io.quarkiverse.fx.views.FxView;
 import io.quarkus.logging.Log;
-import io.smallrye.common.annotation.RunOnVirtualThread;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.event.ObservesAsync;
@@ -15,7 +15,9 @@ import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -50,7 +52,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 
 @FxView("app")
@@ -60,59 +61,28 @@ public class AppController {
     BorderPane root;
     @FXML
     TreeView<FileItem> fileTreeView;
+
     @FXML
-    TabPane codeTabPane;
-    @FXML
-    Tab originalTab;
-    @FXML
-    Tab transformedTab;
-    @FXML
-    CheckBox  appclient;
-    @FXML
-    CheckBox appmanaged;
-    @FXML
-    CheckBox appmanagedNoTx;
-    @FXML
-    CheckBox ejb;
-    @FXML
-    CheckBox ejblitejsf;
-    @FXML
-    CheckBox ejblitejsp;
-    @FXML
-    CheckBox ejblitesecuredjsp;
-    @FXML
-    CheckBox ejbliteservlet;
-    @FXML
-    CheckBox ejbliteservlet2;
-    @FXML
-    CheckBox jsp;
-    @FXML
-    CheckBox pmservlet;
-    @FXML
-    CheckBox puservlet;
-    @FXML
-    CheckBox servlet;
-    @FXML
-    CheckBox standalone;
-    @FXML
-    CheckBox stateful3;
-    @FXML
-    CheckBox stateless3;
-    @FXML
-    CheckBox web;
-    @FXML
-    CheckBox none;
+    SplitPane mainSplitPane;
     @FXML
     TextField searchField;
+    @FXML
+    Label statusLabel;
 
-    JavaCodeView originalCodeView;
-    JavaCodeView transformedCodeView;
+    @Inject
+    SourceViewController sourceViewController;
+
+    // The EE10 TCK dist root
     Path tsHome;
+    // tsHome.resolve(src/com/sun/ts/tests)
     Path testsRoot;
+    // The root of the Arquillian/Junit5 tests repo
+    Path testsRepoHome;
     FileTreeItem rootItem;
     ClassLoader tckClassLoader;
     @Inject
     Event<Path> testClassSelected;
+    TestPackageInfo lastTestPackageInfo;
 
     public BorderPane getRoot() {
         return root;
@@ -131,11 +101,17 @@ public class AppController {
             FileItem item = new FileItem(rootFile);
             rootItem = new FileTreeItem(item, testsRoot.getNameCount()-1);
             tckClassLoader = Utils.getTSClassLoader(this.tsHome);
+            Log.infof("TS_HOME: %s", tsHome);
         } else {
             String pwd = System.getenv("PWD");
             rootFile = new File(pwd);
             FileItem item = new FileItem(rootFile);
             rootItem = new FileTreeItem(item, rootFile.toPath().getNameCount()-1);
+        }
+        String testsRepo = System.getenv("TESTS_REPO");
+        if (testsRepo != null) {
+            this.testsRepoHome = Paths.get(testsRepo);
+            Log.infof("TESTS_REPO: %s", testsRepoHome);
         }
 
         fileTreeView.setRoot(rootItem);
@@ -146,14 +122,17 @@ public class AppController {
         // Use a change listener to respond to a selection
         tvSelModel.selectedItemProperty().addListener(this::fileSelected);
 
-        originalCodeView = new JavaCodeView();
-        originalTab.setContent(originalCodeView);
-        transformedCodeView = new JavaCodeView();
-        transformedTab.setContent(transformedCodeView);
+        Log.infof("SourceViewController.rootPane: %s", sourceViewController.getRootPane());
+    }
+
+    public void onFxStartup(@Observes final FxStartupEvent event) {
+        Log.infof("onFxStartup, SourceViewController.rootPane: %s", sourceViewController.getRootPane());
+        mainSplitPane.getItems().set(1, sourceViewController.getRootPane());
     }
 
     @FXML
     public void onFileSetTsHome() {
+        statusLabel.setText("Selecting TS_HOME...");
         DirectoryChooser fileChooser = new DirectoryChooser();
         fileChooser.setTitle("Select TCK Dist Root");
         File newRoot = fileChooser.showDialog(null);
@@ -161,6 +140,7 @@ public class AppController {
             try {
                 tsHome = newRoot.toPath();
                 Utils.validateTSHome(tsHome);
+                statusLabel.setText("TS_HOME set to: " + tsHome);
                 this.testsRoot = tsHome.resolve("src/com/sun/ts/tests");
                 System.setProperty("ts.home", tsHome.toString());
                 System.setProperty("TS_HOME", tsHome.toString());
@@ -173,8 +153,41 @@ public class AppController {
         }
     }
     @FXML
+    public void onFileSetTestsRoot() {
+        statusLabel.setText("Selecting Arquillian/Junit5 tests repo root...");
+        DirectoryChooser fileChooser = new DirectoryChooser();
+        fileChooser.setTitle("Select Tests Root");
+        File newRoot = fileChooser.showDialog(null);
+        if (newRoot != null) {
+            this.testsRepoHome = newRoot.toPath();
+            statusLabel.setText("Tests repo root: "+testsRepoHome);
+        }
+    }
+    @FXML
+    public void onFileSave() {
+        Log.infof("onFileSave, testsRepoHome: %s, have testPkgInfo: %s", testsRepoHome, lastTestPackageInfo != null);
+        if(lastTestPackageInfo != null) {
+            setStatus("Saving Arquillian/Junit5 tests...");
+            try {
+                List<TestClientFile> clientFiles = lastTestPackageInfo.getTestClientFiles();
+                for (TestClientFile clientFile : clientFiles) {
+                    Path clientPath = testsRepoHome.resolve(clientFile.getName());
+                    Files.writeString(clientPath, clientFile.getContent());
+                    Log.infof("Wrote: %s", clientPath);
+                }
+            } catch (IOException e) {
+                showAlert(e, "Error saving Arquillian/Junit5 tests");
+            }
+            setStatus("Done");
+        } else {
+            statusLabel.setText("No TestPackageInfo result seen");
+        }
+    }
+
+    @FXML
     public void onFileQuit() {
         Platform.exit();
+        System.exit(0);
     }
 
     @FXML
@@ -196,17 +209,8 @@ public class AppController {
 
     @FXML
     private void onEditCopy() {
-        Tab selectedTab = codeTabPane.getSelectionModel().getSelectedItem();
-        if(selectedTab != null) {
-            JavaCodeView codeView = (JavaCodeView) selectedTab.getContent();
-            ClipboardContent content = new ClipboardContent();
-            content.putString(codeView.getText());
-            Clipboard.getSystemClipboard().setContent(content);
-
-            Log.infof("Copy from %s", selectedTab.getText());
-        }
+        sourceViewController.copySelectedTab();
     }
-
 
     private void fileSelected(ObservableValue<? extends TreeItem<FileItem>> changed, TreeItem<FileItem> old,
                               TreeItem<FileItem> newVal) {
@@ -233,9 +237,12 @@ public class AppController {
 
             Class<?> clazz = tckClassLoader.loadClass(className);
             TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+            setStatus("Parsing build.xml for: "+className);
             TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(clazz, methodNames);
             List<TestClientFile> testFiles = pkgInfo.getTestClientFiles();
             updateTestClassSelectionView(testClassPath, source, testFiles);
+            lastTestPackageInfo = pkgInfo;
+            setStatus("Done");
         } catch (Exception e) {
             Log.errorf(e, "Error parsing test class: %s", testClassPath);
             showAlert(e, "Error parsing test class");
@@ -254,68 +261,13 @@ public class AppController {
         return visitor.getMethodNames();
     }
     @RunOnFxThread
+    void setStatus(String msg) {
+        statusLabel.setText(msg);
+    }
+    @RunOnFxThread
     void updateTestClassSelectionView(Path testClassPath, String originalCode, List<TestClientFile> testFiles) {
-        originalCodeView.setCode(originalCode);
-        List<VehicleType> vehicles = Utils.getVehicleTypes(testClassPath);
-        updateVehicles(vehicles);
-        if(codeTabPane.getTabs().size() > 1) {
-            codeTabPane.getTabs().remove(1, codeTabPane.getTabs().size());
-        }
-        for (TestClientFile testFile : testFiles) {
-            JavaCodeView codeView = new JavaCodeView();
-            codeView.setCode(testFile.getContent());
-            Tab tab = new Tab(testFile.getName());
-            tab.setText(testFile.getName());
-            tab.setContent(codeView);
-            codeTabPane.getTabs().add(tab);
-        }
+        sourceViewController.updateTestClassSelectionView(testClassPath, originalCode, testFiles);
         fileTreeView.getScene().setCursor(Cursor.DEFAULT);
-    }
-    private void updateVehicles(List<VehicleType> vehicles) {
-        Log.infof("Vehicles: %s", vehicles);
-        clearVehicles();
-        for (VehicleType type : vehicles) {
-            switch (type) {
-                case appclient: this.appclient.setSelected(true); break;
-                case appmanaged: this.appmanaged.setSelected(true); break;
-                case appmanagedNoTx: this.appmanagedNoTx.setSelected(true); break;
-                case ejb: this.ejb.setSelected(true); break;
-                case ejblitejsf: this.ejblitejsf.setSelected(true); break;
-                case ejblitejsp: this.ejblitejsp.setSelected(true); break;
-                case ejblitesecuredjsp: this.ejblitesecuredjsp.setSelected(true); break;
-                case ejbliteservlet: this.ejbliteservlet.setSelected(true); break;
-                case ejbliteservlet2: this.ejbliteservlet2.setSelected(true); break;
-                case jsp: this.jsp.setSelected(true); break;
-                case pmservlet: this.pmservlet.setSelected(true); break;
-                case puservlet: this.puservlet.setSelected(true); break;
-                case servlet: this.servlet.setSelected(true); break;
-                case standalone: this.standalone.setSelected(true); break;
-                case stateful3: this.stateful3.setSelected(true); break;
-                case stateless3: this.stateless3.setSelected(true); break;
-                case web: this.web.setSelected(true); break;
-                case none: this.none.setSelected(true); break;
-            }
-        }
-    }
-    private void clearVehicles() {
-        appclient.setSelected(false);
-        appmanaged.setSelected(false);
-        appmanagedNoTx.setSelected(false);
-        ejb.setSelected(false);
-        ejblitejsf.setSelected(false);
-        ejblitejsp.setSelected(false);
-        ejblitesecuredjsp.setSelected(false);
-        ejbliteservlet.setSelected(false);
-        ejbliteservlet2.setSelected(false);
-        jsp.setSelected(false);
-        pmservlet.setSelected(false);
-        puservlet.setSelected(false);
-        servlet.setSelected(false);
-        standalone.setSelected(false);
-        stateful3.setSelected(false);
-        stateless3.setSelected(false);
-        web.setSelected(false);
-        none.setSelected(false);
     }
 
     private void showAlert(Exception e, String title) {
