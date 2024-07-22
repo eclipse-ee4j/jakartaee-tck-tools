@@ -6,7 +6,7 @@
 
     <groupId>tck.jakarta.platform</groupId>
     <artifactId>tck-rewrite-tools</artifactId>
-    <version>11.0.0-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -18,7 +18,7 @@
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.ignoreopenrewrite>8.23.3</version.ignoreopenrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
-        <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
+        <version.tcktools>1.0-SNAPSHOT</version.tcktools>
         <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 

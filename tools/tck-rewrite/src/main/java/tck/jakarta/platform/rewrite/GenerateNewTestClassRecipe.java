@@ -24,10 +24,14 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavadocVisitor;
+import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 // import tck.jakarta.platform.rewrite.createtestsource.CreateNewEETest;
 // import tck.jakarta.platform.rewrite.mapping.        ClassNameRemappingImpl;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TextComment;
 import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
@@ -267,9 +271,22 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             return packageName.startsWith("com.sun.ts.tests");
         }
 
+        @Override
+        public Space visitSpace(Space space, Space.Location loc, ExecutionContext executionContext) {
+            List<Comment> comments = space.getComments();
+            if (comments != null) {
+                for(Comment comment: comments) {
+                    if( comment instanceof TextComment) {
+                        TextComment textComment = (TextComment)  comment;
+                        if (textComment.getText().contains("@testName:")) {
+                            System.out.println("xxx found @testName:" + textComment.getText());
+                        }
+                    }
+                }
+            }
+            return super.visitSpace(space, loc, executionContext);
+        }
 
-
-        // TODO: also return super class test methods
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
             Set<String> methodNameSet = threadLocalMethodNamesSet.get();
