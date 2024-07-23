@@ -19,5 +19,6 @@ genEjbJar(ejbjar, testClass) ::= <<
     ejbResURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPathNoXml#.jar.sun-ejb-jar.xml");
     if(ejbResURL != null) {
       #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+      archiveProcessor.processEjbArchive(#ejbjar.typedArchiveName#, #testClass#.class, ejbResURL);
     }
 >>

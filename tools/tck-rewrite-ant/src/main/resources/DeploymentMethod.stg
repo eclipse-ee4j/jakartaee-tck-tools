@@ -21,9 +21,9 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
     @OverProtocol("#deployment.protocol#")
     @Deployment(name = VEHICLE_ARCHIVE)
 #if(deployment.hasEar)#
-    public static EnterpriseArchive createDeploymentVehicle() {
+    public static EnterpriseArchive createDeploymentVehicle(@ArquillianResource TestArchiveProcessor archiveProcessor) {
 #else#
-    public static WebArchive createDeploymentVehicle() {
+    public static WebArchive createDeploymentVehicle(@ArquillianResource TestArchiveProcessor archiveProcessor) {
 #endif#
 
 #if(deployment.hasWar)#
@@ -61,9 +61,9 @@ genMethodNonVehicle(pkg, deployment, testClass) ::= <<
     @OverProtocol("#deployment.protocol#")
     @Deployment(name = "#deployment.name#")
 #if(deployment.hasEar)#
-    public static EnterpriseArchive createDeployment() {
+    public static EnterpriseArchive createDeployment(@ArquillianResource TestArchiveProcessor archiveProcessor) {
 #else#
-    public static WebArchive createDeploymentVehicle() {
+    public static WebArchive createDeploymentVehicle(@ArquillianResource TestArchiveProcessor archiveProcessor) {
 #endif#
 
 #if(deployment.hasWar)#
