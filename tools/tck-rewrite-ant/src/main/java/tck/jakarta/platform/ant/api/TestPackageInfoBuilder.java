@@ -39,12 +39,14 @@ import java.util.logging.Logger;
 public class TestPackageInfoBuilder {
     private static final Logger log = Logger.getLogger(TestPackageInfoBuilder.class.getName());
     private static final String[] ARQUILLIAN_IMPORTS = {
+        "org.jboss.arquillian.test.api.ArquillianResource",
         "org.jboss.arquillian.container.test.api.Deployment",
         "org.jboss.arquillian.container.test.api.OperateOnDeployment",
         "org.jboss.arquillian.container.test.api.OverProtocol",
         "org.jboss.arquillian.container.test.api.TargetsContainer",
         "org.jboss.arquillian.junit5.ArquillianExtension",
         "tck.arquillian.protocol.common.TargetVehicle",
+        "tck.arquillian.porting.lib.spi.TestArchiveProcessor",
         "org.jboss.shrinkwrap.api.ShrinkWrap",
         "org.jboss.shrinkwrap.api.asset.StringAsset",
         "org.jboss.shrinkwrap.api.exporter.ZipExporter",

@@ -18,6 +18,7 @@ genWar(war, testClass) ::= <<
     warResURL = #testClass#.class.getResource("/#war.relativeDescriptorPathNoXml#.war.sun-web.xml");
     if(warResURL != null) {
       #war.typedArchiveName#.addAsWebInfResource(warResURL, "sun-web.xml");
+      archiveProcessor.processWebArchive(#war.typedArchiveName#, #testClass#.class, warResURL);
     }
     // Web content
 #war.webContent :{ c |

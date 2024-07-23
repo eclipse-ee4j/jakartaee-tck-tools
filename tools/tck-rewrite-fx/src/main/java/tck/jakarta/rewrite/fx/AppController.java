@@ -34,6 +34,7 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import tck.jakarta.platform.ant.api.TestClientFile;
+import tck.jakarta.platform.ant.api.TestMethodInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
@@ -52,6 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -244,12 +246,12 @@ public class AppController {
         try {
             @Language("java")
             String source = Files.readString(testClassPath, StandardCharsets.UTF_8);
-            List<String> methodNames = getMethodNames(source);
+            List<TestMethodInfo> methodNames = getMethodNames(source);
 
             Class<?> clazz = tckClassLoader.loadClass(className);
             TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
             setStatus("Parsing build.xml for: "+className);
-            TestPackageInfo pkgInfo = builder.buildTestPackgeInfo(clazz, methodNames);
+            TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(clazz, methodNames);
             List<TestClientFile> testFiles = pkgInfo.getTestClientFiles();
             updateTestClassSelectionView(testClassPath, source, testFiles);
             lastTestPackageInfo = pkgInfo;
@@ -260,7 +262,7 @@ public class AppController {
             showAlert(e, "Error parsing test class");
         }
     }
-    private List<String> getMethodNames(String source) throws IOException {
+    private List<TestMethodInfo> getMethodNames(String source) throws IOException {
         J.CompilationUnit clientCu = JavaParser.fromJavaVersion()
                 .build()
                 .parse(source)
@@ -270,7 +272,9 @@ public class AppController {
 
         JavaTestNameVisitor<ExecutionContext> visitor = new JavaTestNameVisitor<>();
         clientCu.acceptJava(visitor, new InMemoryExecutionContext());
-        return visitor.getMethodNames();
+        ArrayList<TestMethodInfo> allMethodNames = new ArrayList<>(visitor.getMethodNames());
+        allMethodNames.addAll(visitor.getExtMethodNames());
+        return allMethodNames;
     }
     @RunOnFxThread
     void setStatus(String msg) {

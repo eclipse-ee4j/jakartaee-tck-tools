@@ -20,4 +20,8 @@ public class TestMethodInfo {
     public String getThrowsException() {
         return throwsException;
     }
+
+    public String toString() {
+        return String.format("%s(...) throws %s", methodName, throwsException);
+    }
 }
