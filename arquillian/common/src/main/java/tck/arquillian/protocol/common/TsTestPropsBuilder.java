@@ -109,6 +109,7 @@ public class TsTestPropsBuilder {
         // Seed the test properties file with select ts.jte file settings
         Properties tsJteProps = new Properties();
         tsJteProps.load(new FileReader(tsJte.toFile()));
+        log.info("Read in ts.jte file: "+tsJte);
         // The test specific properties file
         Properties props = new Properties();
         // A property set by the TSScript class
