@@ -1,6 +1,6 @@
 package tck.arquillian.protocol.javatest;
 
-import com.sun.javatest.Status;
+import com.sun.ts.lib.harness.Status;
 import com.sun.ts.lib.harness.EETest;
 import com.sun.ts.tests.common.vehicle.VehicleClient;
 import org.jboss.arquillian.container.spi.client.deployment.Deployment;
