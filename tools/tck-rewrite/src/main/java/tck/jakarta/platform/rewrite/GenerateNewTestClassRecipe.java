@@ -248,9 +248,9 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         }
                         foundMatch = true;
                         Class<?>[] exceptionTypes = method.getExceptionTypes();
-                        if(exceptionTypes.length == 0 || exceptionTypes.length > 1) {
+                        if(exceptionTypes.length > 1) {
                             throw new IllegalStateException("unexpected number of thrown exceptions from test method: " + tckTestClass.getName() + "#" + name );
-                        } else if(!exceptionTypes[0].getName().equals("java.lang.Exception")) {
+                        } else if(exceptionTypes.length > 0 && !exceptionTypes[0].getName().equals("java.lang.Exception")) {
                             testMethodInfoArray[index] = new TestMethodInfo(name,exceptionTypes[0].getName());
                             break;
                         }
