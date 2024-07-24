@@ -57,6 +57,10 @@ public class TestPackageInfoBuilder {
         "org.junit.jupiter.api.Test",
         "org.junit.jupiter.api.extension.ExtendWith"
     };
+    // Mappings from EE11 to EE10 package prefixes
+    private static final String[] EE11_PKG_PREFIXES = {
+        "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
+    };
     // Path to EE10 TCK dist
     private Path tsHome;
 
@@ -149,6 +153,7 @@ public class TestPackageInfoBuilder {
         // The simple name, e.g., MyTest for com.sun.*.MyTest
         String testClassSimpleName = clazz.getSimpleName();
         String pkg = clazz.getPackageName();
+        pkg = mapPrefix(pkg);
         String pkgPath = pkg.replace('.', '/');
         Path srcDir = tsHome.resolve("src");
         Path buildXml = srcDir.resolve(pkgPath+"/build.xml");
@@ -417,6 +422,15 @@ public class TestPackageInfoBuilder {
     private String capitalizeFirst(String word) {
         return word.substring(0, 1).toUpperCase()
                 + word.substring(1).toLowerCase();
+    }
+    private String mapPrefix(String pkg) {
+        for(int n = 0; n <EE11_PKG_PREFIXES.length; n += 2) {
+            String prefix = EE11_PKG_PREFIXES[n];
+            if(pkg.startsWith(prefix)) {
+                return pkg.replace(prefix, EE11_PKG_PREFIXES[n+1]);
+            }
+        }
+        return pkg;
     }
     private void info(String format, Object ... args) {
         String msg = String.format(format, args);

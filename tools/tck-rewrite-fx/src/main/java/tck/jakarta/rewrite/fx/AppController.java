@@ -184,7 +184,9 @@ public class AppController {
             try {
                 List<TestClientFile> clientFiles = lastTestPackageInfo.getTestClientFiles();
                 for (TestClientFile clientFile : clientFiles) {
-                    Path clientPath = testsRepoHome.resolve(clientFile.getName());
+                    Path testDir = testsRepoHome.resolve(clientFile.getPackagePathFromRoot());
+                    String javaFileName = clientFile.getName() + ".java";
+                    Path clientPath = testDir.resolve(javaFileName);
                     Files.writeString(clientPath, clientFile.getContent());
                     Log.infof("Wrote: %s", clientPath);
                 }
