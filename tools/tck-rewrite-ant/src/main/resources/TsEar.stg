@@ -41,7 +41,7 @@ genLibJars(ear, testClass) ::= <<
     // The resources
     #addLibJarResources(lib, testClass)#
 #endif#
-
+    #ear.typedArchiveName#.addAsLibrary(#lib.typedArchiveName#);
 }#
 >>
 
