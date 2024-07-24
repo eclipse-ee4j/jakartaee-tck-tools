@@ -10,13 +10,12 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.input.KeyCodeCombination?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="root" prefHeight="600.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tck.jakarta.rewrite.fx.AppController">
+<BorderPane fx:id="root" prefHeight="600.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tck.jakarta.rewrite.fx.AppController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -58,11 +57,7 @@
                         <Tooltip text="Search for a package in the test tree. Skip the com.sun.ts.tests prefix." />
                      </tooltip>
                   </TextField>
-                  <AnchorPane maxHeight="1.7976931348623157E308" prefHeight="535.0" prefWidth="223.0">
-                     <children>
-                        <TreeView fx:id="fileTreeView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="532.0" prefWidth="223.0" AnchorPane.bottomAnchor="-332.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
+                  <TreeView fx:id="fileTreeView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="532.0" prefWidth="223.0" />
                </children>
             </VBox>
             <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" />

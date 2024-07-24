@@ -253,4 +253,25 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    /**
+     * For example, I see this in the EE10 dist:
+     * starksm@Scotts-Mac-Studio jakartaeetck % ls src/com/sun/ts/tests/jpa/ee/entityManager
+     * Client.java Order.java build.xml
+     *
+     * and in the master platform-tck it is now:
+     * jpa/platform-tests/src/main/java/ee/jakarta/tck/persistence/ee/entityManager/Client.java
+     */
+    @Test
+    public void testJpa() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<String> testMethods = Arrays.asList("createEntityManagerSynchronizationTypeMapTest",
+                "createEntityManagerSynchronizationTypeTest",
+                "joinTransactionTransactionRequiredExceptionTest"
+                );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.entityManager.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }
