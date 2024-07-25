@@ -1,6 +1,6 @@
 package tck.conversion.ant.api;
 
-// import com.sun.ts.tests.jms.core.bytesMsgTopic.BytesMsgTopicTests;
+import com.sun.ts.tests.jms.core.bytesMsgTopic.BytesMsgTopicTests;
 import com.sun.ts.tests.ejb30.assembly.appres.appclientejb.Client;
 import com.sun.ts.tests.signaturetest.javaee.JavaEESigTest;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,6 @@ import java.util.List;
 public class DeploymentMethodTest {
     static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
-/*
     @Test
     public void testBytesMsgTopicTest_deployAppclientMethod() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
@@ -81,8 +80,6 @@ public class DeploymentMethodTest {
             System.out.println(clientInfo);
         }
     }
-
-*/
 
     @Test
     public void testJavaEESigTest_deployAppclientMethod() throws IOException {
