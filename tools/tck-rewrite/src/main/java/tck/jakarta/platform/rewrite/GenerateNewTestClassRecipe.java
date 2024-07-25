@@ -249,7 +249,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         foundMatch = true;
                         Class<?>[] exceptionTypes = method.getExceptionTypes();
                         if(exceptionTypes.length > 1) {
-                            throw new IllegalStateException("unexpected number of thrown exceptions from test method: " + tckTestClass.getName() + "#" + name );
+                            throw new IllegalStateException("unexpected number of thrown exceptions from test method: " + tckTestClass.getName() + "#" + name  + ".  Number of Exceptions in throws =" + exceptionTypes.length);
                         } else if(exceptionTypes.length > 0 && !exceptionTypes[0].getName().equals("java.lang.Exception")) {
                             testMethodInfoArray[index] = new TestMethodInfo(name,exceptionTypes[0].getName());
                             break;
@@ -313,11 +313,13 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                                     } else {
                                         testName = text.substring(0, linebreakAfterIndex);
                                     }
-                                    index = index + linebreakAfterIndex;
+                                    index = linebreakAfterIndex+1; // move to character after newline
                                 }
-                                if (index != -1) {
+                                if (index != -1 && index < text.length()) {
                                     text = text.substring(index);
                                     index = text.indexOf(TESTNAME);
+                                } else {
+                                    index = -1;
                                 }
                                 System.out.println("xxx testName: " + testName);
                                 TestMethodInfo testMethodInfo = new TestMethodInfo(testName, "Exception");
