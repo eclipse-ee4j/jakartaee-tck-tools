@@ -10,6 +10,10 @@ genClientJar(client, testClass) ::= <<
     #client.typedArchiveName#.addClasses(
     #client.classFilesString#
     );
+#if(client.hasAnonymousClasses)#
+#client.anonymousClasses :{ c |
+    #client.typedArchiveName#.addClass("#c#");
+}#
     // The application-client.xml descriptor
     URL resURL = #testClass#.class.getResource("/#client.relativeDescriptorPath#");
     if(resURL != null) {

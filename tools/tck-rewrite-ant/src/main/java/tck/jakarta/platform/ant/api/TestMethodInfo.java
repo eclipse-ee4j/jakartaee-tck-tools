@@ -20,6 +20,9 @@ public class TestMethodInfo {
     public String getThrowsException() {
         return throwsException;
     }
+    public boolean getThrows() {
+        return throwsException != null ? !throwsException.isBlank() : false;
+    }
 
     public String toString() {
         return String.format("%s(...) throws %s", methodName, throwsException);

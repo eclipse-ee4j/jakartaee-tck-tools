@@ -6,6 +6,7 @@ import java.util.List;
 public class Lib {
     String archiveName;
     List<TSFileSet> resources;
+    List<String> anonymousClasses = new ArrayList<>();
 
     public String getArchiveName() {
         return archiveName;
@@ -31,12 +32,19 @@ public class Lib {
     }
 
     public boolean getHasClassFiles() {
-        return !Utils.getClassFilesString(resources).trim().isEmpty();
+        anonymousClasses.clear();
+        return !Utils.getClassFilesString(resources, anonymousClasses).trim().isEmpty();
     }
     public String getClassFilesString() {
-        return Utils.getClassFilesString(resources);
+        anonymousClasses.clear();
+        return Utils.getClassFilesString(resources, anonymousClasses);
     }
-
+    public boolean getHasAnonymousClasses() {
+        return !anonymousClasses.isEmpty();
+    }
+    public List<String> getAnonymousClasses() {
+        return anonymousClasses;
+    }
     public List<TSFileSet> getResources() {
         return resources;
     }

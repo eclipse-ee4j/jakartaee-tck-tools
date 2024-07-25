@@ -30,7 +30,8 @@ public class Rar extends BaseJar {
      */
     @Override
     public String getClassFilesString() {
-        return Utils.getClassFilesString(rarLib.resources);
+        anonymousClasses.clear();
+        return Utils.getClassFilesString(rarLib.resources, anonymousClasses);
     }
 
     public Lib getRarLib() {

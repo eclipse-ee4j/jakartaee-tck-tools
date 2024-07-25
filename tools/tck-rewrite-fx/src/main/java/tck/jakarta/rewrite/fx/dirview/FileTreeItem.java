@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Arrays;
 
 
 /**
@@ -124,17 +125,20 @@ public class FileTreeItem extends TreeItem<FileItem> {
         FileItem f = TreeItem.getValue();
         if (f != null && f.isDirectory()) {
             File[] files = f.listFiles();
-            if (files != null) {
-                ObservableList<TreeItem<FileItem>> children = FXCollections
-                        .observableArrayList();
+            Arrays.sort(files);
+            ObservableList<TreeItem<FileItem>> children = FXCollections
+                    .observableArrayList();
 
-                for (File childFile : files) {
-                    FileItem treeItem = new FileItem(childFile);
-                    children.add(new FileTreeItem(treeItem, pathIndex+1));
+            // Exclude build.xml files
+            for (File childFile : files) {
+                if(childFile.getName().equals("build.xml")) {
+                    continue;
                 }
-
-                return children;
+                FileItem treeItem = new FileItem(childFile);
+                children.add(new FileTreeItem(treeItem, pathIndex+1));
             }
+
+            return children;
         }
 
         return FXCollections.emptyObservableList();

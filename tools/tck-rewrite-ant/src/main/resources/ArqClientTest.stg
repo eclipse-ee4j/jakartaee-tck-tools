@@ -43,7 +43,11 @@ genTestMethods(testClient) ::= <<
 #if(testClient.hasVehicle)#
     @TargetVehicle("#testClient.vehicle#")
 #endif#
+#if(methodInfo.throws)#
     public void #methodInfo.methodName#() throws #methodInfo.throwsException# {
+#else#
+    public void #methodInfo.methodName#() {
+#endif#
         super.#methodInfo.methodName#();
     \}
 

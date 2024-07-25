@@ -40,6 +40,7 @@ public abstract class BaseJar {
     List<String> excludedFiles;
     //
     List<TSFileSet> fileSets = new ArrayList<>();
+    List<String> anonymousClasses = new ArrayList<>();
     Project project;
     // An override to descriptor that can be set by vehicles
     String vehicleDescriptor;
@@ -287,7 +288,14 @@ public abstract class BaseJar {
      * @return string of dot package class files, one per line
      */
     public String getClassFilesString() {
-        return Utils.getClassFilesString(fileSets);
+        anonymousClasses.clear();
+        return Utils.getClassFilesString(fileSets, anonymousClasses);
+    }
+    public boolean getHasAnonymousClasses() {
+        return !anonymousClasses.isEmpty();
+    }
+    public List<String> getAnonymousClasses() {
+        return anonymousClasses;
     }
 
     public String getArtifactName() {

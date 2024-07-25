@@ -195,6 +195,9 @@ public class TestPackageInfoBuilder {
         } else {
             for(String vehicle : vehicles) {
                 VehicleType vehicleType = VehicleType.valueOf(vehicle);
+                if(vehicleType == VehicleType.ejbembed) {
+                    continue;
+                }
                 DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
                 // The class name of the generated clazz subclass
                 String vehicleName = capitalizeFirst(vehicleType.name());

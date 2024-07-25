@@ -320,4 +320,33 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void testejb32_lite_timer_basic_concurrency() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("lookupTimerService", "InterruptedException, java.util.concurrent.ExecutionException"),
+                new TestMethodInfo("writeLockTimeout", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+    @Test
+    public void testejb32_lite_timer_basic_sharing() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("createTimerRollbackStateless", ""),
+                new TestMethodInfo("createTimerRollbackSingleton", ""),
+                new TestMethodInfo("createVerifyRecurringTimerStateless", ""),
+                new TestMethodInfo("createVerifyRecurringTimerSingleton", ""),
+                new TestMethodInfo("accessTimersStateless", ""),
+                new TestMethodInfo("accessTimersSingleton", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.sharing.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

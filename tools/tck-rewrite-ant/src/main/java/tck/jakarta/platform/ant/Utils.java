@@ -213,7 +213,13 @@ public class Utils {
         return jarLibs.values();
     }
 
-    public static String getClassFilesString(List<TSFileSet> fileSets) {
+    /**
+     *
+     * @param fileSets - archive contents
+     * @param anonymousClasses - any anonymous classes are returned via this list
+     * @return dot class name list suitable for passing to an archive addClasses method
+     */
+    public static String getClassFilesString(List<TSFileSet> fileSets, List<String> anonymousClasses) {
         // Capture unique classes
         HashSet<String> classes = new HashSet<>();
         for(TSFileSet fs : fileSets) {
@@ -222,7 +228,18 @@ public class Utils {
                 // Skip the obsolete EJBHomes
                 if(f.endsWith(".class") && !f.endsWith("Home.class")) {
                     f = f.replace(dir, "");
-                    String clazz = f.replace('/', '.').replace('$', '.');
+                    // Need to deal with EETest$Fault.class vs Client$1.class
+                    String dotClass = f.replace('/', '.');
+                    String clazz = dotClass;
+                    int dollar = dotClass.indexOf('$');
+                    if(dollar > 0) {
+                        if(Character.isDigit(dotClass.charAt(dollar+1))) {
+                            anonymousClasses.add(dotClass);
+                            continue;
+                        } else {
+                            clazz = dotClass.replace('$', '.');
+                        }
+                    }
                     classes.add(clazz);
                 }
             }

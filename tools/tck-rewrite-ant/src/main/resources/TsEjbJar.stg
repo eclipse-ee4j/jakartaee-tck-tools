@@ -10,6 +10,10 @@ genEjbJar(ejbjar, testClass) ::= <<
     #ejbjar.typedArchiveName#.addClasses(
         #ejbjar.classFilesString#
     );
+#if(ejbjar.hasAnonymousClasses)#
+#ejbjar.anonymousClasses :{ c |
+    #ejbjar.typedArchiveName#.addClass("#c#");
+}#
     // The ejb-jar.xml descriptor
     URL ejbResURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPath#");
     if(ejbResURL != null) {

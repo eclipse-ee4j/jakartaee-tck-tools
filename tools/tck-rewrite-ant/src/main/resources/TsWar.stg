@@ -9,6 +9,11 @@ genWar(war, testClass) ::= <<
     #war.typedArchiveName#.addClasses(
     #war.classFilesString#
     );
+#if(war.hasAnonymousClasses)#
+#war.anonymousClasses :{ c |
+    #war.typedArchiveName#.addClass("#c#");
+}#
+#endif#
     // The web.xml descriptor
     URL warResURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
     if(warResURL != null) {
