@@ -20,7 +20,6 @@ public class MethodUtils {
                     } else {
                         sb.append(typeName);
                     }
-                    sb.append(etype.getName());
                     sb.append(", ");
                 }
                 if(sb.length() > 2) {
