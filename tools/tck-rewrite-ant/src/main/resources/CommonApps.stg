@@ -3,12 +3,191 @@ and imports_* method that define the deployment method and the imports for the d
 */
 delimiters "#", "#"
 
+/* To create a new deployment template:
+1. Copy the get_deployment_archive_name and imports_deployment_archive_name templates below.
+2. Add the lines from the commonarchives.properties file that correspond to the common app you want to add
+in the comment.
+3. Rename the deployment_archive_name portion to the source directory of the common app.
+4. Write the deployment method in you IDE to make sure it compiles, and then paste it in the get_xxxx() method
+where the '//put arquillian deployment method here' comment is.
+5. Copy the fully qualified class names of any imports you needed other than the standard arquillian ones
+into the imports_xxx() method
+6. Write a test method in the tck.conversion.ant.api.CommonAppsTest class to test the new deployment method.
+Follow the pattern of the validate_helloejbjar() method.
+*/
+
+/*
+Copy the line from the commonarchives.properties file that corresponds to the common app you want to add here:
+here
+*/
+get_deployment_archive_name(testClient) ::= <<
+// put arquillian deployment method here
+>>
+imports_deployment_archive_name() ::= <<
+// put list of imports needed for the arquillian deployment method here.
+>>
+
+// Add new common app deployment methods below this line
+
+/*
+#single server multi/database tests' common apps
+commonarchives.com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSS_Direct=com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanA com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanB com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanC
+commonarchives.com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSS_Indirect=com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanA com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanB com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBSSBeans/BeanC
+These were not in the EE10 distribution
+*/
+get_TxMDBSSBeans_BeanA_BeanB_BeanC(testClient) ::= <<
+// put arquillian deployment method here
+>>
+imports_TxMDBSSBeans_BeanA_BeanB_BeanC() ::= <<
+// put list of imports needed for the arquillian deployment method here.
+>>
+
+/*
+#multi server multi/database tests' common apps
+commonarchives.com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMS_Direct=com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanA com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanB com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanC
+commonarchives.com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMS_Indirect=com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanA com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanB com/sun/ts/tests/ejb/ee/tx/session/stateful/bm/TxMDBMSBeans/BeanC
+These were not in the EE10 distribution
+*/
+get_TxMDBMSBeans_BeanA_BeanB_BeanC(testClient) ::= <<
+// put arquillian deployment method here
+>>
+imports_TxMDBMSBeans_BeanA_BeanB_BeanC() ::= <<
+// put list of imports needed for the arquillian deployment method here.
+>>
+
+
+/*
+#Adding the connector sub dirs explicitly as deployment directory
+#does not require deployment of standalone connector.
+commonarchives.com/sun/ts/tests/connector/localTx/msginflow=com/sun/ts/tests/connector/mdb
+*/
+get_mdb(testClient) ::= <<
+    @Deployment(name = "msginflow_mdb", order = 1, testable = false)
+    public static EnterpriseArchive createCommonDeployment() {
+        JavaArchive msginflow_mdb_msginflow_ejb = ShrinkWrap.create(JavaArchive.class, "msginflow_mdb_msginflow.jar");
+        // The class files
+        msginflow_mdb_msginflow_ejb.addClasses(
+                com.sun.ts.tests.connector.mdb.MessageBean.class,
+                com.sun.ts.tests.connector.util.DBSupport.class
+        );
+        URL ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow_mdb_msginflow_ejb.xml");
+        if (ejbResURL != null) {
+            msginflow_mdb_msginflow_ejb.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+        }
+        ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow_mdb_msginflow_ejb.jar.sun-ejb-jar.xml");
+        if (ejbResURL != null) {
+            msginflow_mdb_msginflow_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+        }
+
+        JavaArchive msginflow1_mdb_msginflow_ejb = ShrinkWrap.create(JavaArchive.class, "msginflow1_mdb_msginflow.jar");
+        // The class files
+        msginflow1_mdb_msginflow_ejb.addClasses(
+                com.sun.ts.tests.connector.mdb.MessageBeanOne.class,
+                com.sun.ts.tests.connector.util.DBSupport.class
+        );
+        ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow1_mdb_msginflow_ejb.xml");
+        if (ejbResURL != null) {
+            msginflow1_mdb_msginflow_ejb.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+        }
+        ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow1_mdb_msginflow_ejb.jar.sun-ejb-jar.xml");
+        if (ejbResURL != null) {
+            msginflow1_mdb_msginflow_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+        }
+
+        EnterpriseArchive msginflow_mdb_ear = ShrinkWrap.create(EnterpriseArchive.class, "msginflow_mdb.ear");
+        msginflow_mdb_ear.addAsModule(msginflow_mdb_msginflow_ejb);
+        msginflow_mdb_ear.addAsModule(msginflow1_mdb_msginflow_ejb);
+
+
+        return msginflow_mdb_ear;
+    }
+
+    @Deployment(name = "msginflow_mdb_jca", order = 1, testable = false)
+    public static EnterpriseArchive createCommonDeployment1() {
+        JavaArchive msginflow_mdb_jca_msginflow_ejb = ShrinkWrap.create(JavaArchive.class, "msginflow_mdb_jca_msginflow.jar");
+        // The class files
+        msginflow_mdb_jca_msginflow_ejb.addClasses(
+                com.sun.ts.tests.connector.mdb.JCAMessageBean.class,
+                com.sun.ts.tests.connector.util.DBSupport.class
+        );
+        URL ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow_mdb_jca_msginflow_ejb.xml");
+        if (ejbResURL != null) {
+            msginflow_mdb_jca_msginflow_ejb.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+        }
+        ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/connector/mdb/msginflow_mdb_jca_msginflow_ejb.jar.sun-ejb-jar.xml");
+        if (ejbResURL != null) {
+            msginflow_mdb_jca_msginflow_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+        }
+
+        EnterpriseArchive msginflow_mdb_jca_ear = ShrinkWrap.create(EnterpriseArchive.class, "msginflow_mdb_jca.ear");
+        msginflow_mdb_jca_ear.addAsModule(msginflow_mdb_jca_msginflow_ejb);
+
+        return msginflow_mdb_jca_ear;
+    }
+>>
+imports_mdb() ::= <<
+>>
+
+
+/*
+#tx session tests' common apps
+commonarchives.com/sun/ts/tests/ejb/ee/tx/session=com/sun/ts/tests/ejb/ee/tx/txbean
+*/
+get_txbean(testClient) ::= <<
+    @Deployment(name = "ejb_tx_txbean", order = 1, testable = false)
+    public static EnterpriseArchive createCommonDeployment() {
+        JavaArchive ejb_tx_txbean_ejb = ShrinkWrap.create(JavaArchive.class, "ejb_tx_txbean_ejb.jar");
+        // The class files
+        ejb_tx_txbean_ejb.addClasses(
+                com.sun.ts.tests.ejb.ee.tx.txbean.AppException.class,
+                com.sun.ts.tests.ejb.ee.tx.txbean.SysException.class
+        );
+        URL ejbResURL = #testClient#.class.getResource("com/sun/ts/tests/ejb/ee/tx/txbean/ejb_tx_txbean_ejb.xml");
+        if(ejbResURL != null) {
+            ejb_tx_txbean_ejb.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+        }
+        ejbResURL = #testClient#.class.getResource("com/sun/ts/tests/ejb/ee/tx/txbean/ejb_tx_txbean_ejb.jar.sun-ejb-jar.xml");
+        if(ejbResURL != null) {
+            ejb_tx_txbean_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+        }
+
+        EnterpriseArchive ejb_tx_txbean_ear = ShrinkWrap.create(EnterpriseArchive.class, "ejb_tx_txbean.ear");
+        ejb_tx_txbean_ear.addAsModule(ejb_tx_txbean_ejb);
+
+        return ejb_tx_txbean_ear;
+    }
+    @Deployment(name = "ejb_tx_txbean2", order = 1, testable = false)
+    public static EnterpriseArchive createCommonDeployment2() {
+        JavaArchive ejb_tx_txbean2_ejb = ShrinkWrap.create(JavaArchive.class, "ejb_tx_txbean2_ejb.jar");
+        // The class files
+        ejb_tx_txbean2_ejb.addClasses(
+                com.sun.ts.tests.ejb.ee.tx.txbean.AppException.class,
+                com.sun.ts.tests.ejb.ee.tx.txbean.SysException.class
+        );
+        URL ejbResURL = #testClient#.class.getResource("com/sun/ts/tests/ejb/ee/tx/txbean/ejb_tx_txbean2_ejb.xml");
+        if(ejbResURL != null) {
+            ejb_tx_txbean2_ejb.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+        }
+        ejbResURL = #testClient#.class.getResource("com/sun/ts/tests/ejb/ee/tx/txbean/ejb_tx_txbean2_ejb.jar.sun-ejb-jar.xml");
+        if(ejbResURL != null) {
+            ejb_tx_txbean2_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+        }
+
+        EnterpriseArchive ejb_tx_txbean2_ear = ShrinkWrap.create(EnterpriseArchive.class, "ejb_tx_txbean2.ear");
+        ejb_tx_txbean2_ear.addAsModule(ejb_tx_txbean2_ejb);
+
+        return ejb_tx_txbean2_ear;
+    }
+>>
+imports_txbean() ::= <<
+>>
+
 /*
 #ejb30 common app
 commonarchives.com/sun/ts/tests/ejb30/assembly=com/sun/ts/tests/ejb30/common/helloejbjar
 commonarchives.com/sun/ts/tests/ejb30/misc/jndi/earjar=com/sun/ts/tests/ejb30/common/helloejbjar
 */
-get_ejb3_common_helloejbjar_standalone_component() ::= <<
+get_helloejbjar(testClient) ::= <<
     @Deployment(name = "ejb3_common_helloejbjar_standalone_component", order = 1, testable = false)
     public static JavaArchive createCommonDeployment() {
         JavaArchive ejb3_common_helloejbjar_standalone_component_ejb = ShrinkWrap.create(JavaArchive.class, "ejb3_common_helloejbjar_standalone_component_ejb.jar");
@@ -21,7 +200,7 @@ get_ejb3_common_helloejbjar_standalone_component() ::= <<
                 com.sun.ts.tests.ejb30.common.helloejbjar.HelloBean.class,
                 com.sun.ts.tests.ejb30.common.helper.TLogger.class
         );
-        URL ejbResURL = Client.class.getResource("/com/sun/ts/tests/ejb30/common/helloejbjar/ejb3_common_helloejbjar_standalone_component_ejb.jar.sun-ejb-jar.xml");
+        URL ejbResURL = #testClient#.class.getResource("/com/sun/ts/tests/ejb30/common/helloejbjar/ejb3_common_helloejbjar_standalone_component_ejb.jar.sun-ejb-jar.xml");
         if(ejbResURL != null) {
             ejb3_common_helloejbjar_standalone_component_ejb.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
         }
@@ -29,7 +208,7 @@ get_ejb3_common_helloejbjar_standalone_component() ::= <<
         return ejb3_common_helloejbjar_standalone_component_ejb;
     }
 >>
-imports_ejb3_common_helloejbjar_standalone_component() ::= <<
+imports_helloejbjar() ::= <<
 org.jboss.arquillian.container.test.api.Deployment
 org.jboss.shrinkwrap.api.ShrinkWrap
 org.jboss.shrinkwrap.api.spec.JavaArchive

@@ -45,7 +45,12 @@ public class TestClientInfo {
     public List<String> getAllImports() {
         HashSet<String> allImports = new HashSet<>();
         if(commonDeployment != null) {
-            allImports.addAll(commonDeployment.getImports());
+            // This can be empty so filter it
+            for (String imp : commonDeployment.getImports()) {
+                if (!imp.isEmpty()) {
+                    allImports.add(imp);
+                }
+            }
         }
         allImports.addAll(testDeployment.getImports());
         // Make sure the base class is imported
