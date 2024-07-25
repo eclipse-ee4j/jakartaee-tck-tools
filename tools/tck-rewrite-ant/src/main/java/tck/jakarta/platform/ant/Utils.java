@@ -3,7 +3,10 @@ package tck.jakarta.platform.ant;
 import com.sun.ts.lib.harness.VehicleVerifier;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
+import org.apache.tools.ant.PropertyHelper;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Property;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
@@ -19,6 +22,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -147,14 +151,25 @@ public class Utils {
      */
     public static ClassLoader getTSClassLoader(Path tsHome) throws FileNotFoundException {
         validateTSHome(tsHome);
-        Path buildXml = tsHome.resolve("bin/build.xml");
         Project project = new Project();
         project.init();
+        Property tsJte = new Property();
+        tsJte.setProject(project);
+        tsJte.setFile(tsHome.resolve("bin/ts.jte").toFile());
+        Target target = new Target();
+        target.setName("ts.jte");
+        target.addTask(tsJte);
+        project.addTarget("ts.jte", target);
         // The location of the glassfish download for the jakarta api jars
+        project.setProperty("ts.home", tsHome.toString());
+        project.setProperty("pathsep", File.pathSeparator);
+        project.setProperty("javaee.home", "${ts.home}/../glassfish7/glassfish");
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
 
-        log.info("Parsing: " + buildXml);
-        ProjectHelper.configureProject(project, buildXml.toFile());
+        project.executeTarget("ts.jte");
+
+        Hashtable<String, Object> properties = project.getProperties();
+        PropertyHelper.getPropertyHelper(project).getProperty("javaee.home.ri");
         String tsHarnessCP = project.getProperty("ts.harness.classpath");
         String[] paths = tsHarnessCP.split(File.pathSeparator);
         ArrayList<URL> urls = new ArrayList<>();

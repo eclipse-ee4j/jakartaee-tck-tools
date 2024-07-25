@@ -91,6 +91,7 @@ public class JavaTestNameVisitor<ExecutionContext> extends JavaIsoVisitor<Execut
         classDecl = super.visitClassDeclaration(classDecl, executionContext);
 
         String superclass = classDecl.getExtends().toString();
+        System.out.printf("Visiting class %s extends %s\n", classDecl.getSimpleName(), superclass);
         return classDecl;
     }
 
@@ -139,7 +140,9 @@ public class JavaTestNameVisitor<ExecutionContext> extends JavaIsoVisitor<Execut
                     String[] parts = nameText.split("\\s+", 2);
                     String methodName = parts[0];
                     System.out.printf("javadoc testName: %s\n", methodName);
-                    extMethoodNames.add(new TestMethodInfo(methodName, "Exception"));
+                    TestMethodInfo methodInfo = new TestMethodInfo(methodName, "Exception");
+                    methodInfo.setFromSuperclass(true);
+                    extMethoodNames.add(methodInfo);
                 }
             }
         }

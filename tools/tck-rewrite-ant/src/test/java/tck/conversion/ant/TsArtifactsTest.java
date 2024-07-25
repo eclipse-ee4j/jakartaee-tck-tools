@@ -323,7 +323,7 @@ public class TsArtifactsTest {
 
         STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
         //System.out.println(ejbJarGroup.show());
-        ST clientRepo = clientJarGroup.getInstanceOf("genClienJar");
+        ST clientRepo = clientJarGroup.getInstanceOf("genClientJar");
         clientRepo.add("client", clientJarDef);
         clientRepo.add("testClass", "ClientTest");
         String clientJarCode = clientRepo.render();
@@ -658,7 +658,7 @@ public class TsArtifactsTest {
 
         // Generate code for appclient vehicle test archive
         STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
-        ST genClient = clientJarGroup.getInstanceOf("genClienJar");
+        ST genClient = clientJarGroup.getInstanceOf("genClientJar");
         genClient.add("client", pkgTarget.getClientJarDef());
         genClient.add("testClass", "ClientTest");
         String clientJarCode = genClient.render();
@@ -701,7 +701,7 @@ public class TsArtifactsTest {
 
         // Generate the ejb vehicle code
         STGroup clientJarGroup2 = new STGroupFile("TsClientJar.stg");
-        ST genClient2 = clientJarGroup2.getInstanceOf("genClienJar");
+        ST genClient2 = clientJarGroup2.getInstanceOf("genClientJar");
         genClient2.add("client", pkgTarget2.getClientJarDef());
         genClient2.add("testClass", "ClientTest");
         String clientJarCode2 = genClient.render();
@@ -1178,5 +1178,49 @@ public class TsArtifactsTest {
         genEar.add("testClass", "ClientTest");
         String earCode = genEar.render();
         System.out.println("EarCode:\n"+earCode);
+    }
+
+    @Test
+    public void testEjb32_relaxedclientview_singleton() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb32/relaxedclientview/singleton/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.printf("Client.classes: %s\n", pkgTarget.getClientJarDef().getClassFilesString());
+        System.out.println("Ejb: "+pkgTarget.getEjbJarDef());
+        System.out.println("Ejb.classes: "+pkgTarget.getEjbJarDef().getClassFilesString());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.printf("Ear.descriptorPath: %s\n", pkgTarget.getEarDef().getRelativeDescriptorPath());
+        System.out.println("Pkg.moduleNames: "+pkgTarget.getModuleNames());
+
+        STGroup clientJarGroup = new STGroupFile("TsClientJar.stg");
+        //System.out.println(ejbJarGroup.show());
+        STGroup.verbose = true;
+        Interpreter.trace = true;
+        ST clientRepo = clientJarGroup.getInstanceOf("genClientJar");
+        clientRepo.add("client", pkgTarget.getClientJarDef());
+        clientRepo.add("testClass", "ClientTest");
+        String clientJarCode = clientRepo.render();
+        System.out.println(clientJarCode);
+
+        Target pkgWar = project.getTargets().get("package.war");
+
     }
 }

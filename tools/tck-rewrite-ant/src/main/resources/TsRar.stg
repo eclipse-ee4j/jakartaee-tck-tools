@@ -15,6 +15,7 @@ genRar(rar, testClass) ::= <<
 #rar.anonymousClasses :{ c |
     #rar.typedArchiveName#.addClass("#c#");
 }#
+#endif#
     JavaArchive #rar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#rar.fullArchiveName#");
     #rar.typedArchiveName#.add(#rar.typedArchiveName#_jar, #rar.typedArchiveName#_jar.getName(), ZipExporter.class);
     // The ra-jar.xml descriptor

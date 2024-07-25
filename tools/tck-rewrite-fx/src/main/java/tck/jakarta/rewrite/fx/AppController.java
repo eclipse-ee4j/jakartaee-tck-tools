@@ -40,6 +40,7 @@ import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
 import tck.jakarta.platform.vehicles.VehicleType;
 import tck.jakarta.rewrite.fx.codeview.JavaCodeView;
 import tck.jakarta.rewrite.fx.codeview.JavaTestNameVisitor;
+import tck.jakarta.rewrite.fx.codeview.MethodUtils;
 import tck.jakarta.rewrite.fx.dirview.FileItem;
 import tck.jakarta.rewrite.fx.dirview.FileTreeItem;
 import tck.jakarta.platform.ant.Utils;
@@ -54,6 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -246,11 +248,11 @@ public class AppController {
         String simpleClassName = testClassPath.getFileName().toString().replace(".java", "");
         String className = pkgName + "." + simpleClassName;
         try {
+            Class<?> clazz = Class.forName(className, true, tckClassLoader);
             @Language("java")
             String source = Files.readString(testClassPath, StandardCharsets.UTF_8);
-            List<TestMethodInfo> methodNames = getMethodNames(source);
+            List<TestMethodInfo> methodNames = getMethodNames(clazz, source);
 
-            Class<?> clazz = tckClassLoader.loadClass(className);
             TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
             setStatus("Parsing build.xml for: "+className);
             TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(clazz, methodNames);
@@ -258,13 +260,13 @@ public class AppController {
             updateTestClassSelectionView(testClassPath, source, testFiles);
             lastTestPackageInfo = pkgInfo;
             setStatus("Done");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             clearCursor();
             Log.errorf(e, "Error parsing test class: %s", testClassPath);
             showAlert(e, "Error parsing test class");
         }
     }
-    private List<TestMethodInfo> getMethodNames(String source) throws IOException {
+    private List<TestMethodInfo> getMethodNames(Class<?> testClass, String source) throws IOException {
         J.CompilationUnit clientCu = JavaParser.fromJavaVersion()
                 .build()
                 .parse(source)
@@ -276,6 +278,16 @@ public class AppController {
         clientCu.acceptJava(visitor, new InMemoryExecutionContext());
         ArrayList<TestMethodInfo> allMethodNames = new ArrayList<>(visitor.getMethodNames());
         allMethodNames.addAll(visitor.getExtMethodNames());
+        HashMap<String, TestMethodInfo> allMethods = new HashMap<>();
+        for(TestMethodInfo methodInfo : allMethodNames) {
+            allMethods.put(methodInfo.getMethodName(), methodInfo);
+        }
+        // Now resolve the throws exceptions by looking at superclass method info
+        Class<?> testBaseClass = testClass.getSuperclass();
+        Log.infof("Resolving throws for %s, baseClass: %s", testClass, testBaseClass);
+        MethodUtils.resolveMethodThrows(testBaseClass, allMethods);
+        Log.infof("--- Resolved methods for %s:", allMethods);
+
         return allMethodNames;
     }
     @RunOnFxThread
@@ -293,7 +305,7 @@ public class AppController {
         fileTreeView.getScene().setCursor(Cursor.DEFAULT);
     }
 
-    private void showAlert(Exception e, String title) {
+    private void showAlert(Throwable e, String title) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         Alert alert = new Alert(Alert.AlertType.ERROR);
