@@ -177,7 +177,7 @@ public class TestPackageInfoBuilder {
 
         // Does this test class have a common deployment?
         CommonApps commonApps = CommonApps.getInstance(tsHome);
-        DeploymentMethodInfo commonDeployment = commonApps.getCommonDeployment(buildXml);
+        DeploymentMethodInfo commonDeployment = commonApps.getCommonDeployment(buildXml, testClassSimpleName);
 
         // Generate the test deployment method
         if(vehicles.length == 0) {

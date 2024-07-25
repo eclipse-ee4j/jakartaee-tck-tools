@@ -112,6 +112,11 @@
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
+            <artifactId>connector</artifactId>
+            <version>${version.platform.tck}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.tck</groupId>
             <artifactId>servlet</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>

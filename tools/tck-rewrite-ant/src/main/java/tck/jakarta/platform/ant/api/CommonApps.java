@@ -1,45 +1,72 @@
 package tck.jakarta.platform.ant.api;
 
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 import tck.jakarta.platform.vehicles.VehicleType;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
  * A repository of the common apps that are used by the TCK tests. If a test package has a common
- * deployment archive, then it should be defined here, and
+ * deployment archive, then it should be defined in the CommonApps.stg file.
  */
 public class CommonApps {
-    private static Logger log = Logger.getLogger(CommonApps.class.getName());
+    private static final Logger log = Logger.getLogger(CommonApps.class.getName());
+    private final HashMap<Path, CommonAppInfo> commonDeployments = new HashMap<>();
     private static CommonApps INSTANCE;
 
-    private HashMap<Path, DeploymentMethodInfo> commonDeployments = new HashMap<>();
-    private Path tsHome;
+    private final Path tsHome;
 
+    public static class CommonAppInfo {
+        String templateName;
+        ST methodTemplate;
+        ST importsTemplate;
+
+        public CommonAppInfo(String templateName, ST methodTemplate, ST importsTemplate) {
+            this.templateName = templateName;
+            this.methodTemplate = methodTemplate;
+            this.importsTemplate = importsTemplate;
+        }
+
+        DeploymentMethodInfo getDeploymentMethod(String simpleClassName) {
+            if(methodTemplate.getAttribute("testClient") != null) {
+                methodTemplate.remove("testClient");
+            }
+            methodTemplate.add("testClient", simpleClassName);
+            String deploymentMethod = methodTemplate.render();
+            List<String> imports = List.of(importsTemplate.render().split("\n"));
+            DeploymentMethodInfo methodInfo = new DeploymentMethodInfo(VehicleType.none, imports, deploymentMethod);
+            methodInfo.setName(templateName);
+            return methodInfo;
+        }
+        public String toString() {
+            return "CommonAppInfo{" + templateName + '}';
+        }
+    }
     public static CommonApps getInstance(Path tsHome) throws IOException{
         if (INSTANCE == null) {
-            Path commonArchivesPath = tsHome.resolve("src/com/sun/ts/lib/harness/commonarchives.properties");
-            FileReader reader = new FileReader(commonArchivesPath.toFile());
-            Properties commonArchives = new Properties();
-            commonArchives.load(reader);
-            parseCommonArchives(tsHome, commonArchives);
+            URL resURL = CommonApps.class.getResource("/commonarchives.properties");
+            try (InputStreamReader reader = new InputStreamReader(resURL.openStream())) {
+                Properties commonArchives = new Properties();
+                commonArchives.load(reader);
+                parseCommonArchives(tsHome, commonArchives);
+            }
         }
         return INSTANCE;
+    }
+
+    public static Map<Path, CommonAppInfo> getCommonAppInfos(Path tsHome) throws IOException {
+        return Collections.unmodifiableMap(getInstance(tsHome).commonDeployments);
     }
 
     /**
@@ -55,50 +82,64 @@ public class CommonApps {
         commonarchives.com/sun/ts/tests/webservices12/specialcases/clients/j2w/doclit/defaultserviceref
          */
         for (String key : commonArchives.stringPropertyNames()) {
-            // Skip the webservices tests that are to be archived
-            if(key.contains("webservice")) {
-                continue;
-            }
             String appPath = commonArchives.getProperty(key);
+            // There can be multiple common apps for a package root, separated by space
+            String[] apps = appPath.split("\\s");
+            //
+            String templateName = mapToTemplateName(apps);
             String pkgRoot = key.substring("commonarchives.".length());
             Path pkgRootPath = Path.of(pkgRoot);
-            Path appBuildXml = tsHome.resolve("src/"+appPath+"/build.xml");
-            DeploymentMethodInfo methodInfo = parseBuildXml(tsHome, appBuildXml, commonAppsGroup);
-            commonApps.addCommonDeployment(pkgRootPath, methodInfo);
+            CommonAppInfo appInfo = createAppInfo(templateName, commonAppsGroup);
+            commonApps.addCommonDeployment(pkgRootPath, appInfo);
         }
         INSTANCE = commonApps;
     }
 
-    private static DeploymentMethodInfo parseBuildXml(Path tsHome, Path appBuildXml, STGroup commonAppsGroup) {
-        if(!Files.exists(appBuildXml)) {
-            log.fine("No build.xml found for "+appBuildXml);
-            return null;
-        }
-        Project project = new Project();
-        project.init();
-        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
-        ProjectHelper.configureProject(project, appBuildXml.toFile());
-        String deploymentName = project.getProperty("app.name");
-        ST methodTemplate = commonAppsGroup.getInstanceOf("/get_"+deploymentName);
-        ST importsTemplate = commonAppsGroup.getInstanceOf("/imports_"+deploymentName);
-        DeploymentMethodInfo methodInfo = null;
-        if(methodTemplate != null) {
-            String deploymentMethod = methodTemplate.render();
-            List<String> imports = List.of(importsTemplate.render().split("\n"));
-            methodInfo = new DeploymentMethodInfo(VehicleType.none, imports, deploymentMethod);
-            methodInfo.setName(deploymentName);
+    /**
+     * The template name is either the app path file name if there is a single app, or the
+     * concatenation of the app path file names if there are multiple apps.
+     * @param apps - relative paths to the common app files src dir
+     * @return the template name
+     */
+    private static String mapToTemplateName(String[] apps) {
+        String templateName = null;
+        if(apps.length == 1) {
+            Path appPath = Path.of(apps[0]);
+            templateName = appPath.getFileName().toString();
         } else {
-            log.fine("No deployment method found for "+appBuildXml);
+            StringBuilder sb = new StringBuilder();
+            Path firstApp = Path.of(apps[0]);
+            sb.append(firstApp.getName(firstApp.getNameCount()-2).toString());
+            sb.append('_');
+            for (String app : apps) {
+                Path appPath = Path.of(app);
+                sb.append(appPath.getFileName().toString());
+                sb.append('_');
+            }
+            sb.setLength(sb.length() - 1);
+            templateName = sb.toString();
         }
-        return methodInfo;
+        return templateName;
+    }
+
+    private static CommonAppInfo createAppInfo(String templateName, STGroup commonAppsGroup) {
+        ST methodTemplate = commonAppsGroup.getInstanceOf("/get_"+templateName);
+        ST importsTemplate = commonAppsGroup.getInstanceOf("/imports_"+templateName);
+        CommonAppInfo appInfo = null;
+        if(methodTemplate != null) {
+            appInfo = new CommonAppInfo(templateName, methodTemplate, importsTemplate);
+        } else {
+            log.fine("No deployment method found for "+templateName);
+        }
+        return appInfo;
     }
 
 
     private CommonApps(Path tsHome) {
         this.tsHome = tsHome;
     }
-    void addCommonDeployment(Path pkgRoot, DeploymentMethodInfo deploymentMethodInfo) {
-        commonDeployments.put(pkgRoot, deploymentMethodInfo);
+    void addCommonDeployment(Path pkgRoot, CommonAppInfo appInfo) {
+        commonDeployments.put(pkgRoot, appInfo);
     }
 
     /**
@@ -106,7 +147,7 @@ public class CommonApps {
      * @param pkgRoot
      * @return the deployment method info, possibly null if no common deployment is defined.
      */
-    public DeploymentMethodInfo getCommonDeployment(Path pkgRoot) {
+    public DeploymentMethodInfo getCommonDeployment(Path pkgRoot, String simpleClassName) {
         DeploymentMethodInfo methodInfo = null;
         if(pkgRoot.isAbsolute()) {
             Path src = tsHome.resolve("src");
@@ -114,7 +155,8 @@ public class CommonApps {
         }
         do {
             if (commonDeployments.containsKey(pkgRoot)) {
-                methodInfo = commonDeployments.get(pkgRoot);
+                CommonAppInfo appInfo = commonDeployments.get(pkgRoot);
+                methodInfo = appInfo.getDeploymentMethod(simpleClassName);
                 break;
             }
             pkgRoot = pkgRoot.getParent();

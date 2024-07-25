@@ -249,7 +249,7 @@ public class PackageTarget {
             case "package.war" -> warDef;
             case "package.appclient.jar" -> clientJarDef;
             case "package.ear" -> earDef;
-            case "pre.package", "package" -> null;
+            case "build.common.app", "pre.package", "package" -> null;
             default -> {
                 throw new RuntimeException("Unknown targetName: " + targetName);
             }
@@ -468,6 +468,9 @@ public class PackageTarget {
         project.addBuildListener(buildListener);
         List<String> dependencies = Utils.toList(pkgTarget.getDependencies());
         for (String dep : dependencies) {
+            if(dep.equals("build.common.app")) {
+                continue;
+            }
             Target target = project.getTargets().get(dep);
             if(target != null) {
                 target.performTasks();
