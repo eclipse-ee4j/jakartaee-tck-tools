@@ -168,9 +168,8 @@ public class Utils {
 
         project.executeTarget("ts.jte");
 
-        Hashtable<String, Object> properties = project.getProperties();
-        PropertyHelper.getPropertyHelper(project).getProperty("javaee.home.ri");
         String tsHarnessCP = project.getProperty("ts.harness.classpath");
+        log.fine("ts.harness.classpath: "+tsHarnessCP);
         String[] paths = tsHarnessCP.split(File.pathSeparator);
         ArrayList<URL> urls = new ArrayList<>();
         for (String path : paths) {
@@ -180,6 +179,8 @@ public class Utils {
                     urls.add(file.toURI().toURL());
                 } catch (MalformedURLException e) {
                 }
+            } else {
+                log.fine("Classpath entry does not exist: "+file);
             }
         }
         Path classes = tsHome.resolve("classes");

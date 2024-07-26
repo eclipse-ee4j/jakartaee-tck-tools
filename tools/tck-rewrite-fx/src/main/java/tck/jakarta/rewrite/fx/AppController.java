@@ -241,7 +241,7 @@ public class AppController {
         }
     }
 
-    private void parseTestClass(@ObservesAsync Path testClassPath) {
+    void parseTestClass(@ObservesAsync Path testClassPath) {
         Path srcDir = tsHome.resolve("src");
         Path pkgPath = srcDir.relativize(testClassPath.getParent());
         String pkgName = pkgPath.toString().replace(File.separator, ".");

@@ -6,6 +6,7 @@
 
     <groupId>tck.jakarta.platform</groupId>
     <artifactId>tck-rewrite-fx</artifactId>
+    <name>JavaFx TCK Rewrite App</name>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -16,13 +17,10 @@
         <quarkus.fx.version>0.4.2</quarkus.fx.version>
         <quarkus.version>3.12.2</quarkus.version>
         <version.richtextfx>0.11.3</version.richtextfx>
-        <version.arquillian>1.9.0.Final</version.arquillian>
-        <version.javatest>5.0</version.javatest>
-        <version.tck-rewrite>1.0-SNAPSHOT</version.tck-rewrite>
+        <version.arquillian>1.9.1.Final</version.arquillian>
+        <version.openrewrite>8.7.2</version.openrewrite>
+
         <version.tck-rewrite-ant>1.0-SNAPSHOT</version.tck-rewrite-ant>
-        <version.servlet-api>6.0.0</version.servlet-api>
-        <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
-        <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 
     <dependencyManagement>
@@ -63,9 +61,9 @@
             <version>${quarkus.fx.version}</version>
         </dependency>
         <dependency>
-            <groupId>tck.jakarta.platform</groupId>
-            <artifactId>tck-rewrite-tools</artifactId>
-            <version>${version.tck-rewrite}</version>
+            <groupId>org.openrewrite</groupId>
+            <artifactId>rewrite-java-17</artifactId>
+            <version>${version.openrewrite}</version>
         </dependency>
         <dependency>
             <groupId>tck.jakarta.platform</groupId>
@@ -86,112 +84,6 @@
             <groupId>org.antlr</groupId>
             <artifactId>ST4</artifactId>
             <version>4.3.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit5</groupId>
-            <artifactId>arquillian-junit5-container</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.test</groupId>
-            <artifactId>arquillian-test-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakartatck</groupId>
-            <artifactId>jar2shrinkwrap</artifactId>
-            <version>${version.tcktools}</version>
-        </dependency>
-        <dependency>
-            <groupId>javatest</groupId>
-            <artifactId>javatest</artifactId>
-            <version>${version.javatest}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>libutil</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>assembly</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>runtime</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>common</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>servlet</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>ejb</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>${version.servlet-api}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ejb</groupId>
-            <artifactId>jakarta.ejb-api</artifactId>
-            <version>4.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.resource</groupId>
-            <artifactId>jakarta.resource-api</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.jms</groupId>
-            <artifactId>jakarta.jms-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>4.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.authentication</groupId>
-            <artifactId>jakarta.authentication-api</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.fxmisc.richtext</groupId>
