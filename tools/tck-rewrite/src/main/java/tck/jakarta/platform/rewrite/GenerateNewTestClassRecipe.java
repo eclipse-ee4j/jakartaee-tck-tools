@@ -51,17 +51,16 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
 
     static final long serialVersionUID = 427023419L;
     private static String fullyQualifiedClassName = GenerateNewTestClassRecipe.class.getCanonicalName();
-    private static String tcktestgroup = System.getProperty("tcktestgroup","jpa");
     private static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
-        private static Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
+    private static Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
 
     static {
-        if(log.isLoggable(Level.FINEST)) {
+        if (log.isLoggable(Level.FINEST)) {
             log.finest("Preparing to process with recipe " + fullyQualifiedClassName +
-                    " tcktestgroup = " + tcktestgroup + " ts.home = " + tsHome +
+                    " ts.home = " + tsHome +
                     " tcksourcepath = " + srcDir
-                    );
+            );
         }
     }
 
@@ -101,6 +100,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
         /**
          * Called after visitClassDeclaration which we will use to determine the file path of the Test Client class
          * just processed last.
+         *
          * @param tree
          * @param executionContext
          * @return
@@ -116,7 +116,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 //
                 try {
                     // move generated EE test client file to same package location as the test client currently is in
-                    Path newFile = Files.move(generateTestFile.toPath(), Path.of(c.getSourcePath().getParent().toString(), generateTestFile.getName()),REPLACE_EXISTING);
+                    Path newFile = Files.move(generateTestFile.toPath(), Path.of(c.getSourcePath().getParent().toString(), generateTestFile.getName()), REPLACE_EXISTING);
                     System.out.println("new test file location is " + newFile + " which should be same location as " + c.getSourcePath().toFile());
                     generateTestFile = null;
 
@@ -152,24 +152,16 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             classDecl = super.visitClassDeclaration(classDecl, executionContext);
             threadLocalMethodInfoList.set(null);
 
-            if (methodNameList.size() == 0 ) {
+            if (methodNameList.size() == 0) {
                 log.fine("ignore class with zero test methods " + classDecl.getSimpleName());
                 return classDecl;
             }
 
             String pkg = classDecl.getType().getPackageName();
             String ee10pkg = EE11_2_EE10.mapEE11toEE10(pkg);
-            if (!ee10pkg.contains(tcktestgroup)) {
-                log.fine("ignore class " + classDecl.getSimpleName() + " that is not from tcktestgroup test group " + tcktestgroup);
-                return classDecl;
-            }
             try {
 
                 if (isLegacyTestPackage(ee10pkg)) {
-                    // Generate the deployment() method
-                    // jarProcessor = Jar2ShrinkWrap.fromPackage(ee10pkg, new ClassNameRemappingImpl(classDecl.getType().getFullyQualifiedName()));
-                    //DeploymentMethodInfoBuilder builder = new DeploymentMethodInfoBuilder(tsHome);
-                    //DeploymentMethodInfo deployMethod = builder.forTestClassAndVehicle(classDecl.getClass(), VehicleType.appclient);
                     String tckClassName = classDecl.getType().getFullyQualifiedName();
                     Class tckClass = Class.forName(tckClassName);
                     if (tckClass == null) {
@@ -180,10 +172,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     methodNameList = correctThrowsException(tckClass, methodNameList);
 
                     TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList);
-                    // System.out.println(pkgInfo);
-                    //  System.out.println("deployMethod for " + classDecl.getClass().getName() + " ee10pkg " + ee10pkg + " builder" + builder);
 
-                    System.out.println("TestClasses:");
                     for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
                         // The test package dir under the test module src/main/java directory
                         Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
@@ -194,7 +183,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                     }
                 } else {
-                    if(log.isLoggable(Level.FINEST)) {
+                    if (log.isLoggable(Level.FINEST)) {
                         log.finest("AddArquillianDeployMethodRecipe: ignoring package " + ee10pkg);
                     }
                     return classDecl;
@@ -207,64 +196,57 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e.getMessage() + ": Check if .class is available for source: " + classDecl.getType().getFullyQualifiedName(),e);
+                throw new RuntimeException(e.getMessage() + ": Check if .class is available for source: " + classDecl.getType().getFullyQualifiedName(), e);
             }
-
-            // Set<String> vehicleNames = testVehicles(ee10pkg);
-
-            // app client container vehicles are named: appclient, appmanaged, appmanagedNoTx, ejb, stateful3, stateless3, wsappclient, wsejb
-            // see https://github.com/jakartaee/platform-tck/tree/tckrefactor/common/src/main/java/com/sun/ts/tests/common/vehicle for each test vehicle
-
-            // Generate deployment method
-
-            // try {
-            //    generateTestFile = CreateNewEETest.generateJavaSourceFileContent(jarProcessor, methodNameList, pkg, classDecl.getType().getClassName());
-
-            //} catch (IOException e) {
-            //    throw new RuntimeException(e);
-            //}
-
-            //if (generateTestFile == null || !generateTestFile.exists()) {
-                // we shouldn't hit this case but still check for it
-            //     throw new RuntimeException("generateJavaSourceFileContent output doesn't exist for" + classDecl.getType().getFullyQualifiedName());
-            // }
             return classDecl;
         }
 
+        /**
+         * @param tckTestClass
+         * @param methodInfoList
+         * @return list of new TestMethodInfo("lookupTimerService", "InterruptedException, java.util.concurrent.ExecutionException"),
+         * new TestMethodInfo("writeLockTimeout", "")
+         */
         private List<TestMethodInfo> correctThrowsException(Class tckTestClass, List<TestMethodInfo> methodInfoList) {
             if (tckTestClass == null) {
                 throw new IllegalStateException("missing TCK class");
             }
-            Object [] testMethodInfoArray = methodInfoList.toArray();
-            for(int index = 0; index < testMethodInfoArray.length; index++) {
+            Object[] testMethodInfoArray = methodInfoList.toArray();
+            for (int index = 0; index < testMethodInfoArray.length; index++) {
                 boolean foundMatch = false;
                 Class tckClass = tckTestClass;
+                boolean fromSuperClass = false;
                 do {
                     Method[] methods = tckClass.getMethods();
                     for (Method method : methods) {
                         String name = method.getName();
-                            if (!((TestMethodInfo) testMethodInfoArray[index]).getMethodName().equals(name)) {
+                        if (!((TestMethodInfo) testMethodInfoArray[index]).getMethodName().equals(name)) {
                             continue;
                         }
                         foundMatch = true;
                         Class<?>[] exceptionTypes = method.getExceptionTypes();
-                        if(exceptionTypes.length > 1) {
-                            throw new IllegalStateException("unexpected number of thrown exceptions from test method: " + tckTestClass.getName() + "#" + name  + ".  Number of Exceptions in throws =" + exceptionTypes.length);
-                        } else if(exceptionTypes.length > 0 && !exceptionTypes[0].getName().equals("java.lang.Exception")) {
-                            testMethodInfoArray[index] = new TestMethodInfo(name,exceptionTypes[0].getName());
-                            break;
+                        String throwsExceptions = "";
+                        String separator = "";
+
+                        for (Class<?> exceptionType : exceptionTypes) {
+                            throwsExceptions += separator + exceptionType.getName();
+                            separator = ", ";
                         }
+                        TestMethodInfo testMethodInfo = new TestMethodInfo(name, throwsExceptions);
+                        testMethodInfo.setFromSuperclass(fromSuperClass);
+                        testMethodInfoArray[index] = testMethodInfo;
                     }
                     tckClass = tckClass.getSuperclass();
                     if (tckClass == null) {
                         break;
                     }
+                    fromSuperClass = true;
                 } while (!foundMatch && tckClass != null && !tckClass.getName().equals("Ljava.lang.Object"));
             }
 
             methodInfoList = new ArrayList<>();
-            for(int index = 0; index < testMethodInfoArray.length; index++) {
-                methodInfoList.add((TestMethodInfo)testMethodInfoArray[index]);
+            for (int index = 0; index < testMethodInfoArray.length; index++) {
+                methodInfoList.add((TestMethodInfo) testMethodInfoArray[index]);
             }
             return methodInfoList;
         }
@@ -280,25 +262,25 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
         private final String TESTNAME = "@testName:";
 
         @Override
-            public Space visitSpace(Space space, Space.Location loc, ExecutionContext executionContext) {
+        public Space visitSpace(Space space, Space.Location loc, ExecutionContext executionContext) {
             List<TestMethodInfo> methodNameList = threadLocalMethodInfoList.get();
             List<Comment> comments = space.getComments();
             if (comments != null) {
-                for(Comment comment: comments) {
-                    if( comment instanceof TextComment) {
-                        TextComment textComment = (TextComment)  comment;
+                for (Comment comment : comments) {
+                    if (comment instanceof TextComment) {
+                        TextComment textComment = (TextComment) comment;
                         String text = textComment.getText();
                         int index;
 
                         if ((index = text.indexOf(TESTNAME)) != -1) {
                             // add TestMethodInfo with just the MethodName which we will look up in the super class and update
                             String testName;
-                            while(index != -1) {
+                            while (index != -1) {
                                 index += TESTNAME.length() + 1;  // skip past marker
                                 text = text.substring(index);
                                 int spaceAfterIndex = text.indexOf(' ');
                                 int linebreakAfterIndex = text.indexOf('\n');
-                                if( linebreakAfterIndex == -1 ) { // no more lines after this one
+                                if (linebreakAfterIndex == -1) { // no more lines after this one
                                     if (spaceAfterIndex == -1) {
                                         testName = text;
                                     } else {
@@ -313,7 +295,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                                     } else {
                                         testName = text.substring(0, linebreakAfterIndex);
                                     }
-                                    index = linebreakAfterIndex+1; // move to character after newline
+                                    index = linebreakAfterIndex + 1; // move to character after newline
                                 }
                                 if (index != -1 && index < text.length()) {
                                     text = text.substring(index);
@@ -321,8 +303,8 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                                 } else {
                                     index = -1;
                                 }
-                                System.out.println("xxx testName: " + testName);
-                                TestMethodInfo testMethodInfo = new TestMethodInfo(testName, "Exception");
+                                log.fine("testName: " + testName);
+                                TestMethodInfo testMethodInfo = new TestMethodInfo(testName, "java.lang.Exception");
                                 methodNameList.add(testMethodInfo);
                             }
                         }
