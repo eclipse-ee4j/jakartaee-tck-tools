@@ -245,9 +245,6 @@ public abstract class BaseJar {
 
     public void setVehicleDescriptor(String resPath) {
         this.vehicleDescriptor = resPath;
-        if(this.vehicleDescriptor.startsWith("/")) {
-            this.vehicleDescriptor = this.vehicleDescriptor.substring(1);
-        }
     }
 
     /**
@@ -263,7 +260,7 @@ public abstract class BaseJar {
         String relativePath = getDescriptorDir();
         if(relativePath != null) {
             // Start is the com/sun/... path
-            int start = relativePath.indexOf("com/");
+            int start = relativePath.indexOf("/com/");
             if(start != -1) {
                 relativePath = relativePath.substring(start);
             }

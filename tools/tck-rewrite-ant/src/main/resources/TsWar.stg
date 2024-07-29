@@ -15,7 +15,7 @@ genWar(war, testClass) ::= <<
 }#
 #endif#
     // The web.xml descriptor
-    URL warResURL = #testClass#.class.getResource("/#war.relativeDescriptorPath#");
+    URL warResURL = #testClass#.class.getResource("#war.relativeDescriptorPath#");
     if(warResURL != null) {
       #war.typedArchiveName#.addAsWebInfResource(warResURL, "web.xml");
     }

@@ -27,10 +27,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
         ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
-        File javatestJar = new File("target/appclient/javatest.jar");
-        File libcommonJar = new File("target/appclient/libcommon.jar");
-        File libutilJar = new File("target/appclient/libutil.jar");
-        ear.addAsLibraries(javatestJar, libcommonJar, libutilJar);
+        File protocolJar = new File("target/protocol/protocol.jar");
+        ear.addAsLibraries(protocolJar);
 
         String mainClass = extractAppMainClient(ear);
         log.info("mainClass: " + mainClass);

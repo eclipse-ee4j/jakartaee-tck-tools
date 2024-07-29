@@ -1223,4 +1223,39 @@ public class TsArtifactsTest {
         Target pkgWar = project.getTargets().get("package.war");
 
     }
+
+    @Test
+    public void test_ejb32_lite_timer_basic_concurrency() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb32/lite/timer/basic/concurrency/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        // Print out the package target tasks
+
+        System.out.println("War: "+pkgTarget.getWarDef());
+        System.out.println("War.classes: "+pkgTarget.getWarDef().getClassFilesString());
+        System.out.println("War.content: "+pkgTarget.getWarDef().getWebContent());
+
+        STGroup warGroup = new STGroupFile("TsWar.stg");
+        //System.out.println(ejbJarGroup.show());
+        ST genRepo = warGroup.getInstanceOf("/genWar");
+        genRepo.add("war", pkgTarget.getWarDef());
+        genRepo.add("testClass", "ClientTest");
+        String code = genRepo.render();
+        System.out.println(code);
+    }
 }
