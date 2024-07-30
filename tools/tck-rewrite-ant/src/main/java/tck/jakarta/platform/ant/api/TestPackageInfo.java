@@ -17,6 +17,7 @@ public class TestPackageInfo {
     private List<TestMethodInfo> testMethods;
     // One for a non-vehicle client, and one or more for vehicle clients
     List<TestClientInfo> testClients;
+    private final ArrayList<TestClientFile> testClientFiles = new ArrayList<>();
 
     public TestPackageInfo(Class<?> baseTestClass, List<TestMethodInfo> testMethods) {
         this.baseTestClass = baseTestClass;
@@ -42,16 +43,19 @@ public class TestPackageInfo {
     }
 
     public List<TestClientFile> getTestClientFiles() {
-        ArrayList<TestClientFile> testClientFiles = new ArrayList<>();
-        STGroup arqClientGroup = new STGroupFile("ArqClientTest.stg");
-        ST clientTemplate = arqClientGroup.getInstanceOf("/genClientTestClass");
-        for (TestClientInfo testClient : testClients) {
-            clientTemplate.remove("testClient");
-            clientTemplate.add("testClient", testClient);
-            String content = clientTemplate.render();
-            TestClientFile testClientFile = new TestClientFile(testClient.getClassName(), testClient.getPackageName(), content);
-            testClientFiles.add(testClientFile);
-        }
+         synchronized (testClientFiles) {
+             if(testClientFiles.isEmpty()) {
+                 STGroup arqClientGroup = new STGroupFile("ArqClientTest.stg");
+                 ST clientTemplate = arqClientGroup.getInstanceOf("/genClientTestClass");
+                 for (TestClientInfo testClient : testClients) {
+                     clientTemplate.remove("testClient");
+                     clientTemplate.add("testClient", testClient);
+                     String content = clientTemplate.render();
+                     TestClientFile testClientFile = new TestClientFile(testClient.getClassName(), testClient.getPackageName(), content);
+                     testClientFiles.add(testClientFile);
+                 }
+             }
+         }
         return testClientFiles;
     }
 
