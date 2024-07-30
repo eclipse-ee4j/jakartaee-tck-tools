@@ -373,4 +373,19 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_jpa_core_callback_listener() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("prePersistTest", "Exception"),
+                new TestMethodInfo("prePersistMultiTest", "Exception"),
+                new TestMethodInfo("prePersistCascadeTest", "Exception")
+
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.callback.listener.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods);
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

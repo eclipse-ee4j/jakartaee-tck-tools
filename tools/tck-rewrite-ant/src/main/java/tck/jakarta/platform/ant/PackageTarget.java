@@ -538,4 +538,23 @@ public class PackageTarget {
         this.unhandledTaks.clear();
     }
 
+    @Override
+    public String toString() {
+        return "PackageTarget{" +
+                "\n\tclientJarDef=" + clientJarDef +
+                "\n\tclientJars=" + clientJars +
+                "\n\tearDef=" + earDef +
+                "\n\tears=" + ears +
+                "\n\tejbJarDef=" + ejbJarDef +
+                "\n\tejbJars=" + ejbJars +
+                "\n\tparDef=" + parDef +
+                "\n\tpars=" + pars +
+                "\n\twarDef=" + warDef +
+                "\n\twars=" + wars +
+                "\n\trarDef=" + rarDef +
+                "\n\tvehiclesDef=" + vehiclesDef +
+                "\n\tunhandledTaks=" + unhandledTaks +
+                "\n\ttargetArchives=" + targetArchives +
+                '}';
+    }
 }

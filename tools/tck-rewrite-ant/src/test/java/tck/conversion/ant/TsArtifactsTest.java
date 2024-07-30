@@ -1258,4 +1258,27 @@ public class TsArtifactsTest {
         String code = genRepo.render();
         System.out.println(code);
     }
+
+    @Test
+    public void test_jpa_core_callback_listener() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jpa/core/callback/xml/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        System.out.println(pkgTarget);
+    }
 }
