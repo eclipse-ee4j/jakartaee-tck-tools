@@ -59,6 +59,10 @@ public class TestPackageInfoBuilder {
     };
     // Mappings from EE11 to EE10 package prefixes
     private static final String[] EE11_PKG_PREFIXES = {
+        "ee.jakarta.tck.persistence.jpa.ee.packaging.jar", "com.sun.ts.tests.jpa.ee.packaging.jar",
+        "ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager","com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager",
+        "ee.jakarta.tck.persistence.core.persistenceUnitUtil","com.sun.ts.tests.jpa.core.persistenceUtilUtil", // map for package typo fixed in EE 11
+        "ee.jakarta.tck.persistence.core", "com.sun.ts.tests.jpa.core",
         "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
     };
     // Path to EE10 TCK dist
