@@ -158,6 +158,14 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             }
 
             String pkg = classDecl.getType().getPackageName();
+            if (isNewlyAddedTest(pkg)) {
+                log.fine("ignore newly added test package " + pkg);
+                return classDecl;
+            } else if (isComponentOnlyTest(pkg)) {
+                log.fine("ignore component only test package" + pkg);
+                return classDecl;
+            }
+
             String ee10pkg = EE11_2_EE10.mapEE11toEE10(pkg);
             try {
 
@@ -251,6 +259,15 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             return methodInfoList;
         }
 
+        private boolean isNewlyAddedTest(String packageName) {
+            // return true if specified test was newly added to Jakarta EE 11 Platform TCK
+            return packageName.startsWith("ee.jakarta.tck.persistence.core.types.datetime");
+        }
+
+        private boolean isComponentOnlyTest(String packageName) {
+            return packageName.startsWith("ee.jakarta.tck.persistence.jpa22.se") ||
+                   packageName.startsWith("ee.jakarta.tck.persistence.se");
+        }
         private boolean isLegacyTestPackage(String packageName) {
 
             if (packageName.startsWith("ee.jakarta.tck")) {
