@@ -1,6 +1,6 @@
 package tck.jakarta.rewrite.fx;
 
-import io.quarkiverse.fx.FxStartupEvent;
+import io.quarkiverse.fx.FxPostStartupEvent;
 import io.quarkiverse.fx.RunOnFxThread;
 import io.quarkiverse.fx.views.FxView;
 import io.quarkus.logging.Log;
@@ -117,6 +117,8 @@ public class AppController {
             rootItem = new FileTreeItem(item, testsRoot.getNameCount()-1);
             tckClassLoader = Utils.getTSClassLoader(this.tsHome);
             Log.infof("TS_HOME: %s", tsHome);
+            // Apparently causes deadlock
+            setStatus("TS_HOME: "+tsHome);
         } else {
             String pwd = System.getenv("PWD");
             rootFile = new File(pwd);
@@ -127,6 +129,7 @@ public class AppController {
         if (testsRepo != null) {
             this.testsRepoHome = Paths.get(testsRepo);
             Log.infof("TESTS_REPO: %s", testsRepoHome);
+            setStatus("TESTS_REPO: "+testsRepoHome);
         }
 
         fileTreeView.setRoot(rootItem);
@@ -136,11 +139,9 @@ public class AppController {
 
         // Use a change listener to respond to a selection
         tvSelModel.selectedItemProperty().addListener(this::fileSelected);
-
-        Log.infof("SourceViewController.rootPane: %s", sourceViewController.getRootPane());
     }
 
-    public void onFxStartup(@Observes final FxStartupEvent event) {
+    public void onFxStartup(@Observes final FxPostStartupEvent event) {
         Log.infof("onFxStartup, SourceViewController.rootPane: %s", sourceViewController.getRootPane());
         mainSplitPane.getItems().set(1, sourceViewController.getRootPane());
     }

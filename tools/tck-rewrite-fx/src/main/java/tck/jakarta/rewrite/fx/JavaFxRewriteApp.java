@@ -1,6 +1,6 @@
 package tck.jakarta.rewrite.fx;
 
-import io.quarkiverse.fx.FxStartupEvent;
+import io.quarkiverse.fx.FxPostStartupEvent;
 import io.quarkus.logging.Log;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,7 +23,7 @@ public class JavaFxRewriteApp {
     @Inject
     AppController appController;
 
-    void onStart(@Observes final FxStartupEvent event) {
+    void observePrimaryStage(@Observes final FxPostStartupEvent event) {
         Stage stage = event.getPrimaryStage();
         stage.setOnCloseRequest(ce -> {
             Platform.exit();
