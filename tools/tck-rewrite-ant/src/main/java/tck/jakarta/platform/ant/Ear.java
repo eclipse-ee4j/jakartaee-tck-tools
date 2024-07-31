@@ -35,7 +35,7 @@ public class Ear extends BaseJar {
      * @param pkgInfo
      */
     public void addJarResources(TsPackageInfo pkgInfo) {
-        libs.addAll(Utils.getJarLibs(pkgInfo));
+        libs.addAll(Utils.getJarLibs(this.mapping, pkgInfo));
     }
     public boolean getHasLibs() {
         return !libs.isEmpty();

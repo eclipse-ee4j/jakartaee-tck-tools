@@ -7,6 +7,7 @@ import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Property;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
@@ -209,7 +210,7 @@ public class Utils {
         return vehicleTypes;
     }
 
-    public static Collection<Lib> getJarLibs(TsPackageInfo pkgInfo) {
+    public static Collection<Lib> getJarLibs(EE11toEE10Mapping mapping, TsPackageInfo pkgInfo) {
         HashMap<String, Lib> jarLibs = new HashMap<>();
         for (List<TsArchiveInfo> archives : pkgInfo.getArchives().values()) {
             for (TsArchiveInfo archive : archives) {
@@ -219,7 +220,7 @@ public class Utils {
                 }
                 Lib lib = jarLibs.get(archive.getArchiveName());
                 if (lib == null) {
-                    lib = new Lib();
+                    lib = new Lib(mapping);
                     lib.setArchiveName(archive.getArchiveName());
                     jarLibs.put(archive.getArchiveName(), lib);
                 }
@@ -230,12 +231,15 @@ public class Utils {
     }
 
     /**
+     * Generate a comma separated list of dot class names from the fileSets that can be passed to
+     * an archive addClasses method in the code generation templates.
      *
+     * @param mapping - EE11 to EE10 name mapping function
      * @param fileSets - archive contents
      * @param anonymousClasses - any anonymous classes are returned via this list
      * @return dot class name list suitable for passing to an archive addClasses method
      */
-    public static String getClassFilesString(List<TSFileSet> fileSets, List<String> anonymousClasses) {
+    public static String getClassFilesString(EE11toEE10Mapping mapping, List<TSFileSet> fileSets, List<String> anonymousClasses) {
         // Capture unique classes
         HashSet<String> classes = new HashSet<>();
         for(TSFileSet fs : fileSets) {
@@ -246,7 +250,8 @@ public class Utils {
                     f = f.replace(dir, "");
                     // Need to deal with EETest$Fault.class vs Client$1.class
                     String dotClass = f.replace('/', '.');
-                    String clazz = dotClass;
+                    // Map the EE10 name to EE11
+                    String clazz = mapping.getEE11Name(dotClass);
                     int dollar = dotClass.indexOf('$');
                     if(dollar > 0) {
                         if(Character.isDigit(dotClass.charAt(dollar+1))) {

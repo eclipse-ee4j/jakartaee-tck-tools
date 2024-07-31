@@ -3,6 +3,8 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import tck.jakarta.platform.ant.api.DefaultEEMapping;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.nio.file.Path;
@@ -37,10 +39,15 @@ public class PackageTarget {
     Vehicles vehiclesDef;
     List<TaskInfo> unhandledTaks = new ArrayList<>();
     List<TsArchiveInfoSet> targetArchives = new ArrayList<>();
+    EE11toEE10Mapping mapping;
 
     public PackageTarget(ProjectWrapper project, Target pkgTarget) {
+        this(project, pkgTarget, new DefaultEEMapping());
+    }
+    public PackageTarget(ProjectWrapper project, Target pkgTarget, EE11toEE10Mapping mapping) {
         this.project = project;
         this.pkgTarget = pkgTarget;
+        this.mapping = mapping;
     }
 
     public ProjectWrapper getProject() {
@@ -281,6 +288,7 @@ public class PackageTarget {
         }
 
         clientJarDef = new ClientJar(project.getProject(), task.getRuntimeConfigurableWrapper());
+        clientJarDef.setMapping(this.mapping);
         clientJars.add(clientJarDef);
         return clientJarDef;
     }
@@ -302,6 +310,7 @@ public class PackageTarget {
         }
 
         ejbJarDef = new EjbJar(project.getProject(), task.getRuntimeConfigurableWrapper());
+        ejbJarDef.setMapping(this.mapping);
         ejbJars.add(ejbJarDef);
         return ejbJarDef;
     }
@@ -323,6 +332,7 @@ public class PackageTarget {
         }
 
         warDef = new War(project.getProject(), task.getRuntimeConfigurableWrapper());
+        warDef.setMapping(this.mapping);
         wars.add(warDef);
         return warDef;
     }
@@ -344,6 +354,7 @@ public class PackageTarget {
         }
 
         earDef = new Ear(project.getProject(), task.getRuntimeConfigurableWrapper());
+        earDef.setMapping(this.mapping);
         ears.add(earDef);
         return earDef;
     }
@@ -365,6 +376,7 @@ public class PackageTarget {
         }
 
         parDef = new Par(project.getProject(), task.getRuntimeConfigurableWrapper());
+        parDef.setMapping(this.mapping);
         pars.add(parDef);
         return parDef;
     }
@@ -390,6 +402,7 @@ public class PackageTarget {
         }
 
         rarDef = new Rar(project.getProject(), task.getRuntimeConfigurableWrapper());
+        rarDef.setMapping(this.mapping);
         return rarDef;
     }
 
@@ -411,6 +424,7 @@ public class PackageTarget {
         String vehiclePkgDir = project.getProperty("vehicle.pkg.dir");
 
         vehiclesDef = new Vehicles(tsVehicleName, vehiclePkgDir, attributeMap, task.getRuntimeConfigurableWrapper(), pkgLocation);
+        vehiclesDef.setMapping(this.mapping);
         return null;
     }
 
@@ -442,7 +456,7 @@ public class PackageTarget {
                 rar.setDescriptor(descriptor.getFileName().toString());
                 rarDef = rar;
                 // Put the remaining archives into the Rar lib
-                Lib rarLib = new Lib();
+                Lib rarLib = new Lib(this.mapping);
                 rarLib.setArchiveName(lastArchive.getArchiveName());
                 for(int i = 0; i < archives.size() - 1; i++) {
                     TsArchiveInfo archive = archives.get(i);

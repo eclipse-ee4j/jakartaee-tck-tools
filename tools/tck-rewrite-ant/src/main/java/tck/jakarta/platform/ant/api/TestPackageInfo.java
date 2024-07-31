@@ -12,20 +12,25 @@ import java.util.List;
  */
 public class TestPackageInfo {
     // TCK test class
-    private Class<?> baseTestClass;
+    private final Class<?> baseTestClass;
     // Names of the test methods in the baseTestClass
     private List<TestMethodInfo> testMethods;
+    private final EE11toEE10Mapping mapping;
     // One for a non-vehicle client, and one or more for vehicle clients
     List<TestClientInfo> testClients;
     private final ArrayList<TestClientFile> testClientFiles = new ArrayList<>();
 
-    public TestPackageInfo(Class<?> baseTestClass, List<TestMethodInfo> testMethods) {
+    public TestPackageInfo(Class<?> baseTestClass, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) {
         this.baseTestClass = baseTestClass;
         this.testMethods = testMethods;
+        this.mapping = mapping;
     }
 
     public Class<?> getBaseTestClass() {
         return baseTestClass;
+    }
+    public EE11toEE10Mapping getMapping() {
+        return mapping;
     }
 
     public List<TestMethodInfo> getTestMethods() {

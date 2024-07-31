@@ -3,6 +3,8 @@ package tck.jakarta.platform.ant;
 import com.sun.ts.lib.harness.VehicleVerifier;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.RuntimeConfigurable;
+import tck.jakarta.platform.ant.api.DefaultEEMapping;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
@@ -61,6 +63,7 @@ public class Vehicles {
     private TSFileSet jarElements;
     private List<Lib> earLibs = new ArrayList<>();
     private List<Lib> warLibs = new ArrayList<>();
+    private EE11toEE10Mapping mapping = new DefaultEEMapping();
 
 
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, RuntimeConfigurable rc, Location location) {
@@ -149,6 +152,14 @@ public class Vehicles {
         return jarElements;
     }
 
+    public EE11toEE10Mapping getMapping() {
+        return mapping;
+    }
+
+    public void setMapping(EE11toEE10Mapping mapping) {
+        this.mapping = mapping;
+    }
+
     /**
      * Override the parsed definition of the filesets with the exact resources that went into
      * the jar based on the jar task information
@@ -188,7 +199,7 @@ public class Vehicles {
                 if(lastDot != -1) {
                     archiveName = archiveFullName.substring(0, lastDot);
                 }
-                Lib lib = new Lib();
+                Lib lib = new Lib(this.mapping);
                 lib.setArchiveName(archiveName);
                 lib.addResources(archiveInfo.getResources());
                 earLibs.add(lib);

@@ -58,16 +58,9 @@ public class TestPackageInfoBuilder {
         "org.junit.jupiter.api.Test",
         "org.junit.jupiter.api.extension.ExtendWith"
     };
-    // Mappings from EE11 to EE10 package prefixes
-    private static final String[] EE11_PKG_PREFIXES = {
-        "ee.jakarta.tck.persistence.jpa.ee.packaging.jar", "com.sun.ts.tests.jpa.ee.packaging.jar",
-        "ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager","com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager",
-        "ee.jakarta.tck.persistence.core.persistenceUnitUtil","com.sun.ts.tests.jpa.core.persistenceUtilUtil", // map for package typo fixed in EE 11
-        "ee.jakarta.tck.persistence.core", "com.sun.ts.tests.jpa.core",
-        "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
-    };
+
     // Path to EE10 TCK dist
-    private Path tsHome;
+    private final Path tsHome;
 
     /**
      * Create a DeploymentMethodInfoBuilder for the given EE10 TCK dist path
@@ -104,7 +97,7 @@ public class TestPackageInfoBuilder {
      * @param testMethods - the test methods to include in the test client
      * @return
      * @throws IOException - on failure to parse the build.xml file
-     * @deprecated use {@link #buildTestPackgeInfoEx(Class, List)} instead
+     * @deprecated use {@link #buildTestPackgeInfoEx(Class, List, EE11toEE10Mapping)} instead
      */
     @Deprecated(since = "1.0.0", forRemoval = true)
     public TestPackageInfo buildTestPackgeInfo(Class<?> clazz, List<String> testMethods) throws IOException {
@@ -113,11 +106,11 @@ public class TestPackageInfoBuilder {
             testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
         }
 
-        return buildTestPackgeInfoEx(clazz, testMethodInfos);
+        return buildTestPackgeInfoEx(clazz, testMethodInfos, new DefaultEEMapping());
     }
-    public TestPackageInfo buildTestPackgeInfoEx(Class<?> clazz, List<TestMethodInfo> testMethods) throws IOException {
-        TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods);
-        List<TestClientInfo> testClientInfos = buildTestClientsEx(clazz, testMethods);
+    public TestPackageInfo buildTestPackgeInfoEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
+        TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods, mapping);
+        List<TestClientInfo> testClientInfos = buildTestClientsEx(clazz, testMethods, mapping);
         testPackageInfo.setTestClients(testClientInfos);
 
         return testPackageInfo;
@@ -127,7 +120,7 @@ public class TestPackageInfoBuilder {
      * Parses the ant build.xml file for the test directory associated with the pkg and returns the
      * Arquillian deployment methods for the test deployment artifacts that should be generated.
      * This builds a list of {@link TestClientInfo} instances for the test class with java.lang.Exception
-     * as the throws type and class {@link #buildTestClientsEx(Class, List)}
+     * as the throws type and class {@link #buildTestClientsEx(Class, List, EE11toEE10Mapping)}
 
      * @param clazz - a test class in the EE10 TCK
      * @param testMethods - the test method names to include in the test client
@@ -140,7 +133,7 @@ public class TestPackageInfoBuilder {
         for (String testMethod : testMethods) {
             testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
         }
-        return buildTestClientsEx(clazz, testMethodInfos);
+        return buildTestClientsEx(clazz, testMethodInfos, new DefaultEEMapping());
     }
 
     /**
@@ -153,12 +146,12 @@ public class TestPackageInfoBuilder {
      * @return the list of {@link TestClientInfo} instances for the test class
      * @throws IOException on failure to parse the build.xml file
      */
-    public List<TestClientInfo> buildTestClientsEx(Class<?> clazz, List<TestMethodInfo> testMethods) throws IOException {
+    public List<TestClientInfo> buildTestClientsEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
         ArrayList<TestClientInfo> testClientInfos = new ArrayList<>();
         // The simple name, e.g., MyTest for com.sun.*.MyTest
         String testClassSimpleName = clazz.getSimpleName();
         String pkg = clazz.getPackageName();
-        pkg = mapPrefix(pkg);
+        pkg = mapping.getEE10TestPackageName(pkg);
         String pkgPath = pkg.replace('.', '/');
         Path srcDir = tsHome.resolve("src");
         Path buildXml = srcDir.resolve(pkgPath+"/build.xml");
@@ -437,15 +430,7 @@ public class TestPackageInfoBuilder {
         return word.substring(0, 1).toUpperCase()
                 + word.substring(1).toLowerCase();
     }
-    private String mapPrefix(String pkg) {
-        for(int n = 0; n <EE11_PKG_PREFIXES.length; n += 2) {
-            String prefix = EE11_PKG_PREFIXES[n];
-            if(pkg.startsWith(prefix)) {
-                return pkg.replace(prefix, EE11_PKG_PREFIXES[n+1]);
-            }
-        }
-        return pkg;
-    }
+
     private void info(String format, Object ... args) {
         String msg = String.format(format, args);
         log.info(msg);

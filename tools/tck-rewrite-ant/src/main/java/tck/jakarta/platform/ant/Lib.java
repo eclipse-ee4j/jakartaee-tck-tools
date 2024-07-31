@@ -1,5 +1,8 @@
 package tck.jakarta.platform.ant;
 
+import tck.jakarta.platform.ant.api.DefaultEEMapping;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +10,14 @@ public class Lib {
     String archiveName;
     List<TSFileSet> resources;
     List<String> anonymousClasses = new ArrayList<>();
+    EE11toEE10Mapping mapping;
 
+    public Lib() {
+        this(new DefaultEEMapping());
+    }
+    public Lib(EE11toEE10Mapping mapping) {
+        this.mapping = mapping;
+    }
     public String getArchiveName() {
         return archiveName;
     }
@@ -33,11 +43,11 @@ public class Lib {
 
     public boolean getHasClassFiles() {
         anonymousClasses.clear();
-        return !Utils.getClassFilesString(resources, anonymousClasses).trim().isEmpty();
+        return !Utils.getClassFilesString(mapping, resources, anonymousClasses).trim().isEmpty();
     }
     public String getClassFilesString() {
         anonymousClasses.clear();
-        return Utils.getClassFilesString(resources, anonymousClasses);
+        return Utils.getClassFilesString(mapping, resources, anonymousClasses);
     }
     public boolean getHasAnonymousClasses() {
         return !anonymousClasses.isEmpty();

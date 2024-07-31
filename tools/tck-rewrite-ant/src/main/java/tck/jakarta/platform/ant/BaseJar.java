@@ -2,6 +2,7 @@ package tck.jakarta.platform.ant;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -44,6 +45,8 @@ public abstract class BaseJar {
     Project project;
     // An override to descriptor that can be set by vehicles
     String vehicleDescriptor;
+    // A mapping from EE11 to EE10 names
+    EE11toEE10Mapping mapping;
 
     public BaseJar() {}
 
@@ -79,6 +82,14 @@ public abstract class BaseJar {
                 addFileSet(new TSFileSet(attrsMaps));
             }
         }
+    }
+
+    public EE11toEE10Mapping getMapping() {
+        return mapping;
+    }
+
+    public void setMapping(EE11toEE10Mapping mapping) {
+        this.mapping = mapping;
     }
 
     public abstract String getType();
@@ -279,14 +290,14 @@ public abstract class BaseJar {
         return relativePath;
     }
     /**
-     * Combine all fileset contents that are *.class files into a comma separted string of dot package name
+     * Combine all fileset contents that are *.class files into a comma separated string of dot package name
      * class file references, one per line. This can be passed to a {@link org.jboss.shrinkwrap.api.spec.JavaArchive#addClasses(Class[])}
      * method.
      * @return string of dot package class files, one per line
      */
     public String getClassFilesString() {
         anonymousClasses.clear();
-        return Utils.getClassFilesString(fileSets, anonymousClasses);
+        return Utils.getClassFilesString(mapping, fileSets, anonymousClasses);
     }
     public boolean getHasAnonymousClasses() {
         return !anonymousClasses.isEmpty();

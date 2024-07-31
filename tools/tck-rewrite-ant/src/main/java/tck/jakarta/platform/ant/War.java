@@ -24,7 +24,7 @@ public class War extends BaseJar {
     public record Content(String resPath, String target) {}
 
     public void addJarResources(TsPackageInfo pkgInfo) {
-        libs.addAll(Utils.getJarLibs(pkgInfo));
+        libs.addAll(Utils.getJarLibs(this.mapping, pkgInfo));
     }
 
     /**

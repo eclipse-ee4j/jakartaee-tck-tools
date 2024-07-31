@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * A representation of a generated Arquillian/Junit5 test file
+ * A representation of a generated Arquillian/Junit5 test java file
  */
 public class TestClientFile {
     private String name;

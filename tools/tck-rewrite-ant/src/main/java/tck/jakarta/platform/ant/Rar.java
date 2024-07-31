@@ -31,7 +31,7 @@ public class Rar extends BaseJar {
     @Override
     public String getClassFilesString() {
         anonymousClasses.clear();
-        return Utils.getClassFilesString(rarLib.resources, anonymousClasses);
+        return Utils.getClassFilesString(this.mapping, rarLib.resources, anonymousClasses);
     }
 
     public Lib getRarLib() {
