@@ -180,7 +180,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     methodNameList = correctThrowsException(tckClass, methodNameList);
 
                     TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList);
-
+                    log.info("About to generate test class(es) for " + classDecl.getType().getFullyQualifiedName() + ", EE 10 test package " + ee10pkg + " EE 11 test package " + pkg);
                     for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
                         // The test package dir under the test module src/main/java directory
                         Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
@@ -188,10 +188,11 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         // The test client .java file
                         Path testClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
                         if (testClientJavaFile.toFile().exists()) {
-                            throw new IllegalStateException("already previously generated EE Test source file " + testClientJavaFile.toString());
+                            throw new IllegalStateException(testClientJavaFile + " was already previously generated which means we aren't handling something correctly." );
                         }
                         // Write out the test client .java file content
                         Files.writeString(testClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                        log.info("Generated " + testClientJavaFile + " for " + classDecl.getType().getFullyQualifiedName());
                     }
                 } else {
                     if (log.isLoggable(Level.FINEST)) {
@@ -200,7 +201,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     return classDecl;
                 }
             } catch (RuntimeException e) {
-                log.info("due to " + e.getMessage() + " class" + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
+                log.info("due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
                 e.printStackTrace();
                 // just print exception call stack for now and skip test
                 return classDecl;
