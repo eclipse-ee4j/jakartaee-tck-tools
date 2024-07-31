@@ -13,4 +13,13 @@ public class Par extends BaseJar {
     public String getType() {
         return "par";
     }
+
+    /**
+     * PARs are just jars and the EE10 TCK does not add a suffix to the archive name
+     * @return
+     */
+    @Override
+    public String getTypedArchiveName() {
+        return archiveName;
+    }
 }

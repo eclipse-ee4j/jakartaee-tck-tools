@@ -1,0 +1,29 @@
+// A Stringtemplate4 group for the ts.par.xml logic for creating a ejb-jar artifact
+delimiters "#", "#"
+
+
+// par is an tck.jakarta.platform.ant.Par instance
+genPar(par, testClass) ::= <<
+    // the jar with the correct archive name
+    JavaArchive #par.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#par.fullArchiveName#");
+    // The class files
+    #par.typedArchiveName#.addClasses(
+        #par.classFilesString#
+    );
+#if(par.hasAnonymousClasses)#
+#par.anonymousClasses :{ c |
+    #par.typedArchiveName#.addClass("#c#");
+}#
+#endif#
+    // The persistence.xml descriptor
+    URL parURL = #testClass#.class.getResource("/#par.relativeDescriptorPath#");
+    if(parURL != null) {
+      #par.typedArchiveName#.addAsManifestResource(parURL, "persistence.xml");
+    }
+    archiveProcessor.processParArchive(#par.typedArchiveName#, #testClass#.class, parURL);
+    // The orm.xml file
+    parURL = #testClass#.class.getResource("orm.xml");
+    if(parURL != null) {
+      #par.typedArchiveName#.addAsManifestResource(parURL, "orm.xml");
+    }
+>>

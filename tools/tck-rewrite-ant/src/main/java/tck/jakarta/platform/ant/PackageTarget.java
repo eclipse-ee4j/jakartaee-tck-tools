@@ -132,11 +132,17 @@ public class PackageTarget {
         ArrayList<String> moduleNames = new ArrayList<>();
         addModuleNames(moduleNames, ejbJarDef, ejbJars);
         addModuleNames(moduleNames, clientJarDef, clientJars);
-        addModuleNames(moduleNames, parDef, pars);
+        // PARs are added as library jars, not modules
         addModuleNames(moduleNames, warDef, wars);
         addModuleNames(moduleNames, rarDef, null);
         return moduleNames;
     }
+    public List<String> getParNames() {
+        ArrayList<String> moduleNames = new ArrayList<>();
+        addModuleNames(moduleNames, parDef, pars);
+        return moduleNames;
+    }
+
     private void addModuleNames(ArrayList<String> moduleNames, BaseJar jar, List<? extends BaseJar> jars) {
         // If there are multiple, they will all be in the jars list, a single value will be in jar
         if(jars != null) {

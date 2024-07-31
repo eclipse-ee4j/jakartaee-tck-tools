@@ -15,6 +15,10 @@ genEar(pkg, ear, testClass) ::= <<
 #pkg.moduleNames :{ m |
     #ear.typedArchiveName#.addAsModule(#m#);
 }#
+#pkg.parNames :{ m |
+    #ear.typedArchiveName#.addAsLibrary(#m#);
+}#
+
 
     // The application.xml descriptor
     URL earResURL = #testClass#.class.getResource("/#ear.relativeDescriptorPath#");
