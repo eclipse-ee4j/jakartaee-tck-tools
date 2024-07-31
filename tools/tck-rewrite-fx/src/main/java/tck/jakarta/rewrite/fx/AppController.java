@@ -33,6 +33,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestMethodInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
@@ -256,7 +257,12 @@ public class AppController {
 
             TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
             setStatus("Parsing build.xml for: "+className);
-            TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(clazz, methodNames);
+            TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(clazz, methodNames, 
+                new EE11toEE10Mapping() { 
+                    public String getEE10TestPackageName(String ee11Name) { return ee11Name; }
+                    public String getEE11Name(String ee10Name) { return ee10Name; }
+                }
+             );
             List<TestClientFile> testFiles = pkgInfo.getTestClientFiles();
             updateTestClassSelectionView(testClassPath, source, testFiles);
             lastTestPackageInfo = pkgInfo;
