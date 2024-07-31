@@ -1,5 +1,6 @@
 package tck.jakarta.platform.ant;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,14 @@ public class TSFileSet {
         this.prefix = fileset.getAttribute("prefix");
         String includes = fileset.getAttribute("includes");
         String[] asArray = includes.split(",");
-        this.includes = Arrays.asList(asArray);
+        this.includes = new ArrayList<>();
+        // Filter out wildcards
+        for (String include : asArray) {
+            if(include.contains("*")) {
+                continue;
+            }
+            this.includes.add(include);
+        }
     }
     public TSFileSet(String dir, String prefix, List<String> includes) {
         this.dir = dir;

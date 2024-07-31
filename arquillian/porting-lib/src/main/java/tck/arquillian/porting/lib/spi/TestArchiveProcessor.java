@@ -18,28 +18,35 @@ public interface TestArchiveProcessor {
      */
     void processClientArchive(JavaArchive clientArchive, Class<?> testClass, URL sunXmlUrl);
     /**
-     * Called to process a client archive (jar) that is part of the test deployment.
+     * Called to process a ejb archive (jar) that is part of the test deployment.
      * @param ejbArchive - the ejb archive
      * @param testClass - the TCK test class
      * @param sunXmlUrl - the URL to the sun-ejb-jar.xml file
      */
     void processEjbArchive(JavaArchive ejbArchive, Class<?> testClass, URL sunXmlUrl);
     /**
-     * Called to process a client archive (jar) that is part of the test deployment.
+     * Called to process a web archive (war) that is part of the test deployment.
      * @param webArchive - the web archive
      * @param testClass - the TCK test class
      * @param sunXmlUrl - the URL to the sun-web.xml file
      */
     void processWebArchive(WebArchive webArchive, Class<?> testClass, URL sunXmlUrl);
     /**
-     * Called to process a client archive (jar) that is part of the test deployment.
+     * Called to process a resource adaptor archive (rar) that is part of the test deployment.
      * @param rarArchive - the resource archive
      * @param testClass - the TCK test class
      * @param sunXmlUrl - the URL to the sun-ra.xml file
      */
     void processRarArchive(JavaArchive rarArchive, Class<?> testClass, URL sunXmlUrl);
     /**
-     * Called to process a client archive (jar) that is part of the test deployment.
+     * Called to process a persistence unit archive (par) that is part of the test deployment.
+     * @param parArchive - the resource archive
+     * @param testClass - the TCK test class
+     * @param persistenceXmlUrl - the URL to the sun-ra.xml file
+     */
+    void processParArchive(JavaArchive parArchive, Class<?> testClass, URL persistenceXmlUrl);
+    /**
+     * Called to process an enterprise archive (ear) that is part of the test deployment.
      * @param earArchive - the application archive
      * @param testClass - the TCK test class
      * @param sunXmlUrl - the URL to the sun-application.xml file

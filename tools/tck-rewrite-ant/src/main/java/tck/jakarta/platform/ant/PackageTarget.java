@@ -132,11 +132,17 @@ public class PackageTarget {
         ArrayList<String> moduleNames = new ArrayList<>();
         addModuleNames(moduleNames, ejbJarDef, ejbJars);
         addModuleNames(moduleNames, clientJarDef, clientJars);
-        addModuleNames(moduleNames, parDef, pars);
+        // PARs are added as library jars, not modules
         addModuleNames(moduleNames, warDef, wars);
         addModuleNames(moduleNames, rarDef, null);
         return moduleNames;
     }
+    public List<String> getParNames() {
+        ArrayList<String> moduleNames = new ArrayList<>();
+        addModuleNames(moduleNames, parDef, pars);
+        return moduleNames;
+    }
+
     private void addModuleNames(ArrayList<String> moduleNames, BaseJar jar, List<? extends BaseJar> jars) {
         // If there are multiple, they will all be in the jars list, a single value will be in jar
         if(jars != null) {
@@ -538,4 +544,23 @@ public class PackageTarget {
         this.unhandledTaks.clear();
     }
 
+    @Override
+    public String toString() {
+        return "PackageTarget{" +
+                "\n\tclientJarDef=" + clientJarDef +
+                "\n\tclientJars=" + clientJars +
+                "\n\tearDef=" + earDef +
+                "\n\tears=" + ears +
+                "\n\tejbJarDef=" + ejbJarDef +
+                "\n\tejbJars=" + ejbJars +
+                "\n\tparDef=" + parDef +
+                "\n\tpars=" + pars +
+                "\n\twarDef=" + warDef +
+                "\n\twars=" + wars +
+                "\n\trarDef=" + rarDef +
+                "\n\tvehiclesDef=" + vehiclesDef +
+                "\n\tunhandledTaks=" + unhandledTaks +
+                "\n\ttargetArchives=" + targetArchives +
+                '}';
+    }
 }

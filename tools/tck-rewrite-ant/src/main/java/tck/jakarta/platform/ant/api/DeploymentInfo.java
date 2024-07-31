@@ -3,6 +3,7 @@ package tck.jakarta.platform.ant.api;
 import tck.jakarta.platform.ant.ClientJar;
 import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
+import tck.jakarta.platform.ant.Par;
 import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.War;
 import tck.jakarta.platform.vehicles.VehicleType;
@@ -19,6 +20,7 @@ public class DeploymentInfo {
     EjbJar ejbJarDef;
     War warDef;
     Rar rarDef;
+    Par parDef;
     Ear earDef;
 
     public DeploymentInfo(Class<?> testClass, String name, String protocol, VehicleType vehicle) {
@@ -52,6 +54,16 @@ public class DeploymentInfo {
 
     public void setWar(War warDef) {
         this.warDef = warDef;
+    }
+
+    public boolean getHasPar() {
+        return parDef != null;
+    }
+    public Par getPar() {
+        return parDef;
+    }
+    public void setPar(Par parDef) {
+        this.parDef = parDef;
     }
 
     public boolean getHasRar() {

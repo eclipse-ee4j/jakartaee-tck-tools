@@ -4,6 +4,7 @@ delimiters "#", "#"
 import "TsClientJar.stg"
 import "TsEar.stg"
 import "TsEjbJar.stg"
+import "TsPar.stg"
 import "TsRar.stg"
 import "TsWar.stg"
 
@@ -44,6 +45,11 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
 #if(deployment.hasRar)#
     // Rar
     #genRar(deployment.rar, testClass)#
+#endif#
+
+#if(deployment.hasPar)#
+    // Par
+    #genPar(deployment.par, testClass)#
 #endif#
 
 #if(deployment.hasEar)#

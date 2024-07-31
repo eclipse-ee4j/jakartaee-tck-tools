@@ -11,6 +11,7 @@ import tck.jakarta.platform.ant.ClientJar;
 import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
 import tck.jakarta.platform.ant.PackageTarget;
+import tck.jakarta.platform.ant.Par;
 import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.TSFileSet;
@@ -387,6 +388,12 @@ public class TestPackageInfoBuilder {
             deployment.setWar(warDef);
             info("War added to deployment: %s\n", warDef);
             info("War has content: %s\n", warDef.getWebContent());
+        }
+        // Par
+        if(pkgTargetWrapper.hasParDef()) {
+            Par parDef = pkgTargetWrapper.getParDef();
+            deployment.setPar(parDef);
+            info("Par added to deployment: %s\n", parDef);
         }
         // Rar
         if(pkgTargetWrapper.hasRarDef()) {
