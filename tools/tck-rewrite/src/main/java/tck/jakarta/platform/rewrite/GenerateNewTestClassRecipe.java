@@ -153,7 +153,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             threadLocalMethodInfoList.set(null);
 
             if (methodNameList.size() == 0) {
-                log.fine("ignore class with zero test methods " + classDecl.getSimpleName());
+                log.fine("ignore class (" + classDecl.getSimpleName() + ") with zero test methods");
                 return classDecl;
             }
 
@@ -186,9 +186,12 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         Path testPkgDir = srcDir.resolve(testClient.getPackage().replace(".", "/"));
                         Files.createDirectories(testPkgDir);
                         // The test client .java file
-                        Path tetClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
+                        Path testClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
+                        if (testClientJavaFile.toFile().exists()) {
+                            throw new IllegalStateException("already previously generated EE Test source file " + testClientJavaFile.toString());
+                        }
                         // Write out the test client .java file content
-                        Files.writeString(tetClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                        Files.writeString(testClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                     }
                 } else {
                     if (log.isLoggable(Level.FINEST)) {
