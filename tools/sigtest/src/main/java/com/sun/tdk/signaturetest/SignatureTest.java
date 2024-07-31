@@ -379,7 +379,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(MODE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(ALLPUBLIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(EXCLUDE_JDK_CLASS_OPTION,OptionInfo.optionalFlag(), optionsDecoder);
-        
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(VERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -501,6 +501,8 @@ public class SignatureTest extends SigTest {
             readMode = MultipleFileReader.CLASSPATH_MODE;
         } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
             JDKExclude.enable();
+        } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
+            JDKExclude.enable();
         } else {
             super.decodeCommonOptions(optionName, args);
         }
@@ -533,7 +535,8 @@ public class SignatureTest extends SigTest {
         sb.append(nl).append(i18n.getString("SignatureTest.usage.exclude", EXCLUDE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.nomerge", NOMERGE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.update", UPDATE_FILE_OPTION));
-        sb.append(nl).append(i18n.getString("SignatureTest.usage.excludejdkclass", EXCLUDE_JDK_CLASS_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.excludejdkclasses", EXCLUDE_JDK_CLASS_OPTION));
+        sb.append(nl).append(i18n.getString("SignatureTest.usage.excludejdkclass", LEGACY_EXCLUDE_JDK_CLASS_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.apiversion", APIVERSION_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.checkvalue", CHECKVALUE_OPTION));
         sb.append(nl).append(i18n.getString("SignatureTest.usage.formatplain", FORMATPLAIN_OPTION));

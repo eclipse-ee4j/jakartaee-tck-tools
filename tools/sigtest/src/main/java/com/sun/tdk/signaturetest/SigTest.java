@@ -104,7 +104,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     public static final String TESTURL_OPTION = "-TestURL";
     public static final String PLUGIN_OPTION = "-Plugin";
     public static final String ERRORALL_OPTION = "-ErrorAll";
-    public static final String EXCLUDE_JDK_CLASS_OPTION = "-IgnoreJDKClass";
+    public static final String EXCLUDE_JDK_CLASS_OPTION = "-IgnoreJDKClasses";
+    public static final String LEGACY_EXCLUDE_JDK_CLASS_OPTION =  "-IgnoreJDKClass";
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(SigTest.class);
 
@@ -287,6 +288,8 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
             classpathStr = args[0];
         } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
                 JDKExclude.enable();
+        } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
+            JDKExclude.enable();
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
             if (args.length == 0) {
                 release = Release.BOOT_CLASS_PATH;

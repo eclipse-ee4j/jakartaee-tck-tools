@@ -27,6 +27,8 @@
 
 package com.sun.tdk.signaturetest;
 
+import static com.sun.tdk.signaturetest.SigTest.LEGACY_EXCLUDE_JDK_CLASS_OPTION;
+
 import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.OptionInfo;
@@ -85,7 +87,7 @@ public class SetupAndTest extends Result {
         parser.addOption(SigTest.PACKAGE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.FILENAME_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(SigTest.EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
-
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(SigTest.WITHOUTSUBPACKAGES_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.EXCLUDE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.APIVERSION_OPTION, OptionInfo.option(1), optionsDecoder);
@@ -176,6 +178,8 @@ public class SetupAndTest extends Result {
         } else if (optionName.equalsIgnoreCase(TEST_OPTION)) {
             addOption(testOptions, SigTest.CLASSPATH_OPTION, args[0]);
         } else if (optionName.equalsIgnoreCase(SigTest.EXCLUDE_JDK_CLASS_OPTION)) {
+            addFlag(testOptions, SigTest.EXCLUDE_JDK_CLASS_OPTION);
+        } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
             addFlag(testOptions, SigTest.EXCLUDE_JDK_CLASS_OPTION);
         } else if (optionName.equalsIgnoreCase(SigTest.FILENAME_OPTION) ||
                 optionName.equalsIgnoreCase(SigTest.PACKAGE_OPTION) ||

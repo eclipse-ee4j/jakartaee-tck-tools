@@ -229,6 +229,9 @@ public class Setup extends SigTest {
         parser.addOption(ERRORALL_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+
         try {
             parser.processArgs(args);
         }

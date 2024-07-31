@@ -6,7 +6,7 @@ The purpose of this project is to allow for updates as needed by the Jakarta pro
 <dependency>
     <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.2</version>
+    <version>2.4</version>
 </dependency>
 ```
 
@@ -28,7 +28,7 @@ e.g. the signature file. Just add following into your own `pom.xml` file:
 <plugin>
   <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>2.2</version>
+  <version>2.4</version>
   <executions>
     <execution>
       <goals>
@@ -62,7 +62,7 @@ Try the following:
 <plugin>
   <groupId>jakarta.tck</groupId>
   <artifactId>sigtest-maven-plugin</artifactId>
-  <version>2.2</version>
+  <version>2.4</version>
   <executions>
     <execution>
       <goals>
@@ -145,15 +145,15 @@ with the action option set to `strictcheck` the plugin will detect any API chang
 ## Relax verification of JDK signatures
 
 There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
-The `-IgnoreJDKClass` option will ignore (all) JDK java.* and javax.* classes during signature verification checking which helps avoid failures caused by 
+The `-IgnoreJDKClasses` option will ignore (all) JDK java.* and javax.* classes during signature verification checking which helps avoid failures caused by 
 JDK specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
-due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClass specified, verification of the @Deprecated will only check that the tested class member has the 
+due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClasses specified, verification of the @Deprecated will only check that the tested class member has the 
 @Deprecated class but no verification of the @Deprecated signature will be performed. 
 
-Note that previous releases allowed a list of JDK classes to be specified after the -IgnoreJDKClass option but that is no longer allowed.
+Note that the `-IgnoreJDKClass` option can still be specified only if no JDK Class name is included after the `-IgnoreJDKClass`.  You will get a failure if you try to use `-IgnoreJDKClass JDKClassName`.
 
 ### Specify JDK classes to ignore in Maven plugin
-Specify the `-IgnoreJDKClass` option as shown below:
+Specify the `-IgnoreJDKClasses` option as shown below:
 
 ```xml
   <configuration>
@@ -161,7 +161,7 @@ Specify the `-IgnoreJDKClass` option as shown below:
  
     <packages>org.yourcompany.app.api,org.yourcompany.help.api</packages>
     <releaseVersion>1.3</releaseVersion>
-    <ignoreJDKClasses/>
+    <IgnoreJDKClasses/>
   </configuration>
 ```
 
