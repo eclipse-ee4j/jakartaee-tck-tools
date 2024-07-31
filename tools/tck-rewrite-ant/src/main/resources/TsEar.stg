@@ -29,8 +29,8 @@ genEar(pkg, ear, testClass) ::= <<
     earResURL = #testClass#.class.getResource("/#ear.relativeDescriptorPathNoXml#.ear.sun-application.xml");
     if(earResURL != null) {
       #ear.typedArchiveName#.addAsManifestResource(earResURL, "sun-application.xml");
-      archiveProcessor.processEarArchive(#ear.typedArchiveName#, #testClass#.class, earResURL);
     }
+    archiveProcessor.processEarArchive(#ear.typedArchiveName#, #testClass#.class, earResURL);
 >>
 
 genLibJars(ear, testClass) ::= <<

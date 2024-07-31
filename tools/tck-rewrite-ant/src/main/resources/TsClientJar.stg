@@ -24,8 +24,8 @@ genClientJar(client, testClass) ::= <<
     resURL = #testClass#.class.getResource("/#client.relativeDescriptorPathNoXml#.jar.sun-application-client.xml");
     if(resURL != null) {
       #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
-      archiveProcessor.processClientArchive(#client.typedArchiveName#, #testClass#.class, resURL);
     }
     #client.typedArchiveName#.addAsManifestResource(new StringAsset("Main-Class: " + #testClass#.class.getName() + "\n"), "MANIFEST.MF");
+    archiveProcessor.processClientArchive(#client.typedArchiveName#, #testClass#.class, resURL);
 
 >>
