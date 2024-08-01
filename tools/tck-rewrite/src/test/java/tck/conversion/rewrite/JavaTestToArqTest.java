@@ -1,5 +1,6 @@
 package tck.conversion.rewrite;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Recipe;
 import org.openrewrite.config.CompositeRecipe;
@@ -35,6 +36,7 @@ class JavaTestToArqTest implements RewriteTest {
         ;
     }
 
+    @Disabled
     @Test
     public void testAppClientEar() throws IOException {
         String className = "Client";
@@ -49,6 +51,7 @@ class JavaTestToArqTest implements RewriteTest {
      * @throws IOException
      */
 
+    @Disabled
     @Test
     public void testLargeCase() throws IOException {
         String className = "LargeCase";

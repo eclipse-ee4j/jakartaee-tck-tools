@@ -16,8 +16,9 @@
         <version.http-commons>3.1</version.http-commons>
         <version.javatest>5.0</version.javatest>
         <version.openrewrite>8.7.2</version.openrewrite>
+        <version.ignoreopenrewrite>8.23.3</version.ignoreopenrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
-        <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
+        <version.tcktools>1.0-SNAPSHOT</version.tcktools>
         <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 
@@ -87,6 +88,11 @@
             <version>${version.tcktools}</version>
         </dependency>
         <dependency>
+            <groupId>tck.jakarta.platform</groupId>
+            <artifactId>tck-rewrite-ant</artifactId>
+            <version>${version.tcktools}</version>
+        </dependency>
+        <dependency>
             <groupId>javatest</groupId>
             <artifactId>javatest</artifactId>
             <version>${version.javatest}</version>
@@ -119,6 +125,21 @@
         <dependency>
             <groupId>jakarta.tck</groupId>
             <artifactId>ejb</artifactId>
+            <version>${version.platform.tck}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.tck</groupId>
+            <artifactId>ejb30</artifactId>
+            <version>${version.platform.tck}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.tck</groupId>
+	    <artifactId>persistence-tck-platform-tests</artifactId>
+	    <version>3.2.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.tck</groupId>
+            <artifactId>jta</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
@@ -175,6 +196,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openrewrite</groupId>
+            <artifactId>rewrite-core</artifactId>
+            <version>${version.openrewrite}</version>
         </dependency>
     </dependencies>
 
