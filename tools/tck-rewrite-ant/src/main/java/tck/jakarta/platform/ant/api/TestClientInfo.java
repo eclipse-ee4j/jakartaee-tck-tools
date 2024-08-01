@@ -17,6 +17,7 @@ public class TestClientInfo {
     private String className;
     private Class<?> baseTestClass;
     private List<TestMethodInfo> testMethods;
+    private List<String> tags;
 
     private DeploymentMethodInfo commonDeployment;
     private DeploymentMethodInfo testDeployment;
@@ -88,6 +89,13 @@ public class TestClientInfo {
     }
     public void setVehicle(VehicleType vehicle) {
         this.vehicle = vehicle;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 
     public List<TestMethodInfo> getTestMethods() {

@@ -55,6 +55,7 @@ public class TestPackageInfoBuilder {
         "org.jboss.shrinkwrap.api.spec.JavaArchive",
         "org.jboss.shrinkwrap.api.spec.WebArchive",
         "java.net.URL",
+        "org.junit.jupiter.api.Tag",
         "org.junit.jupiter.api.Test",
         "org.junit.jupiter.api.extension.ExtendWith"
     };
@@ -176,6 +177,9 @@ public class TestPackageInfoBuilder {
         // Does this test class have a common deployment?
         CommonApps commonApps = CommonApps.getInstance(tsHome);
         DeploymentMethodInfo commonDeployment = commonApps.getCommonDeployment(buildXml, testClassSimpleName);
+        // Get any keyword tags
+        KeywordTags keywordTags = KeywordTags.getInstance(tsHome);
+        List<String> tags = keywordTags.getTags(Paths.get(pkgPath));
 
         // Generate the test deployment method
         if(vehicles.length == 0) {
@@ -189,6 +193,7 @@ public class TestPackageInfoBuilder {
             testClientInfo.setVehicle(VehicleType.none);
             testClientInfo.setTestDeployment(methodInfo);
             testClientInfo.setCommonDeployment(commonDeployment);
+            testClientInfo.setTags(tags);
             testClientInfos.add(testClientInfo);
         } else {
             for(String vehicle : vehicles) {
@@ -204,6 +209,7 @@ public class TestPackageInfoBuilder {
                 testClientInfo.setVehicle(vehicleType);
                 testClientInfo.setTestDeployment(methodInfo);
                 testClientInfo.setCommonDeployment(commonDeployment);
+                testClientInfo.setTags(tags);
                 testClientInfos.add(testClientInfo);
             }
         }
