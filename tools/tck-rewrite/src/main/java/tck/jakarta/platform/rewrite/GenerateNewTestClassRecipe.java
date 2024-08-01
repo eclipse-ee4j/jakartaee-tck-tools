@@ -171,7 +171,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     String tckClassName = classDecl.getType().getFullyQualifiedName();
                     Class tckClass = Class.forName(tckClassName);
                     if (tckClass == null) {
-                        throw new RuntimeException("Could not load TCK test class name " + tckClassName);
+                        throw new RuntimeException("TODO: Could not load TCK test class name " + tckClassName);
                     }
                     TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
                     // update the methods to use the correct Throws exception
@@ -186,7 +186,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         // The test client .java file
                         Path testClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
                         if (testClientJavaFile.toFile().exists()) {
-                            log.warning(testClientJavaFile + " was already previously generated which means we aren't handling something correctly.");
+                            log.warning("TODO: " + testClientJavaFile + " was already previously generated which means we aren't handling something correctly.");
                             Thread.dumpStack();
                             continue;
                         }
@@ -196,22 +196,22 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     }
                 } else {
                     if (log.isLoggable(Level.FINEST)) {
-                        log.finest("AddArquillianDeployMethodRecipe: ignoring package " + ee10pkg);
+                        log.finest("AddArquillianDeployMethodRecipe: ignoring new test package " + ee10pkg);
                     }
                     return classDecl;
                 }
             } catch (RuntimeException e) {
-                log.info("due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
+                log.info("TODO: due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
                 e.printStackTrace();
                 // just print exception call stack for now and skip test
                 return classDecl;
             } catch (IOException e) {
-                log.info("due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
+                log.info("TODO: due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
                 e.printStackTrace();
                 // just print exception call stack for now and skip test
                 return classDecl;
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e.getMessage() + ": Check if .class is available for source: " + classDecl.getType().getFullyQualifiedName(), e);
+                throw new RuntimeException("TODO: " + e.getMessage() + ": Check if .class is available for source: " + classDecl.getType().getFullyQualifiedName(), e);
             }
             return classDecl;
         }
