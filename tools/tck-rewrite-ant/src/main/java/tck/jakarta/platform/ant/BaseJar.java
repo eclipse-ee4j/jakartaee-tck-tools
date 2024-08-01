@@ -207,7 +207,9 @@ public abstract class BaseJar {
      * @return the archiveName + '_' + getType()
      */
     public String getTypedArchiveName() {
-        return archiveName + '_' + getType();
+        String varName = archiveName + '_' + getType();
+        varName = Utils.getSafeVarName(varName);
+        return varName;
     }
 
     public String getArchiveName() {

@@ -34,8 +34,9 @@ public class Lib {
      */
     public String getTypedArchiveName() {
         // archiveName can contain '-' characters, to map to '_' in the variable name
-        String varName = archiveName.replace('-', '_');
-        return varName + "_lib";
+        String varName = archiveName + "_lib";
+        varName = Utils.getSafeVarName(varName);
+        return varName;
     }
     public String getFullArchiveName() {
         return archiveName + ".jar";

@@ -276,4 +276,13 @@ public class Utils {
         }
         return sb.toString();
     }
+
+    public static String getSafeVarName(String varName) {
+        if(Character.isDigit(varName.charAt(0))) {
+            varName = "x" + varName;
+        }
+        varName = varName.replace('-', '_');
+        varName = varName.replace('.', '_');
+        return varName;
+    }
 }
