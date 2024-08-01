@@ -13,6 +13,9 @@ package #testClient.packageName#;
 #genImports(testClient)#
 
 @ExtendWith(ArquillianExtension.class)
+#testClient.tags :{ tag |
+@Tag("#tag#")
+}#
 public class #testClient.className# extends #testClient.baseClassName# {
 #if(testClient.hasCommonDeployment)#
     #testClient.commonDeployment.methodCode#

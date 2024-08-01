@@ -27,6 +27,6 @@ genRar(rar, testClass) ::= <<
     raResURL = #testClass#.class.getResource("/#rar.relativeDescriptorPathNoXml#.jar.sun-ra.xml");
     if(raResURL != null) {
       #rar.typedArchiveName#.addAsManifestResource(raResURL, "sun-ra.xml");
-      archiveProcessor.processRarArchive(#rar.typedArchiveName#, #testClass#.class, raResURL);
     }
+    archiveProcessor.processRarArchive(#rar.typedArchiveName#, #testClass#.class, raResURL);
 >>
