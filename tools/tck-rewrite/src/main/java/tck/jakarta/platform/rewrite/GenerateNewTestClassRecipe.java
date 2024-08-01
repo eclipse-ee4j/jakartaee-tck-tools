@@ -290,47 +290,21 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             List<TestMethodInfo> methodNameList = threadLocalMethodInfoList.get();
             List<Comment> comments = space.getComments();
             if (comments != null) {
-                for (Comment comment : comments) {
-                    if (comment instanceof TextComment) {
-                        TextComment textComment = (TextComment) comment;
-                        String text = textComment.getText();
-                        int index;
-
-                        if ((index = text.indexOf(TESTNAME)) != -1) {
-                            // add TestMethodInfo with just the MethodName which we will look up in the super class and update
-                            String testName;
-                            while (index != -1) {
-                                index += TESTNAME.length() + 1;  // skip past marker
-                                text = text.substring(index);
-                                int spaceAfterIndex = text.indexOf(' ');
-                                int linebreakAfterIndex = text.indexOf('\n');
-                                if (linebreakAfterIndex == -1) { // no more lines after this one
-                                    if (spaceAfterIndex == -1) {
-                                        testName = text;
-                                    } else {
-                                        testName = text.substring(0, spaceAfterIndex);
-                                    }
-                                    index = -1;
-                                } else {                        // have another line to process after this one
-                                    if (spaceAfterIndex == -1) {
-                                        testName = text.substring(0, linebreakAfterIndex);
-                                    } else if (spaceAfterIndex < linebreakAfterIndex) {
-                                        testName = text.substring(0, spaceAfterIndex);
-                                    } else {
-                                        testName = text.substring(0, linebreakAfterIndex);
-                                    }
-                                    index = linebreakAfterIndex + 1; // move to character after newline
-                                }
-                                if (index != -1 && index < text.length()) {
-                                    text = text.substring(index);
-                                    index = text.indexOf(TESTNAME);
-                                } else {
-                                    index = -1;
-                                }
-                                log.fine("testName: " + testName);
-                                TestMethodInfo testMethodInfo = new TestMethodInfo(testName, "java.lang.Exception");
-                                methodNameList.add(testMethodInfo);
+                for (Comment c : comments) {
+                    if (c instanceof TextComment) {
+                        String text = ((TextComment)c).getText();
+                        int testNameIndex = text.indexOf("testName:");
+                        if(testNameIndex >= 0) {
+                            // Java comment with a @testName tag. This may not apply to method, so parse the name
+                            String nameText = text.substring(testNameIndex+9).trim();
+                                String[] parts = nameText.split("\\s+", 2);
+                            if (parts[0].equals("*")) {
+                                parts = parts[1].split("\\s+",2);
                             }
+                            String commentMethodName = parts[0];
+                            log.info("testName: " + commentMethodName);
+                            TestMethodInfo testMethodInfo = new TestMethodInfo(commentMethodName, "java.lang.Exception");
+                            methodNameList.add(testMethodInfo);
                         }
                     }
                 }
