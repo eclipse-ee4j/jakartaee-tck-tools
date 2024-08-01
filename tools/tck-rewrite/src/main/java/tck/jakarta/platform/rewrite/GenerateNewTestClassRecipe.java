@@ -26,16 +26,14 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
-// import tck.jakarta.platform.rewrite.createtestsource.CreateNewEETest;
-// import tck.jakarta.platform.rewrite.mapping.        ClassNameRemappingImpl;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
+import tck.jakarta.platform.ant.api.DefaultEEMapping;
 import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestMethodInfo;
 import tck.jakarta.platform.ant.api.TestPackageInfo;
-import tck.jakarta.platform.rewrite.mapping.EE11_2_EE10;
+
 import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
-// import tck.jakarta.platform.ant.api.DeploymentMethodInfoBuilder;
 
 
 /**
@@ -54,7 +52,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
     private static Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
-
+    private static DefaultEEMapping ee11_2_ee10 = new DefaultEEMapping();
     static {
         if (log.isLoggable(Level.FINEST)) {
             log.finest("Preparing to process with recipe " + fullyQualifiedClassName +
@@ -166,7 +164,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 return classDecl;
             }
 
-            String ee10pkg = EE11_2_EE10.mapEE11toEE10(pkg);
+            String ee10pkg = ee11_2_ee10.getEE10TestPackageName(pkg);
             try {
 
                 if (isLegacyTestPackage(ee10pkg)) {
@@ -179,7 +177,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     // update the methods to use the correct Throws exception
                     methodNameList = correctThrowsException(tckClass, methodNameList);
 
-                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList);
+                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList, ee11_2_ee10);
                     log.info("About to generate test class(es) for " + classDecl.getType().getFullyQualifiedName() + ", EE 10 test package " + ee10pkg + " EE 11 test package " + pkg);
                     for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
                         // The test package dir under the test module src/main/java directory
@@ -188,7 +186,9 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         // The test client .java file
                         Path testClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
                         if (testClientJavaFile.toFile().exists()) {
-                            throw new IllegalStateException(testClientJavaFile + " was already previously generated which means we aren't handling something correctly." );
+                            log.warning(testClientJavaFile + " was already previously generated which means we aren't handling something correctly.");
+                            Thread.dumpStack();
+                            continue;
                         }
                         // Write out the test client .java file content
                         Files.writeString(testClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -206,7 +206,10 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 // just print exception call stack for now and skip test
                 return classDecl;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                log.info("due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
+                e.printStackTrace();
+                // just print exception call stack for now and skip test
+                return classDecl;
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e.getMessage() + ": Check if .class is available for source: " + classDecl.getType().getFullyQualifiedName(), e);
             }
