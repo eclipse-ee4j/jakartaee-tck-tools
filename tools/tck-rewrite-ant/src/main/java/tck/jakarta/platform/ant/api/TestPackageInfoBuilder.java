@@ -204,7 +204,7 @@ public class TestPackageInfoBuilder {
                 DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
                 // The class name of the generated clazz subclass
                 String vehicleName = capitalizeFirst(vehicleType.name());
-                String genTestClassName = "Client"+vehicleName+"Test";
+                String genTestClassName = testClassSimpleName+vehicleName+"Test";
                 TestClientInfo testClientInfo = new TestClientInfo(genTestClassName, clazz, testMethods);
                 testClientInfo.setVehicle(vehicleType);
                 testClientInfo.setTestDeployment(methodInfo);
