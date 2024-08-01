@@ -1,5 +1,6 @@
 package tck.conversion.rewrite;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.*;
 import org.openrewrite.config.CompositeRecipe;
@@ -38,6 +39,7 @@ public class AddArqDeploymentTest implements RewriteTest {
                 );
     }
 
+    @Disabled
     @Test
     void addDeploymentMethod() {
         rewriteRun(

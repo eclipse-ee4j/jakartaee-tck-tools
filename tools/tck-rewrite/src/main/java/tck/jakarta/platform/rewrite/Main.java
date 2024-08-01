@@ -49,7 +49,9 @@ public class Main {
                 // and either construct the recipe directly or via an Environment
                 Environment environment = Environment.builder().scanRuntimeClasspath().build();
                 Recipe recipe = environment.activateRecipes("tck.jakarta.platform.rewrite.JavaTestToArquillianShrinkwrap",
-                        "tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe");
+                        "tck.jakarta.platform.rewrite.ConvertJavaTestNameRecipe",
+                        "tck.jakarta.platform.rewrite.GenerateNewTestClassRecipe"
+                        );
 
                 // create a JavaParser instance with your classpath
                 JavaParser javaParser = JavaParser.fromJavaVersion()
