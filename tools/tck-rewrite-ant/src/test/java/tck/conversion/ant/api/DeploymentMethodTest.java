@@ -389,4 +389,20 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_ejb30_assembly_metainfandlibdir() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("remoteAdd", "Exception"),
+                new TestMethodInfo("remoteAddByHelloEJB", "Exception"),
+                new TestMethodInfo("remoteAddByHelloEJBFromAssemblyBean", "Exception"),
+                new TestMethodInfo("ejbInjectionInFilterTest", "Exception"),
+                new TestMethodInfo("libSubdirNotScanned", "Exception")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.metainfandlibdir.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }
