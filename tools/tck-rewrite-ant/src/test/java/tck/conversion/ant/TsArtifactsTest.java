@@ -4,6 +4,7 @@ import com.sun.ts.lib.harness.VehicleVerifier;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Location;
+import org.apache.tools.ant.MagicNames;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.RuntimeConfigurable;
@@ -358,6 +359,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/casesens/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -374,6 +379,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/path/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -392,6 +401,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/appclient/deploy/ejblink/path/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -411,6 +424,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/assembly/classpath/ejb/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -430,6 +447,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/assembly/compat/cocktail/compat12_13/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -448,6 +469,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/common/connector/whitebox/annotated/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -468,6 +493,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/connector/localTx/connection/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -491,6 +520,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb/ee/tx/session/stateless/bm/TxN_Single/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -539,6 +572,10 @@ public class TsArtifactsTest {
         Path buildXml = tsHome.resolve("src/com/sun/ts/tests/jms/core/bytesMsgTopic/build.xml");
         Project project = new Project();
         project.init();
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         // Capture the ts.* tasks using a BuildListener
         project.addBuildListener(new BuildListener() {
 
@@ -600,7 +637,7 @@ public class TsArtifactsTest {
 
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
-        pkg.execute();
+        pkg.performTasks();
 
         // Walk through the ts.vehicles task contents
         RuntimeConfigurable rc = tsVehicles.getRuntimeConfigurableWrapper();
@@ -629,6 +666,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -644,7 +685,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
-        pkg.execute();
+        pkg.performTasks();
 
         System.out.println("Post package execute:");
         System.out.println(pkgTarget.toSummary());
@@ -679,18 +720,22 @@ public class TsArtifactsTest {
         project.removeBuildListener(buildListener);
         project.addBuildListener(buildListener2);
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejb");
-        pkg.execute();
+        pkg.performTasks();
 
         System.out.println("Post package execute2:");
         System.out.println(pkgTarget2.toSummary());
         Assertions.assertTrue(pkgTarget2.hasClientJarDef(), "Client jar definition should be present");
         String clientClasses = pkgTarget2.getClientJarDef().getClassFilesString();
         System.out.printf("clientClasses: %s\n", clientClasses);
-        Assertions.assertTrue(clientClasses.contains("com.sun.ts.tests.jms.common.JmsTool.class"),
+        Assertions.assertTrue(clientClasses.contains("com.sun.ts.tests.common.vehicle.VehicleClient.class"),
                 "Client jar contains com.sun.ts.tests.jms.common.JmsTool.class");
         Assertions.assertTrue(clientClasses.contains("com.sun.ts.lib.harness.ServiceEETest.class"),
                 "Client jar contains com.sun.ts.lib.harness.ServiceEETest.class");
         Assertions.assertTrue(pkgTarget2.hasEjbJarDef(), "Ejb jar definition should be present");
+        String ejbClasses = pkgTarget2.getEjbJarDef().getClassFilesString();
+        Assertions.assertTrue(ejbClasses.contains("com.sun.ts.tests.jms.common.JmsTool.class"),
+                "Ejb jar contains com.sun.ts.tests.jms.common.JmsTool.class");
+
         Assertions.assertTrue(pkgTarget2.hasEarDef(), "Ear definition should be present");
         Assertions.assertTrue(pkgTarget2.hasVehiclesDef(), "Vehicles definition should be present");
         System.out.println(pkgTarget2.getClientJarDef());
@@ -732,6 +777,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -747,7 +796,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "appclient");
-        pkg.execute();
+        pkg.performTasks();
         List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
         for (RuntimeConfigurable child : children) {
             System.out.printf("Child: %s\n", child.getElementTag());
@@ -786,6 +835,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -801,7 +854,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "servlet");
-        pkg.execute();
+        pkg.performTasks();
         List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
         for (RuntimeConfigurable child : children) {
             System.out.printf("Child: %s\n", child.getElementTag());
@@ -841,6 +894,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -856,7 +913,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "jsp");
-        pkg.execute();
+        pkg.performTasks();
         List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
         for (RuntimeConfigurable child : children) {
             System.out.printf("Child: %s\n", child.getElementTag());
@@ -895,6 +952,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -910,7 +971,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejb");
-        pkg.execute();
+        pkg.performTasks();
         List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
         for (RuntimeConfigurable child : children) {
             System.out.printf("Child: %s\n", child.getElementTag());
@@ -951,6 +1012,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -966,7 +1031,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[0];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "ejbliteservlet");
-        pkg.execute();
+        pkg.performTasks();
         //project.executeTarget("package");
         List<RuntimeConfigurable> children = Utils.asList(tsVehicles.getRuntimeConfigurableWrapper().getChildren());
         for (RuntimeConfigurable child : children) {
@@ -1006,6 +1071,13 @@ public class TsArtifactsTest {
         Project project = new Project();
         project.init();
         System.out.printf("Parsing(%s)\n", buildXml);
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
         Assertions.assertNotNull(pkg);
@@ -1020,7 +1092,7 @@ public class TsArtifactsTest {
         project.addBuildListener(buildListener);
         Task tsVehicles = pkg.getTasks()[1];
         tsVehicles.getRuntimeConfigurableWrapper().setAttribute("vehicleoverride", "stateless3");
-        pkg.execute();
+        pkg.performTasks();
 
         System.out.println("Post package execute:");
         System.out.println(pkgTarget.toSummary());
@@ -1056,6 +1128,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -1128,6 +1204,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -1187,6 +1267,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -1231,6 +1315,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");
@@ -1266,6 +1354,10 @@ public class TsArtifactsTest {
         project.init();
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         System.out.printf("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target pkg = project.getTargets().get("package");

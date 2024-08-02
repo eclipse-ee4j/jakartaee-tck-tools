@@ -2,6 +2,7 @@ package tck.conversion.ant.api;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.KeywordTags;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@EnabledIfSystemProperty(named = "ts.home", matches = ".*")
 public class KeywordTagTest {
     static Path tsHome = Paths.get(System.getProperty("ts.home"));
 

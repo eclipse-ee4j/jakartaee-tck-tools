@@ -1,6 +1,7 @@
 package tck.jakarta.platform.ant.api;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
+import org.apache.tools.ant.MagicNames;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.Target;
@@ -165,6 +166,9 @@ public class TestPackageInfoBuilder {
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         debug("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target antPackageTarget = project.getTargets().get("package");
@@ -230,6 +234,9 @@ public class TestPackageInfoBuilder {
         // The location of the glassfish download for the jakarta api jars
         project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
         project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
         debug("Parsing(%s)\n", buildXml);
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target antPackageTarget = project.getTargets().get("package");

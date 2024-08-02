@@ -262,7 +262,7 @@ public class PackageTarget {
             case "package.war" -> warDef;
             case "package.appclient.jar" -> clientJarDef;
             case "package.ear" -> earDef;
-            case "build.common.app", "pre.package", "package" -> null;
+            case "add.sigtest", "build.common.app", "pre.package", "package" -> null;
             default -> {
                 throw new RuntimeException("Unknown targetName: " + targetName);
             }
@@ -444,6 +444,7 @@ public class PackageTarget {
             TsArchiveInfo lastArchive = archives.get(archives.size() - 1);
             if(lastArchive.getFullArchiveName().endsWith(".rar")) {
                 Rar rar = new Rar(project.getProject(), null);
+                rar.setMapping(this.mapping);
                 String archiveName = lastArchive.getArchiveName();
                 // The archiveName includes the _ra part of the _ra.rar
                 if(archiveName.endsWith("_ra")) {

@@ -251,7 +251,10 @@ public class Utils {
                     // Need to deal with EETest$Fault.class vs Client$1.class
                     String dotClass = f.replace('/', '.');
                     // Map the EE10 name to EE11
-                    String clazz = mapping.getEE11Name(dotClass);
+                    String clazz = dotClass;
+                    if(mapping != null) {
+                        clazz = mapping.getEE11Name(dotClass);
+                    }
                     int dollar = dotClass.indexOf('$');
                     if(dollar > 0) {
                         if(Character.isDigit(dotClass.charAt(dollar+1))) {
