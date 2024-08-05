@@ -4,6 +4,7 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
     // Mappings from EE11 to EE10 package prefixes
     private static final String[] EE11_PKG_PREFIXES = {
             "ee.jakarta.tck.persistence.common.schema30", "com.sun.ts.tests.jpa.common.schema30",
+            "ee.jakarta.tck.persistence.core.persistenceUnitUtil","com.sun.ts.tests.jpa.core.persistenceUtilUtil",
             "ee.jakarta.tck.persistence.jpa.ee.packaging.jar", "com.sun.ts.tests.jpa.ee.packaging.jar",
             "ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager","com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager",
             "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
