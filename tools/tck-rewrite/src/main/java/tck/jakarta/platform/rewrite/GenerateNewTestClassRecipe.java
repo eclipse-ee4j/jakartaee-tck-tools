@@ -12,9 +12,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +28,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.Javadoc;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import tck.jakarta.platform.ant.api.DefaultEEMapping;
@@ -44,15 +47,16 @@ import tck.jakarta.platform.ant.api.TestPackageInfoBuilder;
  */
 public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static final Logger log = Logger.getLogger(GenerateNewTestClassRecipe.class.getName());
-    private static ThreadLocal<List> threadLocalMethodInfoList = new ThreadLocal<>();
+    private static final ThreadLocal<List> threadLocalMethodInfoList = new ThreadLocal<>();
     private static File generateTestFile = null;
 
     static final long serialVersionUID = 427023419L;
-    private static String fullyQualifiedClassName = GenerateNewTestClassRecipe.class.getCanonicalName();
-    private static Path tsHome = Paths.get(System.getProperty("ts.home"));
+    private static final String fullyQualifiedClassName = GenerateNewTestClassRecipe.class.getCanonicalName();
+    private static final Path tsHome = Paths.get(System.getProperty("ts.home"));
 
-    private static Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
-    private static DefaultEEMapping ee11_2_ee10 = new DefaultEEMapping();
+    private static final Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
+    private static final DefaultEEMapping ee11_2_ee10 = new DefaultEEMapping();
+
     static {
         if (log.isLoggable(Level.FINEST)) {
             log.finest("Preparing to process with recipe " + fullyQualifiedClassName +
@@ -85,7 +89,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
         if (!super.equals(o))
             return false;
         GenerateNewTestClassRecipe that = (GenerateNewTestClassRecipe) o;
-        return Objects.equals(fullyQualifiedClassName, that.fullyQualifiedClassName);
+        return Objects.equals(fullyQualifiedClassName, fullyQualifiedClassName);
     }
 
     @Override
@@ -144,14 +148,13 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 return classDecl;
             }
 
-            // will populate methodNameList in visitMethodDeclaration method
             List<TestMethodInfo> methodNameList = new ArrayList<>(); // will contain set of methods in the current classDecl
             threadLocalMethodInfoList.set(methodNameList);
             classDecl = super.visitClassDeclaration(classDecl, executionContext);
             threadLocalMethodInfoList.set(null);
 
             if (methodNameList.size() == 0) {
-                log.fine("ignore class (" + classDecl.getSimpleName() + ") with zero test methods");
+                log.fine("TODO: investigate why there are no tests methods for class " + classDecl.getSimpleName());
                 return classDecl;
             }
 
@@ -226,6 +229,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             if (tckTestClass == null) {
                 throw new IllegalStateException("missing TCK class");
             }
+            methodInfoList = removeDuplicateMethodNames(methodInfoList);
             Object[] testMethodInfoArray = methodInfoList.toArray();
             for (int index = 0; index < testMethodInfoArray.length; index++) {
                 boolean foundMatch = false;
@@ -266,6 +270,29 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             return methodInfoList;
         }
 
+        private List<TestMethodInfo> removeDuplicateMethodNames(List<TestMethodInfo> methodInfoList) {
+            Set<String> methodList = new HashSet<>();
+            int[] duplicates = new int[methodInfoList.size()];
+            int lastDuplicateAdded = 0;
+            int index = 0;
+            for (TestMethodInfo testMethodInfo : methodInfoList) {
+                if (!methodList.add(testMethodInfo.getMethodName())) {
+                    duplicates[lastDuplicateAdded] = index;
+                    lastDuplicateAdded++;
+                }
+                index++;
+            }
+
+            // remove duplicates from methodInfoList
+            while (lastDuplicateAdded > 0) {
+                Object removedTestMethodInfo = methodInfoList.remove(duplicates[lastDuplicateAdded - 1]);
+                log.info("removed duplicate TestMethodInfo " + ((TestMethodInfo) (removedTestMethodInfo)).getMethodName());
+                lastDuplicateAdded--;
+            }
+
+            return methodInfoList;
+        }
+
         private boolean isNewlyAddedTest(String packageName) {
             // return true if specified test was newly added to Jakarta EE 11 Platform TCK
             return packageName.startsWith("ee.jakarta.tck.persistence.core.types.datetime");
@@ -273,8 +300,9 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
 
         private boolean isComponentOnlyTest(String packageName) {
             return packageName.startsWith("ee.jakarta.tck.persistence.jpa22.se") ||
-                   packageName.startsWith("ee.jakarta.tck.persistence.se");
+                    packageName.startsWith("ee.jakarta.tck.persistence.se");
         }
+
         private boolean isLegacyTestPackage(String packageName) {
 
             if (packageName.startsWith("ee.jakarta.tck")) {
@@ -285,31 +313,61 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
 
         private final String TESTNAME = "@testName:";
 
+        private String jdocString(List<Javadoc> content) {
+            if (content == null) {
+                return "";
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Javadoc jd : content) {
+                if (jd instanceof Javadoc.Text text) {
+                    sb.append(text.getText().trim());
+                }
+            }
+            return sb.toString();
+        }
+
         @Override
         public Space visitSpace(Space space, Space.Location loc, ExecutionContext executionContext) {
+            space = super.visitSpace(space, loc, executionContext);
             List<TestMethodInfo> methodNameList = threadLocalMethodInfoList.get();
             List<Comment> comments = space.getComments();
             if (comments != null) {
                 for (Comment c : comments) {
                     if (c instanceof TextComment) {
-                        String text = ((TextComment)c).getText();
+                        String text = ((TextComment) c).getText();
                         int testNameIndex = text.indexOf("testName:");
-                        if(testNameIndex >= 0) {
+                        if (testNameIndex >= 0) {
                             // Java comment with a @testName tag. This may not apply to method, so parse the name
-                            String nameText = text.substring(testNameIndex+9).trim();
-                                String[] parts = nameText.split("\\s+", 2);
+                            String nameText = text.substring(testNameIndex + 9).trim();
+                            String[] parts = nameText.split("\\s+", 2);
                             if (parts[0].equals("*")) {
-                                parts = parts[1].split("\\s+",2);
+                                parts = parts[1].split("\\s+", 2);
                             }
                             String commentMethodName = parts[0];
                             log.info("testName: " + commentMethodName);
                             TestMethodInfo testMethodInfo = new TestMethodInfo(commentMethodName, "java.lang.Exception");
                             methodNameList.add(testMethodInfo);
                         }
+                    } else if (c instanceof Javadoc.DocComment docComment) {
+                        for (Javadoc javadoc : docComment.getBody()) {
+                            if (javadoc instanceof Javadoc.UnknownBlock jdu) {
+                                String name = jdu.getName();
+                                if (name.equals("testName:")) {
+                                    String methodName = jdocString(jdu.getContent());
+                                    TestMethodInfo testMethodInfo = new TestMethodInfo(methodName, "java.lang.Exception");
+                                    methodNameList.add(testMethodInfo);
+                                    log.info("testName: " + methodName);
+                                } else {
+                                    log.finest("TODO: skipped handling UnknownBlock Javadoc.DocComment " + javadoc);
+                                }
+                            } else {
+                                log.finest("TODO: skipped handling Javadoc.DocComment " + javadoc);
+                            }
+                        }
                     }
                 }
             }
-            return super.visitSpace(space, loc, executionContext);
+            return space;
         }
     }
 }
