@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class TsArchiveInfo {
     private String fullArchiveName;
-    private List<TSFileSet> fileSets = new ArrayList<>();
+    private List<TsFileSet> fileSets = new ArrayList<>();
     private int order;
 
     TsArchiveInfo(String fullArchiveName, int order) {
@@ -30,13 +30,13 @@ public class TsArchiveInfo {
         }
         return fullArchiveName.substring(0, lastDot);
     }
-    List<TSFileSet> getResources() {
+    List<TsFileSet> getResources() {
         return fileSets;
     }
-    void addResource(TSFileSet fs) {
+    void addResource(TsFileSet fs) {
         fileSets.add(fs);
     }
-    void addResources(Collection<TSFileSet> fs) {
+    void addResources(Collection<TsFileSet> fs) {
         fileSets.addAll(fs);
     }
 
@@ -44,7 +44,7 @@ public class TsArchiveInfo {
         StringBuilder tmp = new StringBuilder();
         tmp.append("TsArchiveInfo{fullArchiveName=%s}".formatted(fullArchiveName));
         tmp.append("resources:\n");
-        for(TSFileSet fs : fileSets) {
+        for(TsFileSet fs : fileSets) {
             tmp.append('\n');
             tmp.append(fs);
         }

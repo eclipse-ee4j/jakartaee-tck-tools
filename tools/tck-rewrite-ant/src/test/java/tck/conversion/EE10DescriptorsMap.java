@@ -37,7 +37,7 @@ public class EE10DescriptorsMap {
             deploymentProps.setProperty(k, String.join(",", v));
         });
         try(FileWriter out = new FileWriter("deployment.properties")) {
-            deploymentProps.store(out, "Deployment descriptors");
+            deploymentProps.store(out, "Deployment descriptors, generated from tck.conversion.EE10DescriptorsMap");
         }
         System.out.println("Wrote deployment.properties");
     }
@@ -49,7 +49,7 @@ public class EE10DescriptorsMap {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             String fileName = file.getFileName().toString();
-            if(fileName.endsWith(".ear") || fileName.endsWith(".war") || fileName.endsWith(".jar")) {
+            if(fileName.endsWith(".ear") || fileName.endsWith(".war") || fileName.endsWith(".jar") || fileName.endsWith(".rar")) {
                 // Remove the leading part x of x.[ear|war|jar]
                 int lastDot = fileName.lastIndexOf('.');
                 String deploymentName = fileName.substring(0, lastDot);

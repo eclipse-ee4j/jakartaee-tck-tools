@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class TsBaseInfo {
     private HashMap<String, List<TsArchiveInfo>> archives = new HashMap<>();
+    private List<TsFileSet> copyFSSets = new ArrayList<>();
 
     /**
      * Lookup a archive by its full archive name
@@ -26,5 +27,12 @@ public class TsBaseInfo {
     public void addArchive(TsArchiveInfo archiveInfo) {
         List<TsArchiveInfo> archiveInfos = archives.computeIfAbsent(archiveInfo.getFullArchiveName(), k -> new ArrayList<>());
         archiveInfos.add(archiveInfo);
+    }
+
+    public void addCopyFS(TsFileSet copyFS) {
+        copyFSSets.add(copyFS);
+    }
+    public List<TsFileSet> getCopyFSSets() {
+        return copyFSSets;
     }
 }

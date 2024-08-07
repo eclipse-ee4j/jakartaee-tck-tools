@@ -13,6 +13,9 @@ public class Par extends BaseJar {
     public String getType() {
         return "par";
     }
+    public String getSunDescriptorSuffix() {
+        return "";
+    }
 
     /**
      * PARs are just jars and the EE10 TCK does not add a suffix to the archive name

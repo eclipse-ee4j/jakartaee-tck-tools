@@ -23,6 +23,9 @@ public class Rar extends BaseJar {
     public String getType() {
         return "ra";
     }
+    public String getSunDescriptorSuffix() {
+        return ".rar.sun-ra.xml";
+    }
 
     /**
      * Return the lib classes

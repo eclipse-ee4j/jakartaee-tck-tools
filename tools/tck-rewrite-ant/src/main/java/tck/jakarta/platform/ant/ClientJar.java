@@ -24,6 +24,9 @@ public class ClientJar extends BaseJar {
     public String getType() {
         return "client";
     }
+    public String getSunDescriptorSuffix() {
+        return ".jar.sun-application-client.xml";
+    }
     public String getMainClass() {
         return mainClass;
     }

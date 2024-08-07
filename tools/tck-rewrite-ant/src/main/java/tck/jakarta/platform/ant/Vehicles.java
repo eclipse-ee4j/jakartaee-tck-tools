@@ -50,17 +50,17 @@ public class Vehicles {
     //    be used for each vehicle component archive.  The default is false
     private boolean singleear;
     // Set of filesets and/or zipfilesets to be added to the ejb component archive
-    private List<TSFileSet> ejbElements = new ArrayList<>();
+    private List<TsFileSet> ejbElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the client component archive, the component archive in the EJB vehicle as well as the appclient vehicle
-    private TSFileSet clientElements;
+    private TsFileSet clientElements;
     // Set of filesets and/or zipfilesets to be added to the servlet vehicle archive
-    private List<TSFileSet> servletElements = new ArrayList<>();
+    private List<TsFileSet> servletElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the jsp vehicle archive
-    private TSFileSet jspElements;
+    private TsFileSet jspElements;
     // Set of filesets and/or zipfilesets to be added to all ear vehicle archive
-    private List<TSFileSet> earElements = new ArrayList<>();
+    private List<TsFileSet> earElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to all vehicle archives
-    private TSFileSet jarElements;
+    private TsFileSet jarElements;
     private List<Lib> earLibs = new ArrayList<>();
     private List<Lib> warLibs = new ArrayList<>();
     private EE11toEE10Mapping mapping = new DefaultEEMapping();
@@ -128,27 +128,27 @@ public class Vehicles {
         return singleear;
     }
 
-    public List<TSFileSet> getEjbElements() {
+    public List<TsFileSet> getEjbElements() {
         return ejbElements;
     }
 
-    public TSFileSet getClientElements() {
+    public TsFileSet getClientElements() {
         return clientElements;
     }
 
-    public List<TSFileSet> getServletElements() {
+    public List<TsFileSet> getServletElements() {
         return servletElements;
     }
 
-    public TSFileSet getJspElements() {
+    public TsFileSet getJspElements() {
         return jspElements;
     }
 
-    public List<TSFileSet> getEarElements() {
+    public List<TsFileSet> getEarElements() {
         return earElements;
     }
 
-    public TSFileSet getJarElements() {
+    public TsFileSet getJarElements() {
         return jarElements;
     }
 
@@ -251,7 +251,7 @@ public class Vehicles {
      */
     private void addFileSets(RuntimeConfigurable rc) {
         for (RuntimeConfigurable rcc : Utils.asList(rc.getChildren())) {
-            TSFileSet fileSet = extractFileSets(rcc);
+            TsFileSet fileSet = extractFileSets(rcc);
             String childTag = rcc.getElementTag();
             switch (childTag) {
                 case "ejb-elements":
@@ -279,11 +279,11 @@ public class Vehicles {
         }
 
     }
-    private TSFileSet extractFileSets(RuntimeConfigurable rcc) {
-        TSFileSet theSet = null;
+    private TsFileSet extractFileSets(RuntimeConfigurable rcc) {
+        TsFileSet theSet = null;
         for (RuntimeConfigurable fsRC : Utils.asList(rcc.getChildren())) {
             AttributeMap fsMap = new AttributeMap(attributes.getProject(), fsRC.getAttributeMap());
-            theSet = new TSFileSet(fsMap);
+            theSet = new TsFileSet(fsMap);
         }
         return theSet;
     }

@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,6 +35,15 @@ import java.util.List;
 @EnabledIfSystemProperty(named = "ts.home", matches = ".*")
 public class DeploymentMethodTest {
     static Path tsHome = Paths.get(System.getProperty("ts.home"));
+
+
+    private List<TestMethodInfo> toExMethods(List<String> testMethods) {
+        ArrayList<TestMethodInfo> exMethods = new ArrayList<>();
+        for (String testMethod : testMethods) {
+            exMethods.add(new TestMethodInfo(testMethod, "Exception"));
+        }
+        return exMethods;
+    }
 
     @Test
     public void testBytesMsgTopicTest_deployAppclientMethod() throws IOException {
@@ -75,7 +85,8 @@ public class DeploymentMethodTest {
     public void testBytesMsgTopicTest_deployMethods() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
-        List<TestClientInfo> testClientInfos = builder.buildTestClients(BytesMsgTopicTests.class, testMethods);
+        List<TestMethodInfo> testMethodsEx = toExMethods(testMethods);
+        List<TestClientInfo> testClientInfos = builder.buildTestClientsEx(BytesMsgTopicTests.class, testMethodsEx, new DefaultEEMapping());
         for (TestClientInfo clientInfo : testClientInfos) {
             System.out.println(clientInfo);
         }
@@ -166,7 +177,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("initOrder", "appName");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -181,7 +192,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("testModernConnector");
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.mdb.modernconnector.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -195,7 +206,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("checkEnvEntry", "testDTO");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.misc.sameejbclass.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -209,7 +220,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("test1");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.zombie.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -250,7 +261,7 @@ public class DeploymentMethodTest {
                 "secondLevelJarEJB", "secondLevelDir", "secondLevelDirEJB", "postConstructInvokedInSuperElseWhere",
                 "remoteAdd", "remoteAddByHelloEJB", "remoteAddByHelloEJBFromAssemblyBean");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.librarydirectory.custom.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -317,7 +328,7 @@ public class DeploymentMethodTest {
                 "joinTransactionTransactionRequiredExceptionTest"
                 );
         Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.entityManager.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfo(baseTestClass, testMethods);
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -401,6 +412,18 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("libSubdirNotScanned", "Exception")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.metainfandlibdir.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    @Test
+    public void test_connector_xa_event() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("testConnectionEventListener", "Exception")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.connector.xa.event.eventClient1.class;
         TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());

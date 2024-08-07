@@ -18,6 +18,12 @@ import "TsWar.stg"
 */
 genMethodVehicle(pkg, deployment, testClass) ::= <<
     static final String VEHICLE_ARCHIVE = "#deployment.name#_#deployment.vehicle#_vehicle";
+
+#if(deployment.hasDeploymentDescriptors)#
+    /**
+    #deployment.deploymentDescriptors#
+    */
+#endif#
     @TargetsContainer("tck-#deployment.protocol#")
     @OverProtocol("#deployment.protocol#")
     @Deployment(name = VEHICLE_ARCHIVE, order = 2)
@@ -63,6 +69,11 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
 >>
 
 genMethodNonVehicle(pkg, deployment, testClass) ::= <<
+#if(deployment.hasDeploymentDescriptors)#
+    /**
+    #deployment.deploymentDescriptors#
+    */
+#endif#
     @TargetsContainer("tck-#deployment.protocol#")
     @OverProtocol("#deployment.protocol#")
     @Deployment(name = "#deployment.name#", order = 2)

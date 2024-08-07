@@ -53,7 +53,7 @@ public class CommonApps {
             return "CommonAppInfo{" + templateName + '}';
         }
     }
-    public static CommonApps getInstance(Path tsHome) throws IOException{
+    public synchronized static CommonApps getInstance(Path tsHome) throws IOException{
         if (INSTANCE == null) {
             URL resURL = CommonApps.class.getResource("/commonarchives.properties");
             try (InputStreamReader reader = new InputStreamReader(resURL.openStream())) {

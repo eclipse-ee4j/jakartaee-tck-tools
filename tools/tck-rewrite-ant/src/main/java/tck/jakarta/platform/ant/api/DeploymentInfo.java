@@ -9,7 +9,7 @@ import tck.jakarta.platform.ant.War;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 /**
- * A summary of the parsed information for a given test artifact deployment.
+ * A summary of the parsed information for a given test artifact deployment. This gets passed to the
  */
 public class DeploymentInfo {
     final String name;
@@ -22,6 +22,8 @@ public class DeploymentInfo {
     Rar rarDef;
     Par parDef;
     Ear earDef;
+    // The EE10 test archive deployment descriptors, {@link DeploymentDescriptors}
+    String deploymentDescriptors;
 
     public DeploymentInfo(Class<?> testClass, String name, String protocol, VehicleType vehicle) {
         this.testClass = testClass;
@@ -107,6 +109,16 @@ public class DeploymentInfo {
 
     public void setEjbJar(EjbJar ejbJarDef) {
         this.ejbJarDef = ejbJarDef;
+    }
+
+    public boolean getHasDeploymentDescriptors() {
+        return deploymentDescriptors != null && !deploymentDescriptors.isEmpty();
+    }
+    public String getDeploymentDescriptors() {
+        return deploymentDescriptors;
+    }
+    public void setDeploymentDescriptors(String deploymentDescriptors) {
+        this.deploymentDescriptors = deploymentDescriptors;
     }
 
     public String toString() {

@@ -14,13 +14,21 @@ import java.util.stream.Collectors;
  * vehicle deployment method.
  */
 public class TestClientInfo {
+    // The simple class name of the test client
     private String className;
+    // The EE10 base test class that the test client extends
     private Class<?> baseTestClass;
+    // The test methods that are overridden in the test client
     private List<TestMethodInfo> testMethods;
+    // Junit5 tags for the test client
     private List<String> tags;
 
+
+    // An optional common deployment method for an addition deployment archive
     private DeploymentMethodInfo commonDeployment;
+    // The Arquillian deployment method for the test client
     private DeploymentMethodInfo testDeployment;
+    // The vehicle type for the test client, if any, none otherwise
     private VehicleType vehicle;
 
     /**

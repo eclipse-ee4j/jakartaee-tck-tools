@@ -16,13 +16,13 @@ public class KeywordTags {
     private static KeywordTags INSTANCE;
     private final Path tsHome;
 
-    public static KeywordTags getInstance(Path tsHome) throws IOException {
+    public synchronized static KeywordTags getInstance(Path tsHome) throws IOException {
         if (INSTANCE == null) {
             URL resURL = KeywordTags.class.getResource("/keyword.properties");
             try (InputStreamReader reader = new InputStreamReader(resURL.openStream())) {
-                Properties commonArchives = new Properties();
-                commonArchives.load(reader);
-                parseKeywords(tsHome, commonArchives);
+                Properties keywords = new Properties();
+                keywords.load(reader);
+                parseKeywords(tsHome, keywords);
             }
         }
         return INSTANCE;

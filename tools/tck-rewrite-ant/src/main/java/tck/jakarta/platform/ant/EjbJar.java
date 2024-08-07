@@ -11,4 +11,7 @@ public class EjbJar extends BaseJar {
     public String getType() {
         return "ejb";
     }
+    public String getSunDescriptorSuffix() {
+        return ".jar.sun-ejb-jar.xml";
+    }
 }
