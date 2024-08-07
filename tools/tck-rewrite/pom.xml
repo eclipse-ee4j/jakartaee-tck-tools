@@ -90,7 +90,7 @@
             <version>${version.http-commons}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
+            <groupId>tck.jakarta.platform</groupId>
             <artifactId>jar2shrinkwrap</artifactId>
             <version>${version.tcktools}</version>
         </dependency>
