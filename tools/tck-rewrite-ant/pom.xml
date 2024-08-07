@@ -87,11 +87,6 @@
             <version>${version.http-commons}</version>
         </dependency>
         <dependency>
-            <groupId>jakartatck</groupId>
-            <artifactId>jar2shrinkwrap</artifactId>
-            <version>${version.tcktools}</version>
-        </dependency>
-        <dependency>
             <groupId>javatest</groupId>
             <artifactId>javatest</artifactId>
             <version>${version.javatest}</version>
