@@ -11,7 +11,7 @@
         <version>1.0.9</version>
     </parent>
 
-    <groupId>tck.jakarta.platform</groupId>
+    <groupId>tck.jakarta</groupId>
     <artifactId>tck-rewrite-tools</artifactId>
     <version>1.0.0-M2</version>
 
@@ -90,7 +90,7 @@
             <version>${version.http-commons}</version>
         </dependency>
         <dependency>
-            <groupId>tck.jakarta.platform</groupId>
+            <groupId>tck.jakarta</groupId>
             <artifactId>jar2shrinkwrap</artifactId>
             <version>${version.tcktools}</version>
         </dependency>
