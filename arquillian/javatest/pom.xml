@@ -86,6 +86,12 @@
   <build>
     <plugins>
       <plugin>
+        <!-- TODO: either make a proper artifact or define this as a setup requirement
+        in the TCK user guide.
+
+        This combines the TCK vehicle related classes into a protocol.jar that is
+         included in the test deployments by the JavaTestDeploymentPackager class.
+         -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>3.6.1</version>

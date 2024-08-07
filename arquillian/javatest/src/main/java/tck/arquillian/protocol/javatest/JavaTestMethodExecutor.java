@@ -26,46 +26,6 @@ import java.util.logging.Logger;
  */
 public class JavaTestMethodExecutor implements ContainerMethodExecutor {
     static Logger log = Logger.getLogger(JavaTestMethodExecutor.class.getName());
-    // Property names passed from the ts.jte file to the tstest.jte file
-    // Parsed from the test @class.setup_props: values + additional seen to be used by harness
-    static String[] tsJtePropNames = {
-            "Driver",
-            "authpassword",
-            "authuser",
-            "db.supports.sequence",
-            "db1",
-            "generateSQL",
-            "harness.log.port",
-            "harness.log.traceflag",
-            "java.naming.factory.initial",
-            "javamail.protocol",
-            "javamail.server",
-            "javamail.username",
-            "jdbc.db",
-            "jms_timeout",
-            "log.file.location",
-            "logical.hostname.servlet",
-            "org.omg.CORBA.ORBClass",
-            "password",
-            "platform.mode",
-            "rapassword1",
-            "rauser1",
-            "securedWebServicePort",
-            "sigTestClasspath",
-            "ts_home",
-            "user",
-            "webServerHost",
-            "webServerPort",
-            "whitebox-anno_no_md",
-            "whitebox-mdcomplete",
-            "whitebox-mixedmode",
-            "whitebox-multianno",
-            "whitebox-notx",
-            "whitebox-permissiondd",
-            "whitebox-tx",
-            "whitebox-xa",
-            "ws_wait",
-    };
     private JavaTestProtocolConfiguration config;
     @Inject
     @DeploymentScoped

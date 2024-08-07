@@ -6,6 +6,7 @@ import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,19 +27,36 @@ public class TsTestPropsBuilder {
             "generateSQL",
             "harness.log.port",
             "harness.log.traceflag",
+            "harness.socket.retry.count",
+            "harness.temp.directory",
             "java.naming.factory.initial",
             "javamail.protocol",
             "javamail.server",
             "javamail.username",
             "jdbc.db",
             "jms_timeout",
+            "jstl.db.user",
+            "jstl.db.password",
             "log.file.location",
             "logical.hostname.servlet",
             "org.omg.CORBA.ORBClass",
             "password",
             "platform.mode",
+            "porting.ts.HttpsURLConnection.class.1",
+            "porting.ts.HttpsURLConnection.class.2",
+            "porting.ts.login.class.1",
+            "porting.ts.login.class.2",
+            "porting.ts.url.class.1",
+            "porting.ts.url.class.2",
+            "porting.ts.jms.class.1",
+            "porting.ts.jms.class.2",
+            // These two are probably not useful
+            "porting.ts.deploy.class.1",
+            "porting.ts.deploy.class.2",
             "rapassword1",
+            "rapassword2",
             "rauser1",
+            "rauser2",
             "securedWebServicePort",
             "sigTestClasspath",
             "ts_home",
@@ -82,7 +100,8 @@ public class TsTestPropsBuilder {
      */
     public static String[] runArgs(ProtocolCommonConfig config, Deployment deployment,
                                    TestMethodExecutor testMethodExecutor) throws IOException {
-        Class<?> testSuperclass = testMethodExecutor.getMethod().getDeclaringClass().getSuperclass();
+        Class<?> testClass = testMethodExecutor.getMethod().getDeclaringClass();
+        Class<?> testSuperclass = testClass.getSuperclass();
         TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
         // Remove the _ testVehicle
         String testMethodName = testMethodExecutor.getMethod().getName();
@@ -141,7 +160,12 @@ public class TsTestPropsBuilder {
         }
 
         // The vehicle harness operates on the legacy CTS superclass of the Junit5 class.
-        props.setProperty("test_classname", testSuperclass.getName());
+        // unless the Junit5 test class directly extends the EETest/ServiceEETest class.
+        if(isAbstract(testSuperclass)) {
+            props.setProperty("test_classname", testClass.getName());
+        } else {
+            props.setProperty("test_classname", testSuperclass.getName());
+        }
 
         // Write out the test properties file, overwriting any existing file
         try(OutputStream out = Files.newOutputStream(testProps)) {
@@ -157,5 +181,10 @@ public class TsTestPropsBuilder {
                 "-vehicle", vehicle,
         };
         return args;
+    }
+
+    public static boolean isAbstract(Class<?> clazz) {
+        int modifiers = clazz.getModifiers();
+        return Modifier.isAbstract(modifiers);
     }
 }

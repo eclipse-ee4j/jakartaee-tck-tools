@@ -19,6 +19,7 @@ public class JavaTestDeploymentPackager implements DeploymentPackager {
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
         Archive<?> archive = testDeployment.getApplicationArchive();
 
+        // Include the protocol.jar in the deployment
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         File protocolJar = new File("target/protocol/protocol.jar");
 
