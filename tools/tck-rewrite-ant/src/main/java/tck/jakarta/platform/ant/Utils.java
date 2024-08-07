@@ -256,9 +256,7 @@ public class Utils {
                         if(Character.isDigit(dotClass.charAt(dollar+1))) {
                             anonymousClasses.add(dotClass);
                             continue;
-                        } else {
-                            clazz = dotClass.replace('$', '.');
-                        }
+                    }
                     }
                     classes.add(clazz);
                 }
