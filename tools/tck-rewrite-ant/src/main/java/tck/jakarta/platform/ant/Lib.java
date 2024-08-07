@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Lib {
     String archiveName;
-    List<TSFileSet> resources;
+    List<TsFileSet> resources;
     List<String> anonymousClasses = new ArrayList<>();
     EE11toEE10Mapping mapping;
 
@@ -56,16 +56,16 @@ public class Lib {
     public List<String> getAnonymousClasses() {
         return anonymousClasses;
     }
-    public List<TSFileSet> getResources() {
+    public List<TsFileSet> getResources() {
         return resources;
     }
-    public void addResources(TSFileSet fs) {
+    public void addResources(TsFileSet fs) {
         if (resources == null) {
             resources = new ArrayList<>();
         }
         resources.add(fs);
     }
-    public void addResources(List<TSFileSet> fs) {
+    public void addResources(List<TsFileSet> fs) {
         if (resources == null) {
             resources = new ArrayList<>();
         }
@@ -76,7 +76,7 @@ public class Lib {
     }
     public List<String> getResourceStrings() {
         ArrayList<String> tmp = new ArrayList<>();
-        for(TSFileSet fs : resources) {
+        for(TsFileSet fs : resources) {
             String dir = fs.dir + '/';
             for(String f : fs.includes) {
                 if(!f.endsWith(".class")) {
@@ -92,7 +92,7 @@ public class Lib {
         StringBuilder tmp = new StringBuilder();
         tmp.append("Lib{archiveName=%s}".formatted(archiveName));
         tmp.append("resources:\n");
-        for(TSFileSet fs : resources) {
+        for(TsFileSet fs : resources) {
             tmp.append('\n');
             tmp.append(fs);
         }

@@ -7,10 +7,12 @@ import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -32,15 +34,17 @@ public abstract class BaseJar {
     String descriptordir;
     // Descriptor path and name within the archive
     String internaldescriptorname;
-    // Permissions descriptor path and name within the archive
-    String internalpermissionsdescriptorname = "META-INF/permissions.xml";
+    // Base name of the archive
+    String baseName;
     boolean includedefaultfiles;
     // Update an archive if it exists
     boolean update;
     // A comma separated list of file expressions to exclude from the set of default included files  This list of file expressions is relative to the TS_HOME/classes directory.
     List<String> excludedFiles;
     //
-    List<TSFileSet> fileSets = new ArrayList<>();
+    List<TsFileSet> fileSets = new ArrayList<>();
+    private List<TsFileSet> copyFSSets = new ArrayList<>();
+
     List<String> anonymousClasses = new ArrayList<>();
     Project project;
     // An override to descriptor that can be set by vehicles
@@ -58,6 +62,14 @@ public abstract class BaseJar {
 
         Hashtable<String,Object> attrs = taskRC.getAttributeMap();
         AttributeMap attrsMap = new AttributeMap(project, attrs);
+        this.archiveName = attrs.get("archivename").toString();
+        int index = archiveName.indexOf("${vehicle.name}");
+        if(index > 0) {
+            this.baseName = archiveName.substring(0, index);
+        } else {
+            this.baseName = attrsMap.getAttribute("archivename");
+        }
+        // Now use the attrsMap to resolve any property refs
         setArchiveName(attrsMap.getAttribute("archivename"));
         setArchiveSuffix(attrsMap.getAttribute("archivesuffix"));
         if(this.archiveSuffix == null) {
@@ -79,7 +91,7 @@ public abstract class BaseJar {
             RuntimeConfigurable rc = children.nextElement();
             AttributeMap attrsMaps = new AttributeMap(project, rc.getAttributeMap());
             if(rc.getElementTag().equals("fileset")) {
-                addFileSet(new TSFileSet(attrsMaps));
+                addFileSet(new TsFileSet(attrsMaps));
             }
         }
     }
@@ -93,6 +105,7 @@ public abstract class BaseJar {
     }
 
     public abstract String getType();
+    public abstract String getSunDescriptorSuffix();
 
     public void updateFromComponentAttrs(AttributeMap attrs) {
         for (String key : attrs.getAttributes().keySet()) {
@@ -135,6 +148,13 @@ public abstract class BaseJar {
 
     public String getDescriptor() {
         return descriptor;
+    }
+    public String getDescriptorNoXml() {
+        String noXml = descriptor;
+        if(descriptor != null && descriptor.endsWith(".xml")) {
+            noXml = descriptor.substring(0, descriptor.length()-4);
+        }
+        return noXml;
     }
 
     public String getManifest() {
@@ -228,16 +248,107 @@ public abstract class BaseJar {
         this.excludedFiles = excludedFiles;
     }
 
-    public List<TSFileSet> getFileSets() {
+    public List<TsFileSet> getFileSets() {
         return fileSets;
     }
-    public void addFileSet(TSFileSet fs) {
+    public void addFileSet(TsFileSet fs) {
         if(fs != null) {
             fileSets.add(fs);
         }
     }
-    public void addFileSet(Collection<TSFileSet> fs) {
+    public void addFileSet(Collection<TsFileSet> fs) {
         fileSets.addAll(fs);
+    }
+    public void addCopyFileSet(TsFileSet fs) {
+        copyFSSets.add(fs);
+    }
+
+    /**
+     * Get the list of descriptor paths found in the filesets
+     * @return list of descriptor paths
+     */
+    public List<String> getFoundDescriptors() {
+        HashSet<String> descriptorSet = new HashSet<>();
+        ArrayList<String> descriptorList = new ArrayList<>();
+        ArrayList<String> commonDescriptors = new ArrayList<>();
+        for (TsFileSet fs : copyFSSets) {
+            Path dir = Path.of(fs.getDir());
+            String appDescriptor = baseName + getDescriptor();
+            Path descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                descriptorList.add(0, descriptorPath.toString());
+            }
+            appDescriptor += getSunDescriptorSuffix();
+            descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                descriptorList.add(0, descriptorPath.toString());
+            }
+            descriptorPath = dir.resolve(getDescriptor());
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                if(fs.isCommonDir()) {
+                    commonDescriptors.add(descriptorPath.toString());
+                } else {
+                    descriptorList.add(descriptorPath.toString());
+                }
+            }
+        }
+        for (TsFileSet fs : fileSets) {
+            Path dir = Path.of(fs.getDir());
+            // Skip the tmp dir
+            if(fs.isTmpDir() || getDescriptor() == null || getDescriptor().isEmpty()) {
+                continue;
+            }
+            String appDescriptor = getDescriptor();
+            Path descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                // Insert app specific descriptors at the front
+                descriptorList.add(0, descriptorPath.toString());
+            }
+            appDescriptor = baseName + getDescriptor();
+            descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                // Insert app specific descriptors at the front
+                descriptorList.add(0, descriptorPath.toString());
+            }
+            appDescriptor = getDescriptorNoXml() + getSunDescriptorSuffix();
+            descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                descriptorList.add(descriptorPath.toString());
+            }
+            appDescriptor = baseName + getSunDescriptorSuffix();
+            descriptorPath = dir.resolve(appDescriptor);
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                descriptorList.add(descriptorPath.toString());
+            }
+            descriptorPath = dir.resolve(getDescriptor());
+            if(descriptorPath.toFile().exists() && !descriptorSet.contains(descriptorPath.toString())) {
+                descriptorSet.add(descriptorPath.toString());
+                if(fs.isCommonDir()) {
+                    commonDescriptors.add(descriptorPath.toString());
+                } else {
+                    descriptorList.add(descriptorPath.toString());
+                }
+            }
+        }
+        // Add the common descriptors to the end
+        descriptorList.addAll(commonDescriptors);
+        // Now remove the path before com/sun/ts/... from the descriptor path
+        for(int i = 0; i < descriptorList.size(); i++) {
+            String descriptor = descriptorList.get(i);
+            int start = descriptor.indexOf("/com/");
+            if(start != -1) {
+                descriptor = descriptor.substring(start);
+                descriptorList.set(i, descriptor);
+            }
+        }
+        return descriptorList;
     }
 
     /**
@@ -320,7 +431,7 @@ public abstract class BaseJar {
         StringBuilder tmp = new StringBuilder();
         tmp.append("%s{descriptor=%s, descriptorDir=%s, archiveName=%s, archivesuffix=%s, fullArchiveName=%s, excludedFiles=%s}".formatted(getType(),
                 descriptor, descriptordir, archiveName, archiveSuffix, getFullArchiveName(), excludedFiles));
-        for(TSFileSet fs : fileSets) {
+        for(TsFileSet fs : fileSets) {
             tmp.append('\n');
             tmp.append(fs);
         }

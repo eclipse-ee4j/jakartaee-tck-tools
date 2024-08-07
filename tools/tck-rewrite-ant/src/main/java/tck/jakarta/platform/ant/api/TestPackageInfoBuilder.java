@@ -15,7 +15,7 @@ import tck.jakarta.platform.ant.PackageTarget;
 import tck.jakarta.platform.ant.Par;
 import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.Rar;
-import tck.jakarta.platform.ant.TSFileSet;
+import tck.jakarta.platform.ant.TsFileSet;
 import tck.jakarta.platform.ant.Utils;
 import tck.jakarta.platform.ant.Vehicles;
 import tck.jakarta.platform.ant.War;
@@ -184,6 +184,8 @@ public class TestPackageInfoBuilder {
         // Get any keyword tags
         KeywordTags keywordTags = KeywordTags.getInstance(tsHome);
         List<String> tags = keywordTags.getTags(Paths.get(pkgPath));
+        // Load the deployment descriptor mapping
+        DeploymentDescriptors.load();
 
         // Generate the test deployment method
         if(vehicles.length == 0) {
@@ -202,6 +204,7 @@ public class TestPackageInfoBuilder {
         } else {
             for(String vehicle : vehicles) {
                 VehicleType vehicleType = VehicleType.valueOf(vehicle);
+                // Skip unsupported vehicles
                 if(vehicleType == VehicleType.ejbembed) {
                     continue;
                 }
@@ -241,6 +244,9 @@ public class TestPackageInfoBuilder {
         ProjectHelper.configureProject(project, buildXml.toFile());
         Target antPackageTarget = project.getTargets().get("package");
         PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
+
+        // Load the deployment descriptor mapping
+        DeploymentDescriptors.load();
 
         DeploymentMethodInfo methodInfo;
         if(vehicleType == null || vehicleType == VehicleType.none) {
@@ -284,6 +290,9 @@ public class TestPackageInfoBuilder {
         String methodCode = template.render().trim();
         DeploymentMethodInfo methodInfo = new DeploymentMethodInfo(VehicleType.none, Arrays.asList(ARQUILLIAN_IMPORTS), methodCode);
         methodInfo.setName(deployment.getName());
+        methodInfo.setDebugInfo(deployment);
+
+        // Look
 
         return methodInfo;
     }
@@ -313,6 +322,7 @@ public class TestPackageInfoBuilder {
         String methodCode = template.render().trim();
         DeploymentMethodInfo methodInfo = new DeploymentMethodInfo(vehicleType, Arrays.asList(ARQUILLIAN_IMPORTS), methodCode);
         methodInfo.setName(deployment.getName());
+        methodInfo.setDebugInfo(deployment);
 
         return methodInfo;
     }
@@ -324,6 +334,7 @@ public class TestPackageInfoBuilder {
      */
     private void populateDeployment(DeploymentInfo deployment, PackageTarget pkgTargetWrapper) {
         Vehicles vehicleDef = pkgTargetWrapper.getVehiclesDef();
+        ArrayList<String> foundDescriptors = new ArrayList<>();
         // Client
         if(pkgTargetWrapper.hasClientJarDef()) {
             ClientJar clientJarDef = pkgTargetWrapper.getClientJarDef();
@@ -331,7 +342,7 @@ public class TestPackageInfoBuilder {
                 clientJarDef.addFileSet(vehicleDef.getClientElements());
                 // common to all vehicles
                 if (vehicleDef.getJarElements() != null) {
-                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    TsFileSet jarElements = vehicleDef.getJarElements();
                     clientJarDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_client.xml descriptor since this get overriden to tsHome/tmp
@@ -343,6 +354,8 @@ public class TestPackageInfoBuilder {
                 }
             }
             deployment.setClientJar(clientJarDef);
+            foundDescriptors.add("Client:\n");
+            foundDescriptors.addAll(clientJarDef.getFoundDescriptors());
             info("Client jar added to deployment: %s\n", clientJarDef);
         }
         // EJB
@@ -352,7 +365,7 @@ public class TestPackageInfoBuilder {
                 ejbJarDef.addFileSet(vehicleDef.getEjbElements());
                 // common to all vehicles
                 if (vehicleDef.getJarElements() != null) {
-                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    TsFileSet jarElements = vehicleDef.getJarElements();
                     ejbJarDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_ejb.xml descriptor since this get overriden to tsHome/tmp
@@ -364,6 +377,8 @@ public class TestPackageInfoBuilder {
                 }
             }
             deployment.setEjbJar(ejbJarDef);
+            foundDescriptors.add("Ejb:\n");
+            foundDescriptors.addAll(ejbJarDef.getFoundDescriptors());
             info("Ejb jar added to deployment: %s\n", ejbJarDef);
         }
         // War
@@ -380,7 +395,7 @@ public class TestPackageInfoBuilder {
                 }
                 // common to all vehicles
                 if (vehicleDef.getJarElements() != null) {
-                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    TsFileSet jarElements = vehicleDef.getJarElements();
                     warDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_web.xml descriptor since this get overriden to tsHome/tmp
@@ -392,6 +407,8 @@ public class TestPackageInfoBuilder {
                 }
             }
             deployment.setWar(warDef);
+            foundDescriptors.add("War:\n");
+            foundDescriptors.addAll(warDef.getFoundDescriptors());
             info("War added to deployment: %s\n", warDef);
             info("War has content: %s\n", warDef.getWebContent());
         }
@@ -405,6 +422,8 @@ public class TestPackageInfoBuilder {
         if(pkgTargetWrapper.hasRarDef()) {
             Rar rarDef = pkgTargetWrapper.getRarDef();
             deployment.setRar(rarDef);
+            foundDescriptors.add("Rar:\n");
+            foundDescriptors.addAll(rarDef.getFoundDescriptors());
             info("Rar added to deployment: %s\n", rarDef);
         }
 
@@ -415,13 +434,24 @@ public class TestPackageInfoBuilder {
                 earDef.addFileSet(vehicleDef.getEarElements());
                 // common to all vehicles
                 if (vehicleDef.getJarElements() != null) {
-                    TSFileSet jarElements = vehicleDef.getJarElements();
+                    TsFileSet jarElements = vehicleDef.getJarElements();
                     earDef.addFileSet(jarElements);
                 }
             }
             deployment.setEar(earDef);
+            foundDescriptors.add("Ear:\n");
+            foundDescriptors.addAll(earDef.getFoundDescriptors());
             debug("Ear added to deployment: %s\n", earDef);
         }
+
+        // Descriptor info and found descriptors
+        String descriptors = DeploymentDescriptors.getDeploymentDescriptors(deployment.name);
+        StringBuilder descriptorInfo = new StringBuilder();
+        descriptorInfo.append("EE10 Deployment Descriptors:\n");
+        descriptorInfo.append(descriptors);
+        descriptorInfo.append("\nFound Descriptors:\n");
+        descriptorInfo.append(String.join("\n", foundDescriptors));
+        deployment.setDeploymentDescriptors(descriptorInfo.toString());
     }
 
     /**

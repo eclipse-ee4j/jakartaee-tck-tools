@@ -1,7 +1,6 @@
 package tck.jakarta.platform.ant;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -9,7 +8,7 @@ import java.util.List;
  * org.apache.tools.ant.types.FileSet
  * org.apache.tools.ant.types.ZipFileSet
  */
-public class TSFileSet {
+public class TsFileSet {
     String dir;
     String prefix;
     List<String> includes;
@@ -18,7 +17,7 @@ public class TSFileSet {
      * Build up the fileset from the attributes on the fileset element
      * @param fileset - a fileset configuration map
      */
-    TSFileSet(AttributeMap fileset) {
+    TsFileSet(AttributeMap fileset) {
         String dir = fileset.getAttribute("dir");
         if(dir == null) {
             dir = fileset.getAttribute("basedir");
@@ -36,7 +35,7 @@ public class TSFileSet {
             this.includes.add(include);
         }
     }
-    public TSFileSet(String dir, String prefix, List<String> includes) {
+    public TsFileSet(String dir, String prefix, List<String> includes) {
         this.dir = dir;
         this.prefix = prefix;
         this.includes = includes;
@@ -50,6 +49,12 @@ public class TSFileSet {
     }
     public List<String> getIncludes() {
         return includes;
+    }
+    public boolean isTmpDir() {
+        return dir.endsWith("tmp");
+    }
+    public boolean isCommonDir() {
+        return dir.contains("common");
     }
     @Override
     public String toString() {

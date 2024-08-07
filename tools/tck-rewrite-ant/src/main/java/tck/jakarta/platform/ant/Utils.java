@@ -2,8 +2,6 @@ package tck.jakarta.platform.ant;
 
 import com.sun.ts.lib.harness.VehicleVerifier;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Property;
@@ -15,7 +13,6 @@ import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +20,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -239,10 +235,10 @@ public class Utils {
      * @param anonymousClasses - any anonymous classes are returned via this list
      * @return dot class name list suitable for passing to an archive addClasses method
      */
-    public static String getClassFilesString(EE11toEE10Mapping mapping, List<TSFileSet> fileSets, List<String> anonymousClasses) {
+    public static String getClassFilesString(EE11toEE10Mapping mapping, List<TsFileSet> fileSets, List<String> anonymousClasses) {
         // Capture unique classes
         HashSet<String> classes = new HashSet<>();
-        for(TSFileSet fs : fileSets) {
+        for(TsFileSet fs : fileSets) {
             String dir = fs.dir + '/';
             for(String f : fs.includes) {
                 // Skip the obsolete EJBHomes

@@ -16,7 +16,7 @@ genClientJar(client, testClass) ::= <<
 }#
 #endif#
     // The application-client.xml descriptor
-    URL resURL = #testClass#.class.getResource("/#client.relativeDescriptorPath#");
+    URL resURL = #testClass#.class.getResource("#client.relativeDescriptorPath#");
     if(resURL != null) {
       #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
     }

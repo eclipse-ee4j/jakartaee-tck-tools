@@ -50,6 +50,11 @@ public class TsTaskListener implements BuildListener {
     public void buildFinished(BuildEvent event) {
     }
 
+    /**
+     * Notification that a target is starting. We push a TsPackageInfo onto the tsTargetStack. This is only called
+     * when target#performTasks(). Directly calling target#execute() bypasses the listener notification.
+     * @param event An event with any relevant extra information.
+     */
     @Override
     public void targetStarted(BuildEvent event) {
         Target target = event.getTarget();
@@ -58,6 +63,12 @@ public class TsTaskListener implements BuildListener {
         tsTargetStack.push(tsPackageInfo);
     }
 
+    /**
+     * Notification that a target has finished. Pops the TsPackageInfo from the tsTargetStack and updates the target
+     * tasks with any artifact information created outside the task.
+     *
+     * @param event An event with any relevant extra information.
+     */
     @Override
     public void targetFinished(BuildEvent event) {
         Target target = event.getTarget();
@@ -139,9 +150,13 @@ public class TsTaskListener implements BuildListener {
                 }
                 // Add the task to the package target wrapper
                 BaseJar taskJar = packageTarget.addTask(task);
-                if(isTsVehicles && !taskInfo.getArchives().isEmpty()) {
+                if(isTsVehicles) {
                     Vehicles vehiclesDef = packageTarget.getVehiclesDef();
-                    vehiclesDef.addJarResources(taskInfo);
+                    if(!taskInfo.getArchives().isEmpty()) {
+                        vehiclesDef.addJarResources(taskInfo);
+                    }
+                    // Copy tasks
+                    packageTarget.mergeCopyFS(taskInfo.getCopyFSSets());
                 } else if(taskJar == null) {
                     debug("Unhandled task: %s\n", name);
                 } else {
@@ -153,10 +168,10 @@ public class TsTaskListener implements BuildListener {
                     }
                 }
             }
-        } else if(name.contains("fileset")) {
-            debug("Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
         } else if(name.contains("jar")) {
-            // Here we capture information about a test archive that uses the fully resolved files and attributes
+            /* Here we capture information about a test archive that uses the fully resolved files and attributes.
+            This avoids having to try to resolve wildcards in the original parsed task attributes.
+            */
             debug("%s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
             if(task instanceof UnknownElement) {
                 UnknownElement ue = (UnknownElement) task;
@@ -182,13 +197,13 @@ public class TsTaskListener implements BuildListener {
                                     prefix = zipFileSet.getPrefix(packageTarget.getProject().getProject());
                                 }
                                 fileSet.iterator().forEachRemaining(r -> files.add(r.toString()));
-                                TSFileSet tsFileSet = new TSFileSet(dir.getAbsolutePath(), prefix, files);
+                                TsFileSet tsFileSet = new TsFileSet(dir.getAbsolutePath(), prefix, files);
                                 archiveInfo.addResource(tsFileSet);
                             }
                         }
                     } else {
                         AttributeMap attrMap = new AttributeMap(packageTarget.getProject().getProject(), jar.getRuntimeConfigurableWrapper().getAttributeMap());
-                        TSFileSet tsFileSet = new TSFileSet(attrMap);
+                        TsFileSet tsFileSet = new TsFileSet(attrMap);
                         archiveInfo.addResource(tsFileSet);
                     }
 
@@ -196,6 +211,7 @@ public class TsTaskListener implements BuildListener {
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
                     TsPackageInfo lastTsPackage = tsTargetStack.peek();
                     if(lastTsTask != null) {
+                        // If there was a ts.* task, add the archive info to it
                         lastTsTask.addArchive(archiveInfo);
                         debug("--- jar(%s): %s\n", lastTsTask.getTaskName(), archiveInfo);
                     }
@@ -218,8 +234,26 @@ public class TsTaskListener implements BuildListener {
             RuntimeConfigurable rc = task.getRuntimeConfigurableWrapper();
             TsTaskInfo lastTsTask = tsTaskStack.peek();
             lastTsTask.setComponentAttributes(rc);
+        } else if(name.equals("copy")) {
+            /* The copy task is used to copy descriptors from the source tree to the ts.home/tmp directory.
+            Here we try to capture the source directory being used as the ts.* task often just has the
+            ts.home/tmp directory as the fileset dir for the descriptor, and this does not work with arquillian.
+            */
+            UnknownElement ue = (UnknownElement) task;
+            ue.maybeConfigure();
+            RuntimeConfigurable rc = task.getRuntimeConfigurableWrapper();
+            if(rc.getChildren().hasMoreElements()) {
+                FileSet fs = (FileSet) rc.getChildren().nextElement().getProxy();
+                String dir = fs.getDir().getAbsolutePath();
+                String[] includes = fs.getDirectoryScanner().getIncludedFiles();
+                if(includes.length > 0) {
+                    TsFileSet copyFS = new TsFileSet(dir, null, new ArrayList<>(List.of(includes)));
+                    TsTaskInfo lastTsTask = tsTaskStack.peek();
+                    lastTsTask.addCopyFS(copyFS);
+                }
+            }
         } else {
-            trace("Finished %s: %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
+            trace("Finished other(%s): %s\n", task.getTaskName(), task.getRuntimeConfigurableWrapper().getAttributeMap());
         }
     }
 

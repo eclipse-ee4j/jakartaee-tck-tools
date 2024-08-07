@@ -20,7 +20,9 @@ public class War extends BaseJar {
     public String getType() {
         return "web";
     }
-
+    public String getSunDescriptorSuffix() {
+        return ".war.sun-web.xml";
+    }
     public record Content(String resPath, String target) {}
 
     public void addJarResources(TsPackageInfo pkgInfo) {
@@ -33,7 +35,7 @@ public class War extends BaseJar {
      */
     public List<Content> getWebContent() {
         List<Content> webContent = new ArrayList<>();
-        for(TSFileSet fs : fileSets) {
+        for(TsFileSet fs : fileSets) {
             if(fs.prefix == null || fs.prefix.isEmpty()) {
                 String dir = fs.dir + '/';
                 for(String f : fs.includes) {

@@ -1,6 +1,5 @@
 package tck.conversion.ant.st4;
 
-import com.sun.ts.tests.ejb.ee.bb.session.lrapitest.A;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stringtemplate.v4.Interpreter;
@@ -9,7 +8,7 @@ import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 import tck.jakarta.platform.ant.Lib;
 import tck.jakarta.platform.ant.Rar;
-import tck.jakarta.platform.ant.TSFileSet;
+import tck.jakarta.platform.ant.TsFileSet;
 import tck.jakarta.platform.ant.War;
 
 import java.util.ArrayList;
@@ -163,7 +162,7 @@ earArchive.addAsModule(ejbJar1);
         ArrayList<String> includes = new ArrayList<>();
         includes.add("com/sun/ts/tests/jms/core/bytesMsgTopic/BytesMsgTopicTests.class");
         includes.add("com/sun/ts/tests/jms/common/JmsTool.class");
-        TSFileSet classes = new TSFileSet("classes", "WEB-INF/classes", includes);
+        TsFileSet classes = new TsFileSet("classes", "WEB-INF/classes", includes);
         warDef.addFileSet(classes);
 
         System.out.printf("%s\n", warDef.getRelativeDescriptorPath());
@@ -196,7 +195,7 @@ earArchive.addAsModule(ejbJar1);
         includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/NoUseListener.class");
         includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitorAdapter.class");
         includes.add("com/sun/ts/tests/ejb32/mdb/modernconnector/connector/EventMonitorAdapter$ActivatedEndpoint.class");
-        TSFileSet classes = new TSFileSet("classes", "", includes);
+        TsFileSet classes = new TsFileSet("classes", "", includes);
         rarDef.addFileSet(classes);
 
         System.out.printf("%s\n", rarDef.getRelativeDescriptorPath());
@@ -222,7 +221,7 @@ earArchive.addAsModule(ejbJar1);
 
         Lib lib1 = new Lib();
         lib1.setArchiveName("second-level-jar");
-        TSFileSet txtFiles = new TSFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
+        TsFileSet txtFiles = new TsFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
                 Arrays.asList("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/common/foo.txt",
                         "/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/foo.txt",
                         "/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/foo.txt"));
@@ -231,7 +230,7 @@ earArchive.addAsModule(ejbJar1);
 
         Lib lib2 = new Lib();
         lib2.setArchiveName("second-level-jar");
-        TSFileSet txtFiles2 = new TSFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
+        TsFileSet txtFiles2 = new TsFileSet("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes", null,
            List.of("/home/starksm/Dev/Jakarta/wildflytck/jakartaeetck/classes/com/sun/ts/tests/ejb30/assembly/librarydirectory/custom/second-level-jar.txt"));
         lib2.addResources(txtFiles2);
         libs.add(lib2);

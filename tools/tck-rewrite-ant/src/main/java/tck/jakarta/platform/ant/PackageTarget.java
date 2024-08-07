@@ -11,17 +11,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * An encapsulation of a build.xml "package" target used to create test deployment artifacts.
  */
 public class PackageTarget {
+    static final Logger log = Logger.getLogger(PackageTarget.class.getName());
     ProjectWrapper project;
     TsTaskListener buildListener;
     Target pkgTarget;
@@ -36,6 +36,7 @@ public class PackageTarget {
     War warDef;
     List<War> wars = new ArrayList<>();
     Rar rarDef;
+    List<Rar> rars = new ArrayList<>();
     Vehicles vehiclesDef;
     List<TaskInfo> unhandledTaks = new ArrayList<>();
     List<TsArchiveInfoSet> targetArchives = new ArrayList<>();
@@ -258,11 +259,12 @@ public class PackageTarget {
     }
     public BaseJar getTaskJar(String targetName) {
         BaseJar targetJar = switch (targetName) {
-            case "package.ejb.jar" -> ejbJarDef;
+            case "package.ejb.jar", "package_mdb1", "package_mdb2", "package.ejb.jar1", "package.ejb.jar2" -> ejbJarDef;
             case "package.war" -> warDef;
             case "package.appclient.jar" -> clientJarDef;
             case "package.ear" -> earDef;
-            case "add.sigtest", "build.common.app", "pre.package", "package" -> null;
+            case "add.sigtest", "build", "build.common.app", "build.common.apps", "build.nested.jar", "build.whitebox.jar",
+                 "compile", "pre.package", "-precompile", "-postcompile", "package" -> null;
             default -> {
                 throw new RuntimeException("Unknown targetName: " + targetName);
             }
@@ -389,9 +391,6 @@ public class PackageTarget {
      */
 
     public BaseJar parseTsRar(Task task, Task dirname, Task basename) {
-        if(rarDef != null) {
-            throw new RuntimeException("multiple RARs is not supported");
-        }
         if(dirname != null) {
             dirname.maybeConfigure();
             dirname.execute();
@@ -403,6 +402,7 @@ public class PackageTarget {
 
         rarDef = new Rar(project.getProject(), task.getRuntimeConfigurableWrapper());
         rarDef.setMapping(this.mapping);
+        rars.add(rarDef);
         return rarDef;
     }
 
@@ -442,7 +442,8 @@ public class PackageTarget {
             // If the last archive is a rar, then build a Rar
             List<TsArchiveInfo> archives = archiveInfoSet.archives();
             TsArchiveInfo lastArchive = archives.get(archives.size() - 1);
-            if(lastArchive.getFullArchiveName().endsWith(".rar")) {
+            String archiveFullname = lastArchive.getFullArchiveName();
+            if(archiveFullname.endsWith(".rar")) {
                 Rar rar = new Rar(project.getProject(), null);
                 rar.setMapping(this.mapping);
                 String archiveName = lastArchive.getArchiveName();
@@ -451,7 +452,7 @@ public class PackageTarget {
                     archiveName = archiveName.substring(0, archiveName.length() - 3);
                 }
                 rar.setArchiveName(archiveName);
-                TSFileSet raDescriptor = lastArchive.getResources().get(0);
+                TsFileSet raDescriptor = lastArchive.getResources().get(0);
                 Path descriptor = Paths.get(raDescriptor.getIncludes().get(0));
                 rar.setDescriptorDir(descriptor.getParent().toString());
                 rar.setDescriptor(descriptor.getFileName().toString());
@@ -464,8 +465,9 @@ public class PackageTarget {
                     rarLib.addResources(archive.getResources());
                 }
                 rarDef.setRarLib(rarLib);
+            } else if(archiveFullname.startsWith("whitebox")){
             } else {
-                throw new IllegalStateException("Unhandled archive type: " + lastArchive.getFullArchiveName());
+                log.warning("Unhandled archive type: " + lastArchive.getFullArchiveName());
             }
         }
     }
@@ -482,14 +484,27 @@ public class PackageTarget {
     }
 
     /**
-     * This should only be called once per instance
+     * This should only be called once per instance. It calls performTasks on the package target and its dependencies
      */
     public void execute() {
         TsTaskListener buildListener = new TsTaskListener(this);
         project.addBuildListener(buildListener);
         List<String> dependencies = Utils.toList(pkgTarget.getDependencies());
+        List<String> allDependencies = new ArrayList<>();
         for (String dep : dependencies) {
             if(dep.equals("build.common.app")) {
+                continue;
+            }
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                List<String> subdeps = Utils.toList(target.getDependencies());
+                subdeps.forEach(d -> allDependencies.add(0, d));
+            }
+        }
+        allDependencies.addAll(dependencies);
+        log.info("Executing package target dependencies: " + allDependencies);
+        for (String dep : allDependencies) {
+            if(dep.startsWith("build.common.app")) {
                 continue;
             }
             Target target = project.getTargets().get(dep);
@@ -511,6 +526,29 @@ public class PackageTarget {
             project.addBuildListener(buildListener);
         }
         setVehicleOverride(vehicleType.name());
+        List<String> dependencies = Utils.toList(pkgTarget.getDependencies());
+        List<String> allDependencies = new ArrayList<>();
+        for (String dep : dependencies) {
+            if(dep.startsWith("build.common.app")) {
+                continue;
+            }
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                List<String> subdeps = Utils.toList(target.getDependencies());
+                subdeps.forEach(d -> allDependencies.add(0, d));
+            }
+        }
+        allDependencies.addAll(dependencies);
+        log.info("Executing package target dependencies: " + allDependencies);
+        for (String dep : allDependencies) {
+            if(dep.equals("build.common.app")) {
+                continue;
+            }
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                target.performTasks();
+            }
+        }
         pkgTarget.performTasks();
     }
 
@@ -577,5 +615,30 @@ public class PackageTarget {
                 "\n\tunhandledTaks=" + unhandledTaks +
                 "\n\ttargetArchives=" + targetArchives +
                 '}';
+    }
+
+    public void mergeCopyFS(List<TsFileSet> copyFSSets) {
+        if(!copyFSSets.isEmpty()) {
+            for (TsFileSet copyFS : copyFSSets) {
+                for (String include : copyFS.includes) {
+                    if(clientJarDef != null && include.contains(clientJarDef.getDescriptor())) {
+                        //clientJarDef.setDescriptorDir(copyFS.getDir());
+                        clientJarDef.addCopyFileSet(copyFS);
+                    }
+                    if(ejbJarDef != null && include.contains(ejbJarDef.getDescriptor())) {
+                        //ejbJarDef.setDescriptorDir(copyFS.getDir());
+                        ejbJarDef.addCopyFileSet(copyFS);
+                    }
+                    if(warDef != null && include.contains(warDef.getDescriptor())) {
+                        //warDef.setDescriptorDir(copyFS.getDir());
+                        warDef.addCopyFileSet(copyFS);
+                    }
+                    if(rarDef != null && include.contains(rarDef.getDescriptor())) {
+                        //rarDef.setDescriptorDir(copyFS.getDir());
+                        rarDef.addCopyFileSet(copyFS);
+                    }
+                }
+            }
+        }
     }
 }

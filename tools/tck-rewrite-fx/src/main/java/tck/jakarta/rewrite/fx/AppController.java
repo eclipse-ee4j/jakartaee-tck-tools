@@ -303,7 +303,7 @@ public class AppController {
     }
     @RunOnFxThread
     void updateTestClassSelectionView(Path testClassPath, String originalCode, List<TestClientFile> testFiles) {
-        sourceViewController.updateTestClassSelectionView(testClassPath, originalCode, testFiles);
+        sourceViewController.updateTestClassSelectionView(testClassPath, originalCode, testFiles, lastTestPackageInfo.getTestClients());
         fileTreeView.getScene().setCursor(Cursor.DEFAULT);
     }
 

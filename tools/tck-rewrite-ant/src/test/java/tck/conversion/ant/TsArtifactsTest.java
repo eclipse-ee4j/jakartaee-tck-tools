@@ -1192,6 +1192,92 @@ public class TsArtifactsTest {
         System.out.println(methodCode);
     }
 
+    // src/main/java/com/sun/ts/tests/ejb30/assembly/initorder/appclientejb/build.xml
+    @Test
+    public void testClientInitOrderAppclientejb() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb30/assembly/initorder/appclientejb/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        List<String> dependencies = toList(pkg.getDependencies());
+        System.out.printf("package dependencies: %s\n", dependencies);
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+
+        // Build the dependencies firt
+        TsTaskListener buildListener = new TsTaskListener(pkgTarget);
+        project.addBuildListener(buildListener);
+        List<String> allDependencies = new ArrayList<>();
+        for (String dep : dependencies) {
+            if(dep.equals("build.common.app")) {
+                continue;
+            }
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                List<String> subdeps = Utils.toList(target.getDependencies());
+                subdeps.forEach(d -> allDependencies.add(0, d));
+            }
+        }
+        allDependencies.addAll(dependencies);
+        for (String dep : allDependencies) {
+            if(dep.equals("build.common.app")) {
+                continue;
+            }
+            Target target = project.getTargets().get(dep);
+            if(target != null) {
+                target.performTasks();
+            }
+        }
+        pkg.performTasks();
+
+        // Print out the package target tasks
+
+        System.out.println("Client: "+pkgTarget.getClientJarDef());
+        System.out.printf("Client.classes: %s\n", pkgTarget.getClientJarDef().getClassFilesString());
+        System.out.println("Ejb: "+pkgTarget.getEjbJarDef());
+        System.out.println("Ejb.classes: "+pkgTarget.getEjbJarDef().getClassFilesString());
+        System.out.println("Ear: "+pkgTarget.getEarDef());
+        System.out.printf("Ear.classes: %s\n", pkgTarget.getEarDef().getClassFilesString());
+        System.out.printf("Ear.descriptorPath: %s\n", pkgTarget.getEarDef().getRelativeDescriptorPath());
+        System.out.println("Pkg.moduleNames: "+pkgTarget.getModuleNames());
+
+        STGroup earGroup = new STGroupFile("TsEar.stg");
+        ST genEar = earGroup.getInstanceOf("genEar");
+        genEar.add("ear", pkgTarget.getEarDef());
+        genEar.add("pkg", pkgTarget);
+        genEar.add("testClass", "ClientTest");
+
+        String earCode = genEar.render();
+        System.out.println(earCode);
+
+        Class<?> clazz = com.sun.ts.tests.ejb30.assembly.initorder.appclientejb.Client.class;
+        DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTarget.getDeploymentName(), "javatest", VehicleType.none);
+        deployment.setWar(pkgTarget.getWarDef());
+        deployment.setEjbJar(pkgTarget.getEjbJarDef());
+        deployment.setEar(pkgTarget.getEarDef());
+        STGroup.verbose = true;
+        //Interpreter.trace = true;
+        STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
+        deploymentMethodGroup.registerModelAdaptor(War.Content.class, new RecordAdaptor<War.Content>());
+        ST template = deploymentMethodGroup.getInstanceOf("genMethodNonVehicle");
+        template.add("pkg", pkgTarget);
+        template.add("deployment", deployment);
+        template.add("testClass", "ClientTest");
+        String methodCode = template.render().trim();
+        System.out.println(methodCode);
+    }
+
     /**
      * The full com/sun/ts/tests/ejb32/mdb/modernconnector test class which includes a rar deployment built
      * in a pre.package dependency
@@ -1337,6 +1423,7 @@ public class TsArtifactsTest {
         System.out.println("War: "+pkgTarget.getWarDef());
         System.out.println("War.classes: "+pkgTarget.getWarDef().getClassFilesString());
         System.out.println("War.content: "+pkgTarget.getWarDef().getWebContent());
+        System.out.printf("War descriptors: %s\n", pkgTarget.getWarDef().getFoundDescriptors());
 
         STGroup warGroup = new STGroupFile("TsWar.stg");
         //System.out.println(ejbJarGroup.show());
@@ -1372,5 +1459,67 @@ public class TsArtifactsTest {
         pkgTarget.resolveTsArchiveInfoSets();
 
         System.out.println(pkgTarget);
+    }
+
+    @Test
+    public void test_connector_xa_event() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/connector/xa/event/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute(VehicleType.ejb);
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        System.out.println(pkgTarget);
+
+        System.out.printf("Client descriptors: %s\n", pkgTarget.getClientJarDef().getFoundDescriptors());
+        System.out.printf("Ejb descriptors: %s\n", pkgTarget.getEjbJarDef().getFoundDescriptors());
+        System.out.printf("Ear descriptors: %s\n", pkgTarget.getEarDef().getFoundDescriptors());
+    }
+
+    @Test
+    public void test_ejb30_assembly_appres_appclientejb() {
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb30/assembly/appres/appclientejb/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        System.out.println(pkgTarget);
+
+        System.out.printf("Client descriptors: %s\n", pkgTarget.getClientJarDef().getFoundDescriptors());
+        System.out.printf("Ejb descriptors: %s\n", pkgTarget.getEjbJarDef().getFoundDescriptors());
+        System.out.printf("Ear descriptors: %s\n", pkgTarget.getEarDef().getFoundDescriptors());
     }
 }

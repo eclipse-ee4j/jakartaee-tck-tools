@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Information about a TCK test package.
+ * Information about a TCK test package. A TestPackageInfo contains:
+ * - a base test class
+ * - list of test methods
+ * - list of test clients, one for each unit test type
  */
 public class TestPackageInfo {
     // TCK test class
@@ -18,6 +21,7 @@ public class TestPackageInfo {
     private final EE11toEE10Mapping mapping;
     // One for a non-vehicle client, and one or more for vehicle clients
     List<TestClientInfo> testClients;
+    // Generated test client java files, not created until #getTestClientFiles is called
     private final ArrayList<TestClientFile> testClientFiles = new ArrayList<>();
 
     public TestPackageInfo(Class<?> baseTestClass, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) {
