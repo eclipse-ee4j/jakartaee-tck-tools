@@ -95,7 +95,7 @@
             <version>${version.tcktools}</version>
         </dependency>
         <dependency>
-            <groupId>tck.jakarta.platform</groupId>
+            <groupId>jakarta.tck</groupId>
             <artifactId>tck-rewrite-ant</artifactId>
             <version>${version.tcktools}</version>
         </dependency>
