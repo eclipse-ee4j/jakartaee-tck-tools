@@ -10,7 +10,7 @@
         <version>1.0.9</version>
     </parent>
 
-    <groupId>tck.jakarta</groupId>
+    <groupId>jakarta.tck</groupId>
     <artifactId>tck-rewrite-ant</artifactId>
     <version>1.0.0-M2</version>
 

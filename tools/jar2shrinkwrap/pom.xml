@@ -11,7 +11,7 @@
     </parent>
 
     <version>1.0.0-M2</version>
-    <groupId>tck.jakarta</groupId>
+    <groupId>jakarta.tck</groupId>
     <artifactId>jar2shrinkwrap</artifactId>
 
     <properties>
