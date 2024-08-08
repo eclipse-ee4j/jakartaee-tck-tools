@@ -256,7 +256,11 @@ public class Utils {
                         if(Character.isDigit(dotClass.charAt(dollar+1))) {
                             anonymousClasses.add(dotClass);
                             continue;
-                    }
+                        } else {
+                            // skip nested class name com/sun/ts/lib/harness/EETest$Fault.class
+                            // clazz = dotClass.substring(0,dotClass.indexOf('$')) + ".class";
+                            continue;
+                        }
                     }
                     classes.add(clazz);
                 }
