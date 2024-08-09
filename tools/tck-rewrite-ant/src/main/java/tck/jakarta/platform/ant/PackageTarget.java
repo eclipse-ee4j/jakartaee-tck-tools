@@ -43,7 +43,7 @@ public class PackageTarget {
     EE11toEE10Mapping mapping;
 
     public PackageTarget(ProjectWrapper project, Target pkgTarget) {
-        this(project, pkgTarget, new DefaultEEMapping());
+        this(project, pkgTarget, DefaultEEMapping.getInstance());
     }
     public PackageTarget(ProjectWrapper project, Target pkgTarget, EE11toEE10Mapping mapping) {
         this.project = project;

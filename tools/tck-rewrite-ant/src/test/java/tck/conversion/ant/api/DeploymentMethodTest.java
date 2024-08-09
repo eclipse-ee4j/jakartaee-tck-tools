@@ -57,7 +57,7 @@ public class DeploymentMethodTest {
         List<TestMethodInfo> testMethods = Arrays.asList(new TestMethodInfo("bytesMsgNullStreamTopicTest", "Exception"),
                 new TestMethodInfo("bytesMessageTopicTestsFullMsg", "Exception"),
                 new TestMethodInfo("bytesMessageTNotWriteable", "Exception"));
-        TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(BytesMsgTopicTests.class, testMethods, new DefaultEEMapping());
+        TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(BytesMsgTopicTests.class, testMethods, DefaultEEMapping.getInstance());
         System.out.println(pkgInfo);
 
         System.out.println("TestClasses:");
@@ -86,7 +86,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("bytesMsgNullStreamTopicTest", "bytesMessageTopicTestsFullMsg", "bytesMessageTNotWriteable");
         List<TestMethodInfo> testMethodsEx = toExMethods(testMethods);
-        List<TestClientInfo> testClientInfos = builder.buildTestClientsEx(BytesMsgTopicTests.class, testMethodsEx, new DefaultEEMapping());
+        List<TestClientInfo> testClientInfos = builder.buildTestClientsEx(BytesMsgTopicTests.class, testMethodsEx, DefaultEEMapping.getInstance());
         for (TestClientInfo clientInfo : testClientInfos) {
             System.out.println(clientInfo);
         }
@@ -177,7 +177,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("initOrder", "appName");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.initorder.warejb.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -192,7 +192,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("testModernConnector");
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.mdb.modernconnector.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -206,7 +206,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("checkEnvEntry", "testDTO");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.misc.sameejbclass.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -220,7 +220,7 @@ public class DeploymentMethodTest {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<String> testMethods = Arrays.asList("test1");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.zombie.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -261,7 +261,7 @@ public class DeploymentMethodTest {
                 "secondLevelJarEJB", "secondLevelDir", "secondLevelDirEJB", "postConstructInvokedInSuperElseWhere",
                 "remoteAdd", "remoteAddByHelloEJB", "remoteAddByHelloEJBFromAssemblyBean");
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.librarydirectory.custom.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -276,7 +276,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("test5", "com.sun.ts.lib.harness.EETest.Fault")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.tx.session.stateless.bm.Tx_Multi.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -307,7 +307,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("testContextSetupCompleted", "Exception")
         );
         Class<?> baseTestClass = com.sun.ts.tests.connector.localTx.msginflow.MDBClient.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -328,7 +328,7 @@ public class DeploymentMethodTest {
                 "joinTransactionTransactionRequiredExceptionTest"
                 );
         Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.entityManager.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, toExMethods(testMethods), DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -341,7 +341,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("writeLockTimeout", "")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -357,7 +357,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("accessTimersSingleton", "")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.sharing.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -369,7 +369,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("noAnnotationTest", "com.sun.ts.tests.ejb30.common.helper.TestFailedException")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.relaxedclientview.singleton.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -381,7 +381,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("noAnnotationTest", "com.sun.ts.tests.ejb30.common.helper.TestFailedException")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb32.relaxedclientview.stateful.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -396,7 +396,7 @@ public class DeploymentMethodTest {
 
         );
         Class<?> baseTestClass = ee.jakarta.tck.persistence.core.callback.listener.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -412,7 +412,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("libSubdirNotScanned", "Exception")
         );
         Class<?> baseTestClass = com.sun.ts.tests.ejb30.assembly.metainfandlibdir.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -424,7 +424,7 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("testConnectionEventListener", "Exception")
         );
         Class<?> baseTestClass = com.sun.ts.tests.connector.xa.event.eventClient1.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
@@ -442,7 +442,19 @@ public class DeploymentMethodTest {
                 new TestMethodInfo("test7", "Exception")
         );
         Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.propagation.cm.extended.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    @Test
+    public void test_jpa_core_entityManager() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("persistExceptionsTest", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.entityManager.Client2.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }

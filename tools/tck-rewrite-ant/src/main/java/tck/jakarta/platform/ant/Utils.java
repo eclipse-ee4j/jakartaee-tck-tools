@@ -253,10 +253,12 @@ public class Utils {
                     }
                     int dollar = dotClass.indexOf('$');
                     if(dollar > 0) {
+                        // This is an inner class, if it is anonymous, add it to the list
                         if(Character.isDigit(dotClass.charAt(dollar+1))) {
                             anonymousClasses.add(dotClass);
                             continue;
                         } else {
+                            // Otherwise, create a literal class name for the inner class
                             clazz = dotClass.replace('$', '.');
                         }
                     }

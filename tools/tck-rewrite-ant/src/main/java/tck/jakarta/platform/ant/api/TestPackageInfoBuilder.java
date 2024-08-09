@@ -109,7 +109,7 @@ public class TestPackageInfoBuilder {
             testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
         }
 
-        return buildTestPackgeInfoEx(clazz, testMethodInfos, new DefaultEEMapping());
+        return buildTestPackgeInfoEx(clazz, testMethodInfos, DefaultEEMapping.getInstance());
     }
     public TestPackageInfo buildTestPackgeInfoEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
         TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods, mapping);
@@ -136,7 +136,7 @@ public class TestPackageInfoBuilder {
         for (String testMethod : testMethods) {
             testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
         }
-        return buildTestClientsEx(clazz, testMethodInfos, new DefaultEEMapping());
+        return buildTestClientsEx(clazz, testMethodInfos, DefaultEEMapping.getInstance());
     }
 
     /**
@@ -151,6 +151,8 @@ public class TestPackageInfoBuilder {
      */
     public List<TestClientInfo> buildTestClientsEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
         ArrayList<TestClientInfo> testClientInfos = new ArrayList<>();
+        // Add the test class mapping
+        mapping.addTestClassMapping(clazz, tsHome);
         // The simple name, e.g., MyTest for com.sun.*.MyTest
         String testClassSimpleName = clazz.getSimpleName();
         String pkg = clazz.getPackageName();
