@@ -55,6 +55,8 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static final Path tsHome = Paths.get(System.getProperty("ts.home"));
 
     private static final Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
+
+    private static final String tckpackage = System.getProperty("tckpackage");
     private static final DefaultEEMapping ee11_2_ee10 = new DefaultEEMapping();
 
     static {
@@ -145,6 +147,10 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
             boolean isTest = classDecl.getSimpleName().contains("Client"); // this will match too much but still try
             if (!isTest) {
                 log.fine("ignore non-test class " + classDecl.getSimpleName());
+                return classDecl;
+            }
+            // return if the test is not in the specified tckpackage
+            if (tckpackage != null && !classDecl.getType().getPackageName().equals(tckpackage)) {
                 return classDecl;
             }
 
