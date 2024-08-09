@@ -13,7 +13,7 @@ public class Lib {
     EE11toEE10Mapping mapping;
 
     public Lib() {
-        this(new DefaultEEMapping());
+        this(DefaultEEMapping.getInstance());
     }
     public Lib(EE11toEE10Mapping mapping) {
         this.mapping = mapping;
