@@ -25,7 +25,7 @@
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.ignoreopenrewrite>8.23.3</version.ignoreopenrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
-        <version.tcktools>1.0.0-M2</version.tcktools>
+        <version.tcktools>1.0.0-SNAPSHOT</version.tcktools>
         <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 
@@ -93,6 +93,7 @@
             <groupId>jakarta.tck</groupId>
             <artifactId>jar2shrinkwrap</artifactId>
             <version>${version.tcktools}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
