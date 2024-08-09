@@ -2,6 +2,9 @@ package tck.jakarta.platform.ant.api;
 
 import java.nio.file.Path;
 
+/**
+ * Collection of default mappings from EE11 to EE10.
+ */
 public class DefaultEEMapping implements EE11toEE10Mapping {
     private static final DefaultEEMapping INSTANCE = new DefaultEEMapping();
     // Mappings from EE11 to EE10 package prefixes
@@ -12,14 +15,29 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             "ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager","com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager",
             "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
     };
-    //  A mapping from EE11 to EE10 class names
+    /**  A mapping from EE11 to EE10 test class names
+     * [0] is the EE11 full class name, ee.jakarta.tck.persistence.core.entityManager.Client2
+     * [1] is the EE10 full class name, com.sun.ts.tests.jpa.core.entityManager.Client
+     */
     private String[] testClassMappings = {"", ""};
 
+    /**
+     * Get the singleton instance of the DefaultEEMapping.
+     * @return the DefaultEEMapping instance
+     */
     public static DefaultEEMapping getInstance() {
         return INSTANCE;
     }
     private DefaultEEMapping() {}
 
+    /**
+     * Pass in a class from the EE11 TCK and if the class has been split into multiple classes in the EE11
+     * as indicated by a number at the end of the class name, then add a mapping from the EE11 class to the
+     * EE10 class.
+     * @param ee11Class - the EE11 class
+     * @param tsHome - the path to the TCK home directory
+     * @return the EE10 class name prefix if the mapping was added, otherwise null
+     */
     @Override
     public String addTestClassMapping(Class<?> ee11Class, Path tsHome) {
         String ee11Name = ee11Class.getName();
@@ -37,14 +55,19 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             Path ee10TestPath = tsHome.resolve("classes").resolve(ee10Path).resolve(simpleName + ".class");
             if (!ee10TestPathN.toFile().exists() && ee10TestPath.toFile().exists()) {
                 // Add the mapping
-                ee10Name = ee10Pkg + "." + simpleName + ".class";
-                testClassMappings[0] = ee11Name + ".class";
+                ee10Name = ee10Pkg + "." + simpleName;
+                testClassMappings[0] = ee11Name;
                 testClassMappings[1] = ee10Name;
             }
         }
         return ee10Name;
     }
 
+    /**
+     * Given an ee11 package name, return the equivalent ee10 package name.
+     * @param ee11Name - dot package name from the EE11 TCK repository
+     * @return the EE10 platform TCK package that starts with com.sun.ts.tests.
+     */
     @Override
     public String getEE10TestPackageName(String ee11Name) {
         String ee10Name = ee11Name;
@@ -57,12 +80,20 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
         return ee10Name;
     }
 
+    /**
+     * Given an ee10 class or package name, return the equivalent ee11 class or package name.
+     * @param ee10Name - .class or dot package name from the EE10 TCK dist
+     * @return the EE11 name
+     */
     @Override
     public String getEE11Name(String ee10Name) {
         String ee11Name = ee10Name;
-        if(ee10Name.equals(testClassMappings[1])) {
-            return testClassMappings[0];
+        // First check for a test class mapping
+        if(ee10Name.startsWith(testClassMappings[1])) {
+            // Replace the EE10 name with the EE11 name
+            return ee10Name.replace(testClassMappings[1], testClassMappings[0]);
         }
+        // Check for a package mapping
         for (int i = 1; i < EE11_PKG_PREFIXES.length; i += 2) {
             if (ee11Name.startsWith(EE11_PKG_PREFIXES[i])) {
                 ee11Name = ee10Name.replace(EE11_PKG_PREFIXES[i], EE11_PKG_PREFIXES[i-1]);
