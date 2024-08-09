@@ -57,7 +57,6 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
     private static final Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
 
     private static final String tckpackage = System.getProperty("tckpackage");
-    private static final DefaultEEMapping ee11_2_ee10 = new DefaultEEMapping();
 
     static {
         if (log.isLoggable(Level.FINEST)) {
@@ -173,7 +172,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 return classDecl;
             }
 
-            String ee10pkg = ee11_2_ee10.getEE10TestPackageName(pkg);
+            String ee10pkg = DefaultEEMapping.getInstance().getEE10TestPackageName(pkg);
             try {
 
                 if (isLegacyTestPackage(ee10pkg)) {
@@ -186,7 +185,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     // update the methods to use the correct Throws exception
                     methodNameList = correctThrowsException(tckClass, methodNameList);
 
-                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList, ee11_2_ee10);
+                    TestPackageInfo pkgInfo = builder.buildTestPackgeInfoEx(tckClass, methodNameList, DefaultEEMapping.getInstance());
                     log.info("About to generate test class(es) for " + classDecl.getType().getFullyQualifiedName() + ", EE 10 test package " + ee10pkg + " EE 11 test package " + pkg);
                     for (TestClientFile testClient : pkgInfo.getTestClientFiles()) {
                         // The test package dir under the test module src/main/java directory
