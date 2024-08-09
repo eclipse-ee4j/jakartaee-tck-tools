@@ -251,15 +251,15 @@ public class Utils {
                     if(mapping != null) {
                         clazz = mapping.getEE11Name(dotClass);
                     }
-                    int dollar = dotClass.indexOf('$');
+                    int dollar = clazz.indexOf('$');
                     if(dollar > 0) {
                         // This is an inner class, if it is anonymous, add it to the list
-                        if(Character.isDigit(dotClass.charAt(dollar+1))) {
-                            anonymousClasses.add(dotClass);
+                        if(Character.isDigit(clazz.charAt(dollar+1))) {
+                            anonymousClasses.add(clazz);
                             continue;
                         } else {
                             // Otherwise, create a literal class name for the inner class
-                            clazz = dotClass.replace('$', '.');
+                            clazz = clazz.replace('$', '.');
                         }
                     }
                     classes.add(clazz);
