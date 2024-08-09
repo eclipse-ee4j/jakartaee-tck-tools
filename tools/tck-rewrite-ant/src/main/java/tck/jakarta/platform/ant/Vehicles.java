@@ -63,7 +63,7 @@ public class Vehicles {
     private TsFileSet jarElements;
     private List<Lib> earLibs = new ArrayList<>();
     private List<Lib> warLibs = new ArrayList<>();
-    private EE11toEE10Mapping mapping = new DefaultEEMapping();
+    private EE11toEE10Mapping mapping = DefaultEEMapping.getInstance();
 
 
     public Vehicles(final String name, final String vehiclePkgDir, AttributeMap attributes, RuntimeConfigurable rc, Location location) {

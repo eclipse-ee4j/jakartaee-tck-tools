@@ -1,9 +1,17 @@
 package tck.jakarta.platform.ant.api;
 
+import java.nio.file.Path;
+
 /**
  * Maps EE11 names to EE10 names.
  */
 public interface EE11toEE10Mapping {
+    /**
+     * This looks at the EE11 class and if it sends in a number and does not exist in EE10, a mapping from
+     * the com.sun.ts.tests.x.Class.class to the com.sun.ts.tests.x.ClassN.class is added.
+     */
+    public String addTestClassMapping(Class<?> ee11Class, Path tsHome);
+
     /**
      * Map a package name from EE11 to EE10 to determine the location of the build.xml file.
      * The returned name is relative to the EE10 platform TCK com.sun.ts.tests package under
