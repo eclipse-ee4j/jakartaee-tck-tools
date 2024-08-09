@@ -103,6 +103,11 @@ genMethodNonVehicle(pkg, deployment, testClass) ::= <<
     #genRar(deployment.rar, testClass)#
 #endif#
 
+#if(deployment.hasPar)#
+    // Par
+    #genPar(deployment.par, testClass)#
+#endif#
+
 #if(deployment.hasEar)#
     // Ear
     #genEar(pkg, deployment.ear, testClass)#
