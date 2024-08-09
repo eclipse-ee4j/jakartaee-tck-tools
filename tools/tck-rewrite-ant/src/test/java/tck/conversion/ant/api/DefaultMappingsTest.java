@@ -12,10 +12,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+@EnabledIfSystemProperty(named = "ts.home", matches = ".*")
 public class DefaultMappingsTest {
     static Path tsHome = Paths.get(System.getProperty("ts.home"));
 
-    @EnabledIfSystemProperty(named = "ts.home", matches = ".*")
     @Test
     public void testClassNMappings() {
         DefaultEEMapping mappings = DefaultEEMapping.getInstance();
@@ -26,6 +26,20 @@ public class DefaultMappingsTest {
         // TsFileSet(String dir, String prefix, List<String> includes) {
         Path testDir = tsHome.resolve("classes");
         TsFileSet fileSet = new TsFileSet(testDir.toString(), "", List.of("com/sun/ts/tests/jpa/core/entityManager/Client.class"));
+        String classes = Utils.getClassFilesString(mappings, List.of(fileSet), new ArrayList<>());
+        Assertions.assertEquals(baseTestClass.getName()+".class", classes);
+    }
+
+    @Test
+    public void testJpaMappings() {
+        DefaultEEMapping mappings = DefaultEEMapping.getInstance();
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.propagation.cm.extended.Client.class;
+        String ee10Name = mappings.addTestClassMapping(baseTestClass, tsHome);
+        Assertions.assertNull(ee10Name);
+
+        // TsFileSet(String dir, String prefix, List<String> includes) {
+        Path testDir = tsHome.resolve("classes");
+        TsFileSet fileSet = new TsFileSet(testDir.toString(), "", List.of("com/sun/ts/tests/jpa/ee/propagation/cm/extended/Client.class"));
         String classes = Utils.getClassFilesString(mappings, List.of(fileSet), new ArrayList<>());
         Assertions.assertEquals(baseTestClass.getName()+".class", classes);
     }

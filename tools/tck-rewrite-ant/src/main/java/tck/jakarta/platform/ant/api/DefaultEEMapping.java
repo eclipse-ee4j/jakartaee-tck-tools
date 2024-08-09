@@ -89,7 +89,7 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
     public String getEE11Name(String ee10Name) {
         String ee11Name = ee10Name;
         // First check for a test class mapping
-        if(ee10Name.startsWith(testClassMappings[1])) {
+        if(!testClassMappings[1].isEmpty() && ee10Name.startsWith(testClassMappings[1])) {
             // Replace the EE10 name with the EE11 name
             return ee10Name.replace(testClassMappings[1], testClassMappings[0]);
         }
