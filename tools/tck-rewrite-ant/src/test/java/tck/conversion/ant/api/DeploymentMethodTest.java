@@ -428,4 +428,22 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_jpa_ee_propagation_cm_extended() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("test1", "Exception"),
+                new TestMethodInfo("test2", "Exception"),
+                new TestMethodInfo("test3", "Exception"),
+                new TestMethodInfo("test4", "Exception"),
+                new TestMethodInfo("test5", "Exception"),
+                new TestMethodInfo("test6", "Exception"),
+                new TestMethodInfo("test7", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.ee.propagation.cm.extended.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, new DefaultEEMapping());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }
