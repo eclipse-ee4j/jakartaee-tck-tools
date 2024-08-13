@@ -458,4 +458,20 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_jpa_core_StoredProcedureQuery() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("executeTest", "Exception"),
+                new TestMethodInfo("getOutputParameterValueIntIllegalArgumentExceptionTest", "Exception"),
+            new TestMethodInfo("getFirstResultTest", "Exception")
+
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.StoredProcedureQuery.Client1.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
 }
