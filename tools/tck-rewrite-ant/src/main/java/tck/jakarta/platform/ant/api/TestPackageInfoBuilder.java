@@ -164,19 +164,6 @@ public class TestPackageInfoBuilder {
             throw new FileNotFoundException("The pkg path does not contain a build.xml file: "+buildXml);
         }
 
-        Project project = new Project();
-        project.init();
-        // The location of the glassfish download for the jakarta api jars
-        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
-        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
-        project.setBaseDir(buildXml.getParent().toFile());
-        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
-
-        debug("Parsing(%s)\n", buildXml);
-        ProjectHelper.configureProject(project, buildXml.toFile());
-        Target antPackageTarget = project.getTargets().get("package");
-        PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
-
         VehicleVerifier verifier = VehicleVerifier.getInstance(buildXml.toFile());
         String[] vehicles = verifier.getVehicleSet();
         debug("Vehicles: %s\n", Arrays.asList(vehicles));
@@ -192,6 +179,12 @@ public class TestPackageInfoBuilder {
 
         // Generate the test deployment method
         if(vehicles.length == 0) {
+            Project project = initProject(buildXml);
+            debug("Parsing(%s)\n", buildXml);
+            ProjectHelper.configureProject(project, buildXml.toFile());
+            Target antPackageTarget = project.getTargets().get("package");
+            PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
+
             DeploymentMethodInfo methodInfo = parseNonVehiclePackage(pkgTargetWrapper, clazz);
             // The class name of the generated clazz subclass
             String genTestClassName = "ClientTest";
@@ -205,12 +198,18 @@ public class TestPackageInfoBuilder {
             testClientInfo.setTags(tags);
             testClientInfos.add(testClientInfo);
         } else {
+
             for(String vehicle : vehicles) {
                 VehicleType vehicleType = VehicleType.valueOf(vehicle);
                 // Skip unsupported vehicles
                 if(vehicleType == VehicleType.ejbembed) {
                     continue;
                 }
+                Project project = initProject(buildXml);
+                debug("Parsing(%s)\n", buildXml);
+                ProjectHelper.configureProject(project, buildXml.toFile());
+                Target antPackageTarget = project.getTargets().get("package");
+                PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
                 DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
                 // The class name of the generated clazz subclass
                 String vehicleName = capitalizeFirst(vehicleType.name());
@@ -262,6 +261,17 @@ public class TestPackageInfoBuilder {
             methodInfo = parseVehiclePackage(pkgTargetWrapper, testClass, vehicleType);
         }
         return methodInfo;
+    }
+
+    private Project initProject(Path buildXml) {
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+        return project;
     }
 
     /**
