@@ -16,7 +16,7 @@ genPar(par, testClass) ::= <<
 }#
 #endif#
     // The persistence.xml descriptor
-    URL parURL = #testClass#.class.getResource("/#par.relativeDescriptorPath#");
+    URL parURL = #testClass#.class.getResource("persistence.xml");
     if(parURL != null) {
       #par.typedArchiveName#.addAsManifestResource(parURL, "persistence.xml");
     }
