@@ -66,6 +66,7 @@
         <module>appclient</module>
         <module>javatest</module>
         <module>porting-lib</module>
+        <module>protocol-lib</module>
     </modules>
 
 </project>
