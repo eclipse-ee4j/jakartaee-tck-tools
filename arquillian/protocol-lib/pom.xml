@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <!-- Parent -->
+  <parent>
+    <groupId>jakarta.tck</groupId>
+    <artifactId>tck.arquillian.parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <!-- Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Configuration -->
+  <groupId>jakarta.tck.arquillian</groupId>
+  <artifactId>arquillian-protocol-lib</artifactId>
+  <name>Arquillian Protocol Lib</name>
+
+  <properties>
+    <!-- Versioning -->
+    <ee.tck.version>11.0.0-SNAPSHOT</ee.tck.version>
+  </properties>
+
+  <!-- Dependencies -->
+  <dependencies>
+    <dependency>
+      <groupId>jakarta.tck</groupId>
+      <artifactId>common</artifactId>
+      <version>${ee.tck.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.tck</groupId>
+      <artifactId>libutil</artifactId>
+      <version>${ee.tck.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- TODO: either make a proper artifact or define this as a setup requirement
+        in the TCK user guide.
+
+        This combines the TCK vehicle related classes into a protocol.jar that is
+         included in the test deployments by the JavaTestDeploymentPackager class.
+         -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>jakarta.tck</groupId>
+                  <artifactId>libutil</artifactId>
+                  <version>${ee.tck.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <includes>**/*.class,**/*.xml</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>jakarta.tck</groupId>
+                  <artifactId>common</artifactId>
+                  <version>${ee.tck.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <includes>**/*.class,**/*.xml</includes>
+                  <excludes>com/sun/ts/tests/common/vehicle/**</excludes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+

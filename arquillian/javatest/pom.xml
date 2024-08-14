@@ -23,7 +23,6 @@
     <!-- There are post SE 11 language features used -->
     <maven.compiler.release>17</maven.compiler.release>
     <!-- Versioning -->
-    <javatest.version>5.0</javatest.version>
     <ee.tck.version>11.0.0-SNAPSHOT</ee.tck.version>
   </properties>
 
@@ -61,14 +60,43 @@
     </dependency>
 
     <dependency>
-      <groupId>javatest</groupId>
-      <artifactId>javatest</artifactId>
-      <version>${javatest.version}</version>
-    </dependency>
-    <dependency>
       <groupId>jakarta.tck</groupId>
       <artifactId>common</artifactId>
       <version>${ee.tck.version}</version>
+    </dependency>
+    <!-- This needs to be copied to target/protocol/protocol.jar using a maven-dependency-plugin setup like:
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-protocol-lib</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>jakarta.tck.arquillian</groupId>
+                                    <artifactId>arquillian-protocol-lib</artifactId>
+                                    <version>${version.jakarta.tck}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/protocol</outputDirectory>
+                                    <destFileName>protocol.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+    -->
+    <dependency>
+      <groupId>jakarta.tck.arquillian</groupId>
+      <artifactId>arquillian-protocol-lib</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -83,77 +111,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <!-- TODO: either make a proper artifact or define this as a setup requirement
-        in the TCK user guide.
-
-        This combines the TCK vehicle related classes into a protocol.jar that is
-         included in the test deployments by the JavaTestDeploymentPackager class.
-         -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.6.1</version>
-        <executions>
-          <execution>
-            <id>unpack</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>jakarta.tck</groupId>
-                  <artifactId>libutil</artifactId>
-                  <version>${ee.tck.version}</version>
-                  <type>jar</type>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/protocol</outputDirectory>
-                  <includes>**/*.class,**/*.xml</includes>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>jakarta.tck</groupId>
-                  <artifactId>common</artifactId>
-                  <version>${ee.tck.version}</version>
-                  <type>jar</type>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/protocol</outputDirectory>
-                  <includes>**/*.class,**/*.xml</includes>
-                  <excludes>com/sun/ts/tests/common/vehicle/**</excludes>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>jakarta.platform</groupId>
-                  <artifactId>jakarta.jakartaee-api</artifactId>
-                  <version>10.0.0</version>
-                  <type>jar</type>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>${project.build.directory}/appclient</outputDirectory>
-                  <destFileName>jakartaee-api.jar</destFileName>
-                  <includes>**/*.class,**/*.xml</includes>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>protocol-lib</id>
-            <goals><goal>jar</goal></goals>
-            <phase>process-resources</phase>
-            <configuration>
-              <outputDirectory>${project.build.directory}/protocol</outputDirectory>
-              <finalName>protocol</finalName>
-              <classesDirectory>${project.build.directory}/protocol</classesDirectory>
-              <includes>com/**</includes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>
