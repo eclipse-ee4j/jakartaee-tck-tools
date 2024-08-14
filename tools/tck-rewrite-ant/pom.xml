@@ -20,7 +20,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.arquillian>1.7.0.Final</version.arquillian>
         <version.http-commons>3.1</version.http-commons>
-        <version.javatest>5.0</version.javatest>
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
         <version.tcktools>11.0.0-SNAPSHOT</version.tcktools>
@@ -85,11 +84,6 @@
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>${version.http-commons}</version>
-        </dependency>
-        <dependency>
-            <groupId>javatest</groupId>
-            <artifactId>javatest</artifactId>
-            <version>${version.javatest}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>

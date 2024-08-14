@@ -21,7 +21,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.arquillian>1.7.0.Final</version.arquillian>
         <version.http-commons>3.1</version.http-commons>
-        <version.javatest>5.0</version.javatest>
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.ignoreopenrewrite>8.23.3</version.ignoreopenrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
@@ -99,11 +98,6 @@
             <groupId>jakarta.tck</groupId>
             <artifactId>tck-rewrite-ant</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javatest</groupId>
-            <artifactId>javatest</artifactId>
-            <version>${version.javatest}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
