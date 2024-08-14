@@ -142,7 +142,7 @@ public class ParseJpaDescriptors {
         for (String line : lines) {
             // <class>com.sun.ts.tests.jpa.core.annotations.elementcollection.A</class>
             String mapped = line;
-            if(line.matches("<class>.*</class>")) {
+            if(line.contains("<class>")) {
                 int start = line.indexOf("<class>") + "<class>".length();
                 int end = line.indexOf("</class>");
                 String ee10Class = line.substring(start, end);
