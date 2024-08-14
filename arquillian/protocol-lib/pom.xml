@@ -79,7 +79,30 @@
               </artifactItems>
             </configuration>
           </execution>
+          <execution>
+            <id>src-dependencies</id>
+            <phase>process-sources</phase>
+            <goals>
+              <!-- use copy-dependencies instead if you don't want to explode the sources -->
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <classifier>sources</classifier>
+              <outputDirectory>${project.build.directory}/sources</outputDirectory>
+              <includeArtifactIds>libutil,common</includeArtifactIds>
+              <excludes>**/module-info.java</excludes>
+            </configuration>
+          </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <additionalOptions>-package</additionalOptions>
+          <doclint>none</doclint>
+          <sourcepath>${project.build.directory}/sources</sourcepath>
+        </configuration>
       </plugin>
     </plugins>
   </build>
