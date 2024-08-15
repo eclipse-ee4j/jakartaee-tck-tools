@@ -201,7 +201,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                             continue;
                         }
                         // Write out the test client .java file content
-                        Files.writeString(testClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                        Files.writeString(testClientJavaFile, testClient.getContent(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                         log.info("Generated " + testClientJavaFile + " for " + classDecl.getType().getFullyQualifiedName());
                     }
                 } else {
