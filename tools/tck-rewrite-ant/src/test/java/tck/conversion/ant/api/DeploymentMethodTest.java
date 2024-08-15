@@ -361,6 +361,19 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+    @Test
+    public void testejb32_lite_timer_basic_xa() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("persistCoffeeCreateTimerRollbackStateless", ""),
+                new TestMethodInfo("persistCoffeeCreateTimerRollbackSingleton", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.xa.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
 
     @Test
     public void testEjb32_relaxedclientview_singleton() throws IOException {
