@@ -18,7 +18,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.arquillian>1.7.0.Final</version.arquillian>
+        <version.arquillian>1.9.1.Final</version.arquillian>
+        <version.shrinkwrap>1.2.6</version.shrinkwrap>
         <version.http-commons>3.1</version.http-commons>
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
@@ -34,6 +35,11 @@
                 <version>${version.arquillian}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-api</artifactId>
+                <version>${version.shrinkwrap}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -75,10 +81,6 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>

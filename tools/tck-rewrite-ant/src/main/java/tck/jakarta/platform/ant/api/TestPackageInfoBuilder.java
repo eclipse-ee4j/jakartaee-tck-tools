@@ -186,6 +186,10 @@ public class TestPackageInfoBuilder {
             PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
 
             DeploymentMethodInfo methodInfo = parseNonVehiclePackage(pkgTargetWrapper, clazz);
+            // Add a tag for the protocol so one can filter tests by protocol
+            String protocol = methodInfo.getDebugInfo().getProtocol();
+            ArrayList<String> extraTags = new ArrayList<>(tags);
+            extraTags.add("tck-"+protocol);
             // The class name of the generated clazz subclass
             String genTestClassName = "ClientTest";
             if(testClassSimpleName.equals("ClientTest")) {
@@ -195,7 +199,7 @@ public class TestPackageInfoBuilder {
             testClientInfo.setVehicle(VehicleType.none);
             testClientInfo.setTestDeployment(methodInfo);
             testClientInfo.setCommonDeployment(commonDeployment);
-            testClientInfo.setTags(tags);
+            testClientInfo.setTags(extraTags);
             testClientInfos.add(testClientInfo);
         } else {
 
@@ -211,6 +215,10 @@ public class TestPackageInfoBuilder {
                 Target antPackageTarget = project.getTargets().get("package");
                 PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
                 DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
+                // Add a tag for the protocol so one can filter tests by protocol
+                String protocol = methodInfo.getDebugInfo().getProtocol();
+                ArrayList<String> vehicleTags = new ArrayList<>(tags);
+                vehicleTags.add("tck-"+protocol);
                 // The class name of the generated clazz subclass
                 String vehicleName = capitalizeFirst(vehicleType.name());
                 String genTestClassName = testClassSimpleName+vehicleName+"Test";
@@ -218,7 +226,7 @@ public class TestPackageInfoBuilder {
                 testClientInfo.setVehicle(vehicleType);
                 testClientInfo.setTestDeployment(methodInfo);
                 testClientInfo.setCommonDeployment(commonDeployment);
-                testClientInfo.setTags(tags);
+                testClientInfo.setTags(vehicleTags);
                 testClientInfos.add(testClientInfo);
             }
         }

@@ -19,12 +19,12 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.arquillian>1.7.0.Final</version.arquillian>
+        <version.arquillian>1.9.1.Final</version.arquillian>
+        <version.shrinkwrap>1.2.6</version.shrinkwrap>
         <version.http-commons>3.1</version.http-commons>
         <version.openrewrite>8.7.2</version.openrewrite>
         <version.ignoreopenrewrite>8.23.3</version.ignoreopenrewrite>
         <version.servlet-api>6.0.0</version.servlet-api>
-        <version.tcktools>1.0.0-SNAPSHOT</version.tcktools>
         <version.platform.tck>11.0.0-SNAPSHOT</version.platform.tck>
     </properties>
 
@@ -78,10 +78,7 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap.resolver</groupId>
-            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <version>${version.shrinkwrap}</version>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>

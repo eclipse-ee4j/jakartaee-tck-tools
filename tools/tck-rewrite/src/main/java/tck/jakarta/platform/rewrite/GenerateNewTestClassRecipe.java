@@ -52,11 +52,13 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
 
     static final long serialVersionUID = 427023419L;
     private static final String fullyQualifiedClassName = GenerateNewTestClassRecipe.class.getCanonicalName();
+    // EE10 tck home
     private static final Path tsHome = Paths.get(System.getProperty("ts.home"));
-
+    // EE11 tck module src root, usually src/main/java
     private static final Path srcDir = Paths.get(System.getProperty("tcksourcepath"));
-
+    // Optional property to restrict to a specific test package
     private static final String tckpackage = System.getProperty("tckpackage");
+    private static boolean overwriteExistingTests = Boolean.valueOf(System.getProperty("overwriteExistingTests", "false"));
 
     static {
         if (log.isLoggable(Level.FINEST)) {
@@ -193,7 +195,7 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                         Files.createDirectories(testPkgDir);
                         // The test client .java file
                         Path testClientJavaFile = testPkgDir.resolve(testClient.getName() + ".java");
-                        if (testClientJavaFile.toFile().exists()) {
+                        if (!overwriteExistingTests && testClientJavaFile.toFile().exists()) {
                             log.warning("TODO: " + testClientJavaFile + " was already previously generated which means we aren't handling something correctly.");
                             Thread.dumpStack();
                             continue;

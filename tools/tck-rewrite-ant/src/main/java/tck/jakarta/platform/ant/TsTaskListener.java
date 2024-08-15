@@ -247,9 +247,13 @@ public class TsTaskListener implements BuildListener {
                 String dir = fs.getDir().getAbsolutePath();
                 String[] includes = fs.getDirectoryScanner().getIncludedFiles();
                 if(includes.length > 0) {
-                    TsFileSet copyFS = new TsFileSet(dir, null, new ArrayList<>(List.of(includes)));
                     TsTaskInfo lastTsTask = tsTaskStack.peek();
-                    lastTsTask.addCopyFS(copyFS);
+                    TsFileSet copyFS = new TsFileSet(dir, null, new ArrayList<>(List.of(includes)));
+                    if(lastTsTask == null) {
+                        log.warning("No ts.* task for copy task for: "+copyFS);
+                    } else {
+                        lastTsTask.addCopyFS(copyFS);
+                    }
                 }
             }
         } else {
