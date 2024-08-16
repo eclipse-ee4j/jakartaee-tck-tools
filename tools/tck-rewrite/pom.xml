@@ -133,11 +133,6 @@
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
-	    <artifactId>persistence-tck-platform-tests</artifactId>
-	    <version>3.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
             <artifactId>jta</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>
