@@ -11,6 +11,7 @@ import org.apache.tools.ant.UnknownElement;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ZipFileSet;
+import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -155,6 +156,9 @@ public class TsTaskListener implements BuildListener {
                     if(!taskInfo.getArchives().isEmpty()) {
                         vehiclesDef.addJarResources(taskInfo);
                     }
+                    if(!taskInfo.getCopyFSSets().isEmpty()) {
+                        vehiclesDef.addCopyFS(taskInfo.getCopyFSSets());
+                    }
                     // Copy tasks
                     packageTarget.mergeCopyFS(taskInfo.getCopyFSSets());
                 } else if(taskJar == null) {
@@ -252,6 +256,14 @@ public class TsTaskListener implements BuildListener {
                     if(lastTsTask == null) {
                         log.warning("No ts.* task for copy task for: "+copyFS);
                     } else {
+                        if(lastTsTask.getTaskName().equals("ts.vehicles")) {
+                            // Get the active vehicle type
+                            String vehicleName = lastTsTask.getTask().getProject().getProperty("vehicle.name");
+                            // Strip the _vehicle suffix
+                            String vehicleTypeName = vehicleName.substring(0, vehicleName.length() - "_vehicle".length());
+                            VehicleType vehicleType = VehicleType.valueOf(vehicleTypeName);
+                            copyFS.setVehicleType(vehicleType);
+                        }
                         lastTsTask.addCopyFS(copyFS);
                     }
                 }

@@ -28,5 +28,6 @@ genRar(rar, testClass) ::= <<
     if(raResURL != null) {
       #rar.typedArchiveName#.addAsManifestResource(raResURL, "sun-ra.xml");
     }
+    // Call the archive processor
     archiveProcessor.processRarArchive(#rar.typedArchiveName#, #testClass#.class, raResURL);
 >>

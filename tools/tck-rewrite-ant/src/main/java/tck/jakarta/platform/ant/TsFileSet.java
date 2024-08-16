@@ -1,5 +1,7 @@
 package tck.jakarta.platform.ant;
 
+import tck.jakarta.platform.vehicles.VehicleType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +14,7 @@ public class TsFileSet {
     String dir;
     String prefix;
     List<String> includes;
+    VehicleType vehicleType = VehicleType.none;
 
     /**
      * Build up the fileset from the attributes on the fileset element
@@ -56,6 +59,17 @@ public class TsFileSet {
     public boolean isCommonDir() {
         return dir.contains("common");
     }
+    public boolean isDistDir() {
+        return dir.contains("dist");
+    }
+
+    public VehicleType getVehicleType() {
+        return vehicleType;
+    }
+    public void setVehicleType(VehicleType vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
     @Override
     public String toString() {
         return "FileSet{" +
@@ -64,4 +78,5 @@ public class TsFileSet {
                 ", includes=" + includes +
                 '}';
     }
+
 }

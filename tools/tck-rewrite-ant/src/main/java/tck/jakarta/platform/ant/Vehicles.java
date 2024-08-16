@@ -56,11 +56,11 @@ public class Vehicles {
     // Set of filesets and/or zipfilesets to be added to the servlet vehicle archive
     private List<TsFileSet> servletElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to the jsp vehicle archive
-    private TsFileSet jspElements;
+    private List<TsFileSet> jspElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to all ear vehicle archive
     private List<TsFileSet> earElements = new ArrayList<>();
     // Set of filesets and/or zipfilesets to be added to all vehicle archives
-    private TsFileSet jarElements;
+    private List<TsFileSet> jarElements = new ArrayList<>();
     private List<Lib> earLibs = new ArrayList<>();
     private List<Lib> warLibs = new ArrayList<>();
     private EE11toEE10Mapping mapping = DefaultEEMapping.getInstance();
@@ -140,7 +140,7 @@ public class Vehicles {
         return servletElements;
     }
 
-    public TsFileSet getJspElements() {
+    public List<TsFileSet> getJspElements() {
         return jspElements;
     }
 
@@ -148,7 +148,7 @@ public class Vehicles {
         return earElements;
     }
 
-    public TsFileSet getJarElements() {
+    public List<TsFileSet> getJarElements() {
         return jarElements;
     }
 
@@ -222,6 +222,22 @@ public class Vehicles {
         }
     }
 
+    /**
+     *
+     * @param copyFSSets
+     */
+    public void addCopyFS(List<TsFileSet> copyFSSets) {
+        for (TsFileSet copyFS : copyFSSets) {
+            switch (copyFS.getVehicleType()) {
+                case ejb, ejbembed -> ejbElements.add(copyFS);
+                case appclient, wsappclient -> clientElements = copyFS;
+                case servlet, ejbliteservlet, ejbliteservlet2, pmservlet, puservlet -> servletElements.add(copyFS);
+                case jsp, ejblitejsf, ejblitejsp, ejblitesecuredjsp -> jspElements.add(copyFS);
+                default -> jarElements.add(copyFS);
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "Vehicles{" +
@@ -264,13 +280,13 @@ public class Vehicles {
                     this.servletElements.add(fileSet);
                     break;
                 case "jsp-elements":
-                    this.jspElements = fileSet;
+                    this.jspElements.add(fileSet);
                     break;
                 case "ear-elements":
                     this.earElements.add(fileSet);
                     break;
                 case "jar-elements":
-                    this.jarElements = fileSet;
+                    this.jarElements.add(fileSet);
                     break;
             }
             for (RuntimeConfigurable rccc : Utils.asList(rcc.getChildren())) {
@@ -292,4 +308,5 @@ public class Vehicles {
         String msg = String.format(format, args);
         log.fine(msg);
     }
+
 }

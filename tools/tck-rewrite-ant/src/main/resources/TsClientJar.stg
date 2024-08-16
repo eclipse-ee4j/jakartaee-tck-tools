@@ -26,6 +26,6 @@ genClientJar(client, testClass) ::= <<
       #client.typedArchiveName#.addAsManifestResource(resURL, "application-client.xml");
     }
     #client.typedArchiveName#.addAsManifestResource(new StringAsset("Main-Class: " + #testClass#.class.getName() + "\n"), "MANIFEST.MF");
+    // Call the archive processor
     archiveProcessor.processClientArchive(#client.typedArchiveName#, #testClass#.class, resURL);
-
 >>

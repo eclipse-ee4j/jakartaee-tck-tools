@@ -1415,7 +1415,7 @@ public class TsArtifactsTest {
         System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
 
         PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
-        pkgTarget.execute();
+        pkgTarget.execute(VehicleType.ejblitejsp);
         pkgTarget.resolveTsArchiveInfoSets();
 
         // Print out the package target tasks

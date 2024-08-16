@@ -362,8 +362,8 @@ public class TestPackageInfoBuilder {
             if(vehicleDef != null) {
                 clientJarDef.addFileSet(vehicleDef.getClientElements());
                 // common to all vehicles
-                if (vehicleDef.getJarElements() != null) {
-                    TsFileSet jarElements = vehicleDef.getJarElements();
+                if (!vehicleDef.getJarElements().isEmpty()) {
+                    List<TsFileSet> jarElements = vehicleDef.getJarElements();
                     clientJarDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_client.xml descriptor since this get overriden to tsHome/tmp
@@ -385,8 +385,8 @@ public class TestPackageInfoBuilder {
             if(vehicleDef != null) {
                 ejbJarDef.addFileSet(vehicleDef.getEjbElements());
                 // common to all vehicles
-                if (vehicleDef.getJarElements() != null) {
-                    TsFileSet jarElements = vehicleDef.getJarElements();
+                if (!vehicleDef.getJarElements().isEmpty()) {
+                    List<TsFileSet> jarElements = vehicleDef.getJarElements();
                     ejbJarDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_ejb.xml descriptor since this get overriden to tsHome/tmp
@@ -407,16 +407,22 @@ public class TestPackageInfoBuilder {
             War warDef = pkgTargetWrapper.getWarDef();
             if(vehicleDef != null) {
                 switch (deployment.getVehicle()) {
-                    case servlet:
+                    case servlet, ejbliteservlet, ejbliteservlet2, pmservlet, puservlet:
                         warDef.addFileSet(vehicleDef.getServletElements());
                         break;
-                    case jsp:
+                    case ejblitejsp, ejblitesecuredjsp:
+                        // Add the
+                        List<String> tld = List.of(deployment.getVehicle().name()+".tld");
+                        TsFileSet tldFS = new TsFileSet(deployment.getTestClassPath().toString(), "WEB-INF/tlds", tld);
+                        warDef.addFileSet(tldFS);
+                        // Fall through to general case
+                    case jsp, ejblitejsf:
                         warDef.addFileSet(vehicleDef.getJspElements());
                         break;
                 }
                 // common to all vehicles
-                if (vehicleDef.getJarElements() != null) {
-                    TsFileSet jarElements = vehicleDef.getJarElements();
+                if (!vehicleDef.getJarElements().isEmpty()) {
+                    List<TsFileSet> jarElements = vehicleDef.getJarElements();
                     warDef.addFileSet(jarElements);
                 }
                 // Look for a *_vehicle_web.xml descriptor since this get overriden to tsHome/tmp
@@ -454,8 +460,8 @@ public class TestPackageInfoBuilder {
             if(vehicleDef != null) {
                 earDef.addFileSet(vehicleDef.getEarElements());
                 // common to all vehicles
-                if (vehicleDef.getJarElements() != null) {
-                    TsFileSet jarElements = vehicleDef.getJarElements();
+                if (!vehicleDef.getJarElements().isEmpty()) {
+                    List<TsFileSet> jarElements = vehicleDef.getJarElements();
                     earDef.addFileSet(jarElements);
                 }
             }
