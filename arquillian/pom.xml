@@ -14,7 +14,7 @@
     <!-- Artifact Configuration -->
     <groupId>jakarta.tck</groupId>
     <artifactId>tck.arquillian.parent</artifactId>
-    <version>1.0.0-M6</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Arquillian Jakarta TCK Parent</name>
     <description>Protocols and testenrichers for Jakarta TCKs</description>
