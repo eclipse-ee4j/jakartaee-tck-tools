@@ -27,7 +27,10 @@ genWar(war, testClass) ::= <<
     // Web content
 #war.webContent :{ c |
     warResURL = #testClass#.class.getResource("/#c.resPath#");
-    #war.typedArchiveName#.addAsWebResource(warResURL, "/#c.target#");
+    if(warResURL != null) {
+      #war.typedArchiveName#.addAsWebResource(warResURL, "/#c.target#");
+    \}
 }#
+   // Call the archive processor
    archiveProcessor.processWebArchive(#war.typedArchiveName#, #testClass#.class, warResURL);
 >>

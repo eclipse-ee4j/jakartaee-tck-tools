@@ -3,6 +3,8 @@ package tck.jakarta.platform.ant;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,22 +38,35 @@ public class War extends BaseJar {
     public List<Content> getWebContent() {
         List<Content> webContent = new ArrayList<>();
         for(TsFileSet fs : fileSets) {
-            if(fs.prefix == null || fs.prefix.isEmpty()) {
-                String dir = fs.dir + '/';
-                for(String f : fs.includes) {
-                    if(!f.endsWith(".class")) {
-                        // Strip the path before com/sun/...
-                        int index = f.indexOf("com/sun");
-                        if(index != -1) {
-                            String resPath = f.substring(index);
-                            String target = f.replace(dir, "");
-                            webContent.add(new Content(resPath, target));
+            String dir = fs.dir + '/';
+            Path dirPath = Paths.get(dir);
+            for(String f : fs.includes) {
+                if(!f.endsWith(".class") && !f.endsWith("EJBLiteJSPTag.java.txt")) {
+                    Path resPath = dirPath.resolve(f);
+                    f = resPath.toString();
+                    // Strip the path before com/sun/...
+                    int index = f.indexOf("com/sun");
+                    if(index != -1) {
+                        String contentPath = f.substring(index);
+                        String target = f.replace(dir, "");
+                        if(fs.prefix != null) {
+                            target = fs.prefix + "/" + target;
+                        } else if(isDescriptor(f)) {
+                            target = "WEB-INF/" + target;
+                        }
+                        Content content = new Content(contentPath, target);
+                        if(!webContent.contains(content)) {
+                            webContent.add(content);
                         }
                     }
                 }
-
             }
         }
+        // Sort by target
+        webContent.sort((a, b) -> a.target.compareTo(b.target));
         return webContent;
+    }
+    private boolean isDescriptor(String f) {
+        return f.endsWith(".xml");
     }
 }

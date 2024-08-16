@@ -346,6 +346,23 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo.getTestClientFiles());
     }
     @Test
+    public void testejb32_lite_timer_basic_concurrency_ejblitejsf() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.Client.class;
+        DeploymentMethodInfo deploymentMethodInfo = builder.forTestClassAndVehicle(baseTestClass, VehicleType.ejblitejsf);
+        System.out.println(deploymentMethodInfo);
+        System.out.printf("War.content: %s\n", deploymentMethodInfo.getDebugInfo().getWar().getWebContent());
+    }
+    @Test
+    public void testejb32_lite_timer_basic_concurrency_ejblitejsp() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.Client.class;
+        DeploymentMethodInfo deploymentMethodInfo = builder.forTestClassAndVehicle(baseTestClass, VehicleType.ejblitejsp);
+        System.out.println(deploymentMethodInfo);
+        System.out.printf("War.content: %s\n", deploymentMethodInfo.getDebugInfo().getWar().getWebContent());
+    }
+
+    @Test
     public void testejb32_lite_timer_basic_sharing() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<TestMethodInfo> testMethods = Arrays.asList(

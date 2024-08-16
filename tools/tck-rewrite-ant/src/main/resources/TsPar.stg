@@ -20,6 +20,7 @@ genPar(par, testClass) ::= <<
     if(parURL != null) {
       #par.typedArchiveName#.addAsManifestResource(parURL, "persistence.xml");
     }
+    // Call the archive processor
     archiveProcessor.processParArchive(#par.typedArchiveName#, #testClass#.class, parURL);
     // The orm.xml file
     parURL = #testClass#.class.getResource("orm.xml");

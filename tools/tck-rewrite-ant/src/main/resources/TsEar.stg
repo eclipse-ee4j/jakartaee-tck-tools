@@ -30,6 +30,7 @@ genEar(pkg, ear, testClass) ::= <<
     if(earResURL != null) {
       #ear.typedArchiveName#.addAsManifestResource(earResURL, "sun-application.xml");
     }
+    // Call the archive processor
     archiveProcessor.processEarArchive(#ear.typedArchiveName#, #testClass#.class, earResURL);
 >>
 

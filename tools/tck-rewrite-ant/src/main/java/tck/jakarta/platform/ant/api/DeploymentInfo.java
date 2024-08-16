@@ -8,6 +8,8 @@ import tck.jakarta.platform.ant.Rar;
 import tck.jakarta.platform.ant.War;
 import tck.jakarta.platform.vehicles.VehicleType;
 
+import java.nio.file.Path;
+
 /**
  * A summary of the parsed information for a given test artifact deployment. This gets passed to the
  */
@@ -34,6 +36,9 @@ public class DeploymentInfo {
 
     public Class<?> getTestClass() {
         return testClass;
+    }
+    public Path getTestClassPath() {
+        return Path.of(testClass.getPackageName().replace('.', '/'));
     }
     public String getName() {
         return name;
