@@ -1,6 +1,8 @@
 // A Stringtemplate4 group for the ts.war.xml logic for creating a war artifact
 delimiters "#", "#"
 
+import "Lib.stg"
+
 // war is an tck.jakarta.platform.ant.War instance
 genWar(war, testClass) ::= <<
     // the war with the correct archive name
@@ -24,6 +26,10 @@ genWar(war, testClass) ::= <<
     if(warResURL != null) {
       #war.typedArchiveName#.addAsWebInfResource(warResURL, "sun-web.xml");
     }
+
+    // Any libraries added to the war
+    #genLibJars(war, testClass)#
+
     // Web content
 #war.webContent :{ c |
     warResURL = #testClass#.class.getResource("/#c.resPath#");

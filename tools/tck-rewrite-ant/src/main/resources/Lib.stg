@@ -1,0 +1,36 @@
+
+/*
+    xar is a tck.jakarta.platform.ant.Ear or tck.jakarta.platform.ant.War instance
+    testClass is the simple name of the unit test class
+*/
+genLibJars(xar, testClass) ::= <<
+#if(xar.libs)#
+    URL libURL;
+#endif#
+#xar.libs :{ lib |
+    JavaArchive #lib.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#lib.fullArchiveName#");
+    #addLibJarClasses(lib)#
+
+#if(lib.hasResources)#
+    // The resources
+    #addLibJarResources(lib, testClass)#
+#endif#
+    #xar.typedArchiveName#.addAsLibrary(#lib.typedArchiveName#);
+}#
+>>
+
+addLibJarClasses(lib) ::= <<
+#if(lib.hasClassFiles)#
+    // The class files
+    #lib.typedArchiveName#.addClasses(
+        #lib.classFilesString#
+    );
+#endif#
+>>
+
+addLibJarResources(lib, testClass) ::= <<
+    #lib.resourceStrings :{ r |
+    libURL = #testClass#.class.getResource("/#r#");
+    #lib.typedArchiveName#.addAsResource(libURL, "/#r#");
+    }#
+>>

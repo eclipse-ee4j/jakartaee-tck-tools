@@ -363,6 +363,17 @@ public class DeploymentMethodTest {
     }
 
     @Test
+    public void testejb32_lite_timer_interceptor_lifecycle_singleton() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.interceptor.lifecycle.singleton.Client.class;
+        DeploymentMethodInfo deploymentMethodInfo = builder.forTestClassAndVehicle(baseTestClass, VehicleType.ejbliteservlet);
+        System.out.println(deploymentMethodInfo);
+        System.out.printf("War.content: %s\n", deploymentMethodInfo.getDebugInfo().getWar().getWebContent());
+        System.out.printf("War.libs: %s\n", deploymentMethodInfo.getDebugInfo().getWar().getLibs());
+
+    }
+
+    @Test
     public void testejb32_lite_timer_basic_sharing() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
         List<TestMethodInfo> testMethods = Arrays.asList(

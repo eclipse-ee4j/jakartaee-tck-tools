@@ -207,10 +207,17 @@ public class Utils {
     }
 
     public static Collection<Lib> getJarLibs(EE11toEE10Mapping mapping, TsPackageInfo pkgInfo) {
+        return getJarLibs(mapping, pkgInfo.getArchives().values());
+    }
+    public static Collection<Lib> getJarLibs(EE11toEE10Mapping mapping, Collection<List<TsArchiveInfo>> archiveInfos) {
+
         HashMap<String, Lib> jarLibs = new HashMap<>();
-        for (List<TsArchiveInfo> archives : pkgInfo.getArchives().values()) {
+        for (List<TsArchiveInfo> archives : archiveInfos) {
             for (TsArchiveInfo archive : archives) {
                 String fullArchiveName = archive.getFullArchiveName();
+                if(fullArchiveName.endsWith(".ear")) {
+                    continue;
+                }
                 if(!fullArchiveName.endsWith(".jar")) {
                     throw new IllegalStateException("Unexpected non-jar archive: " + fullArchiveName);
                 }

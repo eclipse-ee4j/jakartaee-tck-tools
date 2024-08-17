@@ -91,7 +91,7 @@ public class Lib {
     public String toString() {
         StringBuilder tmp = new StringBuilder();
         tmp.append("Lib{archiveName=%s}".formatted(archiveName));
-        tmp.append("resources:\n");
+        tmp.append(", resources:\n");
         for(TsFileSet fs : resources) {
             tmp.append('\n');
             tmp.append(fs);

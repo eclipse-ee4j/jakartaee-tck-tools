@@ -20,8 +20,8 @@ public class KeywordTagTest {
         List<String> tags = keywordTags.getTags(Path.of("com/sun/ts/tests/appclient"));
         System.out.println(tags);
         Assertions.assertTrue(tags.contains("appclient"), "appclient tag found");
-        Assertions.assertTrue(tags.contains("javaee"), "javaee tag found");
-        Assertions.assertTrue(tags.contains("javaee_web_profile_optional"), "javaee_web_profile_optional tag found");
+        Assertions.assertTrue(tags.contains("platform"), "platform tag found");
+        Assertions.assertTrue(tags.contains("web_optional"), "web_optional tag found");
     }
 
     @Test
@@ -30,10 +30,10 @@ public class KeywordTagTest {
         List<String> tags = keywordTags.getTags(Path.of("com/sun/ts/tests/connector"));
         System.out.println(tags);
         Assertions.assertTrue(tags.contains("connector"), "connector tag found");
-        Assertions.assertTrue(tags.contains("javaee"), "javaee tag found");
+        Assertions.assertTrue(tags.contains("platform"), "platform tag found");
         Assertions.assertTrue(tags.contains("connector_standalone"), "connector_standalone tag found");
-        Assertions.assertTrue(tags.contains("connector_web_profile"), "connector_web_profile tag found");
-        Assertions.assertTrue(tags.contains("javaee_web_profile_optional"), "javaee_web_profile_optional tag found");
+        Assertions.assertTrue(tags.contains("connector_web"), "connector_web tag found");
+        Assertions.assertTrue(tags.contains("web_optional"), "web_optional tag found");
     }
 
     @Test
@@ -41,7 +41,7 @@ public class KeywordTagTest {
         KeywordTags keywordTags = KeywordTags.getInstance(tsHome);
         List<String> tags = keywordTags.getTags(Path.of("com/sun/ts/tests/connector/resourceDefs/servlet"));
         System.out.println(tags);
-        Assertions.assertTrue(tags.contains("javaee"), "javaee tag found");
+        Assertions.assertTrue(tags.contains("platform"), "platform tag found");
         Assertions.assertTrue(tags.contains("connector_resourcedef_servlet_optional"), "connector_resourcedef_servlet_optional tag found");
     }
 
@@ -50,9 +50,9 @@ public class KeywordTagTest {
         KeywordTags keywordTags = KeywordTags.getInstance(tsHome);
         List<String> tags = keywordTags.getTags(Path.of("com/sun/ts/tests/ejb/ee/timer"));
         System.out.println(tags);
-        Assertions.assertTrue(tags.contains("javaee_optional"), "javaee_optional tag found");
+        Assertions.assertTrue(tags.contains("platform_optional"), "platform_optional tag found");
         Assertions.assertTrue(tags.contains("ejb_1x_optional"), "ejb_1x_optional tag found");
-        Assertions.assertTrue(tags.contains("javaee_web_profile_optional"), "javaee_web_profile_optional tag found");
+        Assertions.assertTrue(tags.contains("web_optional"), "web_optional tag found");
     }
 
     @Test
@@ -60,9 +60,9 @@ public class KeywordTagTest {
         KeywordTags keywordTags = KeywordTags.getInstance(tsHome);
         List<String> tags = keywordTags.getTags(Path.of("com/sun/ts/tests/signaturetest/javaee"));
         System.out.println(tags);
-        Assertions.assertTrue(tags.contains("signaturetest"), "signaturetest tag found");
-        Assertions.assertTrue(tags.contains("javaee"), "javaee tag found");
-        Assertions.assertTrue(tags.contains("javaee_web_profile"), "javaee_web_profile tag found");
+        Assertions.assertTrue(tags.contains("signature"), "signature tag found");
+        Assertions.assertTrue(tags.contains("platform"), "platform tag found");
+        Assertions.assertTrue(tags.contains("web"), "web tag found");
     }
 
 }

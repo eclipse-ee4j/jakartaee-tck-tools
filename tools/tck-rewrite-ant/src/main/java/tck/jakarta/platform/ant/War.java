@@ -31,6 +31,22 @@ public class War extends BaseJar {
         libs.addAll(Utils.getJarLibs(this.mapping, pkgInfo));
     }
 
+    public void addLib(Lib lib) {
+        libs.add(lib);
+    }
+    public List<Lib> getLibs() {
+        return libs;
+    }
+    public boolean isLib(String f) {
+        for(Lib lib : libs) {
+            String name = lib.getFullArchiveName();
+            if(f.endsWith(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      *
      * @return
@@ -41,7 +57,8 @@ public class War extends BaseJar {
             String dir = fs.dir + '/';
             Path dirPath = Paths.get(dir);
             for(String f : fs.includes) {
-                if(!f.endsWith(".class") && !f.endsWith("EJBLiteJSPTag.java.txt")) {
+                // No class files or java template files
+                if(!f.endsWith(".class") && !f.endsWith(".java.txt")  && !isLib(f)) {
                     Path resPath = dirPath.resolve(f);
                     f = resPath.toString();
                     // Strip the path before com/sun/...
