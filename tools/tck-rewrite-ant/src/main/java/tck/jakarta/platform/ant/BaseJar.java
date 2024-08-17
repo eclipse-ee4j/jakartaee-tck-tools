@@ -264,6 +264,22 @@ public abstract class BaseJar {
     }
 
     /**
+     * Used to scan the filesets to see if the indicated archive file is present as an include
+     * @param archiveName - the name of the archive file to search for
+     * @return true if the archive file is found in the filesets
+     */
+    public boolean hasFile(String archiveName) {
+        for (TsFileSet fs : fileSets) {
+            for (String include : fs.getIncludes()) {
+                if(include.endsWith(archiveName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get the list of descriptor paths found in the filesets
      * @return list of descriptor paths
      */

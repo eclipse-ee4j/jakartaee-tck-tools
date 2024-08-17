@@ -5,18 +5,21 @@ import org.apache.tools.ant.MagicNames;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.Target;
-import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 import tck.jakarta.platform.ant.ClientJar;
 import tck.jakarta.platform.ant.Ear;
 import tck.jakarta.platform.ant.EjbJar;
+import tck.jakarta.platform.ant.Lib;
 import tck.jakarta.platform.ant.PackageTarget;
 import tck.jakarta.platform.ant.Par;
 import tck.jakarta.platform.ant.ProjectWrapper;
 import tck.jakarta.platform.ant.Rar;
+import tck.jakarta.platform.ant.TsArchiveInfo;
+import tck.jakarta.platform.ant.TsArchiveInfoSet;
 import tck.jakarta.platform.ant.TsFileSet;
+import tck.jakarta.platform.ant.TsPackageInfo;
 import tck.jakarta.platform.ant.Utils;
 import tck.jakarta.platform.ant.Vehicles;
 import tck.jakarta.platform.ant.War;
@@ -31,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -185,7 +189,7 @@ public class TestPackageInfoBuilder {
             Target antPackageTarget = project.getTargets().get("package");
             PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
 
-            DeploymentMethodInfo methodInfo = parseNonVehiclePackage(pkgTargetWrapper, clazz);
+            DeploymentMethodInfo methodInfo = parseNonVehiclePackage(mapping, pkgTargetWrapper, clazz);
             // Add a tag for the protocol so one can filter tests by protocol
             String protocol = methodInfo.getDebugInfo().getProtocol();
             ArrayList<String> extraTags = new ArrayList<>(tags);
@@ -214,7 +218,7 @@ public class TestPackageInfoBuilder {
                 ProjectHelper.configureProject(project, buildXml.toFile());
                 Target antPackageTarget = project.getTargets().get("package");
                 PackageTarget pkgTargetWrapper = new PackageTarget(new ProjectWrapper(project), antPackageTarget);
-                DeploymentMethodInfo methodInfo = parseVehiclePackage(pkgTargetWrapper, clazz, vehicleType);
+                DeploymentMethodInfo methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, clazz, vehicleType);
                 // Add a tag for the protocol so one can filter tests by protocol
                 String protocol = methodInfo.getDebugInfo().getProtocol();
                 ArrayList<String> vehicleTags = new ArrayList<>(tags);
@@ -259,14 +263,15 @@ public class TestPackageInfoBuilder {
         DeploymentDescriptors.load();
 
         DeploymentMethodInfo methodInfo;
+        EE11toEE10Mapping mapping = DefaultEEMapping.getInstance();
         if(vehicleType == null || vehicleType == VehicleType.none) {
-            methodInfo = parseNonVehiclePackage(pkgTargetWrapper, testClass);
+            methodInfo = parseNonVehiclePackage(mapping, pkgTargetWrapper, testClass);
         } else {
             VehicleVerifier verifier = VehicleVerifier.getInstance(new File(antPackageTarget.getLocation().getFileName()));
             String[] vehicles = verifier.getVehicleSet();
             debug("Vehicles: %s\n", Arrays.asList(vehicles));
 
-            methodInfo = parseVehiclePackage(pkgTargetWrapper, testClass, vehicleType);
+            methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, testClass, vehicleType);
         }
         return methodInfo;
     }
@@ -288,7 +293,7 @@ public class TestPackageInfoBuilder {
      * @param clazz - the EE10 tck test class
      * @return the deployment method info for the test class
      */
-    private DeploymentMethodInfo parseNonVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz) {
+    private DeploymentMethodInfo parseNonVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper, Class<?> clazz) {
         // Run the ant "package" target
         pkgTargetWrapper.execute();
         // Resolve any unprocessed TsArchiveInfoSets
@@ -299,7 +304,7 @@ public class TestPackageInfoBuilder {
 
         // Extract the information for the current deployment from the parsed ts.vehicles info
         DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTargetWrapper.getDeploymentName(), protocol, VehicleType.none);
-        populateDeployment(deployment, pkgTargetWrapper);
+        populateDeployment(mapping, deployment, pkgTargetWrapper);
 
         // Generate the deployment method
         STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
@@ -320,18 +325,19 @@ public class TestPackageInfoBuilder {
 
     /**
      * Execute the package target and parse the deployment information for a test class with a target vehicle.
+     * @param mapping - the EE11 to EE10 mapping
      * @param pkgTargetWrapper - the ant "package" target wrapper
      * @param clazz - the EE10 tck test class
      * @param vehicleType - the TCK vehicle type
      * @return the deployment method info for the test class + vehicle
      */
-    private DeploymentMethodInfo parseVehiclePackage(PackageTarget pkgTargetWrapper, Class<?> clazz, VehicleType vehicleType) {
+    private DeploymentMethodInfo parseVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper, Class<?> clazz, VehicleType vehicleType) {
         pkgTargetWrapper.execute(vehicleType);
         String protocol = getProtocolForVehicle(vehicleType);
         String testClassSimpleName = clazz.getSimpleName();
         // Extract the information for the current deployment from the parsed ts.vehicles info
         DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTargetWrapper.getDeploymentName(), protocol, vehicleType);
-        populateDeployment(deployment, pkgTargetWrapper);
+        populateDeployment(mapping, deployment, pkgTargetWrapper);
 
         // Generate the deployment method
         STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
@@ -353,7 +359,7 @@ public class TestPackageInfoBuilder {
      * @param deployment - deployment to populate with the information resulting from the "package" target execution
      * @param pkgTargetWrapper - the ant "package" target wrapper
      */
-    private void populateDeployment(DeploymentInfo deployment, PackageTarget pkgTargetWrapper) {
+    private void populateDeployment(EE11toEE10Mapping mapping, DeploymentInfo deployment, PackageTarget pkgTargetWrapper) {
         Vehicles vehicleDef = pkgTargetWrapper.getVehiclesDef();
         ArrayList<String> foundDescriptors = new ArrayList<>();
         // Client
@@ -425,6 +431,17 @@ public class TestPackageInfoBuilder {
                     List<TsFileSet> jarElements = vehicleDef.getJarElements();
                     warDef.addFileSet(jarElements);
                 }
+                //
+                List<List<TsArchiveInfo>> pkgArchives = pkgTargetWrapper.getTargetArchives();
+                if(!pkgArchives.isEmpty()) {
+                    Collection<Lib> jarLibs = Utils.getJarLibs(mapping, pkgArchives);
+                    for(Lib lib : jarLibs) {
+                        String archiveName = lib.getFullArchiveName();
+                        if(warDef.hasFile(archiveName)) {
+                            warDef.addLib(lib);
+                        }
+                    }
+                }
                 // Look for a *_vehicle_web.xml descriptor since this get overriden to tsHome/tmp
                 try {
                     String resPath = Utils.getVehicleArchiveDescriptor(deployment.testClass, deployment.vehicle, "web");
@@ -438,6 +455,7 @@ public class TestPackageInfoBuilder {
             foundDescriptors.addAll(warDef.getFoundDescriptors());
             info("War added to deployment: %s\n", warDef);
             info("War has content: %s\n", warDef.getWebContent());
+            info("War has libs: %s\n", warDef.getLibs());
         }
         // Par
         if(pkgTargetWrapper.hasParDef()) {

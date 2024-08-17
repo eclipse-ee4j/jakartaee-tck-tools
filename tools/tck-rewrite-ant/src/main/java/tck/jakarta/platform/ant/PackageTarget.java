@@ -231,6 +231,13 @@ public class PackageTarget {
                 .collect(Collectors.toList());
         targetArchives.add(new TsArchiveInfoSet(tsPackageInfo.getTargetName(), archives));
     }
+    public List<List<TsArchiveInfo>> getTargetArchives() {
+        ArrayList<List<TsArchiveInfo>> archives = new ArrayList<>();
+        for (TsArchiveInfoSet archiveInfoSet : targetArchives) {
+            archives.add(archiveInfoSet.archives());
+        }
+        return archives;
+    }
 
     /**
      * Called by a {@link org.apache.tools.ant.BuildEvent} driven parser to add a task after it has finished
@@ -431,10 +438,13 @@ public class PackageTarget {
     /**
      * Called after execute to resolve the archive information sets that were not part of a ts.* task. This is
      * a bit of a hack to deal with situations where a pre.package target created archives rather than using
-     * the ts.* task or calling the jar task from within the ts.* task.
+     * the ts.* task or calling the jar task from within the ts.* task. It also shows up when a jar is created
+     * that is included in a ts.* task like an ejb.jar included in a war.
      *
      * Examples:
      * src/com/sun/ts/tests/ejb32/mdb/modernconnector/build.xml - builds a rar in pre.package target rather than ts.rar
+     * src/main/java/com/sun/ts/tests/ejb32/lite/timer/interceptor/lifecycle/singleton/build.xml - builds an ejb.jar
+     *  in the package target before calling ts.vehicles.
      */
     public void resolveTsArchiveInfoSets() {
 

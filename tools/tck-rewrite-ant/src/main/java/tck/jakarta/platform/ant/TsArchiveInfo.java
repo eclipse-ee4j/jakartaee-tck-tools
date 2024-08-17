@@ -20,23 +20,23 @@ public class TsArchiveInfo {
     public int getOrder() {
         return order;
     }
-    String getFullArchiveName() {
+    public String getFullArchiveName() {
         return fullArchiveName;
     }
-    String getArchiveName() {
+    public String getArchiveName() {
         int lastDot = fullArchiveName.lastIndexOf('.');
         if (lastDot == -1) {
             return fullArchiveName;
         }
         return fullArchiveName.substring(0, lastDot);
     }
-    List<TsFileSet> getResources() {
+    public List<TsFileSet> getResources() {
         return fileSets;
     }
-    void addResource(TsFileSet fs) {
+    public void addResource(TsFileSet fs) {
         fileSets.add(fs);
     }
-    void addResources(Collection<TsFileSet> fs) {
+    public void addResources(Collection<TsFileSet> fs) {
         fileSets.addAll(fs);
     }
 
