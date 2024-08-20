@@ -16,6 +16,7 @@ package #testClient.packageName#;
 #testClient.tags :{ tag |
 @Tag("#tag#")
 }#
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class #testClient.className# extends #testClient.baseClassName# {
 #if(testClient.hasCommonDeployment)#
     #testClient.commonDeployment.methodCode#

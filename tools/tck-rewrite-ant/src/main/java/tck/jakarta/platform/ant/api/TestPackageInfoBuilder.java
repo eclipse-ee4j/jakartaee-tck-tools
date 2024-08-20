@@ -61,9 +61,12 @@ public class TestPackageInfoBuilder {
         "org.jboss.shrinkwrap.api.spec.JavaArchive",
         "org.jboss.shrinkwrap.api.spec.WebArchive",
         "java.net.URL",
+        "org.junit.jupiter.api.MethodOrderer",
         "org.junit.jupiter.api.Tag",
         "org.junit.jupiter.api.Test",
-        "org.junit.jupiter.api.extension.ExtendWith"
+        "org.junit.jupiter.api.TestMethodOrder",
+        "org.junit.jupiter.api.extension.ExtendWith",
+
     };
 
     // Path to EE10 TCK dist
