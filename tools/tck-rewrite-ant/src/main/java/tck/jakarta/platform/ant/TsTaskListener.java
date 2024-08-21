@@ -247,7 +247,10 @@ public class TsTaskListener implements BuildListener {
             ue.maybeConfigure();
             RuntimeConfigurable rc = task.getRuntimeConfigurableWrapper();
             if(rc.getChildren().hasMoreElements()) {
-                FileSet fs = (FileSet) rc.getChildren().nextElement().getProxy();
+                Object proxy = rc.getChildren().nextElement().getProxy();
+                if(!(proxy instanceof FileSet fs)) {
+                    return;
+                }
                 String dir = fs.getDir().getAbsolutePath();
                 String[] includes = fs.getDirectoryScanner().getIncludedFiles();
                 if(includes.length > 0) {

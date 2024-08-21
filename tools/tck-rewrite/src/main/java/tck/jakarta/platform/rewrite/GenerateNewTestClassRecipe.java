@@ -4,6 +4,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -210,6 +211,9 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                     }
                     return classDecl;
                 }
+            } catch(FileNotFoundException e) {
+                // Ignore FileNotFoundException if it is about a package with no build.xml as can happen for common test packages
+                log.info("IGNORING: " + e.getMessage() + " package " + ee10pkg + " couldn't be processed.");
             } catch (RuntimeException e) {
                 log.info("TODO: due to " + e.getMessage() + " class " + classDecl.getType().getFullyQualifiedName() + " couldn't be processed.");
                 e.printStackTrace();
