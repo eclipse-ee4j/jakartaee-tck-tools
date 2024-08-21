@@ -348,7 +348,19 @@ public class DeploymentMethodTest {
     @Test
     public void testejb32_lite_timer_basic_concurrency_ejblitejsf() throws IOException {
         TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
-        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.Client.class;
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("lookupTimerService", "InterruptedException, java.util.concurrent.ExecutionException"),
+                new TestMethodInfo("writeLockTimeout", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.JsfClient.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+    @Test
+    public void testejb32_lite_timer_basic_concurrency_ejblitejsf2() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        Class<?> baseTestClass = com.sun.ts.tests.ejb32.lite.timer.basic.concurrency.JsfClient.class;
         DeploymentMethodInfo deploymentMethodInfo = builder.forTestClassAndVehicle(baseTestClass, VehicleType.ejblitejsf);
         System.out.println(deploymentMethodInfo);
         System.out.printf("War.content: %s\n", deploymentMethodInfo.getDebugInfo().getWar().getWebContent());
