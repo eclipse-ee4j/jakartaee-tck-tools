@@ -544,4 +544,66 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo.getTestClientFiles());
     }
 
+    @Test
+    public void test_ejb30_bb_asynch_singleton_annotated() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("addAway", "Exception"),
+                new TestMethodInfo("voidRuntimeException", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureError", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureException", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureValueList", "InterruptedException, ExecutionException")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.bb.async.singleton.annotated.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+    @Test
+    public void test_ejb30_bb_session_stateful_timeout_annotated() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("defaultUnitRemote", ""),
+                new TestMethodInfo("defaultUnitLocal", ""),
+                new TestMethodInfo("defaultUnitNoInterface", ""),
+                new TestMethodInfo("secondUnitLocal", ""),
+                new TestMethodInfo("secondUnitNoInterface", ""),
+                new TestMethodInfo("secondUnitRemote", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.bb.session.stateful.timeout.annotated.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    @Test
+    public void test_ejb30_bb_session_stateless_migration_threetwo_annotated() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("addAway", "Exception"),
+                new TestMethodInfo("voidRuntimeException", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureError", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureException", "InterruptedException, ExecutionException"),
+                new TestMethodInfo("futureValueList", "InterruptedException, ExecutionException")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.bb.session.stateless.migration.threetwo.annotated.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+    @Test
+    public void test_ejb30_lite_packaging_war_datasource_global() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("postConstructRecords", ""),
+                new TestMethodInfo("postConstructRecordsEJB", ""),
+                new TestMethodInfo("getConnectionEJB", "")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb30.lite.packaging.war.datasource.global.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
 }

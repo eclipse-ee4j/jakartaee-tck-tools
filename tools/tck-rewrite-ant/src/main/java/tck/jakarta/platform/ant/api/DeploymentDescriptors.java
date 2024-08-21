@@ -68,6 +68,9 @@ public class DeploymentDescriptors {
     public static String getDeploymentDescriptors(String deploymentName) {
         StringBuilder sb = new StringBuilder();
 
+        if(deploymentName == null || deploymentName.isEmpty()){
+            return sb.toString();
+        }
         String lowerKey = descriptors.lowerKey(deploymentName);
         String higherKey = descriptors.higherKey(deploymentName);
         while(higherKey.startsWith(deploymentName)){
