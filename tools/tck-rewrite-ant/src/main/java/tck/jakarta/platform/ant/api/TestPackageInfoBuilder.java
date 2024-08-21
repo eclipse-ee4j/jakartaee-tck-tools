@@ -105,45 +105,15 @@ public class TestPackageInfoBuilder {
 
      * @param clazz - a test class in the EE10 TCK
      * @param testMethods - the test methods to include in the test client
-     * @return
+     * @return the {@link TestPackageInfo} instance for the test class
      * @throws IOException - on failure to parse the build.xml file
-     * @deprecated use {@link #buildTestPackgeInfoEx(Class, List, EE11toEE10Mapping)} instead
      */
-    @Deprecated(since = "1.0.0", forRemoval = true)
-    public TestPackageInfo buildTestPackgeInfo(Class<?> clazz, List<String> testMethods) throws IOException {
-        ArrayList<TestMethodInfo> testMethodInfos = new ArrayList<>();
-        for (String testMethod : testMethods) {
-            testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
-        }
-
-        return buildTestPackgeInfoEx(clazz, testMethodInfos, DefaultEEMapping.getInstance());
-    }
     public TestPackageInfo buildTestPackgeInfoEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
         TestPackageInfo testPackageInfo = new TestPackageInfo(clazz, testMethods, mapping);
         List<TestClientInfo> testClientInfos = buildTestClientsEx(clazz, testMethods, mapping);
         testPackageInfo.setTestClients(testClientInfos);
 
         return testPackageInfo;
-    }
-
-    /**
-     * Parses the ant build.xml file for the test directory associated with the pkg and returns the
-     * Arquillian deployment methods for the test deployment artifacts that should be generated.
-     * This builds a list of {@link TestClientInfo} instances for the test class with java.lang.Exception
-     * as the throws type and class {@link #buildTestClientsEx(Class, List, EE11toEE10Mapping)}
-
-     * @param clazz - a test class in the EE10 TCK
-     * @param testMethods - the test method names to include in the test client
-     * @return
-     * @throws IOException - on failure to parse the build.xml file
-     */
-    @Deprecated(since = "1.0.0", forRemoval = true)
-    public List<TestClientInfo> buildTestClients(Class<?> clazz, List<String> testMethods) throws IOException {
-        ArrayList<TestMethodInfo> testMethodInfos = new ArrayList<>();
-        for (String testMethod : testMethods) {
-            testMethodInfos.add(new TestMethodInfo(testMethod, Exception.class.getSimpleName()));
-        }
-        return buildTestClientsEx(clazz, testMethodInfos, DefaultEEMapping.getInstance());
     }
 
     /**
@@ -209,11 +179,19 @@ public class TestPackageInfoBuilder {
             testClientInfo.setTags(extraTags);
             testClientInfos.add(testClientInfo);
         } else {
-
             for(String vehicle : vehicles) {
                 VehicleType vehicleType = VehicleType.valueOf(vehicle);
                 // Skip unsupported vehicles
                 if(vehicleType == VehicleType.ejbembed) {
+                    continue;
+                }
+                // ejblitejsf vehicle only applies to the JsfClient class
+                if (vehicleType == VehicleType.ejblitejsf && !testClassSimpleName.equals("JsfClient")) {
+                    info("Skipping ejblitejsf vehicle for class: %s\n", testClassSimpleName);
+                    continue;
+                }
+                if(testClassSimpleName.equals("JsfClient") && vehicleType != VehicleType.ejblitejsf) {
+                    info("Skipping non-ejblitejsf vehicle for class: %s\n", testClassSimpleName);
                     continue;
                 }
                 Project project = initProject(buildXml);
