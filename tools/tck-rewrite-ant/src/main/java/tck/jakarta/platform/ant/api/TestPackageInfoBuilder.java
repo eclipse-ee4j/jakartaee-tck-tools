@@ -263,7 +263,7 @@ public class TestPackageInfoBuilder {
             String[] vehicles = verifier.getVehicleSet();
             debug("Vehicles: %s\n", Arrays.asList(vehicles));
 
-            methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, pkg, simpleClassName, vehicleType);
+            methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, testClass, pkg, simpleClassName, vehicleType);
         }
         return methodInfo;
     }
