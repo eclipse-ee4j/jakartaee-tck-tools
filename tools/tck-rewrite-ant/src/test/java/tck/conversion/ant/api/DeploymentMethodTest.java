@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.DefaultEEMapping;
 import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
+import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.ant.api.TestClientFile;
 import tck.jakarta.platform.ant.api.TestClientInfo;
 import tck.jakarta.platform.ant.api.TestMethodInfo;
@@ -510,6 +511,28 @@ public class DeploymentMethodTest {
         TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
+    }
+    @Test
+    public void test_jpa_core_basic() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+            new TestMethodInfo("updateOrderTest", "Exception"),
+            new TestMethodInfo("newEntityTest", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.basic.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+    @Test
+    public void test_jpa_core_basic_puservlet() throws Exception {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.basic.Client.class;
+        EE11toEE10Mapping mapping = DefaultEEMapping.getInstance();
+        String ee10Pkg = mapping.getEE10TestPackageName(baseTestClass.getPackageName());
+        DeploymentMethodInfo methodInfo = builder.forTestClassAndVehicle(null, ee10Pkg, "Client", VehicleType.puservlet);
+        System.out.println(methodInfo);
+        System.out.println(methodInfo.getDebugInfo());
     }
 
     @Test

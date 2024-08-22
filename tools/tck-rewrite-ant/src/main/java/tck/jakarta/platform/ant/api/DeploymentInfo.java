@@ -18,6 +18,8 @@ public class DeploymentInfo {
     final String protocol;
     final VehicleType vehicle;
     Class<?> testClass;
+    final String testClassPkg;
+    final String testClassSimpleName;
     ClientJar clientJarDef;
     EjbJar ejbJarDef;
     War warDef;
@@ -28,7 +30,13 @@ public class DeploymentInfo {
     String deploymentDescriptors;
 
     public DeploymentInfo(Class<?> testClass, String name, String protocol, VehicleType vehicle) {
+        this(testClass.getPackageName(), testClass.getSimpleName(), name, protocol, vehicle);
         this.testClass = testClass;
+    }
+    public DeploymentInfo(String testClassPkg, String testClassSimpleName, String name, String protocol, VehicleType vehicle) {
+        this.testClassPkg = testClassPkg;
+        this.testClassSimpleName = testClassSimpleName;
+        this.testClass = null;
         this.name = name;
         this.protocol = protocol;
         this.vehicle = vehicle;
@@ -37,8 +45,14 @@ public class DeploymentInfo {
     public Class<?> getTestClass() {
         return testClass;
     }
+    public void setTestClass(Class<?> testClass) {
+        this.testClass = testClass;
+    }
     public Path getTestClassPath() {
-        return Path.of(testClass.getPackageName().replace('.', '/'));
+        return Path.of(testClassPkg.replace('.', '/'));
+    }
+    public String getTestClassSimpleName() {
+        return testClassSimpleName;
     }
     public String getName() {
         return name;

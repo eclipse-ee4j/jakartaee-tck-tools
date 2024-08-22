@@ -218,8 +218,19 @@ public class TestPackageInfoBuilder {
 
         return testClientInfos;
     }
+
+    /**
+     * This is only used for testing purposes to generate the deployment method for a test class. If a mapping
+     * needs to be done, the caller needs to do that.
+     * @param testClass - EE10 test class
+     * @param vehicleType - the vehicle type to generate the deployment method for
+     * @return the deployment method info for the test class
+     * @throws IOException - on failure to parse the build.xml file
+     */
     public DeploymentMethodInfo forTestClassAndVehicle(Class<?> testClass, VehicleType vehicleType) throws IOException {
-        String pkg = testClass.getPackageName();
+        return forTestClassAndVehicle(testClass, testClass.getPackageName(), testClass.getSimpleName(), vehicleType);
+    }
+    public DeploymentMethodInfo forTestClassAndVehicle(Class<?> testClass, String pkg, String simpleClassName, VehicleType vehicleType) throws IOException {
         String pkgPath = pkg.replace('.', '/');
         Path srcDir = tsHome.resolve("src");
         Path buildXml = srcDir.resolve(pkgPath+"/build.xml");
@@ -246,13 +257,13 @@ public class TestPackageInfoBuilder {
         DeploymentMethodInfo methodInfo;
         EE11toEE10Mapping mapping = DefaultEEMapping.getInstance();
         if(vehicleType == null || vehicleType == VehicleType.none) {
-            methodInfo = parseNonVehiclePackage(mapping, pkgTargetWrapper, testClass);
+            methodInfo = parseNonVehiclePackage(mapping, pkgTargetWrapper, testClass, pkg, simpleClassName);
         } else {
             VehicleVerifier verifier = VehicleVerifier.getInstance(new File(antPackageTarget.getLocation().getFileName()));
             String[] vehicles = verifier.getVehicleSet();
             debug("Vehicles: %s\n", Arrays.asList(vehicles));
 
-            methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, testClass, vehicleType);
+            methodInfo = parseVehiclePackage(mapping, pkgTargetWrapper, pkg, simpleClassName, vehicleType);
         }
         return methodInfo;
     }
@@ -275,16 +286,20 @@ public class TestPackageInfoBuilder {
      * @return the deployment method info for the test class
      */
     private DeploymentMethodInfo parseNonVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper, Class<?> clazz) {
+        return parseNonVehiclePackage(mapping, pkgTargetWrapper, clazz, clazz.getPackageName(), clazz.getSimpleName());
+    }
+    private DeploymentMethodInfo parseNonVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper,
+                                                        Class<?> clazz, String testClassPkg, String testClassSimpleName) {
         // Run the ant "package" target
         pkgTargetWrapper.execute();
         // Resolve any unprocessed TsArchiveInfoSets
         pkgTargetWrapper.resolveTsArchiveInfoSets();
 
         String protocol = pkgTargetWrapper.hasClientJarDef() ? "appclient" : "javatest";
-        String testClassSimpleName = clazz.getSimpleName();
 
         // Extract the information for the current deployment from the parsed ts.vehicles info
-        DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTargetWrapper.getDeploymentName(), protocol, VehicleType.none);
+        DeploymentInfo deployment = new DeploymentInfo(testClassPkg, testClassSimpleName, pkgTargetWrapper.getDeploymentName(), protocol, VehicleType.none);
+        deployment.setTestClass(clazz);
         populateDeployment(mapping, deployment, pkgTargetWrapper);
 
         // Generate the deployment method
@@ -313,11 +328,15 @@ public class TestPackageInfoBuilder {
      * @return the deployment method info for the test class + vehicle
      */
     private DeploymentMethodInfo parseVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper, Class<?> clazz, VehicleType vehicleType) {
+        return parseVehiclePackage(mapping, pkgTargetWrapper, clazz, clazz.getPackageName(), clazz.getSimpleName(), vehicleType);
+    }
+    private DeploymentMethodInfo parseVehiclePackage(EE11toEE10Mapping mapping, PackageTarget pkgTargetWrapper,
+                                                     Class<?> clazz, String testClassPkg, String testClassSimpleName, VehicleType vehicleType) {
         pkgTargetWrapper.execute(vehicleType);
         String protocol = getProtocolForVehicle(vehicleType);
-        String testClassSimpleName = clazz.getSimpleName();
         // Extract the information for the current deployment from the parsed ts.vehicles info
-        DeploymentInfo deployment = new DeploymentInfo(clazz, pkgTargetWrapper.getDeploymentName(), protocol, vehicleType);
+        DeploymentInfo deployment = new DeploymentInfo(testClassPkg, testClassSimpleName, pkgTargetWrapper.getDeploymentName(), protocol, vehicleType);
+        deployment.setTestClass(clazz);
         populateDeployment(mapping, deployment, pkgTargetWrapper);
 
         // Generate the deployment method

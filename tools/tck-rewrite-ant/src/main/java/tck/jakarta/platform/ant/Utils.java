@@ -66,6 +66,10 @@ public class Utils {
                                                    VehicleType vehicleType, String clientType) throws MalformedURLException {
         String vehicleDescriptor = vehicleType.name() + "_vehicle_" + clientType + ".xml";
         String resPath = vehicleDescriptor;
+        if(testClass == null) {
+            return resPath;
+        }
+
         // Look in the tckrefactor test src tree for an override
         URL resURL = testClass.getResource(resPath);
         debug("%s -> %s\n", resPath, resURL);
