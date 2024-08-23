@@ -145,8 +145,8 @@ public class GenerateNewTestClassRecipe extends Recipe implements Serializable {
                 // Ignore refactoring abstract classes
                 return classDecl;
             }
-
-            boolean isTest = classDecl.getSimpleName().contains("Client"); // this will match too much but still try
+            // TODO: consider scanning all Java sources as we will ignore ones that do not have comments with "@testName"
+            boolean isTest = classDecl.getSimpleName().contains("Client") || classDecl.getSimpleName().contains("Tests");
             if (!isTest) {
                 log.fine("ignore non-test class " + classDecl.getSimpleName());
                 return classDecl;
