@@ -397,6 +397,10 @@ public abstract class BaseJar {
             return vehicleDescriptor;
         }
 
+        if(getDescriptor() == null || getDescriptor().isEmpty()) {
+            return null;
+        }
+
         String relativePath = getDescriptorDir();
         if(relativePath != null) {
             // Start is the com/sun/... path

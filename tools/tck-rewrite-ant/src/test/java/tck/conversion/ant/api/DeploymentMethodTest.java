@@ -6,6 +6,7 @@ import com.sun.ts.tests.signaturetest.javaee.JavaEESigTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import tck.jakarta.platform.ant.api.DefaultEEMapping;
+import tck.jakarta.platform.ant.api.DeploymentInfo;
 import tck.jakarta.platform.ant.api.DeploymentMethodInfo;
 import tck.jakarta.platform.ant.api.EE11toEE10Mapping;
 import tck.jakarta.platform.ant.api.TestClientFile;
@@ -641,4 +642,19 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo.getTestClientFiles());
     }
 
+    @Test
+    public void test_jms_core_closedTopicPublisher() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("closedTopicPublisherCloseTest", "Exception"),
+                new TestMethodInfo("closedTopicPublisherGetDeliveryModeTest", "Exception"),
+                new TestMethodInfo("closedTopicPublisherGetDisableMessageIDTest", "Exception")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.jms.core.closedTopicPublisher.ClosedTopicPublisherTestsAppclientTest.class;
+        DeploymentMethodInfo deploymentMethodInfo = builder.forTestClassAndVehicle(baseTestClass, VehicleType.appclient);
+        DeploymentInfo deploymentInfo = deploymentMethodInfo.getDebugInfo();
+        String appDescriptor = deploymentInfo.getEar().getRelativeDescriptorPath();
+        System.out.printf("AppDescriptor: %s\n", appDescriptor);
+        System.out.println(deploymentMethodInfo.getMethodCode());
+    }
 }
