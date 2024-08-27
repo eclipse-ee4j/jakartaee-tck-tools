@@ -1620,4 +1620,70 @@ public class TsArtifactsTest {
         System.out.printf("Par: %s\n", pkgTarget.getParDef());
         System.out.printf("Ear: %s\n", pkgTarget.getEarDef());
     }
+
+    @Test
+    public void test_ejb_deploy_mdb_resref_single() {
+        // com.sun.ts.tests.ejb.ee.deploy.mdb.resref.single.Client
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb/ee/deploy/mdb/resref/single/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        System.out.println(pkgTarget);
+
+        System.out.printf("Client: %s\n", pkgTarget.getClientJarDef());
+        System.out.printf("Ejbs: %s\n", pkgTarget.getEjbJarDefs());
+        System.out.printf("Par: %s\n", pkgTarget.getParDef());
+        System.out.printf("Ear: %s\n", pkgTarget.getEarDef());
+    }
+
+    @Test
+    public void test_ejb_deploy_mdb_ejbref_single() {
+        // com.sun.ts.tests.ejb.ee.deploy.mdb.ejbref.single.Client
+        Path buildXml = tsHome.resolve("src/com/sun/ts/tests/ejb/ee/deploy/mdb/ejbref/single/build.xml");
+        Project project = new Project();
+        project.init();
+        // The location of the glassfish download for the jakarta api jars
+        project.setProperty("javaee.home.ri", "${ts.home}/../glassfish7/glassfish");
+        project.setProperty("ts.home", tsHome.toAbsolutePath().toString());
+        project.setBaseDir(buildXml.getParent().toFile());
+        project.setProperty(MagicNames.ANT_FILE, buildXml.toAbsolutePath().toString());
+
+        System.out.printf("Parsing(%s)\n", buildXml);
+        ProjectHelper.configureProject(project, buildXml.toFile());
+        Target pkg = project.getTargets().get("package");
+        Assertions.assertNotNull(pkg);
+
+        System.out.printf("Target 'package' location: %s\n", pkg.getLocation());
+        VehicleVerifier verifier = VehicleVerifier.getInstance(new File(pkg.getLocation().getFileName()));
+        System.out.printf("Vehicles: %s\n", Arrays.asList(verifier.getVehicleSet()));
+
+        PackageTarget pkgTarget = new PackageTarget(new ProjectWrapper(project), pkg);
+        pkgTarget.execute();
+        pkgTarget.resolveTsArchiveInfoSets();
+
+        System.out.println(pkgTarget);
+
+        System.out.printf("Client: %s\n", pkgTarget.getClientJarDef());
+        System.out.printf("Ejbs: %s\n", pkgTarget.getEjbJarDefs());
+        System.out.printf("Par: %s\n", pkgTarget.getParDef());
+        System.out.printf("Ear: %s\n", pkgTarget.getEarDef());
+    }
 }

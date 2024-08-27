@@ -172,6 +172,14 @@ public class TestPackageInfoBuilder {
             if(testClassSimpleName.equals("ClientTest")) {
                 genTestClassName = "ClientExtTest";
             }
+            // Fix any inner class refs in the throw
+            for(TestMethodInfo method : testMethods) {
+                String throwsException = method.getThrowsException();
+                if(throwsException != null && throwsException.contains("$")) {
+                    throwsException = throwsException.replace("$", ".");
+                    method.setThrowsException(throwsException);
+                }
+            }
             TestClientInfo testClientInfo = new TestClientInfo(genTestClassName, clazz, testMethods);
             testClientInfo.setVehicle(VehicleType.none);
             testClientInfo.setTestDeployment(methodInfo);
@@ -305,7 +313,7 @@ public class TestPackageInfoBuilder {
         // Generate the deployment method
         STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
         deploymentMethodGroup.registerModelAdaptor(War.Content.class, new RecordAdaptor<War.Content>());
-        ST template = deploymentMethodGroup.getInstanceOf("genMethodNonVehicle");
+        ST template = deploymentMethodGroup.getInstanceOf("/genMethodNonVehicle");
         template.add("pkg", pkgTargetWrapper);
         template.add("deployment", deployment);
         template.add("testClass", testClassSimpleName);
@@ -342,7 +350,7 @@ public class TestPackageInfoBuilder {
         // Generate the deployment method
         STGroup deploymentMethodGroup = new STGroupFile("DeploymentMethod.stg");
         deploymentMethodGroup.registerModelAdaptor(War.Content.class, new RecordAdaptor<War.Content>());
-        ST template = deploymentMethodGroup.getInstanceOf("genMethodVehicle");
+        ST template = deploymentMethodGroup.getInstanceOf("/genMethodVehicle");
         template.add("pkg", pkgTargetWrapper);
         template.add("deployment", deployment);
         template.add("testClass", testClassSimpleName);

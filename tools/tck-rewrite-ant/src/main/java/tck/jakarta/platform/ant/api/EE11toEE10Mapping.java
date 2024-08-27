@@ -29,4 +29,11 @@ public interface EE11toEE10Mapping {
      * If the name is not mapped, return the input name.
      */
     String getEE11Name(String ee10Name);
+
+    /**
+     * Should a class from EE10 be excluded in EE11
+     * @param ee10Class - class name from the EE10 TCK dist
+     * @return true if the class should be excluded in EE11
+     */
+    boolean isExcluded(String ee10Class);
 }

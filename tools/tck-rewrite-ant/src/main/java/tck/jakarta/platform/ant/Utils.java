@@ -260,6 +260,9 @@ public class Utils {
                     // Map the EE10 name to EE11
                     String clazz = dotClass;
                     if(mapping != null) {
+                        if(mapping.isExcluded(dotClass)) {
+                            continue;
+                        }
                         clazz = mapping.getEE11Name(dotClass);
                     }
                     int dollar = clazz.indexOf('$');

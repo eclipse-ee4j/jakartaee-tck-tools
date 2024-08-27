@@ -28,14 +28,16 @@ public class TsFileSet {
         this.dir = dir;
         this.prefix = fileset.getAttribute("prefix");
         String includes = fileset.getAttribute("includes");
-        String[] asArray = includes.split(",");
         this.includes = new ArrayList<>();
-        // Filter out wildcards
-        for (String include : asArray) {
-            if(include.contains("*")) {
-                continue;
+        if(includes != null) {
+            String[] asArray = includes.split(",");
+            // Filter out wildcards
+            for (String include : asArray) {
+                if(include.contains("*")) {
+                    continue;
+                }
+                this.includes.add(include);
             }
-            this.includes.add(include);
         }
     }
     public TsFileSet(String dir, String prefix, List<String> includes) {

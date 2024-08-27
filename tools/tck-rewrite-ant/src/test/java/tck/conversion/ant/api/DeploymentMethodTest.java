@@ -657,4 +657,18 @@ public class DeploymentMethodTest {
         System.out.printf("AppDescriptor: %s\n", appDescriptor);
         System.out.println(deploymentMethodInfo.getMethodCode());
     }
+
+    @Test
+    public void test_ejb_ee_deploy_mdb_ejbref_single() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("testStatelessInternal", "Fault"),
+                new TestMethodInfo("testStatelessExternal", "Fault"),
+                new TestMethodInfo("testStatefulInternal", "Fault")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.deploy.mdb.ejbref.single.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

@@ -15,6 +15,22 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             "ee.jakarta.tck.persistence.entitytest.persist.oneXmanyFetchEager","com.sun.ts.tests.jpa.core.entitytest.persist.oneXmanyFetchEager",
             "ee.jakarta.tck.persistence", "com.sun.ts.tests.jpa"
     };
+    // Packages removed from EE11. Mostly ejb module classes that are not in the EE11 TCK
+    private static final String[] EE11_PKG_EXCLUDES = {
+            "com.sun.ts.tests.common.dao",
+            "com.sun.ts.tests.assembly.util.refbean",
+            "com.sun.ts.tests.ejb.ee.bb.entity",
+            "com.sun.ts.tests.ejb.ee.timer.helper.FlagStore",
+            "com.sun.ts.tests.common.ejb.wrappers.CMP11Wrapper",
+            "com.sun.ts.tests.common.ejb.wrappers.BMPWrapper",
+            "com.sun.ts.tests.common.ejb.wrappers.CMP20Wrapper",
+            "com.sun.ts.tests.common.ejb.calleebeans.CMP20CalleeLocal",
+            "com.sun.ts.tests.common.ejb.calleebeans.CMP20Callee",
+            "com.sun.ts.tests.common.ejb.calleebeans.CMP20CalleeEJB"
+
+
+
+    };
     /**  A mapping from EE11 to EE10 test class names
      * [0] is the EE11 full class name, ee.jakarta.tck.persistence.core.entityManager.Client2
      * [1] is the EE10 full class name, com.sun.ts.tests.jpa.core.entityManager.Client
@@ -102,4 +118,15 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
         }
         return ee11Name;
     }
+
+    public boolean isExcluded(String ee10Class) {
+        for (String exclude : EE11_PKG_EXCLUDES) {
+            if (ee10Class.startsWith(exclude)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
