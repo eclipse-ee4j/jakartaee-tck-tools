@@ -59,13 +59,17 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
     /**
      * Pass in a class from the EE11 TCK and if the class has been split into multiple classes in the EE11
      * as indicated by a number at the end of the class name, then add a mapping from the EE11 class to the
-     * EE10 class.
+     * EE10 class. If there is no mapping the mapping value is reset and the ee11Class is returned.
      * @param ee11Class - the EE11 class
      * @param tsHome - the path to the TCK home directory
      * @return the EE10 class name prefix if the mapping was added, otherwise null
      */
     @Override
     public String addTestClassMapping(Class<?> ee11Class, Path tsHome) {
+        // Clear any previous mapping
+        testClassMappings[0] = "";
+        testClassMappings[1] = "";
+        // Check if the class name ends with a number
         String ee11Name = ee11Class.getName();
         String ee10Name = null;
         char lastChar = ee11Name.charAt(ee11Name.length() - 1);
