@@ -708,4 +708,23 @@ public class DeploymentMethodTest {
         System.out.println("---- TestClientFiles ----");
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_jpa_core_entitytest_persist_oneXmany() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("persist1XMTest1", "Exception"),
+                new TestMethodInfo("persist1XMTest3", "Exception"),
+            new TestMethodInfo("persist1XMTest4", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.entitytest.persist.oneXmany.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
+        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }
