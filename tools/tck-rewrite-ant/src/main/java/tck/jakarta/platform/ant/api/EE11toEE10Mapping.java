@@ -11,6 +11,11 @@ public interface EE11toEE10Mapping {
      * the com.sun.ts.tests.x.Class.class to the com.sun.ts.tests.x.ClassN.class is added.
      */
     public String addTestClassMapping(Class<?> ee11Class, Path tsHome);
+    /**
+    * Get the EE11 base class for the ClientN class
+    * @return the EE11 base class for the ClientN class if a mapping exists, null otherwise
+    */
+    String getMappedTestClass();
 
     /**
      * Map a package name from EE11 to EE10 to determine the location of the build.xml file.
