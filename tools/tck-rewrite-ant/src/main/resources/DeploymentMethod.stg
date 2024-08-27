@@ -43,10 +43,10 @@ genMethodVehicle(pkg, deployment, testClass) ::= <<
     #genClientJar(deployment.clientJar, testClass)#
 #endif#
 
-#if(deployment.hasEjbJar)#
-    // Ejb
-    #genEjbJar(deployment.ejbJar, testClass)#
-#endif#
+#pkg.ejbJarDefs :{ ejb |
+    // Ejb #i#
+    #genEjbJar(i, ejb, testClass)#
+}#
 
 #if(deployment.hasRar)#
     // Rar
@@ -93,10 +93,10 @@ genMethodNonVehicle(pkg, deployment, testClass) ::= <<
     #genClientJar(deployment.clientJar, testClass)#
 #endif#
 
-#if(deployment.hasEjbJar)#
-    // Ejb
-    #genEjbJar(deployment.ejbJar, testClass)#
-#endif#
+#pkg.ejbJarDefs :{ ejb |
+    // Ejb #i#
+    #genEjbJar(i, ejb, testClass)#
+}#
 
 #if(deployment.hasRar)#
     // Rar

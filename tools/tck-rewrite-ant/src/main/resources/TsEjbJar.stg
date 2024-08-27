@@ -3,7 +3,7 @@ delimiters "#", "#"
 
 
 // ejbjar is an tck.jakarta.platform.ant.EjbJar instance
-genEjbJar(ejbjar, testClass) ::= <<
+genEjbJar(n, ejbjar, testClass) ::= <<
     // the jar with the correct archive name
     JavaArchive #ejbjar.typedArchiveName# = ShrinkWrap.create(JavaArchive.class, "#ejbjar.fullArchiveName#");
     // The class files
@@ -16,15 +16,15 @@ genEjbJar(ejbjar, testClass) ::= <<
 }#
 #endif#
     // The ejb-jar.xml descriptor
-    URL ejbResURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPath#");
-    if(ejbResURL != null) {
-      #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL, "ejb-jar.xml");
+    URL ejbResURL#n# = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPath#");
+    if(ejbResURL#n# != null) {
+      #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL#n#, "ejb-jar.xml");
     }
     // The sun-ejb-jar.xml file
-    ejbResURL = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPathNoXml#.jar.sun-ejb-jar.xml");
-    if(ejbResURL != null) {
-      #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL, "sun-ejb-jar.xml");
+    ejbResURL#n# = #testClass#.class.getResource("/#ejbjar.relativeDescriptorPathNoXml#.jar.sun-ejb-jar.xml");
+    if(ejbResURL#n# != null) {
+      #ejbjar.typedArchiveName#.addAsManifestResource(ejbResURL#n#, "sun-ejb-jar.xml");
     }
     // Call the archive processor
-    archiveProcessor.processEjbArchive(#ejbjar.typedArchiveName#, #testClass#.class, ejbResURL);
+    archiveProcessor.processEjbArchive(#ejbjar.typedArchiveName#, #testClass#.class, ejbResURL#n#);
 >>
