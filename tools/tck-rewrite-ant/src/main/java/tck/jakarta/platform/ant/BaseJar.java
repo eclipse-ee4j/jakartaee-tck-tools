@@ -109,6 +109,9 @@ public abstract class BaseJar {
         return extraClientClass;
     }
     public void setExtraClientClass(String extraClientClass) {
+        if(extraClientClass != null && !extraClientClass.contains(".class")) {
+            extraClientClass = extraClientClass + ".class";
+        }
         this.extraClientClass = extraClientClass;
     }
 
