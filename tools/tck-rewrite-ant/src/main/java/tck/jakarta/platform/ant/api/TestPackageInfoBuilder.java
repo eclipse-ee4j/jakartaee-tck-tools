@@ -129,7 +129,7 @@ public class TestPackageInfoBuilder {
     public List<TestClientInfo> buildTestClientsEx(Class<?> clazz, List<TestMethodInfo> testMethods, EE11toEE10Mapping mapping) throws IOException {
         ArrayList<TestClientInfo> testClientInfos = new ArrayList<>();
         // Add the test class mapping
-        mapping.addTestClassMapping(clazz, tsHome);
+        String testClassName10 = mapping.addTestClassMapping(clazz, tsHome);
         // The simple name, e.g., MyTest for com.sun.*.MyTest
         String testClassSimpleName = clazz.getSimpleName();
         String pkg = clazz.getPackageName();
@@ -370,9 +370,11 @@ public class TestPackageInfoBuilder {
     private void populateDeployment(EE11toEE10Mapping mapping, DeploymentInfo deployment, PackageTarget pkgTargetWrapper) {
         Vehicles vehicleDef = pkgTargetWrapper.getVehiclesDef();
         ArrayList<String> foundDescriptors = new ArrayList<>();
+        String extraClientClass = mapping.getMappedTestClass();
         // Client
         if(pkgTargetWrapper.hasClientJarDef()) {
             ClientJar clientJarDef = pkgTargetWrapper.getClientJarDef();
+            clientJarDef.setExtraClientClass(extraClientClass);
             if(vehicleDef != null) {
                 clientJarDef.addFileSet(vehicleDef.getClientElements());
                 // common to all vehicles
@@ -396,6 +398,7 @@ public class TestPackageInfoBuilder {
         // EJB
         if(pkgTargetWrapper.hasEjbJarDef()) {
             EjbJar ejbJarDef = pkgTargetWrapper.getEjbJarDef();
+            ejbJarDef.setExtraClientClass(extraClientClass);
             if(vehicleDef != null) {
                 ejbJarDef.addFileSet(vehicleDef.getEjbElements());
                 // common to all vehicles
@@ -419,6 +422,7 @@ public class TestPackageInfoBuilder {
         // War
         if(pkgTargetWrapper.hasWarDef()) {
             War warDef = pkgTargetWrapper.getWarDef();
+            warDef.setExtraClientClass(extraClientClass);
             if(vehicleDef != null) {
                 switch (deployment.getVehicle()) {
                     case servlet, ejbliteservlet, ejbliteservlet2, pmservlet, puservlet:

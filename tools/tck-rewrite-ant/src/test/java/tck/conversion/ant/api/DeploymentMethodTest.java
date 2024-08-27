@@ -690,4 +690,22 @@ public class DeploymentMethodTest {
         System.out.println("---- TestClientFiles ----");
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+
+    @Test
+    public void test_jpa_core_types_generator() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("sequenceGeneratorOnPropertyTest", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.types.generator.Client4.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
+        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

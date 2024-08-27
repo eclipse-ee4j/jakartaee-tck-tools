@@ -88,6 +88,13 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
         }
         return ee10Name;
     }
+    public String getMappedTestClass() {
+        String mappedTestClass = null;
+        if(!testClassMappings[1].isEmpty()) {
+            mappedTestClass = getEE11NameNoTestClassMapping(testClassMappings[1]);
+        }
+        return mappedTestClass;
+    }
 
     /**
      * Given an ee11 package name, return the equivalent ee10 package name.
@@ -119,6 +126,11 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             // Replace the EE10 name with the EE11 name
             return ee10Name.replace(testClassMappings[1], testClassMappings[0]);
         }
+        ee11Name = getEE11NameNoTestClassMapping(ee10Name);
+        return ee11Name;
+    }
+    private String getEE11NameNoTestClassMapping(String ee10Name) {
+        String ee11Name = ee10Name;
         // Check for a package mapping
         for (int i = 1; i < EE11_PKG_PREFIXES.length; i += 2) {
             if (ee11Name.startsWith(EE11_PKG_PREFIXES[i])) {
@@ -127,6 +139,7 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             }
         }
         return ee11Name;
+
     }
 
     public boolean isExcluded(String ee10Class) {

@@ -49,6 +49,7 @@ public abstract class BaseJar {
     Project project;
     // An override to descriptor that can be set by vehicles
     String vehicleDescriptor;
+    String extraClientClass = null;
     // A mapping from EE11 to EE10 names
     EE11toEE10Mapping mapping;
 
@@ -102,6 +103,13 @@ public abstract class BaseJar {
 
     public void setMapping(EE11toEE10Mapping mapping) {
         this.mapping = mapping;
+    }
+
+    public String getExtraClientClass() {
+        return extraClientClass;
+    }
+    public void setExtraClientClass(String extraClientClass) {
+        this.extraClientClass = extraClientClass;
     }
 
     public abstract String getType();
@@ -430,7 +438,11 @@ public abstract class BaseJar {
      */
     public String getClassFilesString() {
         anonymousClasses.clear();
-        return Utils.getClassFilesString(mapping, fileSets, anonymousClasses);
+        String classes = Utils.getClassFilesString(mapping, fileSets, anonymousClasses);
+        if(extraClientClass != null) {
+            classes += ",\n" + extraClientClass;
+        }
+        return classes;
     }
     public boolean getHasAnonymousClasses() {
         return !anonymousClasses.isEmpty();
