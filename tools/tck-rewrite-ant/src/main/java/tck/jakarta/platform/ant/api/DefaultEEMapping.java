@@ -26,9 +26,19 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
             "com.sun.ts.tests.common.ejb.wrappers.CMP20Wrapper",
             "com.sun.ts.tests.common.ejb.calleebeans.CMP20CalleeLocal",
             "com.sun.ts.tests.common.ejb.calleebeans.CMP20Callee",
-            "com.sun.ts.tests.common.ejb.calleebeans.CMP20CalleeEJB"
-
-
+            "com.sun.ts.tests.common.ejb.calleebeans.CMP20CalleeEJB",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbqaccesstest.A",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbqaccesstest.CE",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbqaccesstest.CLocal",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.webaccesstest.A",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.webaccesstest.CE",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.webaccesstest.CLocal",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbtaccesstest.A",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbtaccesstest.CE",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.mdbtaccesstest.CLocal",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.sbaccesstest.A",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.sbaccesstest.CE",
+            "com.sun.ts.tests.ejb.ee.bb.localaccess.sbaccesstest.CLocal",
 
     };
     /**  A mapping from EE11 to EE10 test class names
