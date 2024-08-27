@@ -671,4 +671,23 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo);
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+
+    @Test
+    public void test_ejb_ee_bb_localaccess_sbaccesstest() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("test2", "Fault"),
+                new TestMethodInfo("test4", "Fault")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.bb.localaccess.sbaccesstest.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
+        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

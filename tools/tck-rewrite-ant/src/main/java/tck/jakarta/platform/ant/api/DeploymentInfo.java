@@ -9,6 +9,8 @@ import tck.jakarta.platform.ant.War;
 import tck.jakarta.platform.vehicles.VehicleType;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A summary of the parsed information for a given test artifact deployment. This gets passed to the
@@ -22,6 +24,7 @@ public class DeploymentInfo {
     final String testClassSimpleName;
     ClientJar clientJarDef;
     EjbJar ejbJarDef;
+    List<EjbJar> ejbJarDefs = new ArrayList<>();
     War warDef;
     Rar rarDef;
     Par parDef;
@@ -125,9 +128,12 @@ public class DeploymentInfo {
     public EjbJar getEjbJar() {
         return ejbJarDef;
     }
-
+    public List<EjbJar> getEjbJars() {
+        return ejbJarDefs;
+    }
     public void setEjbJar(EjbJar ejbJarDef) {
         this.ejbJarDef = ejbJarDef;
+        this.ejbJarDefs.add(ejbJarDef);
     }
 
     public boolean getHasDeploymentDescriptors() {

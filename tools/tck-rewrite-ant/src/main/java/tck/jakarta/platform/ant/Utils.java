@@ -253,7 +253,7 @@ public class Utils {
             String dir = fs.dir + '/';
             for(String f : fs.includes) {
                 // Skip the obsolete EJBHomes
-                if(f.endsWith(".class") && !f.endsWith("Home.class")) {
+                if(f.endsWith(".class")) {
                     f = f.replace(dir, "");
                     // Need to deal with EETest$Fault.class vs Client$1.class
                     String dotClass = f.replace('/', '.');
