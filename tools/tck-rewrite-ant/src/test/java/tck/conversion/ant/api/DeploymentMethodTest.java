@@ -268,20 +268,6 @@ public class DeploymentMethodTest {
         System.out.println(packageInfo.getTestClientFiles());
     }
 
-    @Test
-    public void testEjb_tx_session_stateless_bm_Tx_Multi_ClientTest() throws IOException {
-        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
-        List<TestMethodInfo> testMethods = Arrays.asList(
-                new TestMethodInfo("test1", "com.sun.ts.lib.harness.EETest.Fault"),
-                new TestMethodInfo("test2", "com.sun.ts.lib.harness.EETest.Fault"),
-                new TestMethodInfo("test4", "com.sun.ts.lib.harness.EETest.Fault"),
-                new TestMethodInfo("test5", "com.sun.ts.lib.harness.EETest.Fault")
-        );
-        Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.tx.session.stateless.bm.Tx_Multi.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
-        System.out.println(packageInfo);
-        System.out.println(packageInfo.getTestClientFiles());
-    }
 
     @Test
     public void testConnector_localTx_msginflow_ClientTest() throws IOException {
@@ -657,40 +643,6 @@ public class DeploymentMethodTest {
         System.out.printf("AppDescriptor: %s\n", appDescriptor);
         System.out.println(deploymentMethodInfo.getMethodCode());
     }
-
-    @Test
-    public void test_ejb_ee_deploy_mdb_ejbref_single() throws IOException {
-        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
-        List<TestMethodInfo> testMethods = Arrays.asList(
-                new TestMethodInfo("testStatelessInternal", "Fault"),
-                new TestMethodInfo("testStatelessExternal", "Fault"),
-                new TestMethodInfo("testStatefulInternal", "Fault")
-        );
-        Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.deploy.mdb.ejbref.single.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
-        System.out.println(packageInfo);
-        System.out.println(packageInfo.getTestClientFiles());
-    }
-
-
-    @Test
-    public void test_ejb_ee_bb_localaccess_sbaccesstest() throws IOException {
-        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
-        List<TestMethodInfo> testMethods = Arrays.asList(
-                new TestMethodInfo("test2", "Fault"),
-                new TestMethodInfo("test4", "Fault")
-        );
-        Class<?> baseTestClass = com.sun.ts.tests.ejb.ee.bb.localaccess.sbaccesstest.Client.class;
-        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
-        System.out.println(packageInfo);
-        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
-        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
-        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
-
-        System.out.println("---- TestClientFiles ----");
-        System.out.println(packageInfo.getTestClientFiles());
-    }
-
 
     @Test
     public void test_jpa_core_types_generator() throws IOException {

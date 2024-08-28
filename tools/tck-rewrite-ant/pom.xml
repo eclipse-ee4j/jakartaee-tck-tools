@@ -119,11 +119,6 @@
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
-            <artifactId>ejb</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
             <artifactId>ejb30</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>
