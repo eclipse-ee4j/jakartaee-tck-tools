@@ -73,8 +73,7 @@
                   <type>jar</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                  <includes>**/*.class,**/*.xml</includes>
-                  <excludes>com/sun/ts/tests/common/vehicle/**</excludes>
+                  <includes>**/*.class</includes>
                 </artifactItem>
               </artifactItems>
             </configuration>
