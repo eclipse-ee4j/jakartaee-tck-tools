@@ -96,6 +96,14 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
         String mappedTestClass = null;
         if(!testClassMappings[1].isEmpty()) {
             mappedTestClass = getEE11NameNoTestClassMapping(testClassMappings[1]);
+            try {
+                if (mappedTestClass != null && null != Class.forName(mappedTestClass)) {
+                    // System.out.println("xxx DefaultEEMapping.getMappedTestClass: returning " +mappedTestClass + " as we could load it. (EE 10) testClassMappings[1] = " + testClassMappings[1] + " (EE 11) testClassMappings[0] " + testClassMappings[0] + " mappedTestClass = " + mappedTestClass);
+                }
+            } catch (ClassNotFoundException e) {
+                // System.out.println("xxx DefaultEEMapping.getMappedTestClass: returning null as we could not load " + mappedTestClass);
+                return null;
+            }
         }
         return mappedTestClass;
     }
