@@ -10,7 +10,7 @@
         <version>1.0.9</version>
     </parent>
 
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-M11</version>
     <groupId>jakarta.tck</groupId>
     <artifactId>jar2shrinkwrap</artifactId>
 
