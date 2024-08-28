@@ -708,4 +708,47 @@ public class DeploymentMethodTest {
         System.out.println("---- TestClientFiles ----");
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_jdbc_ee_batchUpdate() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("sequenceGeneratorOnPropertyTest", "Exception")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.jdbc.ee.batchUpdate.batchUpdateClient.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Client: %s\n", deploymentInfo.getClientJar());
+        System.out.printf("Client.mainClass: %s\n", deploymentInfo.getClientJar().getMainClass());
+        System.out.printf("Client.classes: %s\n", deploymentInfo.getClientJar().getClassFilesString());
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
+        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
+
+
+    @Test
+    public void test_jpa_core_annotations_orderby() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("test1", "Exception")
+        );
+        Class<?> baseTestClass = ee.jakarta.tck.persistence.core.annotations.orderby.Client1.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Client: %s\n", deploymentInfo.getClientJar());
+        System.out.printf("Client.mainClass: %s\n", deploymentInfo.getClientJar().getMainClass());
+        System.out.printf("Client.classes: %s\n", deploymentInfo.getClientJar().getClassFilesString());
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJars());
+        System.out.printf("Ejb1.classes: %s\n", deploymentInfo.getEjbJar().getClassFilesString());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

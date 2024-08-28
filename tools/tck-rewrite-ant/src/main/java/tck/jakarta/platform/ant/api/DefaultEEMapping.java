@@ -17,6 +17,7 @@ public class DefaultEEMapping implements EE11toEE10Mapping {
     };
     // Packages removed from EE11. Mostly ejb module classes that are not in the EE11 TCK
     private static final String[] EE11_PKG_EXCLUDES = {
+            "com.sun.ts.tests.common.vehicle.ejb.EJBVehicleHome",
             "com.sun.ts.tests.common.dao",
             "com.sun.ts.tests.assembly.util.refbean",
             "com.sun.ts.tests.ejb.ee.bb.entity",
