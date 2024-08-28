@@ -38,6 +38,8 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private String workDir;
     // EE10 type of ts.jte file location
     private String tsJteFile;
+    // EE10 type of tssql.stmt file location
+    private String tsSqlStmtFile;
     // harness.log.traceflag
     private boolean trace;
 
@@ -73,6 +75,15 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     }
     public void setTsJteFile(String tsJteFile) {
         this.tsJteFile = tsJteFile;
+    }
+
+    @Override
+    public String getTsSqlStmtFile() {
+        return tsSqlStmtFile;
+    }
+    @Override
+    public void setTsSqlStmtFile(String tsSqlStmtFile) {
+        this.tsSqlStmtFile = tsSqlStmtFile;
     }
 
     public String getClientEnvString() {

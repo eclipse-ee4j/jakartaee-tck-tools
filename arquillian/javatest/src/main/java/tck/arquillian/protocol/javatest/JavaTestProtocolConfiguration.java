@@ -10,6 +10,8 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     private String workDir;
     // EE10 type of ts.jte file location
     private String tsJteFile;
+    // EE10 type of tssql.stmt file location
+    private String tsSqlStmtFile;
     // harness.log.traceflag
     private boolean trace;
     // Should the VehicleClient main be run in a separate JVM
@@ -29,6 +31,15 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
 
     public void setTsJteFile(String tsJteFile) {
         this.tsJteFile = tsJteFile;
+    }
+
+    @Override
+    public String getTsSqlStmtFile() {
+        return tsSqlStmtFile;
+    }
+    @Override
+    public void setTsSqlStmtFile(String tsSqlStmtFile) {
+        this.tsSqlStmtFile = tsSqlStmtFile;
     }
 
     public boolean isTrace() {

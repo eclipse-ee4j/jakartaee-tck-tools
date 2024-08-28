@@ -22,8 +22,15 @@ public class TsTestPropsBuilder {
             "Driver",
             "authpassword",
             "authuser",
+            "binarySize",
+            "cofSize",
+            "cofTypeSize",
+            "db.dml.file",
             "db.supports.sequence",
             "db1",
+            "db2",
+            "DriverManager",
+            "ftable",
             "generateSQL",
             "harness.log.port",
             "harness.log.traceflag",
@@ -39,6 +46,7 @@ public class TsTestPropsBuilder {
             "jstl.db.password",
             "log.file.location",
             "logical.hostname.servlet",
+            "longvarbinarySize",
             "org.omg.CORBA.ORBClass",
             "password",
             "platform.mode",
@@ -53,6 +61,7 @@ public class TsTestPropsBuilder {
             // These two are probably not useful
             "porting.ts.deploy.class.1",
             "porting.ts.deploy.class.2",
+            "ptable",
             "rapassword1",
             "rapassword2",
             "rauser1",
@@ -61,6 +70,8 @@ public class TsTestPropsBuilder {
             "sigTestClasspath",
             "ts_home",
             "user",
+            "user1",
+            "varbinarySize",
             "webServerHost",
             "webServerPort",
             "whitebox-anno_no_md",
@@ -122,6 +133,7 @@ public class TsTestPropsBuilder {
 
         // We need the JavaTest ts.jte file for now
         Path tsJte = Paths.get(config.getTsJteFile());
+        Path tssqlStmt = Paths.get(config.getTsSqlStmtFile());
         // Create a test properties file
         Path testProps = Paths.get(config.getWorkDir(), "tstest.jte");
 
@@ -176,6 +188,7 @@ public class TsTestPropsBuilder {
         String[] args = {
                 // test props are needed by EETest.run
                 "-p", testProps.toFile().getAbsolutePath(),
+                "-ap", tssqlStmt.toFile().getAbsolutePath(),
                 "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
                 "-t", tsTestMethodName,
                 "-vehicle", vehicle,

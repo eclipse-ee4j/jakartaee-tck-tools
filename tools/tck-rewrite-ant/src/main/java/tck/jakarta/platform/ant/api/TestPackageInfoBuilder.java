@@ -371,6 +371,15 @@ public class TestPackageInfoBuilder {
         Vehicles vehicleDef = pkgTargetWrapper.getVehiclesDef();
         ArrayList<String> foundDescriptors = new ArrayList<>();
         String extraClientClass = mapping.getMappedTestClass();
+        // Validate the extraClientClass exists in
+        if(extraClientClass != null) {
+            try {
+                deployment.testClass.getClassLoader().loadClass(extraClientClass);
+            } catch (ClassNotFoundException e) {
+                info("Failed to locate extra client class: %s\n", extraClientClass);
+                extraClientClass = null;
+            }
+        }
         // Client
         if(pkgTargetWrapper.hasClientJarDef()) {
             ClientJar clientJarDef = pkgTargetWrapper.getClientJarDef();

@@ -9,4 +9,7 @@ public interface ProtocolCommonConfig {
 
     public String getTsJteFile();
     public void setTsJteFile(String tsJteFile);
+
+    public String getTsSqlStmtFile();
+    public void setTsSqlStmtFile(String tsJteFile);
 }
