@@ -34,6 +34,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
             throw new RuntimeException("Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
                     " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file");
         }
+        ear.addAsLibrary(protocolJar);
 
         String mainClass = extractAppMainClient(ear);
         log.info("mainClass: " + mainClass);
