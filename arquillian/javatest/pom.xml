@@ -58,46 +58,12 @@
       <artifactId>shrinkwrap-descriptors-spi</artifactId>
       <scope>compile</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.shrinkwrap.resolver</groupId>
-      <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-      <scope>compile</scope>
-    </dependency>
 
     <dependency>
       <groupId>jakarta.tck</groupId>
       <artifactId>common</artifactId>
       <version>${ee.tck.version}</version>
     </dependency>
-    <!-- This needs to be copied to target/protocol/protocol.jar using a maven-dependency-plugin setup like:
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-protocol-lib</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>jakarta.tck.arquillian</groupId>
-                                    <artifactId>arquillian-protocol-lib</artifactId>
-                                    <version>${version.jakarta.tck}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/protocol</outputDirectory>
-                                    <destFileName>protocol.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-    -->
     <dependency>
       <groupId>jakarta.tck.arquillian</groupId>
       <artifactId>arquillian-protocol-lib</artifactId>

@@ -11,6 +11,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import tck.arquillian.protocol.common.ProtocolJarResolver;
 
 import java.io.File;
 import java.util.Collection;
@@ -27,8 +28,12 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
         ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
-        File protocolJar = new File("target/protocol/protocol.jar");
-        ear.addAsLibraries(protocolJar);
+        // Include the protocol.jar in the deployment
+        File protocolJar = ProtocolJarResolver.resolveProtocolJar();
+        if(protocolJar == null) {
+            throw new RuntimeException("Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
+                    " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file");
+        }
 
         String mainClass = extractAppMainClient(ear);
         log.info("mainClass: " + mainClass);
