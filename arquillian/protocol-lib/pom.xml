@@ -5,7 +5,7 @@
   <parent>
     <groupId>jakarta.tck</groupId>
     <artifactId>tck.arquillian.parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-M12</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -74,6 +74,7 @@
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <includes>**/*.class</includes>
+                  <excludes>**/connector/**,**/jms/**,**/vehicle/**,**/whitebox/**</excludes>
                 </artifactItem>
               </artifactItems>
             </configuration>

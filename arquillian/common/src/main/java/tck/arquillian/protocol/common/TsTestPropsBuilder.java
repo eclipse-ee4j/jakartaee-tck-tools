@@ -118,12 +118,12 @@ public class TsTestPropsBuilder {
         String testMethodName = testMethodExecutor.getMethod().getName();
         int index = testMethodName.lastIndexOf('_');
         String tsTestMethodName = testMethodName;
-        if(index != -1) {
+        if (index != -1) {
             tsTestMethodName = testMethodName.substring(0, index);
         }
         // The none vehicle is a basic appclient test, not a vehicle based test
         String vehicle = "none";
-        if(testVehicle != null) {
+        if (testVehicle != null) {
             vehicle = testVehicle.value();
         }
 
@@ -133,7 +133,10 @@ public class TsTestPropsBuilder {
 
         // We need the JavaTest ts.jte file for now
         Path tsJte = Paths.get(config.getTsJteFile());
-        Path tssqlStmt = Paths.get(config.getTsSqlStmtFile());
+        Path tssqlStmt = null;
+        if (config.getTsSqlStmtFile() != null) {
+            tssqlStmt = Paths.get(config.getTsSqlStmtFile());
+        }
         // Create a test properties file
         Path testProps = Paths.get(config.getWorkDir(), "tstest.jte");
 
@@ -188,7 +191,7 @@ public class TsTestPropsBuilder {
         String[] args = {
                 // test props are needed by EETest.run
                 "-p", testProps.toFile().getAbsolutePath(),
-                "-ap", tssqlStmt.toFile().getAbsolutePath(),
+                "-ap", tssqlStmt != null ? tssqlStmt.toFile().getAbsolutePath() : "/dev/null",
                 "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
                 "-t", tsTestMethodName,
                 "-vehicle", vehicle,
