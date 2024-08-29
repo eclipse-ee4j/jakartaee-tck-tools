@@ -45,6 +45,13 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
             extractDir = "target/appclient";
         }
         File appclient = new File(extractDir);
+        if(!appclient.exists()) {
+            if(appclient.mkdirs()) {
+                log.info("Created appclient directory: " + appclient.getAbsolutePath());
+            } else {
+                throw new RuntimeException("Failed to create appclient directory: " + appclient.getAbsolutePath());
+            }
+        }
         File archiveOnDisk = new File(appclient, ear.getName());
         final ZipExporter exporter = ear.as(ZipExporter.class);
         exporter.exportTo(archiveOnDisk, true);
