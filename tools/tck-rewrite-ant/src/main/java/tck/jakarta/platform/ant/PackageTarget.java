@@ -266,10 +266,11 @@ public class PackageTarget {
     }
     public BaseJar getTaskJar(String targetName) {
         BaseJar targetJar = switch (targetName) {
-            case "package.ejb.jar", "package_mdb1", "package_mdb2", "package.ejb.jar1", "package.ejb.jar2" -> ejbJarDef;
-            case "package.war" -> warDef;
+            case "package.ejb.jar", "package_mdb1", "package_mdb2", "package.ejb.jar1", "package.ejb.jar2", "make.ejb.jar" -> ejbJarDef;
+            case "package.war", "make.war" -> warDef;
             case "package.appclient.jar" -> clientJarDef;
-            case "package.ear", "ejb30 twojars import.package.ear" -> earDef;
+            case "package.ear", "ejb30 twojars import.package.ear", "make.ear" -> earDef;
+            case "makeTheRar" -> rarDef;
             case "add.sigtest", "build", "build.common.app", "build.common.apps", "build.nested.jar", "build.whitebox.jar",
                  "compile", "pre.package", "-precompile", "-postcompile", "package" -> null;
             default -> {

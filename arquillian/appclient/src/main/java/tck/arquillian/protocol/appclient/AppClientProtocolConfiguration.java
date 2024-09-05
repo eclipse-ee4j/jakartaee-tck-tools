@@ -43,6 +43,9 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     // harness.log.traceflag
     private boolean trace;
 
+    public boolean isAppClient() {
+        return true;
+    }
     public boolean isRunClient() {
         return runClient;
     }
@@ -140,17 +143,8 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         String[] envp = null;
         if (clientEnvString != null) {
             ArrayList<String> tmp = new ArrayList<String>();
-            // First split on the env1=value1 ; separator
-            String[] pairs = clientEnvString.trim().split(";");
-            // Now parse env1=value1 by breaking on the first '='
-            for (String pair : pairs) {
-                int idx = pair.indexOf('=');
-                String env = pair.substring(0, idx);
-                String value = pair.substring(idx + 1);
-                tmp.add(env);
-                tmp.add(value);
-            }
-            envp = tmp.toArray(new String[tmp.size()]);
+            // Split on the env1=value1 ; separator
+            envp = clientEnvString.trim().split(";");
         }
         return envp;
     }

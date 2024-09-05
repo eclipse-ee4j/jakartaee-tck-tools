@@ -720,4 +720,22 @@ public class DeploymentMethodTest {
         System.out.println("---- TestClientFiles ----");
         System.out.println(packageInfo.getTestClientFiles());
     }
+
+    @Test
+    public void test_connector_resourceDefs_ejb() throws IOException {
+        TestPackageInfoBuilder builder = new TestPackageInfoBuilder(tsHome);
+        List<TestMethodInfo> testMethods = Arrays.asList(
+                new TestMethodInfo("ValidateGlobalResourceDef", "Exception"),
+                new TestMethodInfo("ValidateAppResourceDef", "Exception"),
+                new TestMethodInfo("ValidateModuleResourceDef", "Exception")
+        );
+        Class<?> baseTestClass = com.sun.ts.tests.connector.resourceDefs.ejb.Client.class;
+        TestPackageInfo packageInfo = builder.buildTestPackgeInfoEx(baseTestClass, testMethods, DefaultEEMapping.getInstance());
+        System.out.println(packageInfo);
+        DeploymentInfo deploymentInfo = packageInfo.getTestClients().get(0).getTestDeployment().getDebugInfo();
+        System.out.printf("Ejbs: %s\n", deploymentInfo.getEjbJar());
+
+        System.out.println("---- TestClientFiles ----");
+        System.out.println(packageInfo.getTestClientFiles());
+    }
 }

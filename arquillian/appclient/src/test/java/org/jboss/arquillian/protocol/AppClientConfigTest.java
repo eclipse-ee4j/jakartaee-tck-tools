@@ -49,12 +49,12 @@ public class AppClientConfigTest {
         Assert.assertEquals("/home/jakartaeetck/bin/xml/../../tmp/tstest.jte", args[1]);
 
         String[] envp = config.clientEnvAsArray();
-        Assert.assertEquals(4, envp.length);
-        Assert.assertEquals("JAVA_OPTS", envp[0]);
-        Assert.assertEquals("-Djboss.modules.system.pkgs=com.sun.ts.lib,com.sun.javatest", envp[1]);
-        Assert.assertEquals("CLASSPATH", envp[2]);
+        Assert.assertEquals(2, envp.length);
+        Assert.assertTrue(envp[0].startsWith("JAVA_OPTS="));
+        Assert.assertEquals("-Djboss.modules.system.pkgs=com.sun.ts.lib,com.sun.javatest", envp[0].substring(10));
+        Assert.assertTrue(envp[1].startsWith("CLASSPATH="));
         String expectedCP = "${project.build.directory}/appclient/javatest.jar:${project.build.directory}/appclient/libutil.jar:${project.build.directory}/appclient/libcommon.jar";
-        Assert.assertEquals(expectedCP, envp[3]);
+        Assert.assertEquals(expectedCP, envp[1].substring(10));
         File expectedDir = new File(".");
         Assert.assertEquals(expectedDir, config.clientDirAsFile());
     }
