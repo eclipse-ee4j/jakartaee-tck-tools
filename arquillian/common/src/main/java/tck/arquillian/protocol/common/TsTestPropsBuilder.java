@@ -36,8 +36,13 @@ public class TsTestPropsBuilder {
             "harness.log.traceflag",
             "harness.socket.retry.count",
             "harness.temp.directory",
+            "imap.port",
+            "iofile",
             "java.naming.factory.initial",
+            "javamail.mailbox",
+            "javamail.password",
             "javamail.protocol",
+            "javamail.root.path",
             "javamail.server",
             "javamail.username",
             "jdbc.db",
@@ -47,6 +52,7 @@ public class TsTestPropsBuilder {
             "log.file.location",
             "logical.hostname.servlet",
             "longvarbinarySize",
+            "mailuser1",
             "org.omg.CORBA.ORBClass",
             "password",
             "platform.mode",
@@ -68,10 +74,13 @@ public class TsTestPropsBuilder {
             "rauser2",
             "securedWebServicePort",
             "sigTestClasspath",
+            "smtp.port",
+            "transport_protocol",
             "ts_home",
             "user",
             "user1",
             "varbinarySize",
+            "vehicle_ear_name",
             "webServerHost",
             "webServerPort",
             "whitebox-anno_no_md",
@@ -79,9 +88,13 @@ public class TsTestPropsBuilder {
             "whitebox-mixedmode",
             "whitebox-multianno",
             "whitebox-notx",
+            "whitebox-notx-param",
             "whitebox-permissiondd",
             "whitebox-tx",
+            "whitebox-tx-param",
             "whitebox-xa",
+            "whitebox-xa-param",
+            "work.dir",
             "ws_wait",
     };
 
@@ -147,7 +160,11 @@ public class TsTestPropsBuilder {
         // The test specific properties file
         Properties props = new Properties();
         // A property set by the TSScript class
-        props.setProperty("finder", "cts");
+        if(vehicle.equals("ejb") && config.isAppClient()) {
+            props.setProperty("finder", "jck");
+        } else {
+            props.setProperty("finder", "cts");
+        }
         // Vehicle
         props.setProperty("service_eetest.vehicles", vehicle);
         props.setProperty("vehicle", vehicle);

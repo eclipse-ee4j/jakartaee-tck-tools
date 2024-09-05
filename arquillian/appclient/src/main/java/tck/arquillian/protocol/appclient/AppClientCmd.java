@@ -136,6 +136,7 @@ public class AppClientCmd {
         appClientProcess = Runtime.getRuntime().exec(cmdLine, clientEnvp, clientDir);
         onExit = appClientProcess.onExit();
         LOGGER.info("Created process" + appClientProcess.info());
+        LOGGER.info("process(%d).envp: %s".formatted(appClientProcess.pid(), Arrays.toString(clientEnvp)));
         outputReader = new BufferedReader(new InputStreamReader(appClientProcess.getInputStream(), StandardCharsets.UTF_8));
         errorReader = new BufferedReader(new InputStreamReader(appClientProcess.getErrorStream(), StandardCharsets.UTF_8));
 
