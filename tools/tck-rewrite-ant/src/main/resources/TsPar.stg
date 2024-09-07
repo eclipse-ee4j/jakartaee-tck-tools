@@ -20,6 +20,19 @@ genPar(par, testClass) ::= <<
     if(parURL != null) {
       #par.typedArchiveName#.addAsManifestResource(parURL, "persistence.xml");
     }
+    // Add the Persistence mapping-file
+    URL mappingURL = #testClass#.class.getResource("myMappingFile.xml");
+    if(mappingURL != null) {
+      #par.typedArchiveName#.addAsResource(mappingURL, "myMappingFile.xml");
+    }
+    mappingURL = #testClass#.class.getResource("myMappingFile1.xml");
+    if(mappingURL != null) {
+      #par.typedArchiveName#.addAsResource(mappingURL, "myMappingFile1.xml");
+    }
+    mappingURL = #testClass#.class.getResource("myMappingFile2.xml");
+    if(mappingURL != null) {
+      #par.typedArchiveName#.addAsResource(mappingURL, "myMappingFile2.xml");
+    }
     // Call the archive processor
     archiveProcessor.processParArchive(#par.typedArchiveName#, #testClass#.class, parURL);
     // The orm.xml file
