@@ -127,13 +127,7 @@ public class TsTestPropsBuilder {
         Class<?> testClass = testMethodExecutor.getMethod().getDeclaringClass();
         Class<?> testSuperclass = testClass.getSuperclass();
         TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
-        // Remove the _ testVehicle
         String testMethodName = testMethodExecutor.getMethod().getName();
-        int index = testMethodName.lastIndexOf('_');
-        String tsTestMethodName = testMethodName;
-        if (index != -1) {
-            tsTestMethodName = testMethodName.substring(0, index);
-        }
         // The none vehicle is a basic appclient test, not a vehicle based test
         String vehicle = "none";
         if (testVehicle != null) {
@@ -210,7 +204,7 @@ public class TsTestPropsBuilder {
                 "-p", testProps.toFile().getAbsolutePath(),
                 "-ap", tssqlStmt != null ? tssqlStmt.toFile().getAbsolutePath() : "/dev/null",
                 "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
-                "-t", tsTestMethodName,
+                "-t", testMethodName,
                 "-vehicle", vehicle,
         };
         return args;
