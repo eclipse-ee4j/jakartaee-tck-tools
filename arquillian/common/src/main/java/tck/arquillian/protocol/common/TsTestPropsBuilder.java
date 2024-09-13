@@ -80,6 +80,7 @@ public class TsTestPropsBuilder {
             "user",
             "user1",
             "varbinarySize",
+            "variable.mapper",
             "vehicle_ear_name",
             "webServerHost",
             "webServerPort",
