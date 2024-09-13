@@ -203,7 +203,7 @@ public class TsTestPropsBuilder {
                 // test props are needed by EETest.run
                 "-p", testProps.toFile().getAbsolutePath(),
                 "-ap", tssqlStmt != null ? tssqlStmt.toFile().getAbsolutePath() : "/dev/null",
-                "classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
+                "-classname", testMethodExecutor.getMethod().getDeclaringClass().getName(),
                 "-t", testMethodName,
                 "-vehicle", vehicle,
         };

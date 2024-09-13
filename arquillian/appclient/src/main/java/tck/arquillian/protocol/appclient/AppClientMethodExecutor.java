@@ -1,9 +1,20 @@
+/*
+ * Copyright 2024 Red Hat, Inc., and individual contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
 package tck.arquillian.protocol.appclient;
 
 import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
@@ -19,6 +30,9 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
     @Inject
     @DeploymentScoped
     private Instance<Deployment> deploymentInstance;
+    @Inject
+    @DeploymentScoped
+    private Instance<AppClientArchiveName> appClientArchiveName;
 
     static enum MainStatus {
         PASSED,
@@ -54,9 +68,10 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
             log.info("Running appClient for: " + testMethod);
             try {
                 Deployment deployment = deploymentInstance.get();
+                String appArchiveName = appClientArchiveName.get().name();
                 String vehicleArchiveName = TsTestPropsBuilder.vehicleArchiveName(deployment);
                 String[] additionalAgrs = TsTestPropsBuilder.runArgs(config, deployment, testMethodExecutor);
-                appClient.run(vehicleArchiveName, additionalAgrs);
+                appClient.run(vehicleArchiveName, appArchiveName, additionalAgrs);
             } catch (Exception ex) {
                 result = TestResult.failed(ex);
                 return result;

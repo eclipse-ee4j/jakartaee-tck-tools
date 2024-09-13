@@ -104,11 +104,13 @@ public class AppClientCmd {
     /**
      * Starts the app client in a new process and creates two threads to read the process output
      * and error streams.
+     * @param vehicleArchiveName - the name of the vehicle archive to pass to the app client
+     * @param clientAppArchive - the appclient archive
      * @param additionalArgs - additional arguments passed to the app client process. The CTS appclient will
      *                       pass in the name of the test to run using this.
      * @throws Exception - on failure
      */
-    public void run(String vehicleArchiveName, String... additionalArgs) throws Exception {
+    public void run(String vehicleArchiveName, String clientAppArchive, String... additionalArgs) throws Exception {
         // Need to replace any property refs on command line
         File earDir = new File(clientEarDir);
         if(earDir.isAbsolute()) {
@@ -125,6 +127,11 @@ public class AppClientCmd {
                 arg = arg.replaceAll("\\$\\{vehicleArchiveName}", vehicleArchiveName);
                 cmdLine[n] = arg;
             }
+            if(arg.contains("${clientAppArchive}")) {
+                arg = arg.replaceAll("\\$\\{clientAppArchive}", clientAppArchive);
+                cmdLine[n] = arg;
+            }
+
         }
         if (additionalArgs != null) {
             String[] newCmdLine = new String[cmdLine.length + additionalArgs.length];
@@ -196,6 +203,7 @@ public class AppClientCmd {
 
     private synchronized void errorLineReceived(String line) {
         LOGGER.info("[" + errThreadHame + "] " + line);
+        outputQueue.add(line);
     }
 
     private static String formatException(String msg, Throwable e) {

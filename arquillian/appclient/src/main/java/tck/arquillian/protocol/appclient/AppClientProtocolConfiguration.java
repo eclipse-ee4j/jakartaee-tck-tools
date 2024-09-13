@@ -8,6 +8,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Configuration for the AppClient protocol. This is used to configure the appclient process that will be launched to
+ * run the appclient main class for the test.
+ */
 public class AppClientProtocolConfiguration implements ProtocolConfiguration, ProtocolCommonConfig {
     private boolean runClient = true;
     /**
@@ -20,9 +24,14 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     private String clientEnvString;
     /**
-     * A comma separated string for the command line arguments to pass as the cmdarray to {@link Runtime#exec(String[], String[])}
+     * A ';' (by default) separated string for the command line arguments to pass as the cmdarray to
+     * {@link Runtime#exec(String[], String[])}
      */
     private String clientCmdLineString;
+    /**
+     * The separator to use for splitting the clientCmdLineString
+     */
+    private String cmdLineArgSeparator = ";";
     /**
      * An optional directory string to use as the appclient process directory. This is passed as the dir arguemnt
      * to {@link Runtime#exec(String[], String[], File)}
@@ -42,6 +51,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private String tsSqlStmtFile;
     // harness.log.traceflag
     private boolean trace;
+    private boolean unpackClientEar = false;
 
     public boolean isAppClient() {
         return true;
@@ -101,8 +111,29 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         return clientCmdLineString;
     }
 
+    /**
+     * Set the command line to use for launching the appclient. The individual arguments are separated by the cmdLineArgSeparator
+     * setting, which defaults to ';'. A long command line can be split across multiple lines in the arquillian.xml file because
+     * the parsed command line array elements are trimmed of leading and trailing whitespace.
+     * The command line should be filtered against the ts.jte file if it contains any property references. In addition
+     * to ts.jte property references, the command line can contain ${clientEarDir} which will be replaced with the
+     * #clientEarDir value. Any ${vehicleArchiveName} ref will be replaced with the vehicleArchiveName passed to the
+     * @param clientCmdLineString
+     */
     public void setClientCmdLineString(String clientCmdLineString) {
         this.clientCmdLineString = clientCmdLineString;
+    }
+
+    public String getCmdLineArgSeparator() {
+        return cmdLineArgSeparator;
+    }
+
+    /**
+     * Set the separator to use for splitting the clientCmdLineString
+     * @param cmdLineArgSeparator
+     */
+    public void setCmdLineArgSeparator(String cmdLineArgSeparator) {
+        this.cmdLineArgSeparator = cmdLineArgSeparator;
     }
 
     public String getClientDir() {
@@ -119,15 +150,36 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         this.clientEarDir = clientEarDir;
     }
 
+    public boolean isUnpackClientEar() {
+        return unpackClientEar;
+    }
+
+    /**
+     * Set to true to unpack the client ear into the clientEarDir. The default is false. This is useful if the
+     * vendor appclient requires the ear to be exploded in order to access the appclient jar and bundled ear
+     * lib jars.
+     * @param unpackClientEar
+     */
+    public void setUnpackClientEar(boolean unpackClientEar) {
+        this.unpackClientEar = unpackClientEar;
+    }
+
     public long getClientTimeout() {
         return clientTimeout;
     }
 
+    /**
+     * Set the timeout in milliseconds for waiting for the appclient process to exit. The default is 60000 (1 minute).
+     * @param clientTimeout
+     */
     public void setClientTimeout(long clientTimeout) {
         this.clientTimeout = clientTimeout;
     }
 
-    // Helper methods to turn the strings into the types used by Runtime#exec
+
+    /** Helper methods to turn the strings into the types used by Runtime#exec
+     * @return a File object for the clientDir
+     */
     public File clientDirAsFile() {
         File dir = null;
         if (clientDir != null) {
@@ -136,8 +188,18 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         return dir;
     }
 
+    /**
+     * Parse the clientCmdLineString into an array of strings using the cmdLineArgSeparator. This calls String#split on the
+     * clientCmdLineString and then trims each element of the resulting array.
+     * @return a command line array of strings for use with Runtime#exec.
+     */
     public String[] clientCmdLineAsArray() {
-        return clientCmdLineString.trim().split(";");
+        String[] cmdArray = clientCmdLineString.trim().split(cmdLineArgSeparator);
+        // Now trim each element
+        for (int i = 0; i < cmdArray.length; i++) {
+            cmdArray[i] = cmdArray[i].trim();
+        }
+        return cmdArray;
     }
     public String[] clientEnvAsArray() {
         String[] envp = null;
@@ -145,6 +207,11 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
             ArrayList<String> tmp = new ArrayList<String>();
             // Split on the env1=value1 ; separator
             envp = clientEnvString.trim().split(";");
+            // Now trim each element
+            for (int i = 0; i < envp.length; i++) {
+                envp[i] = envp[i].trim();
+            }
+
         }
         return envp;
     }
