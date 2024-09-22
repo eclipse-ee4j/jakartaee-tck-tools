@@ -146,7 +146,16 @@ public class TsTestPropsBuilder {
             tssqlStmt = Paths.get(config.getTsSqlStmtFile());
         }
         // Create a test properties file
-        Path testProps = Paths.get(config.getWorkDir(), "tstest.jte");
+        String workDir = config.getWorkDir();
+        if(workDir == null) {
+             throw new IllegalStateException("Missing workDir value for test properties file");
+        }
+        Path workDirPath = Paths.get(workDir);
+        if(!workDirPath.toFile().exists()) {
+            log.info("Creating work directory: "+workDirPath.toAbsolutePath());
+            Files.createDirectory(workDirPath);
+        }
+        Path testProps = workDirPath.resolve("tstest.jte");
 
         // Seed the test properties file with select ts.jte file settings
         Properties tsJteProps = new Properties();
