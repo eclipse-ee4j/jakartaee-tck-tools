@@ -187,12 +187,16 @@ public class TsTestPropsBuilder {
                     String refName = propValue.substring(2, propValue.length() - 1);
                     propValue = tsJteProps.getProperty(refName);
                     if(propValue == null && refName != null) {
-                        propName = System.getProperty(refName);
+                        propValue = System.getProperty(refName);
                     }
                     log.info(String.format("Setting property %s -> %s to %s", propName, refName, propValue));
-                    if(propValue == null) {
-                        continue;
-                    }
+                }
+                if(propValue == null) {
+                    propValue = System.getProperty(propName);
+                }
+
+                if(propValue == null) {
+                    continue;
                 }
                 props.setProperty(propName, propValue);
             }
