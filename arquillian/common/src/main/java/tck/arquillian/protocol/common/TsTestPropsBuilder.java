@@ -55,6 +55,7 @@ public class TsTestPropsBuilder {
             "mailuser1",
             "org.omg.CORBA.ORBClass",
             "password",
+            "password.1",
             "platform.mode",
             "porting.ts.HttpsURLConnection.class.1",
             "porting.ts.HttpsURLConnection.class.2",
