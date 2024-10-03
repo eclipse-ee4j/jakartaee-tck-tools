@@ -111,10 +111,6 @@ public class AppClientCmd {
      * @throws Exception - on failure
      */
     public void run(String vehicleArchiveName, String clientAppArchive, String... additionalArgs) throws Exception {
-        
-        ArrayList<String> cmdList = new ArrayList<String>();
-
-
         // Need to replace any property refs on command line
         File earDir = new File(clientEarDir);
         if(earDir.isAbsolute()) {
@@ -137,22 +133,14 @@ public class AppClientCmd {
             }
 
         }
-
-        for (int n = 0; n < cmdLine.length; n ++) {
-            String arg = cmdLine[n];
-            cmdList.addAll(Arrays.asList(cmdLine[n].split(" ")));
-        }
-
         if (additionalArgs != null) {
             String[] newCmdLine = new String[cmdLine.length + additionalArgs.length];
             System.arraycopy(cmdLine, 0, newCmdLine, 0, cmdLine.length);
             System.arraycopy(additionalArgs, 0, newCmdLine, cmdLine.length, additionalArgs.length);
             cmdLine = newCmdLine;
-            cmdList.addAll(Arrays.asList(additionalArgs));
-
         }
 
-        appClientProcess = Runtime.getRuntime().exec(cmdList.toArray(new String[0]), clientEnvp, clientDir);
+        appClientProcess = Runtime.getRuntime().exec(cmdLine, clientEnvp, clientDir);
         onExit = appClientProcess.onExit();
         LOGGER.info("Created process" + appClientProcess.info());
         LOGGER.info("process(%d).envp: %s".formatted(appClientProcess.pid(), Arrays.toString(clientEnvp)));
