@@ -87,7 +87,7 @@ public class SetupAndTest extends Result {
         parser.addOption(SigTest.PACKAGE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.FILENAME_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(SigTest.EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
-        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionVariableParams(0, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.WITHOUTSUBPACKAGES_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.EXCLUDE_OPTION, OptionInfo.optionVariableParams(1, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(SigTest.APIVERSION_OPTION, OptionInfo.option(1), optionsDecoder);
@@ -180,7 +180,11 @@ public class SetupAndTest extends Result {
         } else if (optionName.equalsIgnoreCase(SigTest.EXCLUDE_JDK_CLASS_OPTION)) {
             addFlag(testOptions, SigTest.EXCLUDE_JDK_CLASS_OPTION);
         } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
-            addFlag(testOptions, SigTest.EXCLUDE_JDK_CLASS_OPTION);
+            if (args == null || args.length == 0) {
+                addFlag(testOptions, SigTest.EXCLUDE_JDK_CLASS_OPTION);
+            } else {
+                addOption(testOptions, SigTest.LEGACY_EXCLUDE_JDK_CLASS_OPTION, args[0]);
+            }
         } else if (optionName.equalsIgnoreCase(SigTest.FILENAME_OPTION) ||
                 optionName.equalsIgnoreCase(SigTest.PACKAGE_OPTION) ||
                 optionName.equalsIgnoreCase(SigTest.WITHOUTSUBPACKAGES_OPTION) ||

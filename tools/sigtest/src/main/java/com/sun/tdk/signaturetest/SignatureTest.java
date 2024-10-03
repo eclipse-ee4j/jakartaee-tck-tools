@@ -241,9 +241,14 @@ public class SignatureTest extends SigTest {
 
     protected Exclude exclude;
     private int readMode = MultipleFileReader.MERGE_MODE;
+    private JDKExclude jdkExclude = new DefaultJDKExclude();
+    /**
+     * List of names of JDK classes and/or packages to be ignored along with subpackages.
+     */
+    private static final PackageGroup excludedJdkClasses = new PackageGroup(true);
 
     public SignatureTest() {
-        normalizer = new ThrowsNormalizer();
+        normalizer = new ThrowsNormalizer(jdkExclude);
     }
 
     /**
@@ -379,7 +384,7 @@ public class SignatureTest extends SigTest {
         parser.addOption(MODE_OPTION, OptionInfo.option(1), optionsDecoder);
         parser.addOption(ALLPUBLIC_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
         parser.addOption(EXCLUDE_JDK_CLASS_OPTION,OptionInfo.optionalFlag(), optionsDecoder);
-        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
+        parser.addOption(LEGACY_EXCLUDE_JDK_CLASS_OPTION, OptionInfo.optionVariableParams(0, OptionInfo.UNLIMITED), optionsDecoder);
         parser.addOption(VERBOSE_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
 
         parser.addOption(HELP_OPTION, OptionInfo.optionalFlag(), optionsDecoder);
@@ -500,9 +505,16 @@ public class SignatureTest extends SigTest {
         } else if (optionName.equalsIgnoreCase(NOMERGE_OPTION)) {
             readMode = MultipleFileReader.CLASSPATH_MODE;
         } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
-            JDKExclude.enable();
+            jdkExclude = JDKExclude.JDK_CLASSES;
         } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
-            JDKExclude.enable();
+            final String[] packages = CommandLineParser.parseListOption(args);
+            // In version 2.3 the -IgnoreJDKClass was changed to not allow parameters. It should be treated like
+            // -IgnoreJDKClasses
+            if (packages.length == 0) {
+                jdkExclude = JDKExclude.JDK_CLASSES;
+            } else {
+                excludedJdkClasses.addPackages(packages);
+            }
         } else {
             super.decodeCommonOptions(optionName, args);
         }
@@ -720,7 +732,7 @@ public class SignatureTest extends SigTest {
 
         testableHierarchy = new ClassHierarchyImpl(loader, trackMode);
 
-        testableMCBuilder = new MemberCollectionBuilder(this);
+        testableMCBuilder = new MemberCollectionBuilder(this, jdkExclude);
 
         signatureClassesHierarchy = new ClassHierarchyImpl(in, trackMode);
 
@@ -741,7 +753,7 @@ public class SignatureTest extends SigTest {
         boolean buildMembers = in.isFeatureSupported(FeaturesHolder.BuildMembers);
         MemberCollectionBuilder sigfileMCBuilder = null;
         if (buildMembers) {
-            sigfileMCBuilder = new MemberCollectionBuilder(this);
+            sigfileMCBuilder = new MemberCollectionBuilder(this, jdkExclude);
         }
 
         //  Reading the sigfile: main loop.
@@ -1403,7 +1415,7 @@ public class SignatureTest extends SigTest {
             }
         }
 
-        if (!isSupersettingEnabled && found != null && !JDKExclude.isJdkClass(found.getDeclaringClassName())) {
+        if (!isSupersettingEnabled && found != null && !jdkExclude.isJdkClass(found.getDeclaringClassName())) {
             errorManager.addError(MessageType.getAddedMessageType(found.getMemberType()), name, found.getMemberType(), found.toString(), found);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("added :-( " + found);
@@ -1438,15 +1450,15 @@ public class SignatureTest extends SigTest {
         int requiredPos = 0;
         int foundPos = 0;
 
-        if (required != null && JDKExclude.isJdkClass(required.getDeclaringClassName())) {
+        if (required != null && jdkExclude.isJdkClass(required.getDeclaringClassName())) {
             // don't check excluded Annotation classes
             return;
         }
 
         while ((requiredPos < bl) && (foundPos < tl)) {
             int comp = 0;
-            boolean isJDKExcludedClass = (JDKExclude.isJdkClass(baseAnnotList[requiredPos].getName()) ||
-                    JDKExclude.isJdkClass(testAnnotList[foundPos].getName()));
+            boolean isJDKExcludedClass = (jdkExclude.isJdkClass(baseAnnotList[requiredPos].getName()) ||
+                    jdkExclude.isJdkClass(testAnnotList[foundPos].getName()));
             if (isJDKExcludedClass) {
                 // do comparison with just the JDK annotation name
                 comp = baseAnnotList[requiredPos].getName().compareTo(testAnnotList[foundPos].getName());
@@ -1565,5 +1577,14 @@ public class SignatureTest extends SigTest {
             return null;
         }
 
+    }
+
+    static class DefaultJDKExclude implements JDKExclude {
+
+        @Override
+        public boolean isJdkClass(String name) {
+            return name != null &&
+                    excludedJdkClasses.checkName(name);
+        }
     }
 }

@@ -48,8 +48,6 @@ public final class Sigtest extends Task {
     String failureProperty;
     String release;
 
-    Boolean jdkExcludeEnabled = Boolean.FALSE;
-
     public void setFileName(File f) {
         fileName = f;
     }
@@ -178,7 +176,12 @@ public final class Sigtest extends Task {
 
             @Override
             protected boolean isJDKExcludeEnabled() {
-                return jdkExcludeEnabled.booleanValue();
+                return false;
+            }
+
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
+                return null;
             }
         };
         int returnCode;

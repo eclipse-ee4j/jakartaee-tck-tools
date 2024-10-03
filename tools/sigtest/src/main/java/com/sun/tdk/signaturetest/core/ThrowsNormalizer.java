@@ -46,6 +46,9 @@ public class ThrowsNormalizer {
     public ThrowsNormalizer() {
         
     }
+    public ThrowsNormalizer(JDKExclude jdkExclude) {
+        this.jdkExclude = jdkExclude;
+    }
 
     public void normThrows(ClassDescription c, boolean removeJLE, boolean onlyRemoveJavaSEThrows) throws ClassNotFoundException {
 
@@ -97,7 +100,7 @@ public class ThrowsNormalizer {
                 if (s == null)
                     continue;
 
-                if (JDKExclude.isJdkClass(s) ) {
+                if (jdkExclude.isJdkClass(s) ) {
                     xthrows.set(i, null);
                     superfluousExceptionCount++;
                 }
@@ -153,5 +156,10 @@ public class ThrowsNormalizer {
     
     private List/*String*/ xthrows = new ArrayList();
     private StringBuffer sb = new StringBuffer();
-
+    private JDKExclude jdkExclude = new JDKExclude() {
+        @Override
+        public boolean isJdkClass(String name) {
+            return false;
+        }
+    };
 }
