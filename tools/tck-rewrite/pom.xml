@@ -127,11 +127,6 @@
             <version>${version.platform.tck}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>jta</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.2</version>
