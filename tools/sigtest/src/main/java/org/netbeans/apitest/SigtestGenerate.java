@@ -26,6 +26,8 @@ package org.netbeans.apitest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -84,21 +86,29 @@ public final class SigtestGenerate extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean attach;
     
-    private String version;
+    /**
+     * ignore JDK classes entries
+     */
+    @Parameter
+    private String[] ignoreJDKClasses;
 
-    private boolean ignoreJDKClasses;
+    @Parameter(defaultValue = "false")
+    private boolean ignoreAllJdkClasses;
+
+    private String version;
 
     public SigtestGenerate() {
     }
 
-    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release, boolean ignoreJDKClasses) {
+    SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release, final String[] ignoreJDKClasses, boolean ignoreAllJdkClasses) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
         this.packages = packages;
         this.version = version;
         this.release = release;
-        this.ignoreJDKClasses = ignoreJDKClasses;
+        this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
+        this.ignoreAllJdkClasses = ignoreAllJdkClasses;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -170,6 +180,11 @@ public final class SigtestGenerate extends AbstractMojo {
             
             @Override
             protected boolean isJDKExcludeEnabled() {
+                return ignoreAllJdkClasses;
+            }
+
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
                 return ignoreJDKClasses;
             }
         };

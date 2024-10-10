@@ -40,7 +40,6 @@ import com.sun.tdk.signaturetest.sigfile.Format;
 import com.sun.tdk.signaturetest.util.CommandLineParser;
 import com.sun.tdk.signaturetest.util.CommandLineParserException;
 import com.sun.tdk.signaturetest.util.I18NResourceBundle;
-import com.sun.tdk.signaturetest.util.OptionInfo;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -219,6 +218,9 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     private ClassDescriptionLoader loader;
     protected boolean reportWarningAsError = false;
 
+    private final PackageGroup excludedJdkClasses = new PackageGroup(true);
+    private JDKExclude jdkExclude = excludedJdkClasses::checkName;
+
     public void initErrors() {
         errorMessages.clear();
     }
@@ -287,9 +289,14 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
         } else if (optionName.equalsIgnoreCase(CLASSPATH_OPTION)) {
             classpathStr = args[0];
         } else if (optionName.equalsIgnoreCase(EXCLUDE_JDK_CLASS_OPTION)) {
-                JDKExclude.enable();
+            jdkExclude = JDKExclude.JDK_CLASSES;
         } else if (optionName.equalsIgnoreCase(LEGACY_EXCLUDE_JDK_CLASS_OPTION)) {
-            JDKExclude.enable();
+            final String[] packages = CommandLineParser.parseListOption(args);
+            if (packages.length == 0) {
+                jdkExclude = JDKExclude.JDK_CLASSES;
+            } else {
+                excludedJdkClasses.addPackages(packages);
+            }
         } else if (optionName.equalsIgnoreCase(USE_BOOT_CP)) {
             if (args.length == 0) {
                 release = Release.BOOT_CLASS_PATH;
@@ -365,6 +372,15 @@ public abstract class SigTest extends Result implements PluginAPI, Log {
     protected boolean isPackageMember(String name) {
         return !excludedPackages.checkName(name) &&
                 (packages.checkName(name) || purePackages.checkName(name));
+    }
+
+    /**
+     * Returns the {@link JDKExclude} utility used to determine if JDK classes should be excluded.
+     *
+     * @return the JDKExcluded, never {@code null}
+     */
+    protected JDKExclude jdkExclude() {
+        return jdkExclude;
     }
 
     public void setClassDescrLoader(ClassDescriptionLoader loader) {

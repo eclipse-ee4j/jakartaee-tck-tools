@@ -26,6 +26,7 @@ package org.netbeans.apitest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -99,14 +100,14 @@ public final class SigtestCheck extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "sigtest.fail")
     private boolean failOnError;
     @Parameter(defaultValue = "false", property = "IgnoreJDKClasses")
-    private boolean ignoreJDKClasses;
-    @Parameter(defaultValue = "false", property = "IgnoreJDKClass")
-    private boolean legacyIgnoreJDKClasses; 
+    private String[] ignoreJDKClasses;
+    @Parameter(defaultValue = "false", property = "IgnoreAllJDKClasses")
+    private boolean ignoreAllJDKClasses;
 
     public SigtestCheck() {
     }
 
-    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError, boolean ignoreJDKClasses) {
+    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError, final String[] ignoreJDKClasses, boolean ignoreAllJDKClasses) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
@@ -114,7 +115,8 @@ public final class SigtestCheck extends AbstractMojo {
         this.packages = packages;
         this.report = report;
         this.failOnError = failOnError;
-        this.ignoreJDKClasses = ignoreJDKClasses;
+        this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
+        this.ignoreAllJDKClasses = ignoreAllJDKClasses;
     }
 
 
@@ -193,7 +195,12 @@ public final class SigtestCheck extends AbstractMojo {
 
             @Override
             protected boolean isJDKExcludeEnabled() {
-                return ignoreJDKClasses || legacyIgnoreJDKClasses;
+                return ignoreAllJDKClasses;
+            }
+
+            @Override
+            protected String[] getIgnoreJDKClassEntries() {
+                return ignoreJDKClasses;
             }
         };
         try {

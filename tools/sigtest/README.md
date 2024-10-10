@@ -146,11 +146,14 @@ with the action option set to `strictcheck` the plugin will detect any API chang
 
 There are some cases where avoiding the verification of certain JDK classes entirely or their signatures can improve the ability to verify your API on different JDK versions.
 The `-IgnoreJDKClasses` option will ignore (all) JDK java.* and javax.* classes during signature verification checking which helps avoid failures caused by 
-JDK specific signature changes introduced by a later JDK version. As an example, a Signature file with @java.lang.Deprecated annotations from JDK8 may be seeing verification failures on JDK9+ 
-due to `default` fields being added to @Deprecated.  With `-IgnoreJDKClasses specified, verification of the @Deprecated will only check that the tested class member has the 
-@Deprecated class but no verification of the @Deprecated signature will be performed. 
+JDK specific signature changes introduced by a later JDK version. As an example, a Signature file with `@java.lang.Deprecated` annotations from JDK8 may be seeing verification failures on JDK9+ 
+due to `default` fields being added to `@Deprecated`.  With `-IgnoreJDKClasses` specified, verification of the `@Deprecated` will only check that the tested class member has the 
+`@Deprecated` class but no verification of the `@Deprecated` signature will be performed. 
 
-Note that the `-IgnoreJDKClass` option can still be specified only if no JDK Class name is included after the `-IgnoreJDKClass`.  You will get a failure if you try to use `-IgnoreJDKClass JDKClassName`.
+In 2.4, the `-IgnoreJDKClass` was re-introduced to the previous behavior, with one exception. If you pass `-IgnoreJDKClass` with no argument, it's the same as passing `-IgnoreJDKClasses`.
+However, you can now pass class name arguments to the `-IgnoreJDKClass` option like you could in previous version.
+
+These options should likely be used sparingly. Using the `-Release` option the minimum target version of the API is the suggested way to handle forward compatibility for signature tests.
 
 ### Specify JDK classes to ignore in Maven plugin
 Specify the `-IgnoreJDKClasses` option as shown below:

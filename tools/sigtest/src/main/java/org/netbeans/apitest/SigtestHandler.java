@@ -96,6 +96,13 @@ abstract class SigtestHandler {
             arg.add("-ApiVersion");
             arg.add(getVersion());
         }
+        final String[] ignoreJdkClassEntries = getIgnoreJDKClassEntries();
+        if (ignoreJdkClassEntries != null) {
+            for (String ignore : ignoreJdkClassEntries) {
+                arg.add("-IgnoreJDKClass");
+                arg.add(ignore);
+            }
+        }
         if (isJDKExcludeEnabled()) {
             arg.add("-IgnoreJDKClasses");
         }
@@ -263,6 +270,7 @@ abstract class SigtestHandler {
     protected abstract String getMail();
     protected abstract Boolean isFailOnError();
     protected abstract boolean isJDKExcludeEnabled();
+    protected abstract String[] getIgnoreJDKClassEntries();
     protected abstract void logInfo(String message);
     protected abstract void logError(String message);
 }

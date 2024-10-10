@@ -56,6 +56,7 @@ public class ClassCorrector implements Transformer {
 
     protected ClassHierarchy classHierarchy = null;
     private Log log;
+    private final JDKExclude jdkExclude;
 
     /**
      * Selftracing can be turned on by setting FINER level
@@ -76,13 +77,25 @@ public class ClassCorrector implements Transformer {
 
 
     private static I18NResourceBundle i18n = I18NResourceBundle.getBundleForClass(ClassCorrector.class);
-    
-    public ClassCorrector(Log log) {
+
+    public ClassCorrector(Log log, JDKExclude jdkExclude) {
+        this.jdkExclude = jdkExclude != null ? jdkExclude :
+                new JDKExclude() {
+                    @Override
+                    public boolean isJdkClass(String name) {
+                        return false;
+                    }
+                };
         this.log = log;
         // not configured externally
         if(logger.getLevel() == null) {
             logger.setLevel(Level.OFF);
         }
+
+    }
+
+    public ClassCorrector(Log log) {
+        this(log, null);
     }
 
 
@@ -180,7 +193,7 @@ public class ClassCorrector implements Transformer {
                 } else
                     exceptionName = throwables.substring(startPos);
 
-                if (!JDKExclude.isJdkClass(exceptionName) && isInvisibleClass(exceptionName)) {
+                if (!jdkExclude.isJdkClass(exceptionName) && isInvisibleClass(exceptionName)) {
                     List supers = classHierarchy.getSuperClasses(exceptionName);
                     exceptionName = findVisibleReplacement(exceptionName, supers, "java.lang.Throwable", true);
                     mustCorrect = true;
@@ -700,7 +713,7 @@ public class ClassCorrector implements Transformer {
 
         if (fqname.startsWith("?"))
             return false;
-        if (JDKExclude.isJdkClass(fqname))
+        if (jdkExclude.isJdkClass(fqname))
             return false;
         String pname = ClassCorrector.stripArrays(ClassCorrector.stripGenerics(fqname));
 
