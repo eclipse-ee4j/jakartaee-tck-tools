@@ -9,7 +9,7 @@
 
     <groupId>jakarta.tck</groupId>
     <artifactId>sigtest-maven-plugin</artifactId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.4</version>
     <packaging>maven-plugin</packaging>
     <name>API Signature Test Plugin</name>
     <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools/wiki</url>
