@@ -24,98 +24,138 @@
  */
 package com.sun.tdk.signaturetest.classpath;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import com.sun.tdk.signaturetest.loaders.BinaryClassDescrLoader;
 import com.sun.tdk.signaturetest.model.ClassDescription;
 import com.sun.tdk.signaturetest.model.MethodDescr;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class ReleaseTest {
 
-    public ReleaseTest() {
+    @ParameterizedTest
+    @MethodSource("jdkParameters")
+    public void verifyJdk(final int version, final List<String> expectedTypes, final List<String> unexpectedTypes, final Map<String, List<String>> methodChecks) throws Exception {
+        final Release release = Release.find(version);
+        Assertions.assertNotNull(release, () -> "Failed to find release version " + version);
+        for (String expectedType : expectedTypes) {
+            assertNotNull(release.findClass(expectedType), () -> String.format("Failed to find class %s in Java %d", expectedType, version));
+        }
+        for (String unexpectedType : unexpectedTypes) {
+            assertNull(release.findClass(unexpectedType), () -> String.format("Did not expect to find type %s in Java %d", unexpectedType, version));
+        }
+        if (!methodChecks.isEmpty()) {
+            final BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(release, null), 4096);
+            for (var entry : methodChecks.entrySet()) {
+                final ClassDescription classDescription = loader.load(entry.getKey());
+                Assertions.assertNotNull(classDescription, () -> String.format("Failed to find class %s in Java %d", entry.getKey(), version));
+                assertMethods(classDescription, entry.getValue());
+            }
+        }
     }
 
-    @Test
-    public void testFindJDK8() throws ClassNotFoundException {
-        Release jdk8 = Release.find(8);
-        assertNotNull(jdk8.findClass("java.lang.Object"));
-        assertNull(jdk8.findClass("java.lang.Module"));
+    private static Stream<Arguments> jdkParameters() {
+        final List<Arguments> jdkParameters = new ArrayList<>();
+        final int currentVersion = Runtime.version().feature();
+        final int minVersion = discoverMinimumVersion();
+        for (int i = currentVersion; i >= minVersion; i--) {
+            final List<String> expectedTypes = new ArrayList<>();
+            final List<String> unexpectedTypes = new ArrayList<>();
+            final Map<String, List<String>> methodChecks = new HashMap<>();
+            expectedTypes.add("java.lang.Object");
+            if (i == 8) {
+                unexpectedTypes.add("java.lang.Module");
+                methodChecks.put("java.lang.Deprecated", List.of());
+            } else {
+                expectedTypes.add("java.lang.Module");
+                methodChecks.put("java.lang.Deprecated", List.of("forRemoval", "since"));
+            }
+            if (i > 13) {
+                expectedTypes.add("java.lang.Record");
+            } else {
+                unexpectedTypes.add("java.lang.Record");
+            }
 
-        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk8, null), 4096);
-        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
-        assertMethods(deprecatedClass);
+            if (i > 16) {
+                expectedTypes.add("java.util.random.RandomGeneratorFactory");
+            } else {
+                unexpectedTypes.add("java.util.random.RandomGeneratorFactory");
+            }
+
+            if (i > 20) {
+                expectedTypes.add("java.util.SequencedCollection");
+            } else {
+                unexpectedTypes.add("java.util.SequencedCollection");
+            }
+
+
+            jdkParameters.add(Arguments.of(i, List.copyOf(expectedTypes), List.copyOf(unexpectedTypes), Map.copyOf(methodChecks)));
+        }
+        return jdkParameters.stream();
     }
 
-    @Test
-    public void testFindJDK9() throws ClassNotFoundException {
-        Release jdk9 = Release.find(9);
-        assertNotNull(jdk9.findClass("java.lang.Object"));
-        assertNotNull(jdk9.findClass("java.lang.Module"));
-        assertNull(jdk9.findClass("java.lang.Record"));
-
-        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk9, null), 4096);
-        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
-        assertMethods(deprecatedClass, "forRemoval", "since");
-    }
-
-    @Test
-    public void testFindJDK13() throws ClassNotFoundException {
-        Release jdk13 = Release.find(13);
-        assertNotNull(jdk13.findClass("java.lang.Object"));
-        assertNotNull(jdk13.findClass("java.lang.Module"));
-        assertNull(jdk13.findClass("java.lang.Record"));
-
-        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk13, null), 4096);
-        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
-        assertMethods(deprecatedClass, "forRemoval", "since");
-    }
-
-    @Test
-    public void testFindJDK14() {
-        Release jdk14 = Release.find(14);
-        assertNotNull(jdk14.findClass("java.lang.Object"));
-        assertNotNull(jdk14.findClass("java.lang.Module"));
-        assertNotNull(jdk14.findClass("java.lang.Record"));
-    }
-
-    @Test
-    public void testFindJDK15() throws ClassNotFoundException {
-        Release jdk15 = Release.find(15);
-        assertNotNull(jdk15.findClass("java.lang.Object"));
-        assertNotNull(jdk15.findClass("java.lang.Module"));
-        assertNotNull(jdk15.findClass("java.lang.Record"));
-        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk15, null), 4096);
-        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
-        assertMethods(deprecatedClass, "forRemoval", "since");
-    }
-
-    @Test
-    public void testFindJDK17() throws ClassNotFoundException {
-        Release jdk17 = Release.find(17);
-        assertNotNull(jdk17.findClass("java.lang.Object"));
-        assertNotNull(jdk17.findClass("java.lang.Module"));
-        assertNotNull(jdk17.findClass("java.lang.Record"));
-        assertNotNull(jdk17.findClass("java.util.random.RandomGeneratorFactory"));
-        BinaryClassDescrLoader loader = new BinaryClassDescrLoader(new ClasspathImpl(jdk17, null), 4096);
-        ClassDescription deprecatedClass = loader.load("java.lang.Deprecated");
-        assertMethods(deprecatedClass, "forRemoval", "since");
-    }
-
-    private void assertMethods(ClassDescription deprecatedClass, String... names) {
+    private void assertMethods(final ClassDescription deprecatedClass, final List<String> names) {
         MethodDescr[] arr = deprecatedClass.getDeclaredMethods();
-        assertEquals("Same number of methods: " + Arrays.toString(arr), names.length, arr.length);
+        assertEquals(names.size(), arr.length, () -> "Same number of methods: " + Arrays.toString(arr));
 
-        Set<String> all = new HashSet<>(Arrays.asList(names));
-        for (int i = 0; i < arr.length; i++) {
-            MethodDescr m = arr[i];
+        Set<String> all = new HashSet<>(names);
+        for (MethodDescr m : arr) {
             all.remove(m.getName());
         }
 
-        assertEquals("Not found methods " + all, 0, all.size());
+        assertEquals(0, all.size(), () -> "Not found methods " + all);
     }
 
+    private static int discoverMinimumVersion() {
+        for (int version = 8; version <= Runtime.version().feature(); version++) {
+            if (isAvailableRelease(version)) {
+                return version;
+            }
+        }
+        return Runtime.version().feature();
+    }
+
+    private static boolean isAvailableRelease(final int version) {
+        // Use the process builder to invoke javac to ensure the --release version is available
+        final ProcessBuilder pb = new ProcessBuilder("javac", "--release", Integer.toString(version), "--version")
+                .redirectErrorStream(true);
+        Process process;
+        try  {
+            process = pb.start();
+            final InputStream in = pb.start().getInputStream();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final Thread consumer = new Thread(() -> {
+                try {
+                    final byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) {
+                        baos.write(buffer, 0, len);
+                    }
+                } catch (IOException ignore) {}
+            });
+            consumer.setDaemon(true);
+            consumer.start();
+            return process.waitFor() == 0;
+        } catch (IOException | InterruptedException ignored) {
+            return false;
+        }
+    }
 
 }
