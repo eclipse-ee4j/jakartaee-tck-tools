@@ -42,6 +42,7 @@ public final class Sigtest extends Task {
     Path classpath;
     String version;
     String packages;
+    String excludes;
     ActionType action;
     Boolean failOnError;
     File report;
@@ -54,6 +55,10 @@ public final class Sigtest extends Task {
 
     public void setPackages(String s) {
         packages = s;
+    }
+
+    public void setExcludes(String s) {
+        excludes = s;
     }
 
     public void setAction(ActionType s) {
@@ -118,6 +123,11 @@ public final class Sigtest extends Task {
             @Override
             protected String getPackages() {
                 return packages;
+            }
+
+            @Override
+            protected String getExcludes() {
+                return excludes;
             }
 
             @Override

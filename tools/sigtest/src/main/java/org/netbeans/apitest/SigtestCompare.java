@@ -63,6 +63,8 @@ public final class SigtestCompare extends AbstractMojo {
     private File sigfile;
     @Parameter(defaultValue = "")
     private String packages;
+    @Parameter(defaultValue = "")
+    String excludes;
 
     @Parameter(property = "maven.compiler.release")
     private String release;
@@ -99,7 +101,7 @@ public final class SigtestCompare extends AbstractMojo {
             throw new MojoExecutionException("Cannot resolve " + artifact, ex);
         }
 
-        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion, release, ignoreJDKClasses, ignoreAllJDKClasses);
+        SigtestGenerate generate = new SigtestGenerate(prj, artifact.getFile(), sigfile, packages, releaseVersion, release, ignoreJDKClasses, ignoreAllJDKClasses, excludes);
         generate.execute();
 
         SigtestCheck check = new SigtestCheck(prj, classes, sigfile, action, packages, report, failOnError, ignoreJDKClasses, ignoreAllJDKClasses);

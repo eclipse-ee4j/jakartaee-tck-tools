@@ -126,6 +126,17 @@ abstract class SigtestHandler {
             arg.add(prefix.trim());
             arg.add(p);
         }
+        // Add each specified excludes package name to "-Exclude $PACKAGENAME
+        if (getExcludes() != null ) {
+            StringTokenizer excludesTokenizer = new StringTokenizer(getExcludes(), ",:;");
+            while (excludesTokenizer.hasMoreTokens()) {
+                String p = excludesTokenizer.nextToken().trim();
+                String prefix = "-Exclude "; // NOI18N
+                arg.add(prefix.trim());
+                arg.add(p);
+            }
+        }
+
         if (getClasspath() != null) {
             StringBuffer sb = new StringBuffer();
             String pref = "";
@@ -262,6 +273,7 @@ abstract class SigtestHandler {
 
     protected abstract Integer getRelease();
     protected abstract String getPackages();
+    protected abstract String getExcludes();
     protected abstract File getFileName();
     protected abstract String getAction();
     protected abstract String getVersion();
