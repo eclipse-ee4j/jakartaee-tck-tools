@@ -95,6 +95,8 @@ public final class SigtestCheck extends AbstractMojo {
     private String action;
     @Parameter(defaultValue = "")
     private String packages;
+    @Parameter(defaultValue = "")
+    private String excludes;
     @Parameter(defaultValue = "${project.build.directory}/surefire-reports/sigtest/TEST-${project.build.finalName}.xml")
     private File report;
     @Parameter(defaultValue = "true", property = "sigtest.fail")
@@ -108,16 +110,21 @@ public final class SigtestCheck extends AbstractMojo {
     }
 
     SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError, final String[] ignoreJDKClasses, boolean ignoreAllJDKClasses) {
-        this.prj = prj;
-        this.classes = classes;
-        this.sigfile = sigfile;
-        this.action = action;
-        this.packages = packages;
-        this.report = report;
-        this.failOnError = failOnError;
-        this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
-        this.ignoreAllJDKClasses = ignoreAllJDKClasses;
+        this(prj, classes, sigfile, action, packages, report, failOnError, ignoreJDKClasses, ignoreAllJDKClasses, "");
     }
+
+    SigtestCheck(MavenProject prj, File classes, File sigfile, String action, String packages, File report, boolean failOnError, final String[] ignoreJDKClasses, boolean ignoreAllJDKClasses, final String excludes) {
+            this.prj = prj;
+            this.classes = classes;
+            this.sigfile = sigfile;
+            this.action = action;
+            this.packages = packages;
+            this.report = report;
+            this.failOnError = failOnError;
+            this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
+            this.ignoreAllJDKClasses = ignoreAllJDKClasses;
+            this.excludes = excludes;
+        }
 
 
 
@@ -141,6 +148,11 @@ public final class SigtestCheck extends AbstractMojo {
             @Override
             protected String getPackages() {
                 return packages;
+            }
+
+            @Override
+            protected String getExcludes() {
+                return excludes;
             }
 
             @Override

@@ -55,6 +55,7 @@ import org.apache.maven.project.MavenProjectHelper;
   &lt;configuration&gt;
     &lt;release&gt;8&lt;/release&gt; &lt;!-- specify version of JDK API to use 6,7,8,...15 --&gt;
     &lt;packages&gt;org.yourcompany.app.api,org.yourcompany.help.api&lt;/packages&gt;
+    &lt;excludes&gt;org.yourcompany.app.api.internalonly,org.yourcompany.help.api.ignorethispackagealso&lt;/packages&gt;
   &lt;/configuration&gt;
 &lt;/plugin&gt;
  * </pre>
@@ -78,6 +79,8 @@ public final class SigtestGenerate extends AbstractMojo {
     private File sigfile;
     @Parameter(defaultValue = "")
     private String packages;
+    @Parameter(defaultValue = "")
+    String excludes;
     @Parameter(property = "maven.compiler.release")
     private String release;
     /**
@@ -101,14 +104,19 @@ public final class SigtestGenerate extends AbstractMojo {
     }
 
     SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release, final String[] ignoreJDKClasses, boolean ignoreAllJdkClasses) {
+        this(prj, classes, sigfile, packages, version, release, ignoreJDKClasses, ignoreAllJdkClasses,"");
+    }
+
+    public SigtestGenerate(MavenProject prj, File file, File sigfile, String packages, String releaseVersion, String release, String[] ignoreJDKClasses, boolean ignoreAllJDKClasses, String excludes) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
         this.packages = packages;
-        this.version = version;
+        this.version = releaseVersion;
         this.release = release;
         this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
         this.ignoreAllJdkClasses = ignoreAllJdkClasses;
+        this.excludes = excludes;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -127,6 +135,9 @@ public final class SigtestGenerate extends AbstractMojo {
             protected String getPackages() {
                 return packages;
             }
+
+            @Override
+            protected String getExcludes() { return excludes; }
 
             @Override
             protected File getFileName() {
