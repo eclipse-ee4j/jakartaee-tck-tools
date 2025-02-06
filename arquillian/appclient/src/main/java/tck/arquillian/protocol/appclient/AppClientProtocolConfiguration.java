@@ -1,5 +1,6 @@
 package tck.arquillian.protocol.appclient;
 
+import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.container.test.spi.client.protocol.ProtocolConfiguration;
 import tck.arquillian.protocol.common.ProtocolCommonConfig;
 
@@ -9,56 +10,111 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Configuration for the AppClient protocol. This is used to configure the appclient process that will be launched to
- * run the appclient main class for the test.
+ * Configuration for the Application Client Protocol in the Jakarta EE TCK.
+ * This class manages the configuration settings needed to launch and execute
+ * Application Client tests within the TCK environment.
+ *
+ * <p>The configuration includes settings for:
+ * <ul>
+ *   <li>Application Client process execution environment</li>
+ *   <li>Command line arguments and environment variables</li>
+ *   <li>Working directories and file locations</li>
+ *   <li>Timeout settings and execution modes</li>
+ * </ul>
+ *
+ * @see ProtocolConfiguration
+ * @see ProtocolCommonConfig
  */
 public class AppClientProtocolConfiguration implements ProtocolConfiguration, ProtocolCommonConfig {
-    private boolean runClient = true;
     /**
-     * Is this appclient being used as a runner for another vehicle type
+     * Flag indicating whether to run the client process
+     */
+    private boolean runClient = true;
+
+    /**
+     * Flag indicating if this Application Client is being used as a test vehicle runner.
+     * When true, the client acts as a test runner for another vehicle type rather than
+     * running as a standalone Application Client.
      */
     private boolean runAsVehicle = false;
+
     /**
-     * Provide an optional envp array to pass as is to {@link Runtime#exec(String[], String[])}
-     * @return a possibly empty string providing env1=value1;env2=value2 environment variable settings
+     * Environment variables to be passed to the Application Client process.
+     * Format: "env1=value1;env2=value2"
+     * 
+     * @see Runtime#exec(String[], String[])
      */
     private String clientEnvString;
+
     /**
-     * A ';' (by default) separated string for the command line arguments to pass as the cmdarray to
-     * {@link Runtime#exec(String[], String[])}
+     * Command line arguments for the Application Client process.
+     * Arguments are separated by the {@link #cmdLineArgSeparator} character (default is semicolon).
+     * These arguments are passed directly to the process execution.
+     * 
+     * @see Runtime#exec(String[], String[])
      */
     private String clientCmdLineString;
+
     /**
-     * The separator to use for splitting the clientCmdLineString
+     * Separator character used to split the {@link #clientCmdLineString} into individual arguments.
+     * Default value is semicolon (";").
      */
     private String cmdLineArgSeparator = ";";
+
     /**
-     * An optional directory string to use as the appclient process directory. This is passed as the dir arguemnt
-     * to {@link Runtime#exec(String[], String[], File)}
+     * Working directory for the Application Client process.
+     * This directory is used as the process working directory when executing the client.
+     * 
+     * @see Runtime#exec(String[], String[], File)
      */
     private String clientDir;
+
     /**
-     * The directory to extract the final applclient ear test artifact
+     * Directory where the Application Client EAR test artifact will be extracted.
+     * Default value is "target/appclient".
      */
     private String clientEarDir = "target/appclient";
-    // Timeout waiting for appclient process to exit in MS
+
+    /**
+     * Maximum time in milliseconds to wait for the Application Client process to complete.
+     * Default value is 60000ms (1 minute).
+     */
     private long clientTimeout = 60000;
-    // test working directory
+
+    /**
+     * Base working directory for test execution.
+     */
     private String workDir;
-    // EE10 type of ts.jte file location
+
+    /**
+     * Path to the ts.jte configuration file for Jakarta EE 10+ TCK execution.
+     */
     private String tsJteFile;
-    // EE10 type of tssql.stmt file location
+
+    /**
+     * Path to the tssql.stmt file for Jakarta EE 10+ TCK database operations.
+     */
     private String tsSqlStmtFile;
-    // harness.log.traceflag
+
+    /**
+     * Flag to enable tracing for the Application Client process.
+     */
     private boolean trace;
+
+    /**
+     * Flag to indicate whether the client EAR should be unpacked.
+     * When true, the client EAR will be unpacked into the {@link #clientEarDir} directory.
+     */
     private boolean unpackClientEar = false;
 
     public boolean isAppClient() {
         return true;
     }
+
     public boolean isRunClient() {
         return runClient;
     }
+
     public void setRunClient(boolean runClient) {
         this.runClient = runClient;
     }
@@ -66,12 +122,15 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public boolean isRunAsVehicle() {
         return runAsVehicle;
     }
+
     public void setRunAsVehicle(boolean runAsVehicle) {
         this.runAsVehicle = runAsVehicle;
     }
+
     public boolean isTrace() {
         return trace;
     }
+
     public void setTrace(boolean trace) {
         this.trace = trace;
     }
@@ -79,6 +138,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public String getWorkDir() {
         return workDir;
     }
+
     public void setWorkDir(String workDir) {
         this.workDir = workDir;
     }
@@ -86,6 +146,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public String getTsJteFile() {
         return tsJteFile;
     }
+
     public void setTsJteFile(String tsJteFile) {
         this.tsJteFile = tsJteFile;
     }
@@ -94,6 +155,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public String getTsSqlStmtFile() {
         return tsSqlStmtFile;
     }
+
     @Override
     public void setTsSqlStmtFile(String tsSqlStmtFile) {
         this.tsSqlStmtFile = tsSqlStmtFile;
@@ -117,7 +179,12 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * the parsed command line array elements are trimmed of leading and trailing whitespace.
      * The command line should be filtered against the ts.jte file if it contains any property references. In addition
      * to ts.jte property references, the command line can contain ${clientEarDir} which will be replaced with the
-     * #clientEarDir value. Any ${vehicleArchiveName} ref will be replaced with the vehicleArchiveName passed to the
+     * #clientEarDir value. Any ${vehicleArchiveName} ref will be replaced with the vehicle archive name extracted by
+     * {@link tck.arquillian.protocol.common.TsTestPropsBuilder#vehicleArchiveName(Deployment)}.
+     * Any ${clientAppArchive} ref will be replaced with the clientAppArchive extracted by the
+     * {@link AppClientDeploymentPackager} processing of the target appclient ear.
+     * Any ${clientEarLibClasspath} ref will be replaced with the classpath of the client ear lib directory if
+     * {@link #unpackClientEar} is true and the clientEarDir/lib directory exists.
      * @param clientCmdLineString
      */
     public void setClientCmdLineString(String clientCmdLineString) {
@@ -139,6 +206,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public String getClientDir() {
         return clientDir;
     }
+
     public void setClientDir(String clientDir) {
         this.clientDir = clientDir;
     }
@@ -146,6 +214,13 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public String getClientEarDir() {
         return clientEarDir;
     }
+
+    /**
+     * Set the directory to extract the final appclient ear test artifact. The default is "target/appclient".
+     * Any ${clientEarDir} ref in the {@link #clientCmdLineString} will be replaced with the clientEarDir
+     * value.
+     * @param clientEarDir
+     */
     public void setClientEarDir(String clientEarDir) {
         this.clientEarDir = clientEarDir;
     }
@@ -176,7 +251,6 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         this.clientTimeout = clientTimeout;
     }
 
-
     /** Helper methods to turn the strings into the types used by Runtime#exec
      * @return a File object for the clientDir
      */
@@ -186,6 +260,26 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
             dir = new File(clientDir);
         }
         return dir;
+    }
+
+    /**
+     * If #unpackClientEar is true, and clientEarDir/lib exists, then this method returns the contents
+     * of the clientEarDir/lib as a classpath string
+     * @return a classpath string for the client ear lib directory
+     */
+    public String clientEarLibClasspath() {
+        StringBuilder cp = new StringBuilder();
+        File libDir = new File(clientEarDir, "lib");
+        if (unpackClientEar && libDir.exists()) {
+            File[] jars = libDir.listFiles();
+            for (File jar : jars) {
+                if (!cp.isEmpty()) {
+                    cp.append(File.pathSeparator);
+                }
+                cp.append(jar.getAbsolutePath());
+            }
+        }
+        return cp.toString();
     }
 
     /**
@@ -201,6 +295,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         }
         return cmdArray;
     }
+
     public String[] clientEnvAsArray() {
         String[] envp = null;
         if (clientEnvString != null) {
