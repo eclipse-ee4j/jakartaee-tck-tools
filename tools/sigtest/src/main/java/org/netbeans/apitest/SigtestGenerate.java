@@ -98,6 +98,7 @@ public final class SigtestGenerate extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean ignoreAllJdkClasses;
 
+    @Parameter(defaultValue = "1.0")
     private String version;
 
     public SigtestGenerate() {
@@ -107,12 +108,12 @@ public final class SigtestGenerate extends AbstractMojo {
         this(prj, classes, sigfile, packages, version, release, ignoreJDKClasses, ignoreAllJdkClasses,"");
     }
 
-    public SigtestGenerate(MavenProject prj, File file, File sigfile, String packages, String releaseVersion, String release, String[] ignoreJDKClasses, boolean ignoreAllJDKClasses, String excludes) {
+    public SigtestGenerate(MavenProject prj, File classes, File sigfile, String packages, String version, String release, String[] ignoreJDKClasses, boolean ignoreAllJdkClasses, String excludes) {
         this.prj = prj;
         this.classes = classes;
         this.sigfile = sigfile;
         this.packages = packages;
-        this.version = releaseVersion;
+        this.version = version;
         this.release = release;
         this.ignoreJDKClasses = Arrays.copyOf(ignoreJDKClasses, ignoreJDKClasses.length);
         this.ignoreAllJdkClasses = ignoreAllJdkClasses;
@@ -151,7 +152,7 @@ public final class SigtestGenerate extends AbstractMojo {
 
             @Override
             protected String getVersion() {
-                return prj.getVersion();
+                return version;
             }
 
             @Override
