@@ -100,6 +100,12 @@ public class TsTestPropsBuilder {
             "whitebox-xa-param",
             "work.dir",
             "ws_wait",
+            // Signature test properties
+            "bin.dir",
+            "javaee.level",
+            "current.keywords",
+            "optional.tech.packages.to.ignore",
+            "jimage.dir",
     };
 
     /**
