@@ -3,6 +3,7 @@ package tck.arquillian.protocol.common;
 import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -125,11 +126,11 @@ public class TsTestPropsBuilder {
 
     /**
      * Get the test runs args for the vehicle or appclient. If this is a non-vehicle appclient tests, the args
-     * @param config
-     * @param deployment
-     * @param testMethodExecutor
-     * @return
-     * @throws IOException
+     * @param config - an appclient or javatest protocol configuration
+     * @param deployment - the current test deployment
+     * @param testMethodExecutor - the current test method executor
+     * @return the test run arguments
+     * @throws IOException - if the test properties file cannot be written
      */
     public static String[] runArgs(ProtocolCommonConfig config, Deployment deployment,
                                    TestMethodExecutor testMethodExecutor) throws IOException {
@@ -146,6 +147,17 @@ public class TsTestPropsBuilder {
         log.info(String.format("Base class: %s, vehicle: %s", testSuperclass.getName(), vehicle));
         // Get deployment archive name and remove the .* suffix
         String vehicleArchiveName = vehicleArchiveName(deployment);
+
+        // At least validate the tsJte file property. If it is null throw an exception
+        if(config.getTsJteFile() == null) {
+            StringBuilder msg = new StringBuilder("There is no tsJteFile ts.jte property set in protocol config\n");
+            if(!config.wasAnySetterCalled()) {
+                msg.append("No protocol configuration was seen to be set. You are either missing a "+
+                        "<protocol type='appclient/javatest'>...</protocol> in your arquillian.xml or the protocol "+
+                        "element is missing the `type` attribute with either the expected appclient or javatest value.");
+            }
+            throw new FileNotFoundException(msg.toString());
+        }
 
         // We need the JavaTest ts.jte file for now
         Path tsJte = Paths.get(config.getTsJteFile());

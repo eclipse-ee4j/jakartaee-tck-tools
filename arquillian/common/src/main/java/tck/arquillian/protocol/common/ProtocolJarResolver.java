@@ -25,8 +25,9 @@ public class ProtocolJarResolver {
             libGAV += ":" + version;
         }
         MavenResolvedArtifact protocolLib = null;
+        String pomFile = System.getProperty("tck.arquillian.protocol.runnerPom", "pom.xml");
         try {
-            MavenResolvedArtifact[] resolvedArtifacts = Maven.resolver().loadPomFromFile("pom.xml", activeMavenProfiles)
+            MavenResolvedArtifact[] resolvedArtifacts = Maven.resolver().loadPomFromFile(pomFile, activeMavenProfiles)
                     .resolve(libGAV)
                     .withTransitivity()
                     .asResolvedArtifact();

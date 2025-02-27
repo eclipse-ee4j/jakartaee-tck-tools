@@ -89,17 +89,7 @@
         </dependency>
         <dependency>
             <groupId>jakarta.tck</groupId>
-            <artifactId>libutil</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
             <artifactId>assembly</artifactId>
-            <version>${version.platform.tck}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.tck</groupId>
-            <artifactId>runtime</artifactId>
             <version>${version.platform.tck}</version>
         </dependency>
         <dependency>

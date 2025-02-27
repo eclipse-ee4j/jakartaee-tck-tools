@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- *
+ * Deployment packager for the AppClient protocol
  */
 public class AppClientDeploymentPackager implements DeploymentPackager {
     static Logger log = Logger.getLogger(AppClientDeploymentPackager.class.getName());
@@ -54,8 +54,11 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         // Include the protocol.jar in the deployment
         File protocolJar = ProtocolJarResolver.resolveProtocolJar();
         if(protocolJar == null) {
-            throw new RuntimeException("Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
-                    " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file");
+            String msg = "Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
+                    " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file.\n" +
+                    " The runner pom needs to be pom.xml or the path needs to be set by the system property tck.arquillian.protocol.runnerPom"
+                    ;
+            throw new RuntimeException(msg);
         }
         ear.addAsLibrary(protocolJar, "arquillian-protocol-lib.jar");
 
