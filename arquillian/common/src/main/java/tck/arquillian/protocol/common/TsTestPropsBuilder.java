@@ -103,7 +103,6 @@ public class TsTestPropsBuilder {
             // Signature test properties
             "bin.dir",
             "javaee.level",
-            "current.keywords",
             "optional.tech.packages.to.ignore",
             "jimage.dir",
     };
