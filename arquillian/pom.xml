@@ -12,7 +12,7 @@
     <!-- Artifact Configuration -->
     <groupId>jakarta.tck</groupId>
     <artifactId>tck.arquillian.parent</artifactId>
-    <version>11.0.0-SNAPSHOT</version>
+    <version>11.0.0-RC2</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Jakarta TCK Parent</name>
@@ -35,7 +35,7 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <jakarta.tck.tools.version>11.0.0-RC4</jakarta.tck.tools.version>
+        <jakarta.tck.tools.version>11.0.0-RC6</jakarta.tck.tools.version>
     </properties>
 
     <dependencyManagement>

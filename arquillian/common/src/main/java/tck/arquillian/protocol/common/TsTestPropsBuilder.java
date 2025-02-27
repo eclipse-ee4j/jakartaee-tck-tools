@@ -115,11 +115,15 @@ public class TsTestPropsBuilder {
      * @return base vehicle archive name
      */
     public static String vehicleArchiveName(Deployment deployment) {
-        // Get deployment archive name and remove the .* suffix
-        String vehicleArchiveName = deployment.getDescription().getArchive().getName();
-        int dot = vehicleArchiveName.lastIndexOf('.');
-        if(dot != -1) {
-            vehicleArchiveName = vehicleArchiveName.substring(0, dot);
+        // If there is an override vehicle_archive_name property, use it
+        String vehicleArchiveName = System.getProperty("vehicle_archive_name_override");
+        if(vehicleArchiveName == null) {
+            // Get deployment archive name and remove the .* suffix
+            vehicleArchiveName = deployment.getDescription().getArchive().getName();
+            int dot = vehicleArchiveName.lastIndexOf('.');
+            if (dot != -1) {
+                vehicleArchiveName = vehicleArchiveName.substring(0, dot);
+            }
         }
         return vehicleArchiveName;
     }

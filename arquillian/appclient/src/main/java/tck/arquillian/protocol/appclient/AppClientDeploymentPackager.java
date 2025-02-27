@@ -19,12 +19,14 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ArchiveAsset;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import tck.arquillian.protocol.common.ProtocolJarResolver;
 
 import java.io.File;
@@ -35,7 +37,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Deployment packager for the AppClient protocol
+ * A {@link DeploymentPackager} implementation for packaging an AppClient deployment.
+ * - jakarta.tck.arquillian:arquillian-protocol-lib to EAR lib
+ * - Extract the EAR to the clientEarDir for use by the appclient launcher
+ * - Unzip the EAR content to the clientEarDir if unpackClientEar is true
+ * - Determines the main class of the AppClient jar and sets the AppClientArchiveName
  */
 public class AppClientDeploymentPackager implements DeploymentPackager {
     static Logger log = Logger.getLogger(AppClientDeploymentPackager.class.getName());
@@ -47,6 +53,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
         Archive<?> archive = testDeployment.getApplicationArchive();
+        String deploymentName = testDeployment.getDeploymentName();
+        log.info("Generating deployment for: " + deploymentName);
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
@@ -61,6 +69,26 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
             throw new RuntimeException(msg);
         }
         ear.addAsLibrary(protocolJar, "arquillian-protocol-lib.jar");
+
+        // If this is one of the
+        if(deploymentName.contains("appmanagedNoTx_vehicle")) {
+            WebArchive war = ShrinkWrap.create(WebArchive.class, "appmanagedNoTx_vehicle_web.war");
+            war.addClass(com.sun.ts.tests.common.vehicle.servlet.ServletVehicle.class);
+            war.addClass(com.sun.ts.tests.common.vehicle.appmanagedNoTx.AppManagedNoTxServletVehicle.class);
+            war.addClass(com.sun.ts.tests.common.vehicle.web.AltWebVehicleRunner.class);
+            ear.addAsModule(war);
+            System.setProperty("vehicle_archive_name_override", "appmanagedNoTx_vehicle_web");
+            log.info("Added appmanagedNoTx_vehicle.war to: " + deploymentName);
+        }
+        else if(deploymentName.contains("appmanaged_vehicle")) {
+            WebArchive war = ShrinkWrap.create(WebArchive.class, "appmanaged_vehicle_web.war");
+            war.addClass(com.sun.ts.tests.common.vehicle.servlet.ServletVehicle.class);
+            war.addClass(com.sun.ts.tests.common.vehicle.appmanaged.AppManagedServletVehicle.class);
+            war.addClass(com.sun.ts.tests.common.vehicle.web.AltWebVehicleRunner.class);
+            ear.addAsModule(war);
+            System.setProperty("vehicle_archive_name_override", "appmanaged_vehicle_web");
+            log.info("Added appmanaged_vehicle_web.war to: " + deploymentName);
+        }
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         String mainClass = extractAppMainClient(ear);
