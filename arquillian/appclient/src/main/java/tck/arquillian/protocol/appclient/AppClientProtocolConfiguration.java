@@ -106,6 +106,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * When true, the client EAR will be unpacked into the {@link #clientEarDir} directory.
      */
     private boolean unpackClientEar = false;
+    private boolean anySetter;
 
     public boolean isAppClient() {
         return true;
@@ -117,6 +118,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setRunClient(boolean runClient) {
         this.runClient = runClient;
+        this.anySetter = true;
     }
 
     public boolean isRunAsVehicle() {
@@ -125,6 +127,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setRunAsVehicle(boolean runAsVehicle) {
         this.runAsVehicle = runAsVehicle;
+        this.anySetter = true;
     }
 
     public boolean isTrace() {
@@ -133,6 +136,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setTrace(boolean trace) {
         this.trace = trace;
+        this.anySetter = true;
     }
 
     public String getWorkDir() {
@@ -141,6 +145,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setWorkDir(String workDir) {
         this.workDir = workDir;
+        this.anySetter = true;
     }
 
     public String getTsJteFile() {
@@ -149,6 +154,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setTsJteFile(String tsJteFile) {
         this.tsJteFile = tsJteFile;
+        this.anySetter = true;
     }
 
     @Override
@@ -159,6 +165,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     @Override
     public void setTsSqlStmtFile(String tsSqlStmtFile) {
         this.tsSqlStmtFile = tsSqlStmtFile;
+        this.anySetter = true;
     }
 
     public String getClientEnvString() {
@@ -167,6 +174,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setClientEnvString(String clientEnvString) {
         this.clientEnvString = clientEnvString;
+        this.anySetter = true;
     }
 
     public String getClientCmdLineString() {
@@ -189,6 +197,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setClientCmdLineString(String clientCmdLineString) {
         this.clientCmdLineString = clientCmdLineString;
+        this.anySetter = true;
     }
 
     public String getCmdLineArgSeparator() {
@@ -201,6 +210,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setCmdLineArgSeparator(String cmdLineArgSeparator) {
         this.cmdLineArgSeparator = cmdLineArgSeparator;
+        this.anySetter = true;
     }
 
     public String getClientDir() {
@@ -209,6 +219,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
 
     public void setClientDir(String clientDir) {
         this.clientDir = clientDir;
+        this.anySetter = true;
     }
 
     public String getClientEarDir() {
@@ -223,6 +234,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setClientEarDir(String clientEarDir) {
         this.clientEarDir = clientEarDir;
+        this.anySetter = true;
     }
 
     public boolean isUnpackClientEar() {
@@ -237,6 +249,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setUnpackClientEar(boolean unpackClientEar) {
         this.unpackClientEar = unpackClientEar;
+        this.anySetter = true;
     }
 
     public long getClientTimeout() {
@@ -249,6 +262,16 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setClientTimeout(long clientTimeout) {
         this.clientTimeout = clientTimeout;
+        this.anySetter = true;
+    }
+
+    /**
+     * Validate if any setter was called indicating if there was a matching protocol config
+     * @return true if any setter was called
+     */
+    @Override
+    public boolean wasAnySetterCalled() {
+        return anySetter;
     }
 
     /** Helper methods to turn the strings into the types used by Runtime#exec

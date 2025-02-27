@@ -14,6 +14,8 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     private boolean trace;
     // Should the VehicleClient main be run in a separate JVM
     private boolean fork;
+    //
+    private boolean anySetter;
 
     public String getWorkDir() {
         return workDir;
@@ -21,6 +23,7 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
 
     public void setWorkDir(String workDir) {
         this.workDir = workDir;
+        this.anySetter = true;
     }
 
     public String getTsJteFile() {
@@ -29,6 +32,7 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
 
     public void setTsJteFile(String tsJteFile) {
         this.tsJteFile = tsJteFile;
+        this.anySetter = true;
     }
 
     @Override
@@ -38,6 +42,7 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     @Override
     public void setTsSqlStmtFile(String tsSqlStmtFile) {
         this.tsSqlStmtFile = tsSqlStmtFile;
+        this.anySetter = true;
     }
 
     public boolean isTrace() {
@@ -46,6 +51,7 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
 
     public void setTrace(boolean trace) {
         this.trace = trace;
+        this.anySetter = true;
     }
 
     public boolean isFork() {
@@ -54,5 +60,10 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
 
     public void setFork(boolean fork) {
         this.fork = fork;
+        this.anySetter = true;
+    }
+
+    public boolean wasAnySetterCalled() {
+        return anySetter;
     }
 }

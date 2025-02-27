@@ -23,8 +23,11 @@ public class JavaTestDeploymentPackager implements DeploymentPackager {
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         File protocolJar = ProtocolJarResolver.resolveProtocolJar();
         if(protocolJar == null) {
-            throw new RuntimeException("Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
-                    " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file");
+            String msg = "Failed to resolve protocol.jar. You either need a jakarta.tck.arquillian:arquillian-protocol-lib"+
+                    " dependency in the runner pom.xml or a downloaded target/protocol/protocol.jar file.\n" +
+                    " The runner pom needs to be pom.xml or the path needs to be set by the system property tck.arquillian.protocol.runnerPom"
+                    ;
+            throw new RuntimeException(msg);
         }
 
         if(archive instanceof EnterpriseArchive) {

@@ -24,6 +24,8 @@ public class LibResolveTest {
     @Test
     public void resolveProtocolLib() {
         String[] activeMavenProfiles = {"staging"};
+        System.out.println("Resolving artifact jakarta.tck.arquillian:arquillian-protocol-lib");
+        System.out.println("System.properties: " + System.getProperties());
         MavenResolvedArtifact[] resolvedArtifacts = Maven.resolver().loadPomFromFile("pom.xml", activeMavenProfiles)
                 .resolve("jakarta.tck.arquillian:arquillian-protocol-lib")
                 .withTransitivity()
