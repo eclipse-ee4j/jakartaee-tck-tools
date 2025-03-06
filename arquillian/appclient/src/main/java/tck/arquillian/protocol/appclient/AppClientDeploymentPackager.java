@@ -10,6 +10,7 @@
  */
 package tck.arquillian.protocol.appclient;
 
+import com.sun.ts.tests.common.vehicle.VehicleType;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
@@ -70,28 +71,14 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         }
         ear.addAsLibrary(protocolJar, "arquillian-protocol-lib.jar");
 
-        // If this is one of the
-        if(deploymentName.contains("appmanagedNoTx_vehicle")) {
-            WebArchive war = ShrinkWrap.create(WebArchive.class, "appmanagedNoTx_vehicle_web.war");
-            war.addClass(com.sun.ts.tests.common.vehicle.servlet.ServletVehicle.class);
-            war.addClass(com.sun.ts.tests.common.vehicle.appmanagedNoTx.AppManagedNoTxServletVehicle.class);
-            war.addClass(com.sun.ts.tests.common.vehicle.web.AltWebVehicleRunner.class);
-            ear.addAsModule(war);
-            System.setProperty("vehicle_archive_name_override", "appmanagedNoTx_vehicle_web");
-            log.info("Added appmanagedNoTx_vehicle.war to: " + deploymentName);
-        }
-        else if(deploymentName.contains("appmanaged_vehicle")) {
-            WebArchive war = ShrinkWrap.create(WebArchive.class, "appmanaged_vehicle_web.war");
-            war.addClass(com.sun.ts.tests.common.vehicle.servlet.ServletVehicle.class);
-            war.addClass(com.sun.ts.tests.common.vehicle.appmanaged.AppManagedServletVehicle.class);
-            war.addClass(com.sun.ts.tests.common.vehicle.web.AltWebVehicleRunner.class);
-            ear.addAsModule(war);
-            System.setProperty("vehicle_archive_name_override", "appmanaged_vehicle_web");
-            log.info("Added appmanaged_vehicle_web.war to: " + deploymentName);
+        // If this is one of the JPA vehicles using a remote EJB, add the JPA servlet vehicle
+        VehicleType vehicleType = getVehicleType(deploymentName);
+        if(vehicleType != VehicleType.none) {
+            addJPAServletVehicle(ear, vehicleType);
         }
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
-        String mainClass = extractAppMainClient(ear);
+        String mainClass = determineAppMainJar(ear);
         log.info("mainClass: " + mainClass);
 
         // Write out the ear with the test dependencies for use by the appclient launcher
@@ -112,37 +99,107 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         exporter.exportTo(archiveOnDisk, true);
         log.info("Exported test ear to: " + archiveOnDisk.getAbsolutePath());
 
+        // If unpackClientEar is true, extract the ear to the clientEarDir
         if(config.isUnpackClientEar()) {
-            for (ArchivePath path : ear.getContent().keySet()) {
-                Node node = ear.get(path);
-                if (node.getAsset() instanceof ArchiveAsset) {
-                    ArchiveAsset asset = (ArchiveAsset) node.getAsset();
-                    File archiveFile = new File(appclient, path.get());
-                    if(!archiveFile.getParentFile().exists()) {
-                        archiveFile.getParentFile().mkdirs();
-                    }
-                    final ZipExporter zipExporter = asset.getArchive().as(ZipExporter.class);
-                    zipExporter.exportTo(archiveFile, true);
-                    log.info("Exported test ear content to: " + archiveFile.getAbsolutePath());
-                } else if(node.getAsset() instanceof FileAsset) {
-                    FileAsset asset = (FileAsset) node.getAsset();
-                    File file = new File(appclient, path.get());
-                    if(!file.getParentFile().exists()) {
-                        file.getParentFile().mkdirs();
-                    }
-                    try {
-                        Files.copy(asset.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        log.info("Exported test ear content to: " + file.getAbsolutePath());
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to export test ear content to: " + file.getAbsolutePath(), e);
-                    }
-                }
-            }
+            unpackClientEar(ear, appclient);
         }
         return ear;
     }
 
-    private String extractAppMainClient(EnterpriseArchive ear) {
+    /**
+     * Map the deployment name to a vehicle type for the JPA vehicles that need to have a
+     * servlet vehicle added to the deployment.
+     *
+     * @param deploymentName - the deployment name
+     * @return the vehicle type or VehicleType.none if not a JPA vehicle
+     */
+    private VehicleType getVehicleType(String deploymentName) {
+        VehicleType vehicleType = VehicleType.none;
+        if(deploymentName.contains("appmanagedNoTx_vehicle")) {
+            vehicleType = VehicleType.appmanagedNoTx;
+        } else if(deploymentName.contains("appmanaged_vehicle")) {
+            vehicleType = VehicleType.appmanaged;
+        } else if(deploymentName.contains("stateful3_vehicle")) {
+            vehicleType = VehicleType.stateful3;
+        } else if(deploymentName.contains("stateless3_vehicle")) {
+            vehicleType = VehicleType.stateless3;
+        }
+        return vehicleType;
+    }
+
+    /**
+     * Add the JPA servlet vehicle to the deployment
+     * @param ear
+     * @param vehicleType
+     */
+    private void addJPAServletVehicle(EnterpriseArchive ear, VehicleType vehicleType) {
+        String deploymentName = ear.getName();
+        String webArchiveName = vehicleType.name() + "_vehicle_web";
+        WebArchive war = ShrinkWrap.create(WebArchive.class, webArchiveName+".war");
+        war.addClass(com.sun.ts.tests.common.vehicle.servlet.ServletVehicle.class);
+        war.addClass(com.sun.ts.tests.common.vehicle.web.AltWebVehicleRunner.class);
+
+        // Add the vehicle specific servlet
+        switch (vehicleType) {
+            case appmanagedNoTx:
+                    war.addClass(com.sun.ts.tests.common.vehicle.appmanagedNoTx.AppManagedNoTxServletVehicle.class);
+                break;
+            case appmanaged:
+                    war.addClass(com.sun.ts.tests.common.vehicle.appmanaged.AppManagedServletVehicle.class);
+                    war.addAsWebInfResource(new StringAsset(""), "beans.xml");
+                break;
+            case stateful3:
+                    war.addClass(com.sun.ts.tests.common.vehicle.stateful3.Stateful3ServletVehicle.class);
+                    war.addAsWebInfResource(new StringAsset(""), "beans.xml");
+                break;
+            case stateless3:
+                war.addClass(com.sun.ts.tests.common.vehicle.stateless3.Stateless3ServletVehicle.class);
+                break;
+        }
+        ear.addAsModule(war);
+        System.setProperty("vehicle_archive_name_override", webArchiveName);
+        log.info(String.format("Added %s.war to: %s", webArchiveName, deploymentName));
+    }
+
+    /**
+     * Unpack the ear to the clientEarDir
+     * @param ear - the deployment ear
+     * @param clientEarDir - the directory to unpack the ear to
+     */
+    private void unpackClientEar(EnterpriseArchive ear, File clientEarDir) {
+        for (ArchivePath path : ear.getContent().keySet()) {
+            Node node = ear.get(path);
+            if (node.getAsset() instanceof ArchiveAsset asset) {
+                File archiveFile = new File(clientEarDir, path.get());
+                if(!archiveFile.getParentFile().exists()) {
+                    archiveFile.getParentFile().mkdirs();
+                }
+                final ZipExporter zipExporter = asset.getArchive().as(ZipExporter.class);
+                zipExporter.exportTo(archiveFile, true);
+                log.info("Exported test ear content to: " + archiveFile.getAbsolutePath());
+            } else if(node.getAsset() instanceof FileAsset asset) {
+                File file = new File(clientEarDir, path.get());
+                if(!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                try {
+                    Files.copy(asset.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    log.info("Exported test ear content to: " + file.getAbsolutePath());
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to export test ear content to: " + file.getAbsolutePath(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Determine the jar with the Main-Class manifest entry from the ear, and set the AppClientArchiveName
+     * value on the {@link #appClientArchiveName} producer.
+     *
+     * @param ear deployment ear
+     * @return the FQN of the main class
+     */
+    private String determineAppMainJar(EnterpriseArchive ear) {
         String mainClass = null;
         Map<ArchivePath, Node> contents = ear.getContent();
         for (Node node : contents.values()) {
