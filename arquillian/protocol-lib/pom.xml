@@ -24,30 +24,14 @@
 
     <build>
         <plugins>
-            <plugin><!-- TODO: either make a proper artifact or define this as a setup requirement
-                     in the TCK user guide.
-
-                     This combines the TCK vehicle related classes into a protocol.jar that is
-                     included in the test deployments by the JavaTestDeploymentPackager class.
-                -->
+            <!-- Extract a subset of the jakarta.tck:common classes that should be included in
+            a test deployment. All vehicle, whitebox, connector, and jms classes are excluded.
+            -->
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.6.1</version>
                 <executions>
-                    <execution>
-                        <id>src-dependencies</id>
-                        <goals>
-                            <!-- use copy-dependencies instead if you don't want to explode the sources -->
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <phase>process-sources</phase>
-                        <configuration>
-                            <classifier>sources</classifier>
-                            <outputDirectory>${project.build.directory}/sources</outputDirectory>
-                            <includeArtifactIds>libutil,common</includeArtifactIds>
-                            <excludes>**/module-info.java</excludes>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>unpack</id>
                         <goals>
@@ -70,15 +54,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <additionalOptions>-package</additionalOptions>
-                    <doclint>none</doclint>
-                    <sourcepath>${project.build.directory}/sources</sourcepath>
-                </configuration>
             </plugin>
         </plugins>
     </build>
