@@ -89,6 +89,7 @@ public class TsTestPropsBuilder {
             "webServerHost",
             "webServerPort",
             "whitebox-anno_no_md",
+            "whitebox-ibanno_no_md",
             "whitebox-mdcomplete",
             "whitebox-mixedmode",
             "whitebox-multianno",
