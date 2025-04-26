@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 public class TsTestPropsBuilder {
     static Logger log = Logger.getLogger(TsTestPropsBuilder.class.getName());
+    static Properties tsJteProps;
 
     // Property names passed from the ts.jte file to the tstest.jte file
     // Parsed from the test @class.setup_props: values + additional seen to be used by harness
@@ -89,6 +90,8 @@ public class TsTestPropsBuilder {
             "webServerHost",
             "webServerPort",
             "whitebox-anno_no_md",
+            "whitebox-embed",
+            "whitebox-embed-xa",
             "whitebox-ibanno_no_md",
             "whitebox-mdcomplete",
             "whitebox-mixedmode",
@@ -108,6 +111,10 @@ public class TsTestPropsBuilder {
             "optional.tech.packages.to.ignore",
             "jimage.dir",
     };
+
+    public static Properties getTsJteProps() {
+        return tsJteProps;
+    }
 
     /**
      * Get the deployment vehicle archive name from the deployment archive. This needs to be a vehicle deployment
@@ -166,6 +173,7 @@ public class TsTestPropsBuilder {
 
         // We need the JavaTest ts.jte file for now
         Path tsJte = Paths.get(config.getTsJteFile());
+        getTsJetProps(tsJte);
         Path tssqlStmt = null;
         if (config.getTsSqlStmtFile() != null) {
             tssqlStmt = Paths.get(config.getTsSqlStmtFile());
@@ -183,8 +191,6 @@ public class TsTestPropsBuilder {
         Path testProps = workDirPath.resolve("tstest.jte");
 
         // Seed the test properties file with select ts.jte file settings
-        Properties tsJteProps = new Properties();
-        tsJteProps.load(new FileReader(tsJte.toFile()));
         log.info("Read in ts.jte file: "+tsJte);
         // The test specific properties file
         Properties props = new Properties();
@@ -250,6 +256,12 @@ public class TsTestPropsBuilder {
                 "-vehicle", vehicle,
         };
         return args;
+    }
+
+    public static Properties getTsJetProps(Path tsJte) throws IOException {
+        tsJteProps = new Properties();
+        tsJteProps.load(new FileReader(tsJte.toFile()));
+        return tsJteProps;
     }
 
     public static boolean isAbstract(Class<?> clazz) {

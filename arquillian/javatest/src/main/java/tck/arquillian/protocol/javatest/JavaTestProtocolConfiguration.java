@@ -3,7 +3,15 @@ package tck.arquillian.protocol.javatest;
 import org.jboss.arquillian.container.test.spi.client.protocol.ProtocolConfiguration;
 import tck.arquillian.protocol.common.ProtocolCommonConfig;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
+
 public class JavaTestProtocolConfiguration implements ProtocolConfiguration, ProtocolCommonConfig {
+    static JavaTestProtocolConfiguration instance;
+
     // test working directory
     private String workDir;
     // EE10 type of ts.jte file location
@@ -16,6 +24,17 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     private boolean fork;
     //
     private boolean anySetter;
+
+    public static Properties getTsJteProps() throws IOException {
+        Properties tsJteProps = new Properties();
+        Path tsJteFile = Paths.get(instance.getTsJteFile());
+        tsJteProps.load(new FileReader(tsJteFile.toFile()));
+        return tsJteProps;
+    }
+
+    public JavaTestProtocolConfiguration() {
+        instance = this;
+    }
 
     public String getWorkDir() {
         return workDir;
