@@ -108,6 +108,19 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private boolean unpackClientEar = false;
     private boolean anySetter;
 
+    // Values set by the AppClientDeploymentPackager
+
+    /**
+     * Directory where the Application Client EAR library files are located.
+     * Default value is "lib". This is not really an external configuration setting as it
+     * will be set if the appclient ear contains an application.xml with a library-directory element.
+     */
+    private String earLibDir = "lib";
+    /**
+     * The name of the jar in the application client ear as determined by the jar with the Main-Class element.
+     */
+    private AppClientArchiveName appClientArchiveName;
+
     public boolean isAppClient() {
         return true;
     }
@@ -265,6 +278,22 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         this.anySetter = true;
     }
 
+    // Setters for the values set by the AppClientDeploymentPackager
+
+    public String getEarLibDir() {
+        return earLibDir;
+    }
+    public void setEarLibDir(String earLibDir) {
+        this.earLibDir = earLibDir;
+    }
+
+    public AppClientArchiveName getAppClientArchiveName() {
+        return appClientArchiveName;
+    }
+    public void setAppClientArchiveName(AppClientArchiveName appClientArchiveName) {
+        this.appClientArchiveName = appClientArchiveName;
+    }
+
     /**
      * Validate if any setter was called indicating if there was a matching protocol config
      * @return true if any setter was called
@@ -286,20 +315,23 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     }
 
     /**
-     * If #unpackClientEar is true, and clientEarDir/lib exists, then this method returns the contents
-     * of the clientEarDir/lib as a classpath string
+     * If #unpackClientEar is true, and clientEarDir/${earLibDir} exists, then this method returns the contents
+     * of the clientEarDir/${earLibDir} as a classpath string. It is possible that earLibDir is null to disable
+     * the ear lib directory. If the earLibDir is null, then this method will return an empty string.
      * @return a classpath string for the client ear lib directory
      */
     public String clientEarLibClasspath() {
         StringBuilder cp = new StringBuilder();
-        File libDir = new File(clientEarDir, "lib");
-        if (unpackClientEar && libDir.exists()) {
-            File[] jars = libDir.listFiles();
-            for (File jar : jars) {
-                if (!cp.isEmpty()) {
-                    cp.append(File.pathSeparator);
+        if (earLibDir != null) {
+            File libDir = new File(clientEarDir, earLibDir);
+            if (unpackClientEar && libDir.exists()) {
+                File[] jars = libDir.listFiles();
+                for (File jar : jars) {
+                    if (!cp.isEmpty()) {
+                        cp.append(File.pathSeparator);
+                    }
+                    cp.append(jar.getAbsolutePath());
                 }
-                cp.append(jar.getAbsolutePath());
             }
         }
         return cp.toString();

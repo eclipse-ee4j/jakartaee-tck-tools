@@ -28,9 +28,14 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.path.BasicPath;
 import tck.arquillian.protocol.common.ProtocolJarResolver;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
@@ -46,10 +51,16 @@ import java.util.logging.Logger;
  */
 public class AppClientDeploymentPackager implements DeploymentPackager {
     static Logger log = Logger.getLogger(AppClientDeploymentPackager.class.getName());
+    // Used if the ear wants no library-directory
+    public static String INTERNAL_LIB_DIR = "private-lib";
 
+    /**
+     * This is the adjusted AppClientProtocolConfiguration that has test deployment specific values
+     * for the appclient jar and possibly a non-standard earLibDir.
+     */
     @Inject
     @ApplicationScoped
-    private InstanceProducer<AppClientArchiveName> appClientArchiveName;
+    private InstanceProducer<AppClientProtocolConfiguration> deploymentConfig;
 
     @Override
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
@@ -59,7 +70,36 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
-        ear.addAsLibraries(auxiliaryArchives.toArray(new Archive<?>[0]));
+        // Look for an application.xml file in the test deployment
+        Node appXmlNode = ear.getContent().get(new BasicPath("META-INF", "application.xml"));
+        String earLibDir = "lib";
+        if (appXmlNode != null) {
+            /* This is a simple way to get the lib directory from the application.xml file. It will fail if the
+                library-directory element text content is split across multiple lines. Proper way it to use an XML
+                parser, but to not add a dependency on a simple XML parser, we just use a simple string.
+            */
+            Asset appXml = appXmlNode.getAsset();
+            try(InputStream is = appXml.openStream()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                for(String line : reader.lines().toList()) {
+                    if(line.contains("<library-directory>")) {
+                        earLibDir = line.substring(line.indexOf("<lib") + 19, line.indexOf("</"));
+                        // If library-directory, it means disable the default lib directory
+                        if(earLibDir.isBlank()) {
+                            earLibDir = INTERNAL_LIB_DIR;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                log.warning("Failed to open application.xml: " + e.getMessage());
+            }
+        }
+
+        log.info("Using ear lib directory: "+earLibDir);
+
+        for (Archive<?> auxiliaryArchive : auxiliaryArchives) {
+            ear.add(new ArchiveAsset(auxiliaryArchive, ZipExporter.class), new BasicPath(earLibDir, auxiliaryArchive.getName()));
+        }
         // Include the protocol.jar in the deployment
         File protocolJar = ProtocolJarResolver.resolveProtocolJar();
         if(protocolJar == null) {
@@ -69,7 +109,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                     ;
             throw new RuntimeException(msg);
         }
-        ear.addAsLibrary(protocolJar, "arquillian-protocol-lib.jar");
+
+        ear.add(new FileAsset(protocolJar), new BasicPath(earLibDir, "arquillian-protocol-lib.jar"));
 
         // If this is one of the JPA vehicles using a remote EJB, add the JPA servlet vehicle
         VehicleType vehicleType = getVehicleType(deploymentName);
@@ -78,7 +119,11 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         }
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
-        String mainClass = determineAppMainJar(ear);
+        config.setEarLibDir(earLibDir);
+        String mainClass = determineAppMainJar(ear, config);
+        if(deploymentConfig != null) {
+            deploymentConfig.set(config);
+        }
         log.info("mainClass: " + mainClass);
 
         // Write out the ear with the test dependencies for use by the appclient launcher
@@ -101,7 +146,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         // If unpackClientEar is true, extract the ear to the clientEarDir
         if(config.isUnpackClientEar()) {
-            unpackClientEar(ear, appclient);
+            unpackClientEar(ear, appclient, earLibDir);
         }
         return ear;
     }
@@ -166,9 +211,17 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
      * @param ear - the deployment ear
      * @param clientEarDir - the directory to unpack the ear to
      */
-    private void unpackClientEar(EnterpriseArchive ear, File clientEarDir) {
+    private void unpackClientEar(EnterpriseArchive ear, File clientEarDir, String earLibDir) {
         for (ArchivePath path : ear.getContent().keySet()) {
             Node node = ear.get(path);
+            if (node.getAsset() == null) {
+                continue;
+            }
+            String archivePath = path.get();
+            if(earLibDir.equals(INTERNAL_LIB_DIR) && archivePath.startsWith("/lib")) {
+                // Skip the lib directory if the library-directory is set to private-lib
+                continue;
+            }
             if (node.getAsset() instanceof ArchiveAsset asset) {
                 File archiveFile = new File(clientEarDir, path.get());
                 if(!archiveFile.getParentFile().exists()) {
@@ -177,12 +230,13 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                 final ZipExporter zipExporter = asset.getArchive().as(ZipExporter.class);
                 zipExporter.exportTo(archiveFile, true);
                 log.info("Exported test ear content to: " + archiveFile.getAbsolutePath());
-            } else if(node.getAsset() instanceof FileAsset asset) {
+            } else {
                 File file = new File(clientEarDir, path.get());
                 if(!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
                 try {
+                    Asset asset = node.getAsset();
                     Files.copy(asset.openStream(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     log.info("Exported test ear content to: " + file.getAbsolutePath());
                 } catch (Exception e) {
@@ -194,12 +248,13 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
     /**
      * Determine the jar with the Main-Class manifest entry from the ear, and set the AppClientArchiveName
-     * value on the {@link #appClientArchiveName} producer.
+     * value on the config.
      *
-     * @param ear deployment ear
+     * @param ear    deployment ear
+     * @param config the app client protocol configuration to update with the AppClientArchiveName
      * @return the FQN of the main class
      */
-    private String determineAppMainJar(EnterpriseArchive ear) {
+    private String determineAppMainJar(EnterpriseArchive ear, AppClientProtocolConfiguration config) {
         String mainClass = null;
         Map<ArchivePath, Node> contents = ear.getContent();
         for (Node node : contents.values()) {
@@ -216,7 +271,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                 for (String line : lines) {
                     if (line.startsWith("Main-Class:")) {
                         mainClass = line.substring(11).trim();
-                        appClientArchiveName.set(new AppClientArchiveName(jar.getArchive().getName()));
+                        config.setAppClientArchiveName(new AppClientArchiveName(jar.getArchive().getName()));
                         break;
                     }
                 }

@@ -67,7 +67,9 @@ public class AppClientProtocol implements Protocol<AppClientProtocolConfiguratio
      * {@inheritDoc}
      * Creates and returns a method executor that can run tests in an Application Client container.
      * 
-     * @param protocolConfiguration The protocol-specific configuration
+     * @param protocolConfiguration The protocol-specific configuration. Unfortunately, this is not the instance
+     *                              that was passed to the packager. We rely on injection of the protocol configuration
+     *                              from the packager to the executor via the Arquillian Injector.
      * @param metaData Metadata about the deployed application
      * @param callback Callback for handling command results
      * @return A ContainerMethodExecutor configured for Application Client test execution
@@ -76,10 +78,12 @@ public class AppClientProtocol implements Protocol<AppClientProtocolConfiguratio
     public ContainerMethodExecutor getExecutor(AppClientProtocolConfiguration protocolConfiguration, ProtocolMetaData metaData,
             CommandCallback callback) {
 
-        // Create the AppClientCmd and AppClientMethodExecutor instances and have arquillian inject the Deployment into the executor
-        AppClientCmd clientCmd = new AppClientCmd(protocolConfiguration);
-        AppClientMethodExecutor executor = new AppClientMethodExecutor(clientCmd, protocolConfiguration);
         Injector injector = injectorInstance.get();
+        // Create the AppClientCmd and AppClientMethodExecutor instances and have arquillian inject the Deployment into the executor
+        AppClientCmd clientCmd = new AppClientCmd();
+        injector.inject(clientCmd);
+        clientCmd.init();
+        AppClientMethodExecutor executor = new AppClientMethodExecutor(clientCmd, clientCmd.getConfig());
         injector.inject(executor);
         return executor;
     }
