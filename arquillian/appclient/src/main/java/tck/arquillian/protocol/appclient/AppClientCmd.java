@@ -11,6 +11,9 @@
 package tck.arquillian.protocol.appclient;
 
 import org.jboss.arquillian.config.impl.extension.StringPropertyReplacer;
+import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,18 +50,25 @@ public class AppClientCmd {
     private String clientEarDir;
     private String clientEarLibClasspath;
     private CompletableFuture<Process> onExit;
-
+    @Inject
+    @DeploymentScoped
+    private Instance<AppClientProtocolConfiguration> packagerConfigInstance;
 
     /**
-     * Parse the provided configuration to determine the clientCmdLine, optional clientEnvp and optional clientDir.
-     * @param config
+     * Obtain the AppClientProtocolConfiguration from the injected producer to determine the clientCmdLine,
+     * optional clientEnvp and optional clientDir, clientEarDir, and client classpath.
      */
-    public AppClientCmd(AppClientProtocolConfiguration config) {
+    public void init() {
+        AppClientProtocolConfiguration config = packagerConfigInstance.get();
         clientCmdLine = config.clientCmdLineAsArray();
         clientEnvp = config.clientEnvAsArray();
         clientDir = config.clientDirAsFile();
         clientEarDir = config.getClientEarDir();
         clientEarLibClasspath = config.clientEarLibClasspath();
+    }
+
+    public AppClientProtocolConfiguration getConfig() {
+        return packagerConfigInstance.get();
     }
 
     public boolean waitForExit(long timeout, TimeUnit units) throws InterruptedException {
