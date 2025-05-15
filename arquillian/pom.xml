@@ -12,7 +12,7 @@
     <!-- Artifact Configuration -->
     <groupId>jakarta.tck</groupId>
     <artifactId>tck.arquillian.parent</artifactId>
-    <version>11.0.9</version>
+    <version>11.0.10-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Jakarta TCK Parent</name>
