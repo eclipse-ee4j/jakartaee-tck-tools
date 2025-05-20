@@ -15,11 +15,16 @@ import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
 import tck.arquillian.protocol.common.TsTestPropsBuilder;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
@@ -35,7 +40,10 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
     private AppClientProtocolConfiguration config;
     @Inject
     @DeploymentScoped
-    private Instance<Deployment> deploymentInstance;
+    Instance<Deployment> deploymentInstance;
+    @Inject
+    @DeploymentScoped
+    Instance<DeploymentMonitor> deploymentMonitorInstance;
 
     static enum MainStatus {
         PASSED,
@@ -74,13 +82,25 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         // Run the appclient for the test if required
         String testMethod = testMethodExecutor.getMethodName();
         if (config.isRunClient()) {
-            log.info("Running appClient for: " + testMethod);
+            DeploymentMonitor deploymentMonitor = deploymentMonitorInstance.get();
+            log.info("Running appClient for: %s, monitor: %s".formatted(testMethod, deploymentMonitor));
             try {
                 Deployment deployment = deploymentInstance.get();
                 String appArchiveName = appClientArchiveName.name();
                 String vehicleArchiveName = TsTestPropsBuilder.vehicleArchiveName(deployment);
+                String deploymentName = config.getDeploymentName();
+
+                String appArchiveStubJarName = null;
+                if(config.needsStubs() && deploymentMonitor.needsStubs()) {
+                    log.info("Getting deployment stubs for: "+appArchiveName);
+                    appArchiveStubJarName = getDeploymentStubs();
+                } else {
+                    log.info("No stubs needed");
+                }
+
                 String[] additionalAgrs = TsTestPropsBuilder.runArgs(config, deployment, testMethodExecutor);
-                appClient.run(vehicleArchiveName, appArchiveName, additionalAgrs);
+                AppClientCmd.AppClientInfo appClientInfo = new AppClientCmd.AppClientInfo(deploymentName, vehicleArchiveName, appArchiveName, appArchiveStubJarName);
+                appClient.run(appClientInfo, additionalAgrs);
             } catch (Exception ex) {
                 result = TestResult.failed(ex);
                 return result;
@@ -129,5 +149,38 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         }
 
         return result;
+    }
+
+    private String getDeploymentStubs() throws Exception {
+        String deploymentName = config.getDeploymentName();
+        log.info("Getting deployment stubs, deployment: " + deploymentName);
+        String[] cmdLine = config.clientStubsCmdLineAsArray();
+        String[] clientEnvp = {};
+        for (int n = 0; n < cmdLine.length; n ++) {
+            String arg = cmdLine[n];
+            if (arg.contains("${deploymentName}")) {
+                arg = arg.replaceAll("\\$\\{deploymentName}", deploymentName);
+                cmdLine[n] = arg;
+            }
+        }
+        log.info("Running: " + String.join(" ", cmdLine));
+        Process stubsProcess = Runtime.getRuntime().exec(cmdLine, clientEnvp, null);
+        int exit = stubsProcess.waitFor();
+        log.info("Stubs process exited with: " + exit);
+        if (exit != 0) {
+            throw new RuntimeException("Stubs process failed with exit code: " + exit);
+        }
+
+        // The stubs jar is expected to be in target/${deploymentName}${clientStubsJarSuffix}.jar
+        String stubsJarName = "%s%s.jar".formatted(deploymentName, config.getClientStubsJarSuffix());
+        Path stubsJarPath = Path.of("target", stubsJarName);
+        File stubsJarFile = stubsJarPath.toFile();
+        if(!stubsJarFile.exists()) {
+            String msg = "Expected stubs target/${deploymentName=%s}${clientStubsJarSuffix=%s}.jar not found: %s"
+                    .formatted(deploymentName, config.getClientStubsJarSuffix(), stubsJarFile.getAbsolutePath());
+            throw new FileNotFoundException(msg);
+        }
+
+        return stubsJarFile.getAbsolutePath();
     }
 }

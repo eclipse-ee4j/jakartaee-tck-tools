@@ -20,12 +20,16 @@ import org.jboss.arquillian.core.api.Injector;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 
+import java.util.logging.Logger;
+
 /**
  * Implementation of the Arquillian Protocol interface for Application Client testing.
  * This protocol handles the deployment and execution of tests in a Jakarta EE
  * Application Client container environment.
  */
 public class AppClientProtocol implements Protocol<AppClientProtocolConfiguration> {
+    static final Logger log = Logger.getLogger(AppClientProtocol.class.getName());
+
     @Inject
     private Instance<Injector> injectorInstance;
 
@@ -56,6 +60,7 @@ public class AppClientProtocol implements Protocol<AppClientProtocolConfiguratio
      */
     @Override
     public DeploymentPackager getPackager() {
+        log.info("getPackager() called");
         AppClientDeploymentPackager packager = new AppClientDeploymentPackager();
         Injector injector = injectorInstance.get();
         injector.inject(packager);
@@ -85,6 +90,7 @@ public class AppClientProtocol implements Protocol<AppClientProtocolConfiguratio
         clientCmd.init();
         AppClientMethodExecutor executor = new AppClientMethodExecutor(clientCmd, clientCmd.getConfig());
         injector.inject(executor);
+        log.info("getExecutor() called, config="+clientCmd.getConfig());
         return executor;
     }
 }

@@ -21,5 +21,6 @@ public class AppClientProtocolExtension implements LoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(Protocol.class, AppClientProtocol.class);
+        builder.observer(DeploymentMonitorProvider.class);
     }
 }

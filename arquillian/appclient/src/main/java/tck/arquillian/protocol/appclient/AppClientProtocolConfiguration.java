@@ -62,6 +62,12 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private String cmdLineArgSeparator = ";";
 
     /**
+     *
+     */
+    private String clientStubsCmdLine;
+    private String clientStubsJarSuffix;
+
+    /**
      * Working directory for the Application Client process.
      * This directory is used as the process working directory when executing the client.
      * 
@@ -116,6 +122,10 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * will be set if the appclient ear contains an application.xml with a library-directory element.
      */
     private String earLibDir = "lib";
+    /**
+     * The name of the ear deployment from the ear archive name, or the application.xml/application-name
+     */
+    private String deploymentName;
     /**
      * The name of the jar in the application client ear as determined by the jar with the Main-Class element.
      */
@@ -206,7 +216,13 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * {@link AppClientDeploymentPackager} processing of the target appclient ear.
      * Any ${clientEarLibClasspath} ref will be replaced with the classpath of the client ear lib directory if
      * {@link #unpackClientEar} is true and the clientEarDir/lib directory exists.
-     * @param clientCmdLineString
+     * Any ${clientAppArchive} ref will be replaced with the clientAppArchive determined by the AppClientDeploymentPackager
+     * Any ${clientAppArchiveName} ref will be replaced with the clientAppArchive minus any .jar suffix determined by
+     * the AppClientDeploymentPackager
+     * Any ${clientStubJar} ref will be replaced by the ${clientAppArchiveName}${clientStubsJarSuffix}.jar value from the
+     * AppClientProtocolConfiguration#clientStubsJarSuffix.
+     *
+     * @param clientCmdLineString a cmdLineArgSeparator delimited string of command line arguments
      */
     public void setClientCmdLineString(String clientCmdLineString) {
         this.clientCmdLineString = clientCmdLineString;
@@ -224,6 +240,26 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public void setCmdLineArgSeparator(String cmdLineArgSeparator) {
         this.cmdLineArgSeparator = cmdLineArgSeparator;
         this.anySetter = true;
+    }
+
+    public String getClientStubsCmdLine() {
+        return clientStubsCmdLine;
+    }
+
+    /**
+     * Any ${deploymentName} will be replaced with the {@link AppClientProtocolConfiguration#deploymentName} value
+     * @param clientStubsCmdLine a cmdLineArgSeparator delimited string of command line arguments
+     */
+    public void setClientStubsCmdLine(String clientStubsCmdLine) {
+        this.clientStubsCmdLine = clientStubsCmdLine;
+    }
+
+    public String getClientStubsJarSuffix() {
+        return clientStubsJarSuffix;
+    }
+
+    public void setClientStubsJarSuffix(String clientStubsJarSuffix) {
+        this.clientStubsJarSuffix = clientStubsJarSuffix;
     }
 
     public String getClientDir() {
@@ -286,12 +322,32 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     public void setEarLibDir(String earLibDir) {
         this.earLibDir = earLibDir;
     }
+    public String getDeploymentName() {
+        return deploymentName;
+    }
+
+    /**
+     * Set by the AppClientDeploymentPackager to the name of the deployment from the appclient ear application.xml
+     * @param deploymentName - either the application-name from the application.xml or the name of the ear file
+     */
+    public void setDeploymentName(String deploymentName) {
+        this.deploymentName = deploymentName;
+    }
 
     public AppClientArchiveName getAppClientArchiveName() {
         return appClientArchiveName;
     }
     public void setAppClientArchiveName(AppClientArchiveName appClientArchiveName) {
         this.appClientArchiveName = appClientArchiveName;
+    }
+
+    /**
+     * If a clientStubsCmdLine was set, then this method returns true. This indicates that the client stubs
+     * will be needed to the appclient container.
+     * @return true if the clientStubsCmdLine is not null and not blank
+     */
+    public boolean needsStubs() {
+        return clientStubsCmdLine != null && !clientStubsCmdLine.isBlank();
     }
 
     /**
@@ -338,12 +394,27 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     }
 
     /**
-     * Parse the clientCmdLineString into an array of strings using the cmdLineArgSeparator. This calls String#split on the
-     * clientCmdLineString and then trims each element of the resulting array.
+     * Parse the clientCmdLineString into an array of strings using the cmdLineArgSeparator. This calls String#split on
+     * the clientCmdLineString using the cmdLineArgSeparator as the split expression and then trims each element of the
+     * resulting array.
      * @return a command line array of strings for use with Runtime#exec.
      */
     public String[] clientCmdLineAsArray() {
         String[] cmdArray = clientCmdLineString.trim().split(cmdLineArgSeparator);
+        // Now trim each element
+        for (int i = 0; i < cmdArray.length; i++) {
+            cmdArray[i] = cmdArray[i].trim();
+        }
+        return cmdArray;
+    }
+    /**
+     * Parse the clientStubsCmdLine into an array of strings using the cmdLineArgSeparator. This calls String#split on
+     * the clientStubsCmdLine using the cmdLineArgSeparator as the split expression and then trims each element of the
+     * resulting array.
+     * @return a command line array of strings for use with Runtime#exec.
+     */
+    public String[] clientStubsCmdLineAsArray() {
+        String[] cmdArray = clientStubsCmdLine.trim().split(cmdLineArgSeparator);
         // Now trim each element
         for (int i = 0; i < cmdArray.length; i++) {
             cmdArray[i] = cmdArray[i].trim();
@@ -365,4 +436,6 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
         }
         return envp;
     }
+
+
 }
