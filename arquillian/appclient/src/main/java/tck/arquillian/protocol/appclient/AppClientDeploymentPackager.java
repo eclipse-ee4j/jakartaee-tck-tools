@@ -66,6 +66,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
         Archive<?> archive = testDeployment.getApplicationArchive();
         String deploymentName = testDeployment.getDeploymentName();
+        String xmlDeploymentName = deploymentName;
         log.info("Generating deployment for: " + deploymentName);
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
@@ -88,6 +89,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                         if(earLibDir.isBlank()) {
                             earLibDir = INTERNAL_LIB_DIR;
                         }
+                    } else if(line.contains("<application-name>")) {
+                        xmlDeploymentName = line.substring(line.indexOf("<app") + 18, line.indexOf("</"));
                     }
                 }
             } catch (IOException e) {
@@ -120,6 +123,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         config.setEarLibDir(earLibDir);
+        config.setDeploymentName(xmlDeploymentName);
         String mainClass = determineAppMainJar(ear, config);
         if(deploymentConfig != null) {
             deploymentConfig.set(config);

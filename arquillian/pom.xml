@@ -35,7 +35,7 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <jakarta.tck.common.version>11.0.6</jakarta.tck.common.version>
+        <jakarta.tck.common.version>11.0.8</jakarta.tck.common.version>
     </properties>
 
     <dependencyManagement>
