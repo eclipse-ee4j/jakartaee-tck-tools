@@ -82,6 +82,9 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
         this.anySetter = true;
     }
 
+    public String getVehicleArchiveName() {
+        return "none";
+    }
     public boolean wasAnySetterCalled() {
         return anySetter;
     }

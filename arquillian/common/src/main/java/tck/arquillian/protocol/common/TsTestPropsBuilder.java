@@ -116,25 +116,6 @@ public class TsTestPropsBuilder {
         return tsJteProps;
     }
 
-    /**
-     * Get the deployment vehicle archive name from the deployment archive. This needs to be a vehicle deployment
-     * for the result to be valid.
-     * @param deployment - current test deployment
-     * @return base vehicle archive name
-     */
-    public static String vehicleArchiveName(Deployment deployment) {
-        // If there is an override vehicle_archive_name property, use it
-        String vehicleArchiveName = System.getProperty("vehicle_archive_name_override");
-        if(vehicleArchiveName == null) {
-            // Get deployment archive name and remove the .* suffix
-            vehicleArchiveName = deployment.getDescription().getArchive().getName();
-            int dot = vehicleArchiveName.lastIndexOf('.');
-            if (dot != -1) {
-                vehicleArchiveName = vehicleArchiveName.substring(0, dot);
-            }
-        }
-        return vehicleArchiveName;
-    }
 
     /**
      * Get the test runs args for the vehicle or appclient. If this is a non-vehicle appclient tests, the args
@@ -158,7 +139,7 @@ public class TsTestPropsBuilder {
 
         log.info(String.format("Base class: %s, vehicle: %s", testSuperclass.getName(), vehicle));
         // Get deployment archive name and remove the .* suffix
-        String vehicleArchiveName = vehicleArchiveName(deployment);
+        String vehicleArchiveName = config.getVehicleArchiveName();
 
         // At least validate the tsJte file property. If it is null throw an exception
         if(config.getTsJteFile() == null) {
