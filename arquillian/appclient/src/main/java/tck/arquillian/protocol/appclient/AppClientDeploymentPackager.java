@@ -67,6 +67,11 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         Archive<?> archive = testDeployment.getApplicationArchive();
         String deploymentName = testDeployment.getDeploymentName();
         String xmlDeploymentName = deploymentName;
+        String archiveName = archive.getName();
+        if(!archiveName.equals(xmlDeploymentName)) {
+            // The archive name does not match the @Deployment(name), so use the archive name as that is what a server will use
+            xmlDeploymentName = archiveName.substring(0, archiveName.length()-4);
+        }
         log.info("Generating deployment for: " + deploymentName);
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
@@ -88,9 +93,13 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                         // If library-directory, it means disable the default lib directory
                         if(earLibDir.isBlank()) {
                             earLibDir = INTERNAL_LIB_DIR;
+                            log.info("EAR lib is disabled in application.xml");
+                        } else {
+                            log.info("Using EAR application/library-directory: "+earLibDir);
                         }
                     } else if(line.contains("<application-name>")) {
                         xmlDeploymentName = line.substring(line.indexOf("<app") + 18, line.indexOf("</"));
+                        log.info("Using EAR application/application-name: " + xmlDeploymentName);
                     }
                 }
             } catch (IOException e) {
@@ -115,20 +124,30 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         ear.add(new FileAsset(protocolJar), new BasicPath(earLibDir, "arquillian-protocol-lib.jar"));
 
-        // If this is one of the JPA vehicles using a remote EJB, add the JPA servlet vehicle
-        VehicleType vehicleType = getVehicleType(deploymentName);
-        if(vehicleType != VehicleType.none) {
-            addJPAServletVehicle(ear, vehicleType);
-        }
-
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         config.setEarLibDir(earLibDir);
         config.setDeploymentName(xmlDeploymentName);
         String mainClass = determineAppMainJar(ear, config);
+        log.info("mainClass: " + mainClass);
+        /*
+         If this is one of the JPA vehicles using a remote EJB, add the JPA servlet vehicle
+         We try both the appclient archive name and the deployment name to determine the vehicle type as the
+         JPA tests have inconsistent naming of the deployment name and the appclient archive name.
+        */
+        VehicleType vehicleType = getVehicleType(config.getAppClientArchiveName().name());
+        if(vehicleType == VehicleType.none) {
+            vehicleType = getVehicleType(deploymentName);
+        }
+        if(vehicleType != VehicleType.none) {
+            addJPAServletVehicle(ear, vehicleType, config);
+        } else {
+            config.setVehicleArchiveName("none");
+        }
+
+        // Make this updated config available for injection into other Arquillian components
         if(deploymentConfig != null) {
             deploymentConfig.set(config);
         }
-        log.info("mainClass: " + mainClass);
 
         // Write out the ear with the test dependencies for use by the appclient launcher
         String extractDir = config.getClientEarDir();
@@ -181,7 +200,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
      * @param ear
      * @param vehicleType
      */
-    private void addJPAServletVehicle(EnterpriseArchive ear, VehicleType vehicleType) {
+    private void addJPAServletVehicle(EnterpriseArchive ear, VehicleType vehicleType, AppClientProtocolConfiguration config) {
+        log.info("Adding JPA servlet vehicle: " + vehicleType);
         String deploymentName = ear.getName();
         String webArchiveName = vehicleType.name() + "_vehicle_web";
         WebArchive war = ShrinkWrap.create(WebArchive.class, webArchiveName+".war");
@@ -206,7 +226,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                 break;
         }
         ear.addAsModule(war);
-        System.setProperty("vehicle_archive_name_override", webArchiveName);
+        config.setVehicleArchiveName(webArchiveName);
         log.info(String.format("Added %s.war to: %s", webArchiveName, deploymentName));
     }
 

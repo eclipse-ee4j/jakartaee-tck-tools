@@ -39,7 +39,7 @@ public class JavaTestMethodExecutor implements ContainerMethodExecutor {
     public TestResult invoke(TestMethodExecutor testMethodExecutor) {
         log.fine("Executing test method: " + testMethodExecutor.getMethod().getName());
         long start = System.currentTimeMillis();
-        // Get deployment archive name and remove the .* suffix
+        // Get deployment vehicle type
         Deployment deployment = deploymentInstance.get();
         TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
         String vehicle = "none";

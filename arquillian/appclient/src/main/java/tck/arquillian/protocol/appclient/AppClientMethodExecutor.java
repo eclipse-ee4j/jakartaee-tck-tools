@@ -10,6 +10,7 @@
  */
 package tck.arquillian.protocol.appclient;
 
+import com.sun.ts.tests.common.vehicle.VehicleType;
 import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
@@ -20,6 +21,7 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
+import tck.arquillian.protocol.common.TargetVehicle;
 import tck.arquillian.protocol.common.TsTestPropsBuilder;
 
 import java.io.File;
@@ -72,6 +74,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
     @Override
     public TestResult invoke(TestMethodExecutor testMethodExecutor) {
         TestResult result = TestResult.passed();
+        TargetVehicle testVehicle = testMethodExecutor.getMethod().getAnnotation(TargetVehicle.class);
 
         if(config == null) {
             result = TestResult.failed(new IllegalStateException("AppClientMethodExecutor: no config obtained from packagerConfigInstance"));
@@ -87,7 +90,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
             try {
                 Deployment deployment = deploymentInstance.get();
                 String appArchiveName = appClientArchiveName.name();
-                String vehicleArchiveName = TsTestPropsBuilder.vehicleArchiveName(deployment);
+                String vehicleArchiveName = determineVehicleArchiveName(testVehicle);
                 String deploymentName = config.getDeploymentName();
 
                 String appArchiveStubJarName = null;
@@ -182,5 +185,20 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         }
 
         return stubsJarFile.getAbsolutePath();
+    }
+
+    private String determineVehicleArchiveName(TargetVehicle targetVehicle) {
+        String vehicleArchiveName = config.getVehicleArchiveName();
+        if((vehicleArchiveName.isEmpty() || vehicleArchiveName.equals("none")) && targetVehicle != null) {
+            String vehicle = targetVehicle.value();
+            VehicleType vehicleType = VehicleType.valueOf(vehicle);
+            switch (vehicleType) {
+                case appmanaged, appmanagedNoTx, stateful3, stateless3 ->
+                        vehicleArchiveName = vehicleType.name() + "_vehicle_web";
+                default ->
+                        vehicleArchiveName = vehicleType.name() + "_vehicle";
+            }
+        }
+        return vehicleArchiveName;
     }
 }

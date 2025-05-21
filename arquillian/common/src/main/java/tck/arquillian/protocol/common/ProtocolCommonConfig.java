@@ -38,6 +38,12 @@ public interface ProtocolCommonConfig {
     public void setTsSqlStmtFile(String tsJteFile);
 
     /**
+     * The name of the vehicle archive
+     * @return the name of the vehicle archive
+     */
+    public String getVehicleArchiveName();
+
+    /**
      * Validate if there was any setter called indicating if there was a matching protocol config
      * @return true if any setter was called
      */

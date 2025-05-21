@@ -130,6 +130,11 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * The name of the jar in the application client ear as determined by the jar with the Main-Class element.
      */
     private AppClientArchiveName appClientArchiveName;
+    /**
+     * The name of the archive in the application client ear that contains the vehicle code which calls
+     * from the appclient to the server side test code.
+     */
+    private String vehicleArchiveName;
 
     public boolean isAppClient() {
         return true;
@@ -339,6 +344,13 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     }
     public void setAppClientArchiveName(AppClientArchiveName appClientArchiveName) {
         this.appClientArchiveName = appClientArchiveName;
+    }
+
+    public String getVehicleArchiveName() {
+        return vehicleArchiveName;
+    }
+    public void setVehicleArchiveName(String vehicleArchiveName) {
+        this.vehicleArchiveName = vehicleArchiveName;
     }
 
     /**
