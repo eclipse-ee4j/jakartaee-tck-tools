@@ -45,6 +45,13 @@ public class JavaTestMethodExecutor implements ContainerMethodExecutor {
         String vehicle = "none";
         if(testVehicle != null) {
             vehicle = testVehicle.value();
+            // Get deployment archive name and remove the .* suffix
+            String vehicleArchiveName = deployment.getDescription().getArchive().getName();
+            int dot = vehicleArchiveName.lastIndexOf('.');
+            if (dot != -1) {
+                vehicleArchiveName = vehicleArchiveName.substring(0, dot);
+            }
+            config.setVehicleArchiveName(vehicleArchiveName);
         }
 
         String[] args;

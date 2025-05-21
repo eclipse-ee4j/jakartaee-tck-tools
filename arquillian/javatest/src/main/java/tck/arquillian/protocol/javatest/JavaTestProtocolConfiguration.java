@@ -25,6 +25,9 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     //
     private boolean anySetter;
 
+    // Set by the executor
+    private String vehicleArchiveName = "none";
+
     public static Properties getTsJteProps() throws IOException {
         Properties tsJteProps = new Properties();
         Path tsJteFile = Paths.get(instance.getTsJteFile());
@@ -83,7 +86,10 @@ public class JavaTestProtocolConfiguration implements ProtocolConfiguration, Pro
     }
 
     public String getVehicleArchiveName() {
-        return "none";
+        return vehicleArchiveName;
+    }
+    public void setVehicleArchiveName(String vehicleArchiveName) {
+        this.vehicleArchiveName = vehicleArchiveName;
     }
     public boolean wasAnySetterCalled() {
         return anySetter;
