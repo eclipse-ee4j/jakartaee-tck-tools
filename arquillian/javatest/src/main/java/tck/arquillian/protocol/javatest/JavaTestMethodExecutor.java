@@ -1,7 +1,8 @@
 package tck.arquillian.protocol.javatest;
 
+import com.sun.ts.lib.harness.Fault;
 import com.sun.ts.lib.harness.Status;
-import com.sun.ts.lib.harness.EETest;
+import com.sun.ts.tests.common.base.EETest;
 import com.sun.ts.tests.common.vehicle.VehicleClient;
 import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
@@ -74,7 +75,7 @@ public class JavaTestMethodExecutor implements ContainerMethodExecutor {
         TestResult result = switch (status.getType()) {
             case Status.PASSED -> TestResult.passed(status.getReason());
             case Status.FAILED -> TestResult.failed(new Exception(status.getReason()));
-            case Status.ERROR -> TestResult.failed(new EETest.Fault(status.getReason()));
+            case Status.ERROR -> TestResult.failed(new Fault(status.getReason()));
             case Status.NOT_RUN -> TestResult.skipped(status.getReason());
             default -> TestResult.failed(new IllegalStateException("Unkown status type: " + status.getType()));
         };
