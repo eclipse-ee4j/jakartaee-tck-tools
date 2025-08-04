@@ -27,8 +27,8 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/eclipse-ee4j/jakartaee-tck-tools.git</connection>
-        <developerConnection>scm:git:https://github.com/eclipse-ee4j/jakartaee-tck-tools.git</developerConnection>
+        <connection>scm:git:ssh://git@github.com/eclipse-ee4j/jakartaee-tck-tools.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/eclipse-ee4j/jakartaee-tck-tools.git</developerConnection>
         <tag>master</tag>
         <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools</url>
     </scm>
@@ -60,7 +60,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-bom</artifactId>
@@ -68,7 +68,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap.descriptors</groupId>
                 <artifactId>shrinkwrap-descriptors-bom</artifactId>
@@ -76,7 +76,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            
+
              <dependency>
                 <groupId>org.jboss.shrinkwrap.resolver</groupId>
                 <artifactId>shrinkwrap-resolver-depchain</artifactId>
