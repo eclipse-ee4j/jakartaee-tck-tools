@@ -32,6 +32,19 @@
         <tag>master</tag>
         <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools</url>
     </scm>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Scott Stark</name>
+            <email>starksm@starkinternational.com</email>
+            <organizationUrl>https://github.com/starksm64</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -85,4 +98,39 @@
             <version>5.11.4</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <lineSeparator>lf</lineSeparator>
+                    <autoResolveSnapshots>true</autoResolveSnapshots>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <pushChanges>false</pushChanges>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.4</version>
+                <configuration>
+                    <deployAtEnd>true</deployAtEnd>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Used for deployment to Maven Central -->
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                    <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
