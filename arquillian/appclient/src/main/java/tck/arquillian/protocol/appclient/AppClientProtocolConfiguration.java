@@ -216,7 +216,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * The command line should be filtered against the ts.jte file if it contains any property references. In addition
      * to ts.jte property references, the command line can contain ${clientEarDir} which will be replaced with the
      * #clientEarDir value. Any ${vehicleArchiveName} ref will be replaced with the vehicle archive name extracted by
-     * {@link tck.arquillian.protocol.common.TsTestPropsBuilder#vehicleArchiveName(Deployment)}.
+     * {@link tck.arquillian.protocol.appclient.AppClientDeploymentPackager}.
      * Any ${clientAppArchive} ref will be replaced with the clientAppArchive extracted by the
      * {@link AppClientDeploymentPackager} processing of the target appclient ear.
      * Any ${clientEarLibClasspath} ref will be replaced with the classpath of the client ear lib directory if
