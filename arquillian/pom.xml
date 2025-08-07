@@ -27,8 +27,8 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com/eclipse-ee4j/jakartaee-tck-tools.git</connection>
-        <developerConnection>scm:git:git@github.com/eclipse-ee4j/jakartaee-tck-tools.git</developerConnection>
+        <connection>scm:git:git@github.com:eclipse-ee4j/jakartaee-tck-tools.git</connection>
+        <developerConnection>scm:git:git@github.com:eclipse-ee4j/jakartaee-tck-tools.git</developerConnection>
         <tag>master</tag>
         <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools</url>
     </scm>
