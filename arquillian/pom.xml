@@ -10,6 +10,7 @@
 
     <name>Arquillian Jakarta TCK Parent</name>
     <description>Protocols and testenrichers for Jakarta TCKs</description>
+    <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools</url>
 
     <modules>
         <module>appclient</module>
@@ -23,7 +24,6 @@
         <connection>scm:git:git@github.com:eclipse-ee4j/jakartaee-tck-tools.git</connection>
         <developerConnection>scm:git:git@github.com:eclipse-ee4j/jakartaee-tck-tools.git</developerConnection>
         <tag>master</tag>
-        <url>https://github.com/eclipse-ee4j/jakartaee-tck-tools</url>
     </scm>
     <licenses>
         <license>
