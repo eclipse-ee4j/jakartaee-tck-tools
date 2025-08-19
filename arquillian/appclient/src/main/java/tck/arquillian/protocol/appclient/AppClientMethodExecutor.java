@@ -111,27 +111,51 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         } else {
             log.info("Not running appClient for: " + testMethod);
         }
-        String[] lines = appClient.readAll(config.getClientTimeout());
 
+        String[] lines = appClient.readAll(config.getClientTimeout());
         log.info(String.format("AppClient(%s) readAll returned %d lines\n", testMethod, lines.length));
+
         boolean sawStatus = false;
+        boolean expectReason = false;
         MainStatus status = MainStatus.NOT_RUN;
         String reason = "None";
         String description = "None";
+
         for (String line : lines) {
             System.out.println(line);
-            if (line.contains("STATUS:")) {
-                sawStatus = true;
-                description = line;
+
+            if (expectReason) {
                 status = MainStatus.parseStatus(line);
-                // Format of line is STATUS:StatusText.Reason
-                // see com.sun.javatest.Status#exit()
-                int reasonStart = line.indexOf('.');
-                if (reasonStart > 0 && reasonStart < line.length() - 1) {
-                    reason = line.substring(reasonStart + 1);
+                reason = line;
+                description = "STATUS: " + reason;
+                expectReason = false;
+                continue;
+            }
+
+            int statusIndex = line.indexOf("STATUS:");
+
+            if (statusIndex >= 0) {
+                sawStatus = true;
+                // Grab rest of line to check for emptiness
+                String remnant = line.substring(statusIndex + "STATUS:".length()).trim();
+
+                if (!remnant.isEmpty()) {
+                    description = line;
+                    status = MainStatus.parseStatus(line);
+                    // Format of line is STATUS:StatusText.Reason
+                    // see com.sun.javatest.Status#exit()
+                    int reasonStart = line.indexOf('.');
+                    if (reasonStart > 0 && reasonStart < line.length() - 1) {
+                        reason = line.substring(reasonStart + 1);
+                    }
+                } else {
+                    // Get reason from next line
+                    description = line;
+                    expectReason = true;
                 }
             }
         }
+
         if (!sawStatus) {
             Throwable ex = new IllegalStateException("No STATUS: output seen from client");
             result = TestResult.failed(ex);
