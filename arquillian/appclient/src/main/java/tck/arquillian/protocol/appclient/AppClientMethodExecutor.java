@@ -147,9 +147,6 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                 if (!remnant.isEmpty()) {
                     description = line;
                     status = MainStatus.parseStatus(line);
-                    if (status == null) {
-                        status = MainStatus.FAILED;
-                    }
                     // Format of line is STATUS:StatusText.Reason
                     // see com.sun.javatest.Status#exit()
                     int reasonStart = line.indexOf('.');
@@ -161,6 +158,11 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                     expectReason = true;
                 }
             }
+        }
+
+        // Fail if no valid status ever found
+        if (status == null) {
+            status = MainStatus.FAILED;
         }
 
         if (!sawStatus) {
