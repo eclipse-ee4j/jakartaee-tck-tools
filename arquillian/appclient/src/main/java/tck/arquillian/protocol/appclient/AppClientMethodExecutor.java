@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Red Hat, Inc., and individual contributors
+ * Copyright 2024,2025 Red Hat, Inc., and individual contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,11 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         NOT_RUN;
 
         static MainStatus parseStatus(String reason) {
-            MainStatus status = FAILED;
+            MainStatus status = null;
             if (reason.contains("Passed.")) {
                 status = PASSED;
+            } else if (reason.contains("Failed.")) {
+                status = FAILED;
             } else if (reason.contains("Error.")) {
                 status = ERROR;
             } else if (reason.contains("Not run.")) {
@@ -126,10 +128,13 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
 
             if (expectReason) {
                 status = MainStatus.parseStatus(line);
-                reason = line;
-                description = "STATUS: " + reason;
-                expectReason = false;
-                continue;
+                // If not a valid status line, then keep looking
+                if (status != null) {
+                    reason = line;
+                    description = "STATUS: " + reason;
+                    expectReason = false;
+                    continue;
+                }
             }
 
             int statusIndex = line.indexOf("STATUS:");
@@ -142,6 +147,9 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                 if (!remnant.isEmpty()) {
                     description = line;
                     status = MainStatus.parseStatus(line);
+                    if (status == null) {
+                        status = MainStatus.FAILED;
+                    }
                     // Format of line is STATUS:StatusText.Reason
                     // see com.sun.javatest.Status#exit()
                     int reasonStart = line.indexOf('.');
@@ -149,8 +157,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                         reason = line.substring(reasonStart + 1);
                     }
                 } else {
-                    // Get reason from next line
-                    description = line;
+                    // Get reason from next line(s)
                     expectReason = true;
                 }
             }
