@@ -151,17 +151,29 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         // Write out the ear with the test dependencies for use by the appclient launcher
         String extractDir = config.getClientEarDir();
-        if(extractDir == null) {
+        if (extractDir == null) {
             extractDir = "target/appclient";
         }
         File appclient = new File(extractDir);
-        if(!appclient.exists()) {
-            if(appclient.mkdirs()) {
+
+        if (!appclient.exists()) {
+            if (appclient.mkdirs()) {
                 log.info("Created appclient directory: " + appclient.getAbsolutePath());
             } else {
                 throw new RuntimeException("Failed to create appclient directory: " + appclient.getAbsolutePath());
             }
+        } else {
+            // Directory exists, clear it if requested
+            if (config.isIsolateClientEars()) {
+                File[] contents = appclient.listFiles();
+                if (contents != null) {
+                    for (File f : contents) {
+                        deleteRecursively(f);
+                    }
+                }
+            }
         }
+
         File archiveOnDisk = new File(appclient, ear.getName());
         final ZipExporter exporter = ear.as(ZipExporter.class);
         exporter.exportTo(archiveOnDisk, true);
@@ -172,6 +184,24 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
             unpackClientEar(ear, appclient, earLibDir);
         }
         return ear;
+    }
+
+    /**
+     * Delete a File (or directory) recursively. Needed because the contents of clientEarDir
+     * may have been expanded upon request.
+     */
+    private void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+        if (!file.delete()) {
+            throw new RuntimeException("Failed to delete: " + file.getAbsolutePath());
+        }
     }
 
     /**
