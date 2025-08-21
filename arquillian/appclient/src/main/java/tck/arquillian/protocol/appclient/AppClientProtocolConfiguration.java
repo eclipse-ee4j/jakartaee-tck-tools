@@ -82,6 +82,12 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private String clientEarDir = "target/appclient";
 
     /**
+     * Flag to ensure that only one Application Client EAR test artifact is extracted at a time.
+     * Default value is false.
+     */
+    private boolean isolateClientEars = false;
+
+    /**
      * Maximum time in milliseconds to wait for the Application Client process to complete.
      * Default value is 60000ms (1 minute).
      */
@@ -303,6 +309,20 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setUnpackClientEar(boolean unpackClientEar) {
         this.unpackClientEar = unpackClientEar;
+        this.anySetter = true;
+    }
+
+    public boolean isIsolateClientEars() {
+        return isolateClientEars;
+    }
+
+    /**
+     * Set to true to clear the clientEarDir before extracting a new appclient ear test artifact. The default is false.
+     * This is useful if the vendor appclient loads all of the ears in clientEarDir by default.
+     * @param isolateClientEars
+     */
+    public void setIsolateClientEars(boolean isolateClientEars) {
+        this.isolateClientEars = isolateClientEars;
         this.anySetter = true;
     }
 
