@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Red Hat, Inc., and individual contributors
+ * Copyright 2024,2025 Red Hat, Inc., and individual contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,11 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         NOT_RUN;
 
         static MainStatus parseStatus(String reason) {
-            MainStatus status = FAILED;
+            MainStatus status = null;
             if (reason.contains("Passed.")) {
                 status = PASSED;
+            } else if (reason.contains("Failed.")) {
+                status = FAILED;
             } else if (reason.contains("Error.")) {
                 status = ERROR;
             } else if (reason.contains("Not run.")) {
@@ -111,27 +113,58 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         } else {
             log.info("Not running appClient for: " + testMethod);
         }
-        String[] lines = appClient.readAll(config.getClientTimeout());
 
+        String[] lines = appClient.readAll(config.getClientTimeout());
         log.info(String.format("AppClient(%s) readAll returned %d lines\n", testMethod, lines.length));
+
         boolean sawStatus = false;
+        boolean expectReason = false;
         MainStatus status = MainStatus.NOT_RUN;
         String reason = "None";
         String description = "None";
+
         for (String line : lines) {
             System.out.println(line);
-            if (line.contains("STATUS:")) {
-                sawStatus = true;
-                description = line;
+
+            if (expectReason) {
                 status = MainStatus.parseStatus(line);
-                // Format of line is STATUS:StatusText.Reason
-                // see com.sun.javatest.Status#exit()
-                int reasonStart = line.indexOf('.');
-                if (reasonStart > 0 && reasonStart < line.length() - 1) {
-                    reason = line.substring(reasonStart + 1);
+                // If not a valid status line, then keep looking
+                if (status != null) {
+                    reason = line;
+                    description = "STATUS: " + reason;
+                    expectReason = false;
+                    continue;
+                }
+            }
+
+            int statusIndex = line.indexOf("STATUS:");
+
+            if (statusIndex >= 0) {
+                sawStatus = true;
+                // Grab rest of line to check for emptiness
+                String remnant = line.substring(statusIndex + "STATUS:".length()).trim();
+
+                if (!remnant.isEmpty()) {
+                    description = line;
+                    status = MainStatus.parseStatus(line);
+                    // Format of line is STATUS:StatusText.Reason
+                    // see com.sun.javatest.Status#exit()
+                    int reasonStart = line.indexOf('.');
+                    if (reasonStart > 0 && reasonStart < line.length() - 1) {
+                        reason = line.substring(reasonStart + 1);
+                    }
+                } else {
+                    // Get reason from next line(s)
+                    expectReason = true;
                 }
             }
         }
+
+        // Fail if no valid status ever found
+        if (status == null) {
+            status = MainStatus.FAILED;
+        }
+
         if (!sawStatus) {
             Throwable ex = new IllegalStateException("No STATUS: output seen from client");
             result = TestResult.failed(ex);
