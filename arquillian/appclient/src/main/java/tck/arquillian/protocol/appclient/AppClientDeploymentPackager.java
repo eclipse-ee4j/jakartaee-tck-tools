@@ -66,11 +66,10 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
         Archive<?> archive = testDeployment.getApplicationArchive();
         String deploymentName = testDeployment.getDeploymentName();
-        String xmlDeploymentName = deploymentName;
         String archiveName = archive.getName();
-        if(!archiveName.equals(xmlDeploymentName)) {
+        if(!archiveName.equals(deploymentName)) {
             // The archive name does not match the @Deployment(name), so use the archive name as that is what a server will use
-            xmlDeploymentName = archiveName.substring(0, archiveName.length()-4);
+            deploymentName = archiveName.substring(0, archiveName.length()-4);
         }
         log.info("Generating deployment for: " + deploymentName);
 
@@ -97,9 +96,6 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                         } else {
                             log.info("Using EAR application/library-directory: "+earLibDir);
                         }
-                    } else if(line.contains("<application-name>")) {
-                        xmlDeploymentName = line.substring(line.indexOf("<app") + 18, line.indexOf("</"));
-                        log.info("Using EAR application/application-name: " + xmlDeploymentName);
                     }
                 }
             } catch (IOException e) {
@@ -126,7 +122,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         config.setEarLibDir(earLibDir);
-        config.setDeploymentName(xmlDeploymentName);
+        config.setDeploymentName(deploymentName);
         String mainClass = determineAppMainJar(ear, config);
         log.info("mainClass: " + mainClass);
         /*
