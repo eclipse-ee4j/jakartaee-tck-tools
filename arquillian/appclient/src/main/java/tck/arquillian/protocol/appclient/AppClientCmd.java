@@ -41,8 +41,9 @@ public class AppClientCmd {
      * @param vehicleArchiveName - the name of the vehicle archive to pass to the app client
      * @param clientAppArchive - the appclient archive
      * @param clientStubJar - optional client stub jar, may be null
+     * @param clientEarName - the name of ear deployment
      */
-    record AppClientInfo(String deploymentName, String vehicleArchiveName, String clientAppArchive, String clientStubJar) {}
+    record AppClientInfo(String deploymentName, String vehicleArchiveName, String clientAppArchive, String clientStubJar, String clientEarName) {}
 
     private static final Logger LOGGER = Logger.getLogger(AppClientCmd.class.getName());
 
@@ -169,6 +170,10 @@ public class AppClientCmd {
             }
             if(arg.contains("${clientStubJar}")) {
                 arg = arg.replaceAll("\\$\\{clientStubJar}", appClientInfo.clientStubJar);
+                cmdLine[n] = arg;
+            }
+            if(arg.contains("${clientEarName}")) {
+                arg = arg.replaceAll("\\$\\{clientEarName}", appClientInfo.clientEarName);
                 cmdLine[n] = arg;
             }
         }

@@ -66,12 +66,20 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
     public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
         Archive<?> archive = testDeployment.getApplicationArchive();
         String deploymentName = testDeployment.getDeploymentName();
+        String xmlDeploymentName = deploymentName;
         String archiveName = archive.getName();
-        if(!archiveName.equals(deploymentName)) {
+        if(!archiveName.equals(xmlDeploymentName)) {
             // The archive name does not match the @Deployment(name), so use the archive name as that is what a server will use
-            deploymentName = archiveName.substring(0, archiveName.length()-4);
+            xmlDeploymentName = archiveName.substring(0, archiveName.length()-4);
         }
         log.info("Generating deployment for: " + deploymentName);
+
+        String clientEarName = testDeployment.getDeploymentName();
+        // The archive name does not match the @Deployment(name), so use the archive name as that is what a server will use
+        if(!archiveName.equals(clientEarName)) {
+            clientEarName = archiveName.substring(0, archiveName.length()-4);
+        }
+        log.info("clientEarName: " + clientEarName);
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
@@ -96,6 +104,9 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
                         } else {
                             log.info("Using EAR application/library-directory: "+earLibDir);
                         }
+                    } else if(line.contains("<application-name>")) {
+                        xmlDeploymentName = line.substring(line.indexOf("<app") + 18, line.indexOf("</"));
+                        log.info("Using EAR application/application-name: " + xmlDeploymentName);
                     }
                 }
             } catch (IOException e) {
@@ -122,7 +133,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
 
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         config.setEarLibDir(earLibDir);
-        config.setDeploymentName(deploymentName);
+        config.setDeploymentName(xmlDeploymentName);
+        config.setClientEarName(clientEarName);
         String mainClass = determineAppMainJar(ear, config);
         log.info("mainClass: " + mainClass);
         /*
