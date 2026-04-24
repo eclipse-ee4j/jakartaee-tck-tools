@@ -74,11 +74,8 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         }
         log.info("Generating deployment for: " + deploymentName);
 
-        String clientEarName = testDeployment.getDeploymentName();
-        // The archive name does not match the @Deployment(name), so use the archive name as that is what a server will use
-        if(!archiveName.equals(clientEarName)) {
-            clientEarName = archiveName.substring(0, archiveName.length()-4);
-        }
+        // clientEarName will be the EAR name for EAR deployments
+        String clientEarName = testDeployment.getDeploymentName().endsWith(".ear") ? testDeployment.getDeploymentName() : testDeployment.getDeploymentName() + ".ear";
         log.info("clientEarName: " + clientEarName);
 
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();

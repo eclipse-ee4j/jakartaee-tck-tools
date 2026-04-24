@@ -134,7 +134,7 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
     private String deploymentName;
 
     /**
-     * The name of the EAR archive.
+     * The name of the EAR (e.g. exampleDeploymentName.ear).
      */
     private String clientEarName;
     /**
