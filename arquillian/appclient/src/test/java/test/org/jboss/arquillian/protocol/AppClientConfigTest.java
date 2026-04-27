@@ -144,6 +144,8 @@ public class AppClientConfigTest {
             found &= clientEarLibClasspath.contains(path);
         }
         Assertions.assertTrue(found, "Classpath should contain all expected paths");
+        Assertions.assertTrue(config.getClientEarName().equals(ear.getName()), "config.getClientEarName() (" + config.getClientEarName() +
+                ") is expected to be the same as ear.getName() (" + ear.getName() + ")");
     }
 
     @Test

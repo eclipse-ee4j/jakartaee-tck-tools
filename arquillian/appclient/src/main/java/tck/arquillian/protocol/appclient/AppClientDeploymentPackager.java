@@ -74,6 +74,10 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         }
         log.info("Generating deployment for: " + deploymentName);
 
+        // clientEarName will be the EAR name for EAR deployments
+        String clientEarName = deploymentName.endsWith(".ear") ? deploymentName : deploymentName + ".ear";
+        log.info("clientEarName: " + clientEarName);
+
         Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
         EnterpriseArchive ear = (EnterpriseArchive) archive;
         // Look for an application.xml file in the test deployment
@@ -127,6 +131,7 @@ public class AppClientDeploymentPackager implements DeploymentPackager {
         AppClientProtocolConfiguration config = (AppClientProtocolConfiguration) testDeployment.getProtocolConfiguration();
         config.setEarLibDir(earLibDir);
         config.setDeploymentName(xmlDeploymentName);
+        config.setClientEarName(clientEarName);
         String mainClass = determineAppMainJar(ear, config);
         log.info("mainClass: " + mainClass);
         /*

@@ -94,6 +94,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                 String appArchiveName = appClientArchiveName.name();
                 String vehicleArchiveName = determineVehicleArchiveName(testVehicle);
                 String deploymentName = config.getDeploymentName();
+                String clientEarName = config.getClientEarName();
 
                 String appArchiveStubJarName = null;
                 if(config.needsStubs() && deploymentMonitor.needsStubs()) {
@@ -104,7 +105,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
                 }
 
                 String[] additionalAgrs = TsTestPropsBuilder.runArgs(config, deployment, testMethodExecutor);
-                AppClientCmd.AppClientInfo appClientInfo = new AppClientCmd.AppClientInfo(deploymentName, vehicleArchiveName, appArchiveName, appArchiveStubJarName);
+                AppClientCmd.AppClientInfo appClientInfo = new AppClientCmd.AppClientInfo(deploymentName, vehicleArchiveName, appArchiveName, appArchiveStubJarName, clientEarName);
                 appClient.run(appClientInfo, additionalAgrs);
             } catch (Exception ex) {
                 result = TestResult.failed(ex);

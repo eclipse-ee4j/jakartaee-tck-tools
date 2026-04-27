@@ -132,6 +132,11 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      * The name of the ear deployment from the ear archive name, or the application.xml/application-name
      */
     private String deploymentName;
+
+    /**
+     * The base name of the EAR including the .ear extension (e.g. exampleDeploymentName.ear).
+     */
+    private String clientEarName;
     /**
      * The name of the jar in the application client ear as determined by the jar with the Main-Class element.
      */
@@ -357,6 +362,14 @@ public class AppClientProtocolConfiguration implements ProtocolConfiguration, Pr
      */
     public void setDeploymentName(String deploymentName) {
         this.deploymentName = deploymentName;
+    }
+
+    public void setClientEarName(String clientEarName) {
+        this.clientEarName = clientEarName;
+    }
+
+    public String getClientEarName() {
+        return clientEarName;
     }
 
     public AppClientArchiveName getAppClientArchiveName() {
