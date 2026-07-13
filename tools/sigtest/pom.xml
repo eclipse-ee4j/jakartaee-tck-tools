@@ -330,14 +330,6 @@
             <version>3.9.6</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.netbeans.tools</groupId>
-            <artifactId>ct-sym</artifactId>
-            <version>latest</version>
-            <scope>system</scope>
-            <systemPath>${ct.sym}</systemPath>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 
 </project>
