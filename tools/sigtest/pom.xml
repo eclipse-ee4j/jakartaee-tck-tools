@@ -82,6 +82,7 @@
                             <includeGroupIds>org.netbeans.tools</includeGroupIds>
                             <includes>**/*</includes>
                             <excludes>META-INF/**</excludes>
+                            <excludeArtifactIds>ct-sym</excludeArtifactIds>
                             <outputDirectory>${project.build.directory}/classes/META-INF/sigtest/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
