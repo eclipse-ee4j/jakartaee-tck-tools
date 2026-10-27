@@ -25,6 +25,8 @@ import org.apache.maven.project.MavenProjectHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,17 +35,22 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 /**
- * Generates a structured JSON signature file describing the public API of a
- * dependency artifact.
+ * Generates a structured JSON signature file describing the public API of either:
+ * <ul>
+ *   <li>a <b>dependency artifact</b> — identified by {@code <groupId>} and
+ *       {@code <artifactId>}, resolved from the project's compile-scope dependencies, or</li>
+ *   <li>the <b>project's own compiled classes</b> — when {@code <classes>} is
+ *       pointed at a directory (e.g. {@code ${project.build.outputDirectory}}).
+ *       In this mode {@code <groupId>} and {@code <artifactId>} are not required.</li>
+ * </ul>
  *
- * <p>The target artifact is identified by its Maven coordinates
- * ({@code groupId:artifactId}); it must already be listed as a
- * {@code compile}-scope dependency of the consuming project. All packages
- * present in that JAR are scanned by default; individual packages can be
- * excluded via {@code <excludes>}.
+ * <p>All packages present in the scan target are included by default; individual
+ * packages can be excluded via {@code <excludes>}.
  *
+ * <h2>Scanning a dependency JAR</h2>
  * <pre>{@code
  * <plugin>
  *   <groupId>jakarta.tck</groupId>
@@ -63,6 +70,25 @@ import java.util.jar.JarFile;
  *   </configuration>
  * </plugin>
  * }</pre>
+ *
+ * <h2>Scanning the project's own output directory</h2>
+ * <pre>{@code
+ * <plugin>
+ *   <groupId>jakarta.tck</groupId>
+ *   <artifactId>sigtest-next-plugin</artifactId>
+ *   <version>1.0-SNAPSHOT</version>
+ *   <executions>
+ *     <execution>
+ *       <goals><goal>generate</goal></goals>
+ *     </execution>
+ *   </executions>
+ *   <configuration>
+ *     <!-- scan the module being built, not a dependency -->
+ *     <classes>${project.build.outputDirectory}</classes>
+ *     <packages>com.example.api</packages>
+ *   </configuration>
+ * </plugin>
+ * }</pre>
  */
 @Mojo(
         name = "generate",
@@ -79,21 +105,46 @@ public class GenerateMojo extends AbstractMojo {
 
     /**
      * {@code groupId} of the dependency artifact to scan.
+     * Not required when {@link #classes} is set.
      */
-    @Parameter(required = true)
+    @Parameter
     private String groupId;
 
     /**
      * {@code artifactId} of the dependency artifact to scan.
+     * Not required when {@link #classes} is set.
      */
-    @Parameter(required = true)
+    @Parameter
     private String artifactId;
+
+    /**
+     * Directory of compiled {@code .class} files to scan instead of resolving a
+     * dependency artifact. When set, {@link #groupId} and {@link #artifactId} are
+     * ignored. Typically {@code ${project.build.outputDirectory}}.
+     *
+     * <p>When scanning a classes directory the package set is <em>not</em>
+     * auto-discovered from a JAR manifest; use {@link #packages} to list the
+     * root packages explicitly, or rely on the directory walk to pick up all
+     * {@code .class} files.
+     */
+    @Parameter
+    private File classes;
 
     /**
      * Output JSON signature file.
      */
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sig.json", required = true)
     private File sigfile;
+
+    /**
+     * Comma-separated list of package prefixes to <em>include</em> in the scan.
+     * When scanning a classes directory this acts as a positive filter; when
+     * scanning a JAR it is used as an override over the auto-discovered package set.
+     * Supports the same {@code .*} / {@code .**} suffixes as the legacy sigtest plugin.
+     * If empty, all packages discovered in the JAR (or directory) are included.
+     */
+    @Parameter(defaultValue = "")
+    private String packages;
 
     /**
      * Comma-separated list of package prefixes to exclude from the scan.
@@ -105,7 +156,8 @@ public class GenerateMojo extends AbstractMojo {
 
     /**
      * Version string embedded in the generated file.
-     * Defaults to the resolved version of the scanned artifact.
+     * Defaults to {@code ${project.version}} when scanning a classes directory,
+     * or to the resolved version of the scanned artifact otherwise.
      */
     @Parameter
     private String apiVersion;
@@ -120,6 +172,79 @@ public class GenerateMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (classes != null) {
+            executeDirectory();
+        } else {
+            executeArtifact();
+        }
+    }
+
+    /** Scan a pre-compiled classes directory (the module being built). */
+    private void executeDirectory() throws MojoExecutionException, MojoFailureException {
+        if (!classes.isDirectory()) {
+            throw new MojoExecutionException(
+                    "<classes> directory does not exist or is not a directory: "
+                    + classes.getAbsolutePath()
+                    + ". Ensure the compile phase has run before generate.");
+        }
+
+        String resolvedVersion = apiVersion != null ? apiVersion : project.getVersion();
+
+        Set<String> rootPackages = parsePackages(packages);
+        if (rootPackages.isEmpty()) {
+            // Fall back to discovering packages from the directory.
+            try {
+                rootPackages = discoverPackagesFromDirectory(classes);
+            } catch (IOException e) {
+                throw new MojoExecutionException(
+                        "Failed to discover packages in " + classes + ": " + e.getMessage(), e);
+            }
+        }
+        if (rootPackages.isEmpty()) {
+            getLog().warn("sigtest-next:generate — no packages found in " + classes + ", skipping.");
+            return;
+        }
+
+        Set<String> excludePackages = parsePackages(excludes);
+
+        getLog().info("sigtest-next:generate scanning directory: " + classes);
+        getLog().info("sigtest-next:generate discovered packages: " + rootPackages.stream().sorted()
+                .collect(java.util.stream.Collectors.toList()));
+        if (!excludePackages.isEmpty()) {
+            getLog().info("sigtest-next:generate excluding packages: " + excludePackages);
+        }
+        getLog().info("sigtest-next:generate output: " + sigfile);
+
+        List<File> classpath = buildClasspath();
+        // Prepend the classes directory itself so the generator finds all types.
+        if (!classpath.contains(classes)) {
+            classpath.add(0, classes);
+        }
+
+        SignatureGenerator generator = new SignatureGenerator(classpath, rootPackages, excludePackages);
+
+        SignatureRecord record;
+        try {
+            record = generator.generate(resolvedVersion, sigfile.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to scan " + classes + ": " + e.getMessage(), e);
+        }
+
+        getLog().info("sigtest-next:generate found " + record.classes.size() + " API classes.");
+
+        if (attach && sigfile.exists()) {
+            projectHelper.attachArtifact(project, "sig.json", sigfile);
+            getLog().info("sigtest-next:generate attached artifact: " + sigfile.getName());
+        }
+    }
+
+    /** Scan a dependency artifact JAR resolved from the project's dependencies. */
+    private void executeArtifact() throws MojoExecutionException, MojoFailureException {
+        if (groupId == null || artifactId == null) {
+            throw new MojoExecutionException(
+                    "Either <classes> (directory) or both <groupId> and <artifactId> must be configured.");
+        }
+
         Artifact target = resolveArtifact();
 
         File jar = target.getFile();
@@ -131,7 +256,11 @@ public class GenerateMojo extends AbstractMojo {
 
         String resolvedVersion = apiVersion != null ? apiVersion : target.getVersion();
 
-        Set<String> rootPackages = discoverPackages(jar);
+        // Allow an explicit <packages> list to override auto-discovery.
+        Set<String> rootPackages = parsePackages(packages);
+        if (rootPackages.isEmpty()) {
+            rootPackages = discoverPackages(jar);
+        }
         if (rootPackages.isEmpty()) {
             getLog().warn("sigtest-next:generate — no packages found in " + jar.getName() + ", skipping.");
             return;
@@ -210,6 +339,25 @@ public class GenerateMojo extends AbstractMojo {
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot read JAR: " + jar, e);
+        }
+        return packages;
+    }
+
+    /**
+     * Discovers all package names that contain at least one {@code .class} file
+     * under the given directory tree.
+     */
+    static Set<String> discoverPackagesFromDirectory(File dir) throws IOException {
+        Set<String> packages = new HashSet<>();
+        Path root = dir.toPath();
+        try (Stream<Path> stream = Files.walk(root)) {
+            stream.filter(p -> p.toString().endsWith(".class"))
+                  .forEach(p -> {
+                      Path parent = root.relativize(p).getParent();
+                      if (parent != null) {
+                          packages.add(parent.toString().replace(java.io.File.separatorChar, '.'));
+                      }
+                  });
         }
         return packages;
     }

@@ -15,15 +15,25 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import jakarta.tck.sigtest.generate.SignatureGenerator;
+import jakarta.tck.sigtest.model.ClassRecord;
+import jakarta.tck.sigtest.model.SignatureRecord;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -131,6 +141,104 @@ class GenerateMojoTest {
     }
 
     // -------------------------------------------------------------------------
+    // discoverPackagesFromDirectory
+    // -------------------------------------------------------------------------
+
+    @Test
+    void discoverPackagesFromDirectory_findsPackagesInTree() throws Exception {
+        Path classesDir = tempDir.resolve("classes");
+        Files.createDirectories(classesDir.resolve("com/example/api"));
+        Files.createDirectories(classesDir.resolve("com/example/internal"));
+        Files.writeString(classesDir.resolve("com/example/api/Service.class"), "stub");
+        Files.writeString(classesDir.resolve("com/example/internal/Helper.class"), "stub");
+
+        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+
+        assertTrue(packages.contains("com.example.api"), "Expected com.example.api");
+        assertTrue(packages.contains("com.example.internal"), "Expected com.example.internal");
+    }
+
+    @Test
+    void discoverPackagesFromDirectory_emptyDirectoryReturnsEmptySet() throws Exception {
+        Path classesDir = tempDir.resolve("empty-classes");
+        Files.createDirectories(classesDir);
+
+        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+
+        assertTrue(packages.isEmpty(), "Empty directory should produce no packages");
+    }
+
+    @Test
+    void discoverPackagesFromDirectory_defaultPackageClassIgnored() throws Exception {
+        Path classesDir = tempDir.resolve("default-pkg");
+        Files.createDirectories(classesDir);
+        Files.writeString(classesDir.resolve("RootClass.class"), "stub");
+
+        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+
+        assertTrue(packages.isEmpty(), "Class at root (default package) should not produce an entry");
+    }
+
+    // -------------------------------------------------------------------------
+    // <classes> directory integration — scan own output directory
+    // -------------------------------------------------------------------------
+
+    @Test
+    void generate_scansClassesDirectory() throws Exception {
+        // Compile a real class into a temp directory, then use the generator
+        // directly (bypassing the Mojo wiring) to verify the directory path works.
+        Path classesDir = tempDir.resolve("classes");
+        Files.createDirectories(classesDir);
+        compileInto(classesDir,
+                "package com.example;\n"
+                + "public class MyService {\n"
+                + "    public void process() {}\n"
+                + "}\n",
+                "MyService.java");
+
+        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+        assertFalse(packages.isEmpty(), "Should discover at least one package");
+        assertTrue(packages.contains("com.example"));
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(classesDir.toFile()), packages, Set.of());
+        SignatureRecord record = gen.generate("1.0");
+
+        Optional<ClassRecord> cls = record.classes.stream()
+                .filter(c -> c.name.equals("com.example.MyService"))
+                .findFirst();
+        assertTrue(cls.isPresent(), "com.example.MyService should be in the signature record");
+        assertNotNull(cls.get().methods, "Methods should be recorded");
+        assertTrue(cls.get().methods.stream().anyMatch(m -> m.name.equals("process")),
+                "process() method should be present");
+    }
+
+    @Test
+    void generate_classesDirectoryWithExplicitPackageFilter() throws Exception {
+        // Two packages in the directory; only one is requested via the package filter.
+        Path classesDir = tempDir.resolve("classes-filter");
+        Files.createDirectories(classesDir);
+        compileInto(classesDir,
+                "package com.example.api;\n"
+                + "public class PublicService {}\n",
+                "PublicService.java");
+        compileInto(classesDir,
+                "package com.example.internal;\n"
+                + "public class InternalHelper {}\n",
+                "InternalHelper.java");
+
+        Set<String> explicitPackages = Set.of("com.example.api");
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(classesDir.toFile()), explicitPackages, Set.of());
+        SignatureRecord record = gen.generate("1.0");
+
+        assertTrue(record.classes.stream().anyMatch(c -> c.name.equals("com.example.api.PublicService")),
+                "Public API class should be present");
+        assertFalse(record.classes.stream().anyMatch(c -> c.name.equals("com.example.internal.InternalHelper")),
+                "Internal class should be excluded by the package filter");
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
@@ -148,5 +256,35 @@ class GenerateMojoTest {
             }
         }
         return jar;
+    }
+
+    /** Compiles a single Java source file into the given output directory. */
+    private void compileInto(Path outDir, String source, String fileName) throws Exception {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertNotNull(compiler, "System Java compiler not available — run tests with a JDK");
+        String pkg = extractPackageName(source);
+        Path srcDir = tempDir.resolve("src");
+        if (!pkg.isEmpty()) {
+            srcDir = srcDir.resolve(pkg.replace('.', File.separatorChar));
+        }
+        Files.createDirectories(srcDir);
+        Path srcFile = srcDir.resolve(fileName);
+        Files.writeString(srcFile, source);
+        int rc = compiler.run(null, null, null,
+                "-d", outDir.toString(),
+                "-cp", outDir.toString(),
+                "--release", "11",
+                srcFile.toString());
+        assertTrue(rc == 0, "Compilation failed for: " + srcFile);
+    }
+
+    private static String extractPackageName(String source) {
+        for (String line : source.split("\n")) {
+            line = line.trim();
+            if (line.startsWith("package ")) {
+                return line.substring("package ".length()).replace(";", "").trim();
+            }
+        }
+        return "";
     }
 }

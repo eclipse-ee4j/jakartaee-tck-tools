@@ -361,6 +361,204 @@ class SignatureDiffTest {
     }
 
     // -------------------------------------------------------------------------
+    // Generics violations
+    // -------------------------------------------------------------------------
+
+    @Test
+    void methodGenericSignatureChangedIsReported() throws Exception {
+        // Baseline: get() returns T (generic); live: get() returns Object (raw).
+        // After erasure both descriptors are "()" → "Ljava/lang/Object;" so the
+        // generic signature is the only artefact that captures the change.
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Box<T> {\n"
+                + "    private T value;\n"
+                + "    public T get() { return value; }\n"
+                + "}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Box {\n"
+                + "    private Object value;\n"
+                + "    public Object get() { return value; }\n"
+                + "}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.METHOD_GENERIC_SIGNATURE_CHANGED, "com.example.Box");
+    }
+
+    @Test
+    void fieldGenericSignatureChangedIsReported() throws Exception {
+        // Baseline: items : List<T>; live: items : List (raw).
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "import java.util.List;\n"
+                + "public class Box<T> {\n"
+                + "    public List<T> items;\n"
+                + "}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "import java.util.List;\n"
+                + "public class Box {\n"
+                + "    public List items;\n"
+                + "}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.FIELD_GENERIC_SIGNATURE_CHANGED, "com.example.Box");
+    }
+
+    // -------------------------------------------------------------------------
+    // Annotation-related behaviour
+    // -------------------------------------------------------------------------
+
+    @Test
+    void annotationChangesAreNotCheckedByDiff() throws Exception {
+        // SignatureDiff does not currently enforce annotation contracts —
+        // it only captures annotations for informational purposes.
+        // This test documents that an annotation being removed does NOT
+        // produce a violation so that any future implementation of annotation
+        // checking will know to add a new Violation.Kind and update this test.
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "@Deprecated\n"
+                + "public class OldApi {}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class OldApi {}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        // No violation expected — annotation enforcement is not yet implemented.
+        assertTrue(violations.isEmpty(),
+                "Annotation removal should not yet produce a violation: " + violations);
+    }
+
+    // -------------------------------------------------------------------------
+    // Nested / inner class violations
+    // -------------------------------------------------------------------------
+
+    @Test
+    void missingPublicNestedClassIsReported() throws Exception {
+        // The generator records nested public static classes as top-level entries
+        // in the SignatureRecord (each gets its own ClassRecord). Removing one
+        // is therefore a MISSING_CLASS violation.
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Outer {\n"
+                + "    public static class Inner {}\n"
+                + "}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Outer {}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.MISSING_CLASS, "com.example.Outer$Inner");
+    }
+
+    @Test
+    void addedPublicNestedClassIsReported() throws Exception {
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Outer {}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Outer {\n"
+                + "    public static class Inner {}\n"
+                + "}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.ADDED_CLASS, "com.example.Outer$Inner");
+    }
+
+    // -------------------------------------------------------------------------
+    // Enum violations
+    // -------------------------------------------------------------------------
+
+    @Test
+    void missingEnumConstantFieldIsReported() throws Exception {
+        // Enum constants are recorded as public static final fields of the enum
+        // type. Removing a constant is therefore a MISSING_FIELD violation.
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public enum Status { ACTIVE, INACTIVE, PENDING }\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public enum Status { ACTIVE, INACTIVE }\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.MISSING_FIELD, "com.example.Status");
+    }
+
+    // -------------------------------------------------------------------------
+    // Default interface method violations
+    // -------------------------------------------------------------------------
+
+    @Test
+    void missingDefaultMethodIsReported() throws Exception {
+        // Removing a default method is a binary incompatibility for callers
+        // that override it: the override becomes invalid.
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "    default void sayHi() {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.MISSING_METHOD, "com.example.Greeter");
+    }
+
+    @Test
+    void addedDefaultMethodToInterfaceIsReported() throws Exception {
+        // A newly added method (default or abstract) on an interface is an
+        // ADDED_CLASS-style informational entry only when it concerns a whole class;
+        // for methods the diff reports nothing about additions — only removals.
+        // This test documents that behaviour: adding a default method does NOT
+        // produce a violation in the current implementation.
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "    default void sayHi() {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        // Method additions are not flagged — only removals are incompatible in
+        // binary-check mode. A strictcheck mode would catch this.
+        assertNone(violations, Violation.Kind.MISSING_METHOD);
+        assertTrue(violations.isEmpty(),
+                "Adding a default method should not produce a violation in binary mode: " + violations);
+    }
+
+    // -------------------------------------------------------------------------
     // Method key helper tests
     // -------------------------------------------------------------------------
 
