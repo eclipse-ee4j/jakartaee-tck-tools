@@ -56,7 +56,7 @@ public class ClassRecord {
      */
     public List<String> innerClasses;
 
-    /** Fully-qualified names of directly implemented interfaces. */
+    /** Fully-qualified names of directly implemented interfaces. {@code null} when there are none. */
     public List<String> interfaces;
 
     /**

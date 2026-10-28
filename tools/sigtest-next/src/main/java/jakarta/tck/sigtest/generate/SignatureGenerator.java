@@ -201,10 +201,13 @@ public class SignatureGenerator {
         return Type.getType(descriptor).getClassName();
     }
 
-    /** Convert an array of JVM internal names to a list of binary names. */
+    /**
+     * Convert an array of JVM internal names to a list of binary names,
+     * or {@code null} when there are none (so empty lists are omitted from the JSON).
+     */
     static List<String> internalsToList(String[] names) {
         if (names == null || names.length == 0) {
-            return List.of();
+            return null;
         }
         return Arrays.stream(names)
                 .map(SignatureGenerator::internalToBinary)
@@ -428,9 +431,11 @@ public class SignatureGenerator {
             if (!isCtor) {
                 mr.returnType = methodType.getReturnType().getClassName();
             }
-            mr.parameters = Arrays.stream(methodType.getArgumentTypes())
+            List<ParameterRecord> params = Arrays.stream(methodType.getArgumentTypes())
                     .map(t -> new ParameterRecord(t.getClassName()))
                     .collect(Collectors.toList());
+            // null (not an empty list) when parameterless, so it is omitted from the JSON.
+            mr.parameters = params.isEmpty() ? null : params;
             mr.exceptions = internalsToList(exceptions);
 
             if (isCtor) {
@@ -469,12 +474,12 @@ public class SignatureGenerator {
 
                 @Override
                 public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-                    int declared = mr.parameters.size();
+                    int declared = params.size();
                     int count = visible ? visibleCount : invisibleCount;
                     int index = parameter + (count < 0 ? 0 : declared - count);
                     if (index < 0 || index >= declared) return null;
 
-                    ParameterRecord pr = mr.parameters.get(index);
+                    ParameterRecord pr = params.get(index);
                     if (pr.annotations == null) pr.annotations = new TreeMap<>();
                     return new AnnotationValueCollector(pr.annotations, desc);
                 }

@@ -45,10 +45,10 @@ public class MethodRecord {
     /** Space-separated modifier keywords, e.g. {@code "public abstract"}. */
     public String modifiers;
 
-    /** Ordered list of parameters, each with its erased type and annotations. */
+    /** Ordered list of parameters, each with its erased type and annotations. {@code null} when there are none. */
     public List<ParameterRecord> parameters;
 
-    /** Checked exception type descriptors declared by this member. */
+    /** Checked exception type descriptors declared by this member. {@code null} when there are none. */
     public List<String> exceptions;
 
     /** Annotations applied to this method; format as in {@link FieldRecord#annotations}. */
