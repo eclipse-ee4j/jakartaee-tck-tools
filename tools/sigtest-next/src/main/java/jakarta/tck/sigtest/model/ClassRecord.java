@@ -26,6 +26,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
     "genericSignature",
     "annotations",
     "interfaces",
+    "permittedSubclasses",
     "innerClasses",
     "fields",
     "constructors",
@@ -57,6 +58,14 @@ public class ClassRecord {
 
     /** Fully-qualified names of directly implemented interfaces. */
     public List<String> interfaces;
+
+    /**
+     * Binary names of the permitted direct subtypes (the {@code PermittedSubclasses}
+     * class-file attribute), sorted alphabetically. Non-{@code null} exactly when the type
+     * is {@code sealed}; {@code null} for every other type, including {@code non-sealed}
+     * ones (the {@code non-sealed} keyword has no class-file representation).
+     */
+    public List<String> permittedSubclasses;
 
     /** Annotations applied to this class; format as in {@link FieldRecord#annotations}. */
     public Map<String, List<String>> annotations;

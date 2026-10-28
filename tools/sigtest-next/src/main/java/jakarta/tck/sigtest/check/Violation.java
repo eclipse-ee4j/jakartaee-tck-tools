@@ -34,6 +34,11 @@ public final class Violation {
         MISSING_INTERFACE,
         /** An interface was added to a class or interface. */
         ADDED_INTERFACE,
+        /**
+         * A type's sealed status or its set of permitted subclasses changed
+         * (e.g. {@code sealed} → not sealed, or an entry added to / removed from {@code permits}).
+         */
+        PERMITTED_SUBCLASSES_CHANGED,
         /** A class's directly enclosed public/protected inner classes changed. */
         INNER_CLASSES_CHANGED,
         /** A public/protected method present in the baseline is absent from the live class. */

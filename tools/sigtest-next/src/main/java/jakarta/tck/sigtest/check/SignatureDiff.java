@@ -161,6 +161,11 @@ public final class SignatureDiff {
                     "annotations changed: " + base.annotations + " → " + live.annotations));
         }
 
+        if (!Objects.equals(base.permittedSubclasses, live.permittedSubclasses)) {
+            out.add(Violation.of(Violation.Kind.PERMITTED_SUBCLASSES_CHANGED, cls,
+                    describePermits(base.permittedSubclasses, live.permittedSubclasses)));
+        }
+
         if (!Objects.equals(nullToEmpty(base.innerClasses), nullToEmpty(live.innerClasses))) {
             out.add(Violation.of(Violation.Kind.INNER_CLASSES_CHANGED, cls,
                     "inner classes changed: " + base.innerClasses + " → " + live.innerClasses));
@@ -170,6 +175,16 @@ public final class SignatureDiff {
         diffMethods(base, live, out);
         diffConstructors(base, live, out);
         diffFields(base, live, out);
+    }
+
+    private static String describePermits(List<String> base, List<String> live) {
+        if (base == null) {
+            return "type is now sealed, permits: " + live;
+        }
+        if (live == null) {
+            return "type is no longer sealed (was: permits " + base + ")";
+        }
+        return "permitted subclasses changed: " + base + " → " + live;
     }
 
     private static void diffInterfaces(ClassRecord base, ClassRecord live, List<Violation> out) {

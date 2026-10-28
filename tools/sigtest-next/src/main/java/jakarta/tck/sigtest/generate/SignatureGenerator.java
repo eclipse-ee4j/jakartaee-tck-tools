@@ -321,6 +321,14 @@ public class SignatureGenerator {
             }
         }
 
+        /** Called once per entry of the {@code PermittedSubclasses} attribute (sealed types only). */
+        @Override
+        public void visitPermittedSubclass(String permittedSubclass) {
+            if (record == null) return;
+            if (record.permittedSubclasses == null) record.permittedSubclasses = new ArrayList<>();
+            record.permittedSubclasses.add(internalToBinary(permittedSubclass));
+        }
+
         @Override
         public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
             if (packageRecord != null) {
@@ -488,6 +496,7 @@ public class SignatureGenerator {
                                 : c.parameters.stream().map(p -> p.type).collect(Collectors.joining(","))));
                 if (record.hiddenFields != null) Collections.sort(record.hiddenFields);
                 if (record.innerClasses != null)  Collections.sort(record.innerClasses);
+                if (record.permittedSubclasses != null) Collections.sort(record.permittedSubclasses);
             }
         }
 

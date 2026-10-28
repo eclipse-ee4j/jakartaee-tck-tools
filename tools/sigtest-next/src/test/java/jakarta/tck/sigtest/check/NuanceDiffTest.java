@@ -1747,18 +1747,116 @@ class NuanceDiffTest {
             assertFalse(findViolations(violations, SUPERCLASS_CHANGED).isEmpty(), violations.toString());
         }
 
+        private final String circle = pkgSrc("public final class Circle implements Shape {}");
+        private final String square = pkgSrc("public final class Square implements Shape {}");
+
         @Test
-        @DisplayName("Sealed to non-sealed (permits clause removed) is NOT detected - known limitation")
-        void sealedPermitsNotDetected() throws Exception {
+        @DisplayName("Sealed type records its permitted subclasses; non-sealed types record none")
+        void sealedTypeRecordsPermittedSubclasses() throws Exception {
+            SignatureRecord record = compileAndGenerate("sealed_shape", files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Square, Circle {}"),
+                    "Circle.java", circle, "Square.java", square), RELEASE, Set.of(PKG), Set.of());
+
+            assertEquals(List.of(PKG + ".Circle", PKG + ".Square"),
+                    classNamed(record, PKG + ".Shape").permittedSubclasses);
+            assertEquals(null, classNamed(record, PKG + ".Circle").permittedSubclasses);
+        }
+
+        @Test
+        @DisplayName("Implicit permits (subclasses in the same compilation unit) are recorded")
+        void implicitPermitsRecorded() throws Exception {
+            SignatureRecord record = compileAndGenerate("sealed_implicit", files(
+                    "Shape.java", pkgSrc("public sealed interface Shape {}\nfinal class Hidden implements Shape {}")),
+                    RELEASE, Set.of(PKG), Set.of());
+
+            assertEquals(List.of(PKG + ".Hidden"), classNamed(record, PKG + ".Shape").permittedSubclasses);
+        }
+
+        @Test
+        @DisplayName("Sealed self-diff is clean and permits order is irrelevant")
+        void sealedSelfDiffAndOrder() throws Exception {
+            Map<String, String> a = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle, Square {}"),
+                    "Circle.java", circle, "Square.java", square);
+            Map<String, String> b = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Square, Circle {}"),
+                    "Circle.java", circle, "Square.java", square);
+
+            assertKinds(diffPair(a, a, RELEASE));
+            assertKinds(diffPair(a, b, RELEASE));
+        }
+
+        @Test
+        @DisplayName("Sealed to non-sealed triggers PERMITTED_SUBCLASSES_CHANGED")
+        void sealedToNonSealed() throws Exception {
             Map<String, String> before = files(
                     "Shape.java", pkgSrc("public sealed interface Shape permits Circle {}"),
-                    "Circle.java", pkgSrc("public final class Circle implements Shape {}"));
+                    "Circle.java", circle);
             Map<String, String> after = files(
                     "Shape.java", pkgSrc("public interface Shape {}"),
-                    "Circle.java", pkgSrc("public final class Circle implements Shape {}"));
+                    "Circle.java", circle);
 
-            assertKinds(diffPair(before, after, RELEASE));
+            List<Violation> violations = diffPair(before, after, RELEASE);
+            assertKinds(violations, PERMITTED_SUBCLASSES_CHANGED);
+            assertEquals(PKG + ".Shape", violations.get(0).className);
+            assertTrue(violations.get(0).message.contains("no longer sealed"), violations.get(0).message);
         }
+
+        @Test
+        @DisplayName("Non-sealed to sealed triggers PERMITTED_SUBCLASSES_CHANGED")
+        void nonSealedToSealed() throws Exception {
+            Map<String, String> before = files(
+                    "Shape.java", pkgSrc("public interface Shape {}"),
+                    "Circle.java", circle);
+            Map<String, String> after = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle {}"),
+                    "Circle.java", circle);
+
+            List<Violation> violations = diffPair(before, after, RELEASE);
+            assertKinds(violations, PERMITTED_SUBCLASSES_CHANGED);
+            assertTrue(violations.get(0).message.contains("now sealed"), violations.get(0).message);
+        }
+
+        @Test
+        @DisplayName("Permitted subclass added triggers PERMITTED_SUBCLASSES_CHANGED")
+        void permittedSubclassAdded() throws Exception {
+            Map<String, String> before = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle {}"),
+                    "Circle.java", circle);
+            Map<String, String> after = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle, Square {}"),
+                    "Circle.java", circle, "Square.java", square);
+
+            assertKinds(diffPair(before, after, RELEASE), PERMITTED_SUBCLASSES_CHANGED, ADDED_CLASS);
+        }
+
+        @Test
+        @DisplayName("Permitted subclass removed triggers PERMITTED_SUBCLASSES_CHANGED")
+        void permittedSubclassRemoved() throws Exception {
+            Map<String, String> before = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle, Square {}"),
+                    "Circle.java", circle, "Square.java", square);
+            Map<String, String> after = files(
+                    "Shape.java", pkgSrc("public sealed interface Shape permits Circle {}"),
+                    "Circle.java", circle);
+
+            assertKinds(diffPair(before, after, RELEASE), PERMITTED_SUBCLASSES_CHANGED, MISSING_CLASS);
+        }
+
+        @Test
+        @DisplayName("Sealed class made final triggers PERMITTED_SUBCLASSES_CHANGED and CLASS_MODIFIERS_CHANGED")
+        void sealedClassMadeFinal() throws Exception {
+            Map<String, String> before = files(
+                    "Base.java", pkgSrc("public sealed class Base permits Leaf {}"),
+                    "Leaf.java", pkgSrc("public final class Leaf extends Base {}"));
+            Map<String, String> after = files(
+                    "Base.java", pkgSrc("public final class Base {}"),
+                    "Leaf.java", pkgSrc("public final class Leaf {}"));
+
+            assertKinds(diffPair(before, after, RELEASE),
+                    PERMITTED_SUBCLASSES_CHANGED, CLASS_MODIFIERS_CHANGED, SUPERCLASS_CHANGED);
+        }
+
     }
 
     // =========================================================================
