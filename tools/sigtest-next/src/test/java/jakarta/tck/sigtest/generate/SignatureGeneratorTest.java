@@ -750,6 +750,94 @@ class SignatureGeneratorTest {
                 "protected nested class must not have 'public' in modifiers; was: " + protectedNested.modifiers);
     }
 
+    @Test
+    void classModifiersDoNotIncludeSynchronized() throws Exception {
+        compileDirect(
+                "package com.example;\n" +
+                "public class NormalClass {}\n",
+                "NormalClass.java");
+        compileDirect(
+                "package com.example;\n" +
+                "public final class FinalClass {}\n",
+                "FinalClass.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord normal = findClass(record, "com.example.NormalClass").orElseThrow();
+        assertEquals("public", normal.modifiers, "ACC_SUPER must not be interpreted as 'synchronized'");
+
+        ClassRecord finalCls = findClass(record, "com.example.FinalClass").orElseThrow();
+        assertEquals("public final", finalCls.modifiers, "ACC_SUPER must not be interpreted as 'synchronized'");
+    }
+
+    @Test
+    void varargsMethodAndConstructorHaveVarargsModifier() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class VarargsClass {\n" +
+                "    public VarargsClass(String... args) {}\n" +
+                "    public static void by(int first, String... rest) {}\n" +
+                "    public synchronized void syncMethod() {}\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord cls = findClass(record, "com.example.VarargsClass").orElseThrow();
+
+        MethodRecord ctor = cls.constructors.get(0);
+        assertEquals("public varargs", ctor.modifiers,
+                "constructor with varargs must have 'varargs' modifier; was: " + ctor.modifiers);
+
+        MethodRecord by = findMethod(cls, "by").orElseThrow();
+        assertEquals("public static varargs", by.modifiers,
+                "ACC_VARARGS must be rendered as 'varargs' (not 'transient'); was: " + by.modifiers);
+
+        MethodRecord sync = findMethod(cls, "syncMethod").orElseThrow();
+        assertEquals("public synchronized", sync.modifiers,
+                "method with synchronized must have 'synchronized' modifier; was: " + sync.modifiers);
+    }
+
+    @Test
+    void fieldModifiersCanBeTransientAndVolatile() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class FieldModifiersClass {\n" +
+                "    public transient int transientField;\n" +
+                "    public volatile int volatileField;\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord cls = findClass(record, "com.example.FieldModifiersClass").orElseThrow();
+
+        FieldRecord transientField = findField(cls, "transientField").orElseThrow();
+        assertEquals("public transient", transientField.modifiers);
+
+        FieldRecord volatileField = findField(cls, "volatileField").orElseThrow();
+        assertEquals("public volatile", volatileField.modifiers);
+    }
+
+    @Test
+    void modifierHelpersProduceContextSpecificStrings() {
+        // Class modifier tests: ACC_SUPER (0x20) ignored, only class-valid flags emitted
+        assertEquals("public", SignatureGenerator.modifiersOfClass(0x0021)); // ACC_PUBLIC | ACC_SUPER
+        assertEquals("public final", SignatureGenerator.modifiersOfClass(0x0031)); // ACC_PUBLIC | ACC_FINAL | ACC_SUPER
+        assertEquals("public abstract", SignatureGenerator.modifiersOfClass(0x0401)); // ACC_PUBLIC | ACC_ABSTRACT
+        assertEquals("public static final", SignatureGenerator.modifiersOfClass(0x0019)); // ACC_PUBLIC | ACC_STATIC | ACC_FINAL
+
+        // Field modifier tests: transient (0x80) and volatile (0x40) supported, no synchronized/native/etc.
+        assertEquals("public transient", SignatureGenerator.modifiersOfField(0x0081)); // ACC_PUBLIC | ACC_TRANSIENT
+        assertEquals("public volatile", SignatureGenerator.modifiersOfField(0x0041)); // ACC_PUBLIC | ACC_VOLATILE
+        assertEquals("public static final", SignatureGenerator.modifiersOfField(0x0019)); // ACC_PUBLIC | ACC_STATIC | ACC_FINAL
+
+        // Method modifier tests: varargs (0x80), bridge (0x40) ignored, synchronized (0x20), native, abstract, strictfp
+        assertEquals("public static varargs", SignatureGenerator.modifiersOfMethod(0x0089)); // ACC_PUBLIC | ACC_STATIC | ACC_VARARGS
+        assertEquals("public synchronized", SignatureGenerator.modifiersOfMethod(0x0021)); // ACC_PUBLIC | ACC_SYNCHRONIZED
+        assertEquals("public native", SignatureGenerator.modifiersOfMethod(0x0101)); // ACC_PUBLIC | ACC_NATIVE
+        assertEquals("public abstract", SignatureGenerator.modifiersOfMethod(0x0401)); // ACC_PUBLIC | ACC_ABSTRACT
+        assertEquals("public", SignatureGenerator.modifiersOfMethod(0x0041)); // ACC_PUBLIC | ACC_BRIDGE (no volatile)
+    }
+
     // -------------------------------------------------------------------------
     // Lower-level compile helper (no class-name inference needed)
     // -------------------------------------------------------------------------

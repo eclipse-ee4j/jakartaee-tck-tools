@@ -203,31 +203,8 @@ public class SignatureGenerator {
                 .collect(Collectors.toList());
     }
 
-    /** Render access flags as a sorted, space-separated modifier string. */
-    static String modifiersOf(int access) {
-        List<String> mods = new ArrayList<>();
-        if ((access & Opcodes.ACC_PUBLIC) != 0)       mods.add("public");
-        if ((access & Opcodes.ACC_PROTECTED) != 0)    mods.add("protected");
-        if ((access & Opcodes.ACC_PRIVATE) != 0)      mods.add("private");
-        if ((access & Opcodes.ACC_STATIC) != 0)       mods.add("static");
-        if ((access & Opcodes.ACC_FINAL) != 0)        mods.add("final");
-        if ((access & Opcodes.ACC_ABSTRACT) != 0)     mods.add("abstract");
-        if ((access & Opcodes.ACC_SYNCHRONIZED) != 0) mods.add("synchronized");
-        if ((access & Opcodes.ACC_NATIVE) != 0)       mods.add("native");
-        if ((access & Opcodes.ACC_TRANSIENT) != 0)    mods.add("transient");
-        if ((access & Opcodes.ACC_VOLATILE) != 0)     mods.add("volatile");
-        if ((access & Opcodes.ACC_STRICT) != 0)       mods.add("strictfp");
-        return String.join(" ", mods);
-    }
-
-    /**
-     * Render the access flags from an {@code InnerClasses} attribute entry as a
-     * modifier string.  The bit layout for inner-class entries uses the same
-     * constants as member access flags, so {@code static}, {@code protected} and
-     * {@code private} are all available here (they are absent from the top-level
-     * class {@code access_flags}).
-     */
-    static String modifiersOfInnerClass(int access) {
+    /** Render class access flags (top-level or inner) as a space-separated modifier string. */
+    static String modifiersOfClass(int access) {
         List<String> mods = new ArrayList<>();
         if ((access & Opcodes.ACC_PUBLIC) != 0)    mods.add("public");
         if ((access & Opcodes.ACC_PROTECTED) != 0) mods.add("protected");
@@ -235,6 +212,35 @@ public class SignatureGenerator {
         if ((access & Opcodes.ACC_STATIC) != 0)    mods.add("static");
         if ((access & Opcodes.ACC_FINAL) != 0)     mods.add("final");
         if ((access & Opcodes.ACC_ABSTRACT) != 0)  mods.add("abstract");
+        return String.join(" ", mods);
+    }
+
+    /** Render field access flags as a space-separated modifier string. */
+    static String modifiersOfField(int access) {
+        List<String> mods = new ArrayList<>();
+        if ((access & Opcodes.ACC_PUBLIC) != 0)    mods.add("public");
+        if ((access & Opcodes.ACC_PROTECTED) != 0) mods.add("protected");
+        if ((access & Opcodes.ACC_PRIVATE) != 0)   mods.add("private");
+        if ((access & Opcodes.ACC_STATIC) != 0)    mods.add("static");
+        if ((access & Opcodes.ACC_FINAL) != 0)     mods.add("final");
+        if ((access & Opcodes.ACC_TRANSIENT) != 0) mods.add("transient");
+        if ((access & Opcodes.ACC_VOLATILE) != 0)  mods.add("volatile");
+        return String.join(" ", mods);
+    }
+
+    /** Render method or constructor access flags as a space-separated modifier string. */
+    static String modifiersOfMethod(int access) {
+        List<String> mods = new ArrayList<>();
+        if ((access & Opcodes.ACC_PUBLIC) != 0)       mods.add("public");
+        if ((access & Opcodes.ACC_PROTECTED) != 0)    mods.add("protected");
+        if ((access & Opcodes.ACC_PRIVATE) != 0)      mods.add("private");
+        if ((access & Opcodes.ACC_STATIC) != 0)       mods.add("static");
+        if ((access & Opcodes.ACC_FINAL) != 0)        mods.add("final");
+        if ((access & Opcodes.ACC_SYNCHRONIZED) != 0) mods.add("synchronized");
+        if ((access & Opcodes.ACC_VARARGS) != 0)      mods.add("varargs");
+        if ((access & Opcodes.ACC_NATIVE) != 0)       mods.add("native");
+        if ((access & Opcodes.ACC_ABSTRACT) != 0)     mods.add("abstract");
+        if ((access & Opcodes.ACC_STRICT) != 0)       mods.add("strictfp");
         return String.join(" ", mods);
     }
 
@@ -288,7 +294,7 @@ public class SignatureGenerator {
             record = new ClassRecord();
             record.name = binaryName;
             record.kind = kindOf(access);
-            record.modifiers = modifiersOf(access);
+            record.modifiers = modifiersOfClass(access);
             record.interfaces = internalsToList(interfaces);
             record.genericSignature = signature;  // null for non-generic classes
 
@@ -333,7 +339,7 @@ public class SignatureGenerator {
             if (binaryName.equals(record.name)) {
                 // This entry describes the current class itself.
                 // The access flags here are authoritative for nested classes.
-                record.modifiers = modifiersOfInnerClass(access);
+                record.modifiers = modifiersOfClass(access);
             } else if (outerName != null && internalToBinary(outerName).equals(record.name)
                     && innerName != null) {
                 // This entry describes a directly-enclosed member type.
@@ -357,7 +363,7 @@ public class SignatureGenerator {
             FieldRecord fr = new FieldRecord();
             fr.name = name;
             fr.type = descriptorToTypeName(descriptor);
-            fr.modifiers = modifiersOf(access);
+            fr.modifiers = modifiersOfField(access);
             fr.genericSignature = signature;  // null when no generic type info
             if (value != null) {
                 fr.constantValue = value.toString();
@@ -388,7 +394,7 @@ public class SignatureGenerator {
             MethodRecord mr = new MethodRecord();
             mr.name = isCtor ? simpleNameOf(record.name) : name;
             mr.isConstructor = isCtor;
-            mr.modifiers = modifiersOf(access);
+            mr.modifiers = modifiersOfMethod(access);
             mr.genericSignature = signature;  // full JVM generic sig; null for non-generic methods
 
             Type methodType = Type.getMethodType(descriptor);
