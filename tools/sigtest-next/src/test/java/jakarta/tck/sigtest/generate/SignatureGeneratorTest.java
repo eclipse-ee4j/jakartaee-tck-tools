@@ -848,8 +848,17 @@ class SignatureGeneratorTest {
                 "package com.example.annotated;\n" +
                 "public class ServiceA {}\n",
                 "ServiceA.java");
+        // SOURCE-retention annotation that is legal on packages (@SuppressWarnings is not on JDK 17+).
+        // Lives outside the scanned "com.example" root so it is not part of the signature.
         compileDirect(
-                "@SuppressWarnings(\"all\")\n" +
+                "package other.anno;\n" +
+                "import java.lang.annotation.*;\n" +
+                "@Retention(RetentionPolicy.SOURCE)\n" +
+                "@Target(ElementType.PACKAGE)\n" +
+                "public @interface SourceOnly {}\n",
+                "SourceOnly.java");
+        compileDirect(
+                "@other.anno.SourceOnly\n" +
                 "package com.example.plain;\n",
                 "package-info.java");
         compileDirect(
