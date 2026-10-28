@@ -65,10 +65,14 @@ class SignatureDiffTest {
     }
 
     private void compile(Path outDir, String source) throws Exception {
+        String fileName = extractPublicClassName(source) + ".java";
+        compileDirect(outDir, source, fileName);
+    }
+
+    private void compileDirect(Path outDir, String source, String fileName) throws Exception {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         assertNotNull(compiler, "System Java compiler not available");
 
-        String className = extractPublicClassName(source);
         String pkg = extractPackageName(source);
 
         Path srcDir = outDir.resolve("src");
@@ -76,7 +80,7 @@ class SignatureDiffTest {
             srcDir = srcDir.resolve(pkg.replace('.', File.separatorChar));
         }
         Files.createDirectories(srcDir);
-        Path srcFile = srcDir.resolve(className + ".java");
+        Path srcFile = srcDir.resolve(fileName);
         Files.writeString(srcFile, source);
 
         int rc = compiler.run(null, null, null,
@@ -187,6 +191,37 @@ class SignatureDiffTest {
         assertHas(violations, Violation.Kind.MISSING_INTERFACE, "com.example.Token");
     }
 
+    @Test
+    void addedInterfaceIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\npublic class Token {}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\nimport java.io.Serializable;\n"
+                + "public class Token implements Serializable {\n"
+                + "    private static final long serialVersionUID = 1L;\n}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.ADDED_INTERFACE, "com.example.Token");
+    }
+
+    @Test
+    void classGenericSignatureChangedIsReported() throws Exception {
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Container<T> {}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Container {}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.CLASS_GENERIC_SIGNATURE_CHANGED, "com.example.Container");
+    }
+
     // -------------------------------------------------------------------------
     // Method violations
     // -------------------------------------------------------------------------
@@ -257,6 +292,61 @@ class SignatureDiffTest {
         assertHas(violations, Violation.Kind.METHOD_EXCEPTIONS_CHANGED, "com.example.Service");
     }
 
+    @Test
+    void addedAbstractMethodIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public interface Greeter {\n"
+                + "    String greet(String name);\n"
+                + "    void sayGoodbye();\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.ADDED_ABSTRACT_METHOD, "com.example.Greeter");
+    }
+
+    @Test
+    void annotationDefaultValueChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public @interface Config {\n"
+                + "    String name() default \"default\";\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public @interface Config {\n"
+                + "    String name() default \"updated\";\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.ANNOTATION_DEFAULT_VALUE_CHANGED, "com.example.Config");
+    }
+
+    @Test
+    void methodParameterAnnotationsChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "import java.lang.annotation.Retention;\n"
+                + "import java.lang.annotation.RetentionPolicy;\n"
+                + "@Retention(RetentionPolicy.RUNTIME) @interface NonNull {}\n"
+                + "public class Service {\n"
+                + "    public void execute(@NonNull String arg) {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public void execute(String arg) {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.PARAMETER_ANNOTATIONS_CHANGED, "com.example.Service");
+    }
+
     // -------------------------------------------------------------------------
     // Constructor violations
     // -------------------------------------------------------------------------
@@ -285,6 +375,48 @@ class SignatureDiffTest {
 
         List<Violation> violations = SignatureDiff.diff(baseline, live);
         assertHas(violations, Violation.Kind.CONSTRUCTOR_MODIFIERS_CHANGED, "com.example.Widget");
+    }
+
+    @Test
+    void constructorGenericSignatureChangedIsReported() throws Exception {
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public <T extends CharSequence> Service(T param) {}\n"
+                + "}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public Service(CharSequence param) {}\n"
+                + "}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.CONSTRUCTOR_GENERIC_SIGNATURE_CHANGED, "com.example.Service");
+    }
+
+    @Test
+    void constructorParameterAnnotationsChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "import java.lang.annotation.Retention;\n"
+                + "import java.lang.annotation.RetentionPolicy;\n"
+                + "@Retention(RetentionPolicy.RUNTIME) @interface NonNull {}\n"
+                + "public class Service {\n"
+                + "    public Service(@NonNull String arg) {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public Service(String arg) {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.PARAMETER_ANNOTATIONS_CHANGED, "com.example.Service");
     }
 
     // -------------------------------------------------------------------------
@@ -418,12 +550,7 @@ class SignatureDiffTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void annotationChangesAreNotCheckedByDiff() throws Exception {
-        // SignatureDiff does not currently enforce annotation contracts —
-        // it only captures annotations for informational purposes.
-        // This test documents that an annotation being removed does NOT
-        // produce a violation so that any future implementation of annotation
-        // checking will know to add a new Violation.Kind and update this test.
+    void classAnnotationsChangedIsReported() throws Exception {
         SignatureRecord baseline = generate("base",
                 "package com.example;\n"
                 + "@Deprecated\n"
@@ -433,9 +560,83 @@ class SignatureDiffTest {
                 + "public class OldApi {}\n");
 
         List<Violation> violations = SignatureDiff.diff(baseline, live);
-        // No violation expected — annotation enforcement is not yet implemented.
-        assertTrue(violations.isEmpty(),
-                "Annotation removal should not yet produce a violation: " + violations);
+        assertHas(violations, Violation.Kind.CLASS_ANNOTATIONS_CHANGED, "com.example.OldApi");
+    }
+
+    @Test
+    void methodAnnotationsChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    @Deprecated\n"
+                + "    public void execute() {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public void execute() {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.METHOD_ANNOTATIONS_CHANGED, "com.example.Service");
+    }
+
+    @Test
+    void constructorAnnotationsChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    @Deprecated\n"
+                + "    public Service() {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Service {\n"
+                + "    public Service() {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.CONSTRUCTOR_ANNOTATIONS_CHANGED, "com.example.Service");
+    }
+
+    @Test
+    void fieldAnnotationsChangedIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public class Constants {\n"
+                + "    @Deprecated\n"
+                + "    public static final String OLD = \"old\";\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Constants {\n"
+                + "    public static final String OLD = \"old\";\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.FIELD_ANNOTATIONS_CHANGED, "com.example.Constants");
+    }
+
+    @Test
+    void packageAnnotationsChangedIsReported() throws Exception {
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Marker {}\n");
+        compileDirect(tempDir.resolve("base"),
+                "@Deprecated\n"
+                + "package com.example;\n",
+                "package-info.java");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Marker {}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.PACKAGE_ANNOTATIONS_CHANGED, "com.example");
     }
 
     // -------------------------------------------------------------------------
@@ -483,6 +684,26 @@ class SignatureDiffTest {
 
         List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
         assertHas(violations, Violation.Kind.ADDED_CLASS, "com.example.Outer$Inner");
+    }
+
+    @Test
+    void innerClassesChangedIsReported() throws Exception {
+        compile(tempDir.resolve("base"),
+                "package com.example;\n"
+                + "public class Outer {\n"
+                + "    public static class Inner {}\n"
+                + "}\n");
+        compile(tempDir.resolve("live"),
+                "package com.example;\n"
+                + "public class Outer {}\n");
+
+        SignatureGenerator baseGen = new SignatureGenerator(
+                List.of(tempDir.resolve("base").toFile()), Set.of("com.example"), Set.of());
+        SignatureGenerator liveGen = new SignatureGenerator(
+                List.of(tempDir.resolve("live").toFile()), Set.of("com.example"), Set.of());
+
+        List<Violation> violations = SignatureDiff.diff(baseGen.generate("1.0"), liveGen.generate("1.0"));
+        assertHas(violations, Violation.Kind.INNER_CLASSES_CHANGED, "com.example.Outer");
     }
 
     // -------------------------------------------------------------------------

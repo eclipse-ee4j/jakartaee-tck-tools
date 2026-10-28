@@ -966,8 +966,8 @@ class SignatureGeneratorTest {
         SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
 
         ClassRecord cls = findClass(record, "com.example.Data").orElseThrow();
-        assertNotNull(cls.hiddenClasses);
-        assertEquals(List.of("apple", "mango", "zebra"), cls.hiddenClasses,
+        assertNotNull(cls.hiddenFields);
+        assertEquals(List.of("apple", "mango", "zebra"), cls.hiddenFields,
                 "Hidden fields should be sorted alphabetically");
     }
 

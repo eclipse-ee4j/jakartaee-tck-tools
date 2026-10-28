@@ -30,7 +30,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
     "fields",
     "constructors",
     "methods",
-    "hiddenClasses"
+    "hiddenFields"
 })
 public class ClassRecord {
 
@@ -77,9 +77,9 @@ public class ClassRecord {
     public String genericSignature;
 
     /**
-     * Simple names of non-public member classes (hidden fields / inner classes)
-     * carried for informational purposes only — these are not part of the
-     * checked API contract.
+     * Names of non-public fields (including synthetic ones such as {@code $VALUES}),
+     * sorted alphabetically. Carried for informational purposes only — these are
+     * not part of the checked API contract.
      */
-    public List<String> hiddenClasses;
+    public List<String> hiddenFields;
 }

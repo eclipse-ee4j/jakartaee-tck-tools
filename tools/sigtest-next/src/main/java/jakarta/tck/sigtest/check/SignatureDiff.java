@@ -12,6 +12,8 @@ package jakarta.tck.sigtest.check;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
+import jakarta.tck.sigtest.model.PackageRecord;
+import jakarta.tck.sigtest.model.ParameterRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 
 import java.util.ArrayList;
@@ -56,9 +58,11 @@ public final class SignatureDiff {
     public static List<Violation> diff(SignatureRecord baseline, SignatureRecord live) {
         List<Violation> violations = new ArrayList<>();
 
+        diffPackages(baseline, live, violations);
+
         Map<String, ClassRecord> liveByName = index(live.classes);
 
-        for (ClassRecord baseClass : baseline.classes) {
+        for (ClassRecord baseClass : nullToEmpty(baseline.classes)) {
             ClassRecord liveClass = liveByName.get(baseClass.name);
 
             if (liveClass == null) {
@@ -73,7 +77,7 @@ public final class SignatureDiff {
 
         // Report additions (informational only).
         Map<String, ClassRecord> baseByName = index(baseline.classes);
-        for (ClassRecord liveClass : live.classes) {
+        for (ClassRecord liveClass : nullToEmpty(live.classes)) {
             if (!baseByName.containsKey(liveClass.name)) {
                 violations.add(Violation.of(
                         Violation.Kind.ADDED_CLASS, liveClass.name,
@@ -82,6 +86,47 @@ public final class SignatureDiff {
         }
 
         return Collections.unmodifiableList(violations);
+    }
+
+    // -------------------------------------------------------------------------
+    // Package-level diff
+    // -------------------------------------------------------------------------
+
+    private static void diffPackages(SignatureRecord baseline, SignatureRecord live, List<Violation> out) {
+        List<PackageRecord> basePkgs = nullToEmpty(baseline.packages);
+        List<PackageRecord> livePkgs = nullToEmpty(live.packages);
+
+        Map<String, PackageRecord> livePkgMap = new LinkedHashMap<>();
+        for (PackageRecord p : livePkgs) {
+            livePkgMap.put(p.name, p);
+        }
+
+        for (PackageRecord basePkg : basePkgs) {
+            PackageRecord livePkg = livePkgMap.get(basePkg.name);
+            if (livePkg == null) {
+                if (basePkg.annotations != null && !basePkg.annotations.isEmpty()) {
+                    out.add(Violation.of(Violation.Kind.PACKAGE_ANNOTATIONS_CHANGED, basePkg.name,
+                            "package annotations removed: " + basePkg.annotations));
+                }
+            } else if (!Objects.equals(nullToEmpty(basePkg.annotations), nullToEmpty(livePkg.annotations))) {
+                out.add(Violation.of(Violation.Kind.PACKAGE_ANNOTATIONS_CHANGED, basePkg.name,
+                        "package annotations changed: " + basePkg.annotations + " → " + livePkg.annotations));
+            }
+        }
+
+        Map<String, PackageRecord> basePkgMap = new LinkedHashMap<>();
+        for (PackageRecord p : basePkgs) {
+            basePkgMap.put(p.name, p);
+        }
+
+        for (PackageRecord livePkg : livePkgs) {
+            if (!basePkgMap.containsKey(livePkg.name)) {
+                if (livePkg.annotations != null && !livePkg.annotations.isEmpty()) {
+                    out.add(Violation.of(Violation.Kind.PACKAGE_ANNOTATIONS_CHANGED, livePkg.name,
+                            "package annotations added: " + livePkg.annotations));
+                }
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -106,6 +151,21 @@ public final class SignatureDiff {
                     "superclass changed: " + base.superClass + " → " + live.superClass));
         }
 
+        if (!Objects.equals(base.genericSignature, live.genericSignature)) {
+            out.add(Violation.of(Violation.Kind.CLASS_GENERIC_SIGNATURE_CHANGED, cls,
+                    "generic signature changed: " + base.genericSignature + " → " + live.genericSignature));
+        }
+
+        if (!Objects.equals(nullToEmpty(base.annotations), nullToEmpty(live.annotations))) {
+            out.add(Violation.of(Violation.Kind.CLASS_ANNOTATIONS_CHANGED, cls,
+                    "annotations changed: " + base.annotations + " → " + live.annotations));
+        }
+
+        if (!Objects.equals(nullToEmpty(base.innerClasses), nullToEmpty(live.innerClasses))) {
+            out.add(Violation.of(Violation.Kind.INNER_CLASSES_CHANGED, cls,
+                    "inner classes changed: " + base.innerClasses + " → " + live.innerClasses));
+        }
+
         diffInterfaces(base, live, out);
         diffMethods(base, live, out);
         diffConstructors(base, live, out);
@@ -119,6 +179,12 @@ public final class SignatureDiff {
             if (!liveIfaces.contains(iface)) {
                 out.add(Violation.of(Violation.Kind.MISSING_INTERFACE, base.name,
                         "interface no longer implemented: " + iface));
+            }
+        }
+        for (String iface : liveIfaces) {
+            if (!baseIfaces.contains(iface)) {
+                out.add(Violation.of(Violation.Kind.ADDED_INTERFACE, base.name,
+                        "new interface implemented: " + iface));
             }
         }
     }
@@ -166,6 +232,49 @@ public final class SignatureDiff {
                         "generic signature of " + methodSignature(baseMethod)
                         + " changed: " + baseMethod.genericSignature + " → " + liveMethod.genericSignature));
             }
+
+            if (!Objects.equals(nullToEmpty(baseMethod.annotations), nullToEmpty(liveMethod.annotations))) {
+                out.add(Violation.of(Violation.Kind.METHOD_ANNOTATIONS_CHANGED, base.name,
+                        "annotations of " + methodSignature(baseMethod)
+                        + " changed: " + baseMethod.annotations + " → " + liveMethod.annotations));
+            }
+
+            if (!Objects.equals(baseMethod.defaultValue, liveMethod.defaultValue)) {
+                out.add(Violation.of(Violation.Kind.ANNOTATION_DEFAULT_VALUE_CHANGED, base.name,
+                        "default value of annotation element " + methodSignature(baseMethod)
+                        + " changed: " + baseMethod.defaultValue + " → " + liveMethod.defaultValue));
+            }
+
+            diffParameters(base.name, baseMethod, liveMethod, out);
+        }
+
+        // Report added abstract methods (breaks implementers).
+        for (MethodRecord liveMethod : liveMethods) {
+            String key = methodKey(liveMethod);
+            if (findByKey(baseMethods, key) == null) {
+                if (liveMethod.modifiers != null && liveMethod.modifiers.contains("abstract")) {
+                    out.add(Violation.of(Violation.Kind.ADDED_ABSTRACT_METHOD, base.name,
+                            "new abstract method added: " + methodSignature(liveMethod)));
+                }
+            }
+        }
+    }
+
+    private static void diffParameters(String className, MethodRecord baseMethod, MethodRecord liveMethod, List<Violation> out) {
+        List<ParameterRecord> baseParams = nullToEmpty(baseMethod.parameters);
+        List<ParameterRecord> liveParams = nullToEmpty(liveMethod.parameters);
+        int count = Math.min(baseParams.size(), liveParams.size());
+        for (int i = 0; i < count; i++) {
+            ParameterRecord baseP = baseParams.get(i);
+            ParameterRecord liveP = liveParams.get(i);
+            if (!Objects.equals(nullToEmpty(baseP.annotations), nullToEmpty(liveP.annotations))) {
+                String memberDesc = baseMethod.isConstructor
+                        ? "constructor (" + paramKey(baseMethod) + ")"
+                        : methodSignature(baseMethod);
+                out.add(Violation.of(Violation.Kind.PARAMETER_ANNOTATIONS_CHANGED, className,
+                        "annotations of parameter " + (i + 1) + " of " + memberDesc
+                        + " changed: " + baseP.annotations + " → " + liveP.annotations));
+            }
         }
     }
 
@@ -198,6 +307,20 @@ public final class SignatureDiff {
                         "constructor exceptions changed for (" + paramKey(baseCtor) + "): "
                         + baseCtor.exceptions + " → " + liveCtor.exceptions));
             }
+
+            if (!Objects.equals(baseCtor.genericSignature, liveCtor.genericSignature)) {
+                out.add(Violation.of(Violation.Kind.CONSTRUCTOR_GENERIC_SIGNATURE_CHANGED, base.name,
+                        "generic signature of constructor (" + paramKey(baseCtor) + ") changed: "
+                        + baseCtor.genericSignature + " → " + liveCtor.genericSignature));
+            }
+
+            if (!Objects.equals(nullToEmpty(baseCtor.annotations), nullToEmpty(liveCtor.annotations))) {
+                out.add(Violation.of(Violation.Kind.CONSTRUCTOR_ANNOTATIONS_CHANGED, base.name,
+                        "constructor annotations changed for (" + paramKey(baseCtor) + "): "
+                        + baseCtor.annotations + " → " + liveCtor.annotations));
+            }
+
+            diffParameters(base.name, baseCtor, liveCtor, out);
         }
     }
 
@@ -243,6 +366,12 @@ public final class SignatureDiff {
                 out.add(Violation.of(Violation.Kind.FIELD_GENERIC_SIGNATURE_CHANGED, base.name,
                         "generic signature of field '" + baseField.name + "' changed: "
                         + baseField.genericSignature + " → " + liveField.genericSignature));
+            }
+
+            if (!Objects.equals(nullToEmpty(baseField.annotations), nullToEmpty(liveField.annotations))) {
+                out.add(Violation.of(Violation.Kind.FIELD_ANNOTATIONS_CHANGED, base.name,
+                        "annotations of field '" + baseField.name + "' changed: "
+                        + baseField.annotations + " → " + liveField.annotations));
             }
         }
     }
@@ -300,6 +429,10 @@ public final class SignatureDiff {
 
     private static <T> List<T> nullToEmpty(List<T> list) {
         return list == null ? Collections.emptyList() : list;
+    }
+
+    private static <K, V> Map<K, V> nullToEmpty(Map<K, V> map) {
+        return map == null ? Collections.emptyMap() : map;
     }
 
     private static String methodSignature(MethodRecord m) {

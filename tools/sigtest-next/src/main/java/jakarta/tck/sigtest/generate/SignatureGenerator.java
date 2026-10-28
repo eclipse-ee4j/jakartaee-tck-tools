@@ -375,8 +375,8 @@ public class SignatureGenerator {
             if (record == null) return null;
             if (!isPublicApi(access)) {
                 // Track hidden fields for informational purposes.
-                if (record.hiddenClasses == null) record.hiddenClasses = new ArrayList<>();
-                record.hiddenClasses.add(name);
+                if (record.hiddenFields == null) record.hiddenFields = new ArrayList<>();
+                record.hiddenFields.add(name);
                 return null;
             }
             FieldRecord fr = new FieldRecord();
@@ -486,7 +486,7 @@ public class SignatureGenerator {
                 if (record.constructors != null)  record.constructors.sort(
                         Comparator.comparing(c -> c.parameters == null ? ""
                                 : c.parameters.stream().map(p -> p.type).collect(Collectors.joining(","))));
-                if (record.hiddenClasses != null) Collections.sort(record.hiddenClasses);
+                if (record.hiddenFields != null) Collections.sort(record.hiddenFields);
                 if (record.innerClasses != null)  Collections.sort(record.innerClasses);
             }
         }
