@@ -13,6 +13,7 @@ import jakarta.tck.sigtest.generate.SignatureGenerator;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
+import jakarta.tck.sigtest.model.ParameterRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -562,7 +563,7 @@ class SignatureDiffTest {
     void methodKeyIncludesNameAndParameters() {
         MethodRecord m = new MethodRecord();
         m.name = "doWork";
-        m.parameters = List.of("java.lang.String", "int");
+        m.parameters = List.of(new ParameterRecord("java.lang.String"), new ParameterRecord("int"));
         assertEquals("doWork(java.lang.String,int)", SignatureDiff.methodKey(m));
     }
 
@@ -600,7 +601,7 @@ class SignatureDiffTest {
         ctor.name = "Widget";
         ctor.isConstructor = true;
         ctor.modifiers = modifiers;
-        ctor.parameters = List.of("java.lang.String");
+        ctor.parameters = List.of(new ParameterRecord("java.lang.String"));
 
         ClassRecord cls = new ClassRecord();
         cls.name = "com.example.Widget";

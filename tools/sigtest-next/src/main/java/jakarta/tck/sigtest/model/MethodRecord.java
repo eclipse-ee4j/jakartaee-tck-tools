@@ -43,8 +43,8 @@ public class MethodRecord {
     /** Space-separated modifier keywords, e.g. {@code "public abstract"}. */
     public String modifiers;
 
-    /** Ordered list of parameter type descriptors. */
-    public List<String> parameters;
+    /** Ordered list of parameters, each with its erased type and annotations. */
+    public List<ParameterRecord> parameters;
 
     /** Checked exception type descriptors declared by this member. */
     public List<String> exceptions;

@@ -128,6 +128,10 @@ class SignatureGeneratorTest {
         return cls.methods.stream().filter(m -> m.name.equals(name)).findFirst();
     }
 
+    private static List<String> paramTypes(MethodRecord m) {
+        return m.parameters.stream().map(p -> p.type).collect(java.util.stream.Collectors.toList());
+    }
+
     private static Optional<FieldRecord> findField(ClassRecord cls, String name) {
         if (cls.fields == null) return Optional.empty();
         return cls.fields.stream().filter(f -> f.name.equals(name)).findFirst();
@@ -201,7 +205,7 @@ class SignatureGeneratorTest {
         Optional<MethodRecord> greet = findMethod(cls, "greet");
         assertTrue(greet.isPresent());
         assertEquals("java.lang.String", greet.get().returnType);
-        assertEquals(List.of("java.lang.String"), greet.get().parameters);
+        assertEquals(List.of("java.lang.String"), paramTypes(greet.get()));
 
         assertTrue(findMethod(cls, "doWork").isPresent());
         assertFalse(findMethod(cls, "internal").isPresent(), "Private method should not appear");
@@ -318,8 +322,51 @@ class SignatureGeneratorTest {
         MethodRecord ctor = cls.constructors.get(0);
         assertTrue(ctor.isConstructor);
         assertEquals("Widget", ctor.name);
-        assertEquals(List.of("java.lang.String", "int"), ctor.parameters);
+        assertEquals(List.of("java.lang.String", "int"), paramTypes(ctor));
         assertNull(ctor.returnType);
+    }
+
+    @Test
+    void parameterAnnotationsAreRecorded() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class Service {\n" +
+                "    public void run(@Deprecated(since = \"1\") String a, int b, @Deprecated int c) {}\n" +
+                "    public Service(int x, @Deprecated String y) {}\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord cls = findClass(record, "com.example.Service").orElseThrow();
+        MethodRecord run = findMethod(cls, "run").orElseThrow();
+        assertEquals(List.of("java.lang.String", "int", "int"), paramTypes(run));
+        assertEquals("java.lang.Deprecated", run.parameters.get(0).annotations.get(0).type);
+        assertEquals("1", run.parameters.get(0).annotations.get(0).values.get("since"));
+        assertNull(run.parameters.get(1).annotations);
+        assertEquals("java.lang.Deprecated", run.parameters.get(2).annotations.get(0).type);
+
+        MethodRecord ctor = cls.constructors.get(0);
+        assertNull(ctor.parameters.get(0).annotations);
+        assertEquals("java.lang.Deprecated", ctor.parameters.get(1).annotations.get(0).type);
+    }
+
+    @Test
+    void innerClassConstructorParameterAnnotationsAreAligned() throws Exception {
+        // javac emits a synthetic outer-instance parameter that the annotation
+        // attribute does not cover; indices must be shifted accordingly.
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class Outer {\n" +
+                "    public class Inner {\n" +
+                "        public Inner(@Deprecated String s) {}\n" +
+                "    }\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord inner = findClass(record, "com.example.Outer$Inner").orElseThrow();
+        MethodRecord ctor = inner.constructors.get(0);
+        assertEquals(List.of("com.example.Outer", "java.lang.String"), paramTypes(ctor));
+        assertNull(ctor.parameters.get(0).annotations);
+        assertEquals("java.lang.Deprecated", ctor.parameters.get(1).annotations.get(0).type);
     }
 
     @Test

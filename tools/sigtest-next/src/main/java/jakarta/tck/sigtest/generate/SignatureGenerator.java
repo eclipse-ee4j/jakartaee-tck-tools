@@ -16,6 +16,7 @@ import jakarta.tck.sigtest.model.AnnotationRecord;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
+import jakarta.tck.sigtest.model.ParameterRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
@@ -344,7 +345,7 @@ public class SignatureGenerator {
                 mr.returnType = methodType.getReturnType().getClassName();
             }
             mr.parameters = Arrays.stream(methodType.getArgumentTypes())
-                    .map(Type::getClassName)
+                    .map(t -> new ParameterRecord(t.getClassName()))
                     .collect(Collectors.toList());
             mr.exceptions = internalsToList(exceptions);
 
@@ -357,12 +358,40 @@ public class SignatureGenerator {
             }
 
             return new MethodVisitor(Opcodes.ASM9) {
+                // Number of parameters covered by the RuntimeVisible/InvisibleParameterAnnotations
+                // attributes; -1 when unspecified (equals the descriptor parameter count).
+                // javac omits synthetic/mandated leading parameters (e.g. the outer instance of
+                // an inner-class constructor), so attribute indices must be shifted.
+                private int visibleCount = -1;
+                private int invisibleCount = -1;
+
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                     if (mr.annotations == null) mr.annotations = new ArrayList<>();
                     AnnotationRecord ar = new AnnotationRecord();
                     ar.type = descriptorToTypeName(desc);
                     mr.annotations.add(ar);
+                    return new AnnotationValueCollector(ar);
+                }
+
+                @Override
+                public void visitAnnotableParameterCount(int parameterCount, boolean visible) {
+                    if (visible) visibleCount = parameterCount;
+                    else invisibleCount = parameterCount;
+                }
+
+                @Override
+                public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+                    int declared = mr.parameters.size();
+                    int count = visible ? visibleCount : invisibleCount;
+                    int index = parameter + (count < 0 ? 0 : declared - count);
+                    if (index < 0 || index >= declared) return null;
+
+                    ParameterRecord pr = mr.parameters.get(index);
+                    if (pr.annotations == null) pr.annotations = new ArrayList<>();
+                    AnnotationRecord ar = new AnnotationRecord();
+                    ar.type = descriptorToTypeName(desc);
+                    pr.annotations.add(ar);
                     return new AnnotationValueCollector(ar);
                 }
             };
@@ -375,7 +404,8 @@ public class SignatureGenerator {
                 if (record.fields != null)       record.fields.sort(Comparator.comparing(f -> f.name));
                 if (record.methods != null)      record.methods.sort(Comparator.comparing(m -> m.name));
                 if (record.constructors != null) record.constructors.sort(
-                        Comparator.comparing(c -> c.parameters == null ? "" : String.join(",", c.parameters)));
+                        Comparator.comparing(c -> c.parameters == null ? ""
+                                : c.parameters.stream().map(p -> p.type).collect(Collectors.joining(","))));
             }
         }
 

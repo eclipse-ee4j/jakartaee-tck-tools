@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Compares a baseline {@link SignatureRecord} against a live one and returns
@@ -267,7 +268,7 @@ public final class SignatureDiff {
      * descriptor and is the correct identity for binary compatibility.
      */
     static String methodKey(MethodRecord m) {
-        return m.name + "(" + String.join(",", nullToEmpty(m.parameters)) + ")";
+        return m.name + "(" + paramKey(m) + ")";
     }
 
     /**
@@ -275,7 +276,11 @@ public final class SignatureDiff {
      * no name other than the class name, which is already implied by context).
      */
     static String paramKey(MethodRecord m) {
-        return String.join(",", nullToEmpty(m.parameters));
+        return String.join(",", parameterTypes(m));
+    }
+
+    private static List<String> parameterTypes(MethodRecord m) {
+        return nullToEmpty(m.parameters).stream().map(p -> p.type).collect(Collectors.toList());
     }
 
     private static <T extends MethodRecord> T findByKey(List<T> list, String key) {
@@ -298,6 +303,6 @@ public final class SignatureDiff {
     }
 
     private static String methodSignature(MethodRecord m) {
-        return m.name + "(" + String.join(", ", nullToEmpty(m.parameters)) + ")";
+        return m.name + "(" + String.join(", ", parameterTypes(m)) + ")";
     }
 }
