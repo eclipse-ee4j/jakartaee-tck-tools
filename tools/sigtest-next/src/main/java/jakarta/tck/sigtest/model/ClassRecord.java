@@ -26,6 +26,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
     "genericSignature",
     "annotations",
     "interfaces",
+    "innerClasses",
     "fields",
     "constructors",
     "methods",
@@ -47,6 +48,12 @@ public class ClassRecord {
 
     /** Fully-qualified superclass name, or {@code null} for interfaces / {@code java.lang.Object}. */
     public String superClass;
+
+    /**
+     * Simple names of directly-enclosed public or protected member types, in the order they appear
+     * in the {@code InnerClasses} attribute of this class file. {@code null} when there are none.
+     */
+    public List<String> innerClasses;
 
     /** Fully-qualified names of directly implemented interfaces. */
     public List<String> interfaces;

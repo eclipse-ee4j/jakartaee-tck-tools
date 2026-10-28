@@ -422,6 +422,40 @@ class SignatureGeneratorTest {
     }
 
     @Test
+    void annotationElementDefaultsAreRecorded() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "import java.lang.annotation.*;\n" +
+                "public class Holder {\n" +
+                "    public @interface Inner { String name() default \"\"; }\n" +
+                "    public @interface Cfg {\n" +
+                "        boolean required();\n" +
+                "        boolean ignoreCase() default false;\n" +
+                "        String s() default \"x\";\n" +
+                "        long l() default 2L;\n" +
+                "        Class<?> type() default Object.class;\n" +
+                "        RetentionPolicy policy() default RetentionPolicy.RUNTIME;\n" +
+                "        Inner inner() default @Inner(name = \"y\");\n" +
+                "        int[] nums() default {1, 2};\n" +
+                "        String[] none() default {};\n" +
+                "    }\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord cfg = findClass(record, "com.example.Holder$Cfg").orElseThrow();
+        assertNull(findMethod(cfg, "required").orElseThrow().defaultValue);
+        assertEquals("false", findMethod(cfg, "ignoreCase").orElseThrow().defaultValue);
+        assertEquals("\"x\"", findMethod(cfg, "s").orElseThrow().defaultValue);
+        assertEquals("2L", findMethod(cfg, "l").orElseThrow().defaultValue);
+        assertEquals("java.lang.Object.class", findMethod(cfg, "type").orElseThrow().defaultValue);
+        assertEquals("java.lang.annotation.RetentionPolicy.RUNTIME",
+                findMethod(cfg, "policy").orElseThrow().defaultValue);
+        assertEquals("@com.example.Holder$Inner(name=\"y\")", findMethod(cfg, "inner").orElseThrow().defaultValue);
+        assertEquals("[1, 2]", findMethod(cfg, "nums").orElseThrow().defaultValue);
+        assertEquals("[]", findMethod(cfg, "none").orElseThrow().defaultValue);
+    }
+
+    @Test
     void annotationOnClassIsRecorded() throws Exception {
         SignatureRecord record = generate(
                 "package com.example;\n" +
@@ -618,6 +652,102 @@ class SignatureGeneratorTest {
                 "transform<R> generic signature must open with a type-parameter declaration");
         assertFalse(transformRaw.genericSignature.startsWith("<"),
                 "transformRaw has no method-level type parameter declaration");
+    }
+
+    // -------------------------------------------------------------------------
+    // InnerClasses
+    // -------------------------------------------------------------------------
+
+    @Test
+    void nestedStaticClassHasStaticModifier() throws Exception {
+        // A static nested class must carry "static" in its modifiers.
+        // The top-level class access_flags do NOT have ACC_STATIC; it is only
+        // available in the InnerClasses attribute entry.
+        compileDirect(
+                "package com.example;\n" +
+                "public class Outer {\n" +
+                "    public static class Nested {}\n" +
+                "}\n",
+                "Outer.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord nested = findClass(record, "com.example.Outer$Nested").orElseThrow();
+        assertTrue(nested.modifiers.contains("static"),
+                "static nested class must have 'static' in modifiers; was: " + nested.modifiers);
+        assertTrue(nested.modifiers.contains("public"),
+                "public nested class must have 'public' in modifiers; was: " + nested.modifiers);
+    }
+
+    @Test
+    void innerClassLacksStaticModifier() throws Exception {
+        // A non-static inner class must NOT carry 'static' in its modifiers.
+        compileDirect(
+                "package com.example;\n" +
+                "public class Outer {\n" +
+                "    public class Inner {}\n" +
+                "}\n",
+                "Outer.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord inner = findClass(record, "com.example.Outer$Inner").orElseThrow();
+        assertFalse(inner.modifiers.contains("static"),
+                "non-static inner class must not have 'static' in modifiers; was: " + inner.modifiers);
+    }
+
+    @Test
+    void outerClassRecordsPublicInnerClasses() throws Exception {
+        // The outer class must list its public and protected member types in innerClasses.
+        compileDirect(
+                "package com.example;\n" +
+                "public class Outer {\n" +
+                "    public static class PublicNested {}\n" +
+                "    protected static class ProtectedNested {}\n" +
+                "    static class PackageNested {}\n" +
+                "    private static class PrivateNested {}\n" +
+                "}\n",
+                "Outer.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord outer = findClass(record, "com.example.Outer").orElseThrow();
+        assertNotNull(outer.innerClasses, "outer class must record its public/protected member types");
+        assertTrue(outer.innerClasses.contains("PublicNested"),
+                "public nested class must appear in innerClasses");
+        assertTrue(outer.innerClasses.contains("ProtectedNested"),
+                "protected nested class must appear in innerClasses");
+        assertFalse(outer.innerClasses.contains("PackageNested"),
+                "package-private nested class must not appear in innerClasses");
+        assertFalse(outer.innerClasses.contains("PrivateNested"),
+                "private nested class must not appear in innerClasses");
+    }
+
+    @Test
+    void protectedNestedClassHasProtectedModifier() throws Exception {
+        // A protected nested class must carry "protected" (not "public") in its modifiers.
+        compileDirect(
+                "package com.example;\n" +
+                "public class Outer {\n" +
+                "    protected static class Protected {}\n" +
+                "}\n",
+                "Outer.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord protectedNested = findClass(record, "com.example.Outer$Protected").orElseThrow();
+        assertTrue(protectedNested.modifiers.contains("protected"),
+                "protected nested class must have 'protected' in modifiers; was: " + protectedNested.modifiers);
+        assertFalse(protectedNested.modifiers.contains("public"),
+                "protected nested class must not have 'public' in modifiers; was: " + protectedNested.modifiers);
     }
 
     // -------------------------------------------------------------------------

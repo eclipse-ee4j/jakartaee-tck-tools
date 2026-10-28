@@ -28,7 +28,8 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
     "genericSignature",
     "annotations",
     "parameters",
-    "exceptions"
+    "exceptions",
+    "defaultValue"
 })
 public class MethodRecord {
 
@@ -59,4 +60,11 @@ public class MethodRecord {
      * type variables or parameterised types. {@code null} for non-generic methods.
      */
     public String genericSignature;
+
+    /**
+     * Default value of an annotation element, rendered as for annotation element values
+     * (see {@link FieldRecord#annotations}); arrays are rendered as {@code [a, b]}.
+     * {@code null} when the method has no {@code AnnotationDefault}, i.e. the element is mandatory.
+     */
+    public String defaultValue;
 }

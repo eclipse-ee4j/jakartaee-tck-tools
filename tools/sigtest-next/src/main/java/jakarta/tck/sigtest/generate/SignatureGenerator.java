@@ -220,6 +220,24 @@ public class SignatureGenerator {
         return String.join(" ", mods);
     }
 
+    /**
+     * Render the access flags from an {@code InnerClasses} attribute entry as a
+     * modifier string.  The bit layout for inner-class entries uses the same
+     * constants as member access flags, so {@code static}, {@code protected} and
+     * {@code private} are all available here (they are absent from the top-level
+     * class {@code access_flags}).
+     */
+    static String modifiersOfInnerClass(int access) {
+        List<String> mods = new ArrayList<>();
+        if ((access & Opcodes.ACC_PUBLIC) != 0)    mods.add("public");
+        if ((access & Opcodes.ACC_PROTECTED) != 0) mods.add("protected");
+        if ((access & Opcodes.ACC_PRIVATE) != 0)   mods.add("private");
+        if ((access & Opcodes.ACC_STATIC) != 0)    mods.add("static");
+        if ((access & Opcodes.ACC_FINAL) != 0)     mods.add("final");
+        if ((access & Opcodes.ACC_ABSTRACT) != 0)  mods.add("abstract");
+        return String.join(" ", mods);
+    }
+
     /** Return {@code true} if the access flags indicate a public or protected member. */
     static boolean isPublicApi(int access) {
         return (access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0;
@@ -287,6 +305,43 @@ public class SignatureGenerator {
             if (record == null) return null;
             if (record.annotations == null) record.annotations = new TreeMap<>();
             return new AnnotationValueCollector(record.annotations, descriptor);
+        }
+
+        /**
+         * Processes one entry from the {@code InnerClasses} attribute.
+         *
+         * <p>ASM calls this for every entry in the attribute — not just entries that
+         * belong to the current class. We handle two distinct cases:
+         * <ol>
+         *   <li>The entry whose {@code name} equals the current class: this gives us the
+         *       correct access flags (including {@code static}, {@code protected},
+         *       {@code private}) and the name of the directly enclosing class.</li>
+         *   <li>Entries whose {@code outerName} equals the current class: these are
+         *       directly-enclosed member types that we add to {@code innerClasses}.</li>
+         * </ol>
+         *
+         * <p>Anonymous classes ({@code innerName == null}) and classes whose outer
+         * class is a method ({@code outerName == null}) are skipped; they are not
+         * named member types.
+         */
+        @Override
+        public void visitInnerClass(String name, String outerName, String innerName, int access) {
+            if (record == null) return;
+
+            String binaryName = internalToBinary(name);
+
+            if (binaryName.equals(record.name)) {
+                // This entry describes the current class itself.
+                // The access flags here are authoritative for nested classes.
+                record.modifiers = modifiersOfInnerClass(access);
+            } else if (outerName != null && internalToBinary(outerName).equals(record.name)
+                    && innerName != null) {
+                // This entry describes a directly-enclosed member type.
+                if (isPublicApi(access)) {
+                    if (record.innerClasses == null) record.innerClasses = new ArrayList<>();
+                    record.innerClasses.add(innerName);
+                }
+            }
         }
 
         @Override
@@ -365,6 +420,12 @@ public class SignatureGenerator {
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                     if (mr.annotations == null) mr.annotations = new TreeMap<>();
                     return new AnnotationValueCollector(mr.annotations, desc);
+                }
+
+                @Override
+                public AnnotationVisitor visitAnnotationDefault() {
+                    // The default arrives as a single unnamed element value.
+                    return new AnnotationValueCollector((ignored, v) -> mr.defaultValue = v, null);
                 }
 
                 @Override
