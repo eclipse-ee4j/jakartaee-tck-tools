@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -476,11 +477,17 @@ public class SignatureGenerator {
         public void visitEnd() {
             if (record != null) {
                 // Sort members for stable output.
-                if (record.fields != null)       record.fields.sort(Comparator.comparing(f -> f.name));
-                if (record.methods != null)      record.methods.sort(Comparator.comparing(m -> m.name));
-                if (record.constructors != null) record.constructors.sort(
+                if (record.fields != null)        record.fields.sort(Comparator.comparing(f -> f.name));
+                if (record.methods != null)       record.methods.sort(
+                        Comparator.comparing((MethodRecord m) -> m.name)
+                                .thenComparing(m -> m.parameters == null ? ""
+                                        : m.parameters.stream().map(p -> p.type).collect(Collectors.joining(",")))
+                                .thenComparing(m -> m.returnType == null ? "" : m.returnType));
+                if (record.constructors != null)  record.constructors.sort(
                         Comparator.comparing(c -> c.parameters == null ? ""
                                 : c.parameters.stream().map(p -> p.type).collect(Collectors.joining(","))));
+                if (record.hiddenClasses != null) Collections.sort(record.hiddenClasses);
+                if (record.innerClasses != null)  Collections.sort(record.innerClasses);
             }
         }
 

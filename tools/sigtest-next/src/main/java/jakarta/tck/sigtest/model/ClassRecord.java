@@ -50,8 +50,8 @@ public class ClassRecord {
     public String superClass;
 
     /**
-     * Simple names of directly-enclosed public or protected member types, in the order they appear
-     * in the {@code InnerClasses} attribute of this class file. {@code null} when there are none.
+     * Simple names of directly-enclosed public or protected member types, sorted alphabetically.
+     * {@code null} when there are none.
      */
     public List<String> innerClasses;
 

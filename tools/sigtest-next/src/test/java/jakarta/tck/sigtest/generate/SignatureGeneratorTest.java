@@ -921,6 +921,77 @@ class SignatureGeneratorTest {
         assertNull(record.packages, "Signature without package-info should have null packages");
     }
 
+    @Test
+    void methodOverloadsAreSortedByParameterTypes() throws Exception {
+        compileDirect(
+                "package com.example;\n" +
+                "public class Service {\n" +
+                "    public void run(String a, int b) {}\n" +
+                "    public void run() {}\n" +
+                "    public void run(int a) {}\n" +
+                "    public void run(String a) {}\n" +
+                "}\n",
+                "Service.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord cls = findClass(record, "com.example.Service").orElseThrow();
+        assertNotNull(cls.methods);
+        assertEquals(4, cls.methods.size());
+
+        List<String> paramSignatures = cls.methods.stream()
+                .map(m -> m.parameters == null ? ""
+                        : m.parameters.stream().map(p -> p.type).collect(java.util.stream.Collectors.joining(",")))
+                .collect(java.util.stream.Collectors.toList());
+
+        assertEquals(List.of("", "int", "java.lang.String", "java.lang.String,int"), paramSignatures,
+                "Method overloads should be sorted deterministically by parameter types");
+    }
+
+    @Test
+    void hiddenFieldsAreSortedAlphabetically() throws Exception {
+        compileDirect(
+                "package com.example;\n" +
+                "public class Data {\n" +
+                "    private int zebra;\n" +
+                "    private int apple;\n" +
+                "    private int mango;\n" +
+                "}\n",
+                "Data.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord cls = findClass(record, "com.example.Data").orElseThrow();
+        assertNotNull(cls.hiddenClasses);
+        assertEquals(List.of("apple", "mango", "zebra"), cls.hiddenClasses,
+                "Hidden fields should be sorted alphabetically");
+    }
+
+    @Test
+    void innerClassesAreSortedAlphabetically() throws Exception {
+        compileDirect(
+                "package com.example;\n" +
+                "public class Container {\n" +
+                "    public static class Zebra {}\n" +
+                "    public static class Apple {}\n" +
+                "    public static class Mango {}\n" +
+                "}\n",
+                "Container.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        ClassRecord cls = findClass(record, "com.example.Container").orElseThrow();
+        assertNotNull(cls.innerClasses);
+        assertEquals(List.of("Apple", "Mango", "Zebra"), cls.innerClasses,
+                "Inner classes should be sorted alphabetically");
+    }
+
     // -------------------------------------------------------------------------
     // Lower-level compile helper (no class-name inference needed)
     // -------------------------------------------------------------------------
