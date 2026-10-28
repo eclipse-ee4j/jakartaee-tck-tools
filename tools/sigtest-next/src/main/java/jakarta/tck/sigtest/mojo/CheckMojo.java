@@ -172,7 +172,7 @@ public class CheckMojo extends AbstractMojo {
         // 6. Report.
         List<Violation> failures = new ArrayList<>();
         for (Violation v : violations) {
-            if (v.kind == Violation.Kind.ADDED_CLASS) {
+            if (isAddition(v.kind)) {
                 if (failOnAddition) {
                     getLog().error("[ADDITION] " + v);
                     failures.add(v);
@@ -193,6 +193,14 @@ public class CheckMojo extends AbstractMojo {
                     "API signature check failed with " + failures.size() + " incompatibility(ies). "
                     + "See the log above for details.");
         }
+    }
+
+    private static boolean isAddition(Violation.Kind kind) {
+        return kind == Violation.Kind.ADDED_CLASS
+                || kind == Violation.Kind.ADDED_INTERFACE
+                || kind == Violation.Kind.ADDED_METHOD
+                || kind == Violation.Kind.ADDED_CONSTRUCTOR
+                || kind == Violation.Kind.ADDED_FIELD;
     }
 
     // -------------------------------------------------------------------------

@@ -38,12 +38,12 @@ public final class Violation {
         INNER_CLASSES_CHANGED,
         /** A public/protected method present in the baseline is absent from the live class. */
         MISSING_METHOD,
+        /** A non-abstract method was added to a class or interface. */
+        ADDED_METHOD,
         /** A new abstract method was added to an interface or abstract class. */
         ADDED_ABSTRACT_METHOD,
         /** A method's return type changed. */
         METHOD_RETURN_TYPE_CHANGED,
-        /** A method's parameter list changed. */
-        METHOD_PARAMETERS_CHANGED,
         /** A method's modifier string changed. */
         METHOD_MODIFIERS_CHANGED,
         /** A method's declared exceptions changed. */
@@ -58,8 +58,8 @@ public final class Violation {
         PARAMETER_ANNOTATIONS_CHANGED,
         /** A public/protected constructor present in the baseline is absent from the live class. */
         MISSING_CONSTRUCTOR,
-        /** A constructor's parameter list changed (matched by index when counts are equal). */
-        CONSTRUCTOR_PARAMETERS_CHANGED,
+        /** A public/protected constructor was added to a class. */
+        ADDED_CONSTRUCTOR,
         /** A constructor's modifier string changed. */
         CONSTRUCTOR_MODIFIERS_CHANGED,
         /** A constructor's declared exceptions changed. */
@@ -70,6 +70,8 @@ public final class Violation {
         CONSTRUCTOR_ANNOTATIONS_CHANGED,
         /** A public/protected field present in the baseline is absent from the live class. */
         MISSING_FIELD,
+        /** A public/protected field was added to a class or interface. */
+        ADDED_FIELD,
         /** A field's type changed. */
         FIELD_TYPE_CHANGED,
         /** A field's modifier string changed. */

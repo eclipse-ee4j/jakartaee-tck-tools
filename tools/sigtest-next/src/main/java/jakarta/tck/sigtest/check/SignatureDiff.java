@@ -248,13 +248,16 @@ public final class SignatureDiff {
             diffParameters(base.name, baseMethod, liveMethod, out);
         }
 
-        // Report added abstract methods (breaks implementers).
+        // Report added methods (both abstract and non-abstract).
         for (MethodRecord liveMethod : liveMethods) {
             String key = methodKey(liveMethod);
             if (findByKey(baseMethods, key) == null) {
                 if (liveMethod.modifiers != null && liveMethod.modifiers.contains("abstract")) {
                     out.add(Violation.of(Violation.Kind.ADDED_ABSTRACT_METHOD, base.name,
                             "new abstract method added: " + methodSignature(liveMethod)));
+                } else {
+                    out.add(Violation.of(Violation.Kind.ADDED_METHOD, base.name,
+                            "new method added: " + methodSignature(liveMethod)));
                 }
             }
         }
@@ -322,6 +325,15 @@ public final class SignatureDiff {
 
             diffParameters(base.name, baseCtor, liveCtor, out);
         }
+
+        // Report added constructors.
+        for (MethodRecord liveCtor : liveCtors) {
+            String key = paramKey(liveCtor);
+            if (findCtorByKey(baseCtors, key) == null) {
+                out.add(Violation.of(Violation.Kind.ADDED_CONSTRUCTOR, base.name,
+                        "new constructor added: " + base.name + "(" + paramKey(liveCtor) + ")"));
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -372,6 +384,18 @@ public final class SignatureDiff {
                 out.add(Violation.of(Violation.Kind.FIELD_ANNOTATIONS_CHANGED, base.name,
                         "annotations of field '" + baseField.name + "' changed: "
                         + baseField.annotations + " → " + liveField.annotations));
+            }
+        }
+
+        // Report added fields.
+        Map<String, FieldRecord> baseFieldMap = new LinkedHashMap<>();
+        for (FieldRecord f : baseFields) {
+            baseFieldMap.put(f.name, f);
+        }
+        for (FieldRecord liveField : nullToEmpty(live.fields)) {
+            if (!baseFieldMap.containsKey(liveField.name)) {
+                out.add(Violation.of(Violation.Kind.ADDED_FIELD, base.name,
+                        "new field added: " + liveField.name));
             }
         }
     }

@@ -751,11 +751,6 @@ class SignatureDiffTest {
 
     @Test
     void addedDefaultMethodToInterfaceIsReported() throws Exception {
-        // A newly added method (default or abstract) on an interface is an
-        // ADDED_CLASS-style informational entry only when it concerns a whole class;
-        // for methods the diff reports nothing about additions — only removals.
-        // This test documents that behaviour: adding a default method does NOT
-        // produce a violation in the current implementation.
         SignatureRecord baseline = generate("base",
                 "package com.example;\n"
                 + "public interface Greeter {\n"
@@ -769,11 +764,44 @@ class SignatureDiffTest {
                 + "}\n");
 
         List<Violation> violations = SignatureDiff.diff(baseline, live);
-        // Method additions are not flagged — only removals are incompatible in
-        // binary-check mode. A strictcheck mode would catch this.
         assertNone(violations, Violation.Kind.MISSING_METHOD);
-        assertTrue(violations.isEmpty(),
-                "Adding a default method should not produce a violation in binary mode: " + violations);
+        assertHas(violations, Violation.Kind.ADDED_METHOD, "com.example.Greeter");
+    }
+
+    @Test
+    void addedConstructorIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public class Greeter {\n"
+                + "    public Greeter() {}\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Greeter {\n"
+                + "    public Greeter() {}\n"
+                + "    public Greeter(String name) {}\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.ADDED_CONSTRUCTOR, "com.example.Greeter");
+    }
+
+    @Test
+    void addedFieldIsReported() throws Exception {
+        SignatureRecord baseline = generate("base",
+                "package com.example;\n"
+                + "public class Greeter {\n"
+                + "    public String name;\n"
+                + "}\n");
+        SignatureRecord live = generate("live",
+                "package com.example;\n"
+                + "public class Greeter {\n"
+                + "    public String name;\n"
+                + "    public int age;\n"
+                + "}\n");
+
+        List<Violation> violations = SignatureDiff.diff(baseline, live);
+        assertHas(violations, Violation.Kind.ADDED_FIELD, "com.example.Greeter");
     }
 
     // -------------------------------------------------------------------------
