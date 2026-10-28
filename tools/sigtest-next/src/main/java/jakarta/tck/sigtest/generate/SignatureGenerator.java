@@ -15,6 +15,7 @@ import jakarta.json.bind.JsonbConfig;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
+import jakarta.tck.sigtest.model.PackageRecord;
 import jakarta.tck.sigtest.model.ParameterRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import org.objectweb.asm.AnnotationVisitor;
@@ -107,15 +108,16 @@ public class SignatureGenerator {
      */
     public SignatureRecord generate(String apiVersion) throws IOException {
         List<ClassRecord> classes = new ArrayList<>();
+        List<PackageRecord> packages = new ArrayList<>();
 
         for (File entry : classpath) {
             if (!entry.exists()) {
                 continue;
             }
             if (entry.isDirectory()) {
-                scanDirectory(entry.toPath(), classes);
+                scanDirectory(entry.toPath(), classes, packages);
             } else if (entry.getName().endsWith(".jar")) {
-                scanJar(entry, classes);
+                scanJar(entry, classes, packages);
             }
         }
 
@@ -123,7 +125,10 @@ public class SignatureGenerator {
 
         SignatureRecord record = new SignatureRecord();
         record.apiVersion = apiVersion;
-        record.packages = rootPackages.stream().sorted().collect(Collectors.joining(","));
+        if (!packages.isEmpty()) {
+            packages.sort(Comparator.comparing(p -> p.name));
+            record.packages = packages;
+        }
         record.classes = classes;
         return record;
     }
@@ -132,13 +137,13 @@ public class SignatureGenerator {
     // Directory scanning
     // -------------------------------------------------------------------------
 
-    private void scanDirectory(Path root, List<ClassRecord> out) throws IOException {
+    private void scanDirectory(Path root, List<ClassRecord> outClasses, List<PackageRecord> outPackages) throws IOException {
         try (Stream<Path> stream = Files.walk(root)) {
             List<Path> classFiles = stream.filter(f -> f.toString().endsWith(".class"))
                     .collect(Collectors.toList());
             for (Path p : classFiles) {
                 try (InputStream is = Files.newInputStream(p)) {
-                    visitClass(is, out);
+                    visitClass(is, outClasses, outPackages);
                 }
             }
         }
@@ -148,7 +153,7 @@ public class SignatureGenerator {
     // JAR scanning
     // -------------------------------------------------------------------------
 
-    private void scanJar(File jar, List<ClassRecord> out) throws IOException {
+    private void scanJar(File jar, List<ClassRecord> outClasses, List<PackageRecord> outPackages) throws IOException {
         try (JarFile jf = new JarFile(jar)) {
             Enumeration<JarEntry> entries = jf.entries();
             while (entries.hasMoreElements()) {
@@ -157,7 +162,7 @@ public class SignatureGenerator {
                     continue;
                 }
                 try (InputStream is = jf.getInputStream(e)) {
-                    visitClass(is, out);
+                    visitClass(is, outClasses, outPackages);
                 }
             }
         }
@@ -167,12 +172,14 @@ public class SignatureGenerator {
     // ASM visit
     // -------------------------------------------------------------------------
 
-    private void visitClass(InputStream is, List<ClassRecord> out) throws IOException {
+    private void visitClass(InputStream is, List<ClassRecord> outClasses, List<PackageRecord> outPackages) throws IOException {
         ClassReader reader = new ClassReader(is);
         ApiClassVisitor visitor = new ApiClassVisitor();
         reader.accept(visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-        if (visitor.record != null) {
-            out.add(visitor.record);
+        if (visitor.packageRecord != null) {
+            outPackages.add(visitor.packageRecord);
+        } else if (visitor.record != null) {
+            outClasses.add(visitor.record);
         }
     }
 
@@ -260,6 +267,7 @@ public class SignatureGenerator {
     private class ApiClassVisitor extends ClassVisitor {
 
         ClassRecord record;
+        PackageRecord packageRecord;
         private int classAccess;
         private boolean isSynthetic;
 
@@ -271,17 +279,23 @@ public class SignatureGenerator {
         public void visit(int version, int access, String name, String signature,
                           String superName, String[] interfaces) {
 
-            // Synthetic/anonymous classes are not public API.
-            if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-                isSynthetic = true;
-                return;
-            }
-
             String binaryName = internalToBinary(name);
             String packageName = packageOf(binaryName);
 
             // Check package inclusion / exclusion.
             if (!isIncluded(packageName)) {
+                return;
+            }
+
+            // Special-case package-info: emit a PackageRecord for package-level metadata/annotations.
+            if (name.endsWith("/package-info") || name.equals("package-info")) {
+                packageRecord = new PackageRecord(packageName);
+                return;
+            }
+
+            // Synthetic/anonymous classes are not public API.
+            if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
+                isSynthetic = true;
                 return;
             }
 
@@ -308,6 +322,10 @@ public class SignatureGenerator {
 
         @Override
         public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+            if (packageRecord != null) {
+                if (packageRecord.annotations == null) packageRecord.annotations = new TreeMap<>();
+                return new AnnotationValueCollector(packageRecord.annotations, descriptor);
+            }
             if (record == null) return null;
             if (record.annotations == null) record.annotations = new TreeMap<>();
             return new AnnotationValueCollector(record.annotations, descriptor);

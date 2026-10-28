@@ -38,10 +38,10 @@ public class SignatureRecord {
     public String apiVersion;
 
     /**
-     * Comma-separated list of root packages that were scanned (e.g.
-     * {@code "jakarta.servlet,jakarta.servlet.http"}).
+     * Packages in the scanned API that declare package-level metadata or annotations,
+     * sorted by package name. {@code null} when no {@code package-info} classes are present.
      */
-    public String packages;
+    public List<PackageRecord> packages;
 
     /** All public / protected classes found in the scanned packages, sorted by qualified name. */
     public List<ClassRecord> classes;

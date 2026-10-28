@@ -12,6 +12,7 @@ package jakarta.tck.sigtest.generate;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
+import jakarta.tck.sigtest.model.PackageRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,6 @@ class SignatureGeneratorTest {
         SignatureGenerator gen = new SignatureGenerator(List.of(tempDir.toFile()), packages, excludes);
         Path output = tempDir.resolve("signature.sig.json");
         SignatureRecord record = gen.generate("1.0", output);
-        System.out.println("  -> written: " + output.toAbsolutePath());
         return record;
     }
 
@@ -836,6 +836,89 @@ class SignatureGeneratorTest {
         assertEquals("public native", SignatureGenerator.modifiersOfMethod(0x0101)); // ACC_PUBLIC | ACC_NATIVE
         assertEquals("public abstract", SignatureGenerator.modifiersOfMethod(0x0401)); // ACC_PUBLIC | ACC_ABSTRACT
         assertEquals("public", SignatureGenerator.modifiersOfMethod(0x0041)); // ACC_PUBLIC | ACC_BRIDGE (no volatile)
+    }
+
+    @Test
+    void packageInfoAnnotationsAreRecorded() throws Exception {
+        compileDirect(
+                "@Deprecated(since = \"1.1\")\n" +
+                "package com.example.annotated;\n",
+                "package-info.java");
+        compileDirect(
+                "package com.example.annotated;\n" +
+                "public class ServiceA {}\n",
+                "ServiceA.java");
+        compileDirect(
+                "@SuppressWarnings(\"all\")\n" +
+                "package com.example.plain;\n",
+                "package-info.java");
+        compileDirect(
+                "package com.example.plain;\n" +
+                "public class ServiceB {}\n",
+                "ServiceB.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        assertNotNull(record.packages, "record.packages should not be null when package-info files are present");
+        assertEquals(2, record.packages.size());
+
+        PackageRecord annotatedPkg = record.packages.get(0);
+        assertEquals("com.example.annotated", annotatedPkg.name);
+        assertNotNull(annotatedPkg.annotations);
+        assertEquals(List.of("since=\"1.1\""), annotatedPkg.annotations.get("java.lang.Deprecated"));
+
+        PackageRecord plainPkg = record.packages.get(1);
+        assertEquals("com.example.plain", plainPkg.name);
+        assertNull(plainPkg.annotations, "Unannotated package should have null annotations");
+
+        // package-info should not be emitted as a ClassRecord in classes
+        assertFalse(record.classes.stream().anyMatch(c -> c.name.endsWith("package-info")),
+                "package-info should not be emitted in classes[]");
+        assertEquals(2, record.classes.size());
+    }
+
+    @Test
+    void packageInfoInExcludedPackageIsDropped() throws Exception {
+        compileDirect(
+                "@Deprecated\n" +
+                "package com.example.internal;\n",
+                "package-info.java");
+        compileDirect(
+                "package com.example.internal;\n" +
+                "public class InternalClass {}\n",
+                "InternalClass.java");
+        compileDirect(
+                "@Deprecated\n" +
+                "package com.example.api;\n",
+                "package-info.java");
+        compileDirect(
+                "package com.example.api;\n" +
+                "public class ApiClass {}\n",
+                "ApiClass.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of("com.example.internal"));
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        assertNotNull(record.packages);
+        assertEquals(1, record.packages.size());
+        assertEquals("com.example.api", record.packages.get(0).name);
+    }
+
+    @Test
+    void signatureWithoutPackageInfoHasNullPackages() throws Exception {
+        compileDirect(
+                "package com.example.onlyclasses;\n" +
+                "public class OnlyClass {}\n",
+                "OnlyClass.java");
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(tempDir.toFile()), Set.of("com.example"), Set.of());
+        SignatureRecord record = gen.generate("1.0", tempDir.resolve("sig.json"));
+
+        assertNull(record.packages, "Signature without package-info should have null packages");
     }
 
     // -------------------------------------------------------------------------
