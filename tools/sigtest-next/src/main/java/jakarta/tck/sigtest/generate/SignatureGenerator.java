@@ -12,7 +12,6 @@ package jakarta.tck.sigtest.generate;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
-import jakarta.tck.sigtest.model.AnnotationRecord;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
@@ -33,6 +32,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -42,6 +42,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -283,11 +285,8 @@ public class SignatureGenerator {
         @Override
         public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
             if (record == null) return null;
-            if (record.annotations == null) record.annotations = new ArrayList<>();
-            AnnotationRecord ar = new AnnotationRecord();
-            ar.type = descriptorToTypeName(descriptor);
-            record.annotations.add(ar);
-            return new AnnotationValueCollector(ar);
+            if (record.annotations == null) record.annotations = new TreeMap<>();
+            return new AnnotationValueCollector(record.annotations, descriptor);
         }
 
         @Override
@@ -313,11 +312,8 @@ public class SignatureGenerator {
             return new FieldVisitor(Opcodes.ASM9) {
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                    if (fr.annotations == null) fr.annotations = new ArrayList<>();
-                    AnnotationRecord ar = new AnnotationRecord();
-                    ar.type = descriptorToTypeName(desc);
-                    fr.annotations.add(ar);
-                    return new AnnotationValueCollector(ar);
+                    if (fr.annotations == null) fr.annotations = new TreeMap<>();
+                    return new AnnotationValueCollector(fr.annotations, desc);
                 }
             };
         }
@@ -367,11 +363,8 @@ public class SignatureGenerator {
 
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                    if (mr.annotations == null) mr.annotations = new ArrayList<>();
-                    AnnotationRecord ar = new AnnotationRecord();
-                    ar.type = descriptorToTypeName(desc);
-                    mr.annotations.add(ar);
-                    return new AnnotationValueCollector(ar);
+                    if (mr.annotations == null) mr.annotations = new TreeMap<>();
+                    return new AnnotationValueCollector(mr.annotations, desc);
                 }
 
                 @Override
@@ -388,11 +381,8 @@ public class SignatureGenerator {
                     if (index < 0 || index >= declared) return null;
 
                     ParameterRecord pr = mr.parameters.get(index);
-                    if (pr.annotations == null) pr.annotations = new ArrayList<>();
-                    AnnotationRecord ar = new AnnotationRecord();
-                    ar.type = descriptorToTypeName(desc);
-                    pr.annotations.add(ar);
-                    return new AnnotationValueCollector(ar);
+                    if (pr.annotations == null) pr.annotations = new TreeMap<>();
+                    return new AnnotationValueCollector(pr.annotations, desc);
                 }
             };
         }
@@ -447,52 +437,123 @@ public class SignatureGenerator {
     // Annotation value collector
     // =========================================================================
 
-    /** Collects annotation element values into an {@link AnnotationRecord}. */
+    /**
+     * Collects annotation element values into a map entry keyed by annotation type.
+     *
+     * <p>The entry is a list of strings: the {@code value} element is rendered bare
+     * (arrays flattened to one entry per item), every other element as
+     * {@code name=value}. Values are rendered in a typed, self-describing form (see
+     * {@link #formatValue(Object)}); enum constants, class literals, nested
+     * annotations and arrays of any of these are all preserved.
+     */
     private static class AnnotationValueCollector extends AnnotationVisitor {
 
-        private final AnnotationRecord target;
+        private final BiConsumer<String, String> sink;
+        private final Runnable onEnd;
+        private final boolean topLevel;
 
-        AnnotationValueCollector(AnnotationRecord target) {
+        AnnotationValueCollector(Map<String, List<String>> target, String descriptor) {
+            this(topLevelSink(target, descriptor), null, true);
+        }
+
+        private AnnotationValueCollector(BiConsumer<String, String> sink, Runnable onEnd) {
+            this(sink, onEnd, false);
+        }
+
+        private AnnotationValueCollector(BiConsumer<String, String> sink, Runnable onEnd, boolean topLevel) {
             super(Opcodes.ASM9);
-            this.target = target;
+            this.sink = sink;
+            this.onEnd = onEnd;
+            this.topLevel = topLevel;
+        }
+
+        private static BiConsumer<String, String> topLevelSink(Map<String, List<String>> target,
+                                                              String descriptor) {
+            List<String> elements = new ArrayList<>();
+            target.put(descriptorToTypeName(descriptor), elements);
+            return (name, value) -> elements.add("value".equals(name) ? value : name + "=" + value);
         }
 
         @Override
         public void visit(String name, Object value) {
-            put(name, value.toString());
+            sink.accept(name, formatValue(value));
         }
 
         @Override
         public void visitEnum(String name, String descriptor, String value) {
-            put(name, descriptorToTypeName(descriptor) + "." + value);
+            sink.accept(name, formatEnum(descriptor, value));
         }
 
         @Override
         public AnnotationVisitor visitArray(String name) {
+            if (topLevel && "value".equals(name)) {
+                // Flatten the main element: one list entry per item.
+                return new AnnotationValueCollector((ignored, v) -> sink.accept(name, v), null);
+            }
             List<String> items = new ArrayList<>();
-            return new AnnotationVisitor(Opcodes.ASM9) {
-                @Override
-                public void visit(String ignoredName, Object value) {
-                    items.add(value.toString());
-                }
-
-                @Override
-                public void visitEnd() {
-                    put(name, items.toString());
-                }
-            };
+            // Array elements arrive with a null name; collect them in order.
+            return new AnnotationValueCollector((ignored, v) -> items.add(v),
+                    () -> sink.accept(name, "[" + String.join(", ", items) + "]"));
         }
 
         @Override
         public AnnotationVisitor visitAnnotation(String name, String descriptor) {
-            // Nested annotation — record the type only.
-            put(name, "@" + descriptorToTypeName(descriptor));
-            return null;
+            Map<String, String> elements = new LinkedHashMap<>();
+            return new AnnotationValueCollector(elements::put, () -> sink.accept(name,
+                    formatAnnotation(descriptor, elements)));
         }
 
-        private void put(String name, String value) {
-            if (target.values == null) target.values = new LinkedHashMap<>();
-            target.values.put(name, value);
+        @Override
+        public void visitEnd() {
+            if (onEnd != null) onEnd.run();
+        }
+
+        private static String formatEnum(String descriptor, String value) {
+            return descriptorToTypeName(descriptor) + "." + value;
+        }
+
+        private static String formatAnnotation(String descriptor, Map<String, String> elements) {
+            String body = elements.entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining(", "));
+            return "@" + descriptorToTypeName(descriptor) + "(" + body + ")";
+        }
+
+        /**
+         * Render a constant annotation element value so that its type is
+         * recoverable: strings are quoted, chars are single-quoted, class
+         * literals end in {@code .class}, and non-int numeric types carry a
+         * suffix or cast ({@code 1L}, {@code 1.0f}, {@code (byte)1}, ...).
+         */
+        static String formatValue(Object value) {
+            if (value instanceof String) {
+                return "\"" + escape((String) value) + "\"";
+            }
+            if (value instanceof Type) {
+                return ((Type) value).getClassName() + ".class";
+            }
+            if (value instanceof Character) {
+                return "'" + escape(value.toString()) + "'";
+            }
+            if (value instanceof Long)  return value + "L";
+            if (value instanceof Float) return value + "f";
+            if (value instanceof Byte)  return "(byte)" + value;
+            if (value instanceof Short) return "(short)" + value;
+            if (value != null && value.getClass().isArray()) {
+                // ASM passes arrays of primitives to visit() as a single value.
+                int length = Array.getLength(value);
+                List<String> items = new ArrayList<>(length);
+                for (int i = 0; i < length; i++) {
+                    items.add(formatValue(Array.get(value, i)));
+                }
+                return "[" + String.join(", ", items) + "]";
+            }
+            return String.valueOf(value);  // Integer, Boolean, Double
+        }
+
+        private static String escape(String s) {
+            return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'")
+                    .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
         }
     }
 }

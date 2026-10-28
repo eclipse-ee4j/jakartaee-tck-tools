@@ -339,14 +339,13 @@ class SignatureGeneratorTest {
         ClassRecord cls = findClass(record, "com.example.Service").orElseThrow();
         MethodRecord run = findMethod(cls, "run").orElseThrow();
         assertEquals(List.of("java.lang.String", "int", "int"), paramTypes(run));
-        assertEquals("java.lang.Deprecated", run.parameters.get(0).annotations.get(0).type);
-        assertEquals("1", run.parameters.get(0).annotations.get(0).values.get("since"));
+        assertEquals(List.of("since=\"1\""), run.parameters.get(0).annotations.get("java.lang.Deprecated"));
         assertNull(run.parameters.get(1).annotations);
-        assertEquals("java.lang.Deprecated", run.parameters.get(2).annotations.get(0).type);
+        assertEquals(List.of(), run.parameters.get(2).annotations.get("java.lang.Deprecated"));
 
         MethodRecord ctor = cls.constructors.get(0);
         assertNull(ctor.parameters.get(0).annotations);
-        assertEquals("java.lang.Deprecated", ctor.parameters.get(1).annotations.get(0).type);
+        assertTrue(ctor.parameters.get(1).annotations.containsKey("java.lang.Deprecated"));
     }
 
     @Test
@@ -366,7 +365,60 @@ class SignatureGeneratorTest {
         MethodRecord ctor = inner.constructors.get(0);
         assertEquals(List.of("com.example.Outer", "java.lang.String"), paramTypes(ctor));
         assertNull(ctor.parameters.get(0).annotations);
-        assertEquals("java.lang.Deprecated", ctor.parameters.get(1).annotations.get(0).type);
+        assertTrue(ctor.parameters.get(1).annotations.containsKey("java.lang.Deprecated"));
+    }
+
+    @Test
+    void annotationElementValuesAreTypedAndComplete() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "import java.lang.annotation.*;\n" +
+                "public class Holder {\n" +
+                "    public @interface Inner { String name() default \"\"; }\n" +
+                "    @Repeatable(Many.class) @Retention(RetentionPolicy.RUNTIME)\n" +
+                "    public @interface One { int n(); }\n" +
+                "    @Retention(RetentionPolicy.RUNTIME)\n" +
+                "    public @interface Many { One[] value(); }\n" +
+                "    @Target({ElementType.METHOD, ElementType.FIELD})\n" +
+                "    public @interface Marker {\n" +
+                "        Class<?> type() default Object.class;\n" +
+                "        Inner inner() default @Inner(name = \"x\");\n" +
+                "        long l() default 1L;\n" +
+                "        int i() default 1;\n" +
+                "        String s() default \"1\";\n" +
+                "        char c() default 'a';\n" +
+                "        int[] nums() default {1, 2};\n" +
+                "    }\n" +
+                "    @Marker(type = String.class, inner = @Inner(name = \"y\"), l = 2L, i = 3, s = \"3\", c = 'b', nums = {4, 5})\n" +
+                "    @Many({@One(n = 1), @One(n = 2)})\n" +
+                "    public void annotated() {}\n" +
+                "}\n",
+                Set.of("com.example"));
+
+        ClassRecord holder = findClass(record, "com.example.Holder").orElseThrow();
+        MethodRecord m = findMethod(holder, "annotated").orElseThrow();
+        var marker = m.annotations.get("com.example.Holder$Marker");
+        assertEquals(List.of(
+                "type=java.lang.String.class",
+                "inner=@com.example.Holder$Inner(name=\"y\")",
+                "l=2L",
+                "i=3",
+                "s=\"3\"",
+                "c='b'",
+                "nums=[4, 5]"), marker);
+
+        assertEquals(List.of("@com.example.Holder$One(n=1)", "@com.example.Holder$One(n=2)"),
+                m.annotations.get("com.example.Holder$Many"));
+
+        ClassRecord markerCls = findClass(record, "com.example.Holder$Marker").orElseThrow();
+        assertEquals(List.of("java.lang.annotation.ElementType.METHOD", "java.lang.annotation.ElementType.FIELD"),
+                markerCls.annotations.get("java.lang.annotation.Target"));
+
+        ClassRecord oneCls = findClass(record, "com.example.Holder$One").orElseThrow();
+        assertEquals(List.of("com.example.Holder$Many.class"),
+                oneCls.annotations.get("java.lang.annotation.Repeatable"));
+        assertEquals(List.of("java.lang.annotation.RetentionPolicy.RUNTIME"),
+                oneCls.annotations.get("java.lang.annotation.Retention"));
     }
 
     @Test
@@ -379,9 +431,7 @@ class SignatureGeneratorTest {
 
         ClassRecord cls = findClass(record, "com.example.OldApi").orElseThrow();
         assertNotNull(cls.annotations, "Annotations list should not be null");
-        assertTrue(cls.annotations.stream()
-                .anyMatch(a -> a.type.equals("java.lang.Deprecated")),
-                "Expected @Deprecated on class");
+        assertTrue(cls.annotations.containsKey("java.lang.Deprecated"), "Expected @Deprecated on class");
     }
 
     @Test

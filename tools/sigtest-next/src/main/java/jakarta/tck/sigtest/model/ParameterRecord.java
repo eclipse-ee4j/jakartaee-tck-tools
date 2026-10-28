@@ -10,6 +10,7 @@
 package jakarta.tck.sigtest.model;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
@@ -22,8 +23,11 @@ public class ParameterRecord {
     /** Erased parameter type name, e.g. {@code "java.lang.String"} or {@code "int"}. */
     public String type;
 
-    /** Annotations applied to this parameter. Absent when the parameter is not annotated. */
-    public List<AnnotationRecord> annotations;
+    /**
+     * Annotations applied to this parameter, in the format described on
+     * {@link FieldRecord#annotations}. Absent when the parameter is not annotated.
+     */
+    public Map<String, List<String>> annotations;
 
     public ParameterRecord() {
     }

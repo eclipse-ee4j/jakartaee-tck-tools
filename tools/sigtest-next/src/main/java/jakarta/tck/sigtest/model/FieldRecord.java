@@ -10,6 +10,7 @@
 package jakarta.tck.sigtest.model;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
@@ -48,6 +49,20 @@ public class FieldRecord {
      */
     public String genericSignature;
 
-    /** Annotation descriptors applied to this field. */
-    public List<AnnotationRecord> annotations;
+    /**
+     * Annotations applied to this field, keyed by fully-qualified annotation type.
+     * Each value lists the explicitly written elements, in declaration order:
+     * <ul>
+     * <li>the element named {@code value} is rendered bare (arrays are flattened
+     *     into one entry per item), e.g. {@code "java.lang.annotation.ElementType.METHOD"};</li>
+     * <li>any other element is rendered as {@code name=value};</li>
+     * <li>values are typed: strings are quoted ({@code "1"}), chars single-quoted,
+     *     {@code long}/{@code float} suffixed ({@code 1L}, {@code 1.0f}),
+     *     {@code byte}/{@code short} cast ({@code (byte)1}), class literals end in
+     *     {@code .class}, enum constants are {@code pkg.Enum.CONSTANT}, and nested
+     *     annotations are {@code @pkg.Anno(name=value, ...)}.</li>
+     * </ul>
+     * A marker annotation maps to an empty list.
+     */
+    public Map<String, List<String>> annotations;
 }

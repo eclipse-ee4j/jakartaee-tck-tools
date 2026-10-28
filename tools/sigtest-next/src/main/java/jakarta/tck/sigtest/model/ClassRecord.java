@@ -10,6 +10,7 @@
 package jakarta.tck.sigtest.model;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
@@ -50,8 +51,8 @@ public class ClassRecord {
     /** Fully-qualified names of directly implemented interfaces. */
     public List<String> interfaces;
 
-    /** Annotation descriptors applied to this class. */
-    public List<AnnotationRecord> annotations;
+    /** Annotations applied to this class; format as in {@link FieldRecord#annotations}. */
+    public Map<String, List<String>> annotations;
 
     /** Constructors declared by this class (empty for interfaces/annotations). */
     public List<MethodRecord> constructors;

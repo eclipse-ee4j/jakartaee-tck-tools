@@ -10,6 +10,7 @@
 package jakarta.tck.sigtest.model;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
@@ -49,8 +50,8 @@ public class MethodRecord {
     /** Checked exception type descriptors declared by this member. */
     public List<String> exceptions;
 
-    /** Annotation descriptors applied to this method. */
-    public List<AnnotationRecord> annotations;
+    /** Annotations applied to this method; format as in {@link FieldRecord#annotations}. */
+    public Map<String, List<String>> annotations;
 
     /**
      * Full JVM generic signature of this method (e.g. {@code "<R:Ljava/lang/Object;>(TT;)TR;"})
