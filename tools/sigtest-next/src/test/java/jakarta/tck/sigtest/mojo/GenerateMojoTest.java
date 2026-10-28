@@ -42,8 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class GenerateMojoTest {
 
-    @TempDir(cleanup = CleanupMode.NEVER)
-    // @TempDir
+    // @TempDir(cleanup = CleanupMode.NEVER)
+    @TempDir
     Path tempDir;
 
     // -------------------------------------------------------------------------

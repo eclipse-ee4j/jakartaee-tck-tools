@@ -11,10 +11,25 @@ package jakarta.tck.sigtest.model;
 
 import java.util.List;
 
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 /**
  * Describes a single public or protected class / interface / enum / annotation
  * found in the scanned packages.
  */
+@JsonbPropertyOrder({
+    "modifiers",
+    "kind",
+    "name",
+    "superClass",
+    "genericSignature",
+    "annotations",
+    "interfaces",
+    "fields",
+    "constructors",
+    "methods",
+    "hiddenClasses"
+})
 public class ClassRecord {
 
     /** Fully-qualified class name, e.g. {@code "jakarta.servlet.Servlet"}. */

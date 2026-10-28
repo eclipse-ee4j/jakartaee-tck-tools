@@ -45,13 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SignatureDiffTest {
 
-    @TempDir(cleanup = CleanupMode.NEVER)
+    // @TempDir(cleanup = CleanupMode.NEVER)
+    @TempDir
     Path tempDir;
-
-    @BeforeEach
-    void printTempDir(TestInfo info) {
-        System.out.println("[" + info.getDisplayName() + "] tempDir: " + tempDir.toAbsolutePath());
-    }
 
     // -------------------------------------------------------------------------
     // Helper — compile source into a sub-directory, return a SignatureRecord

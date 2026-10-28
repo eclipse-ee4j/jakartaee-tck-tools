@@ -11,6 +11,8 @@ package jakarta.tck.sigtest.model;
 
 import java.util.List;
 
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 /**
  * Root record for a generated signature file.
  *
@@ -18,6 +20,12 @@ import java.util.List;
  * scanned packages, the generator version, and the ordered list of public
  * API classes found on those packages.
  */
+@JsonbPropertyOrder({
+    "formatVersion",
+    "apiVersion",
+    "packages",
+    "classes"
+})
 public class SignatureRecord {
 
     /** Version of the sigtest-next format; increment when the schema changes. */

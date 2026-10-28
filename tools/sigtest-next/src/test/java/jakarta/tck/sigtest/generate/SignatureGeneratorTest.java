@@ -45,14 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SignatureGeneratorTest {
 
-    @TempDir(cleanup = CleanupMode.NEVER)
-    // @TempDir
+    // @TempDir(cleanup = CleanupMode.NEVER)
+    @TempDir
     Path tempDir;
-
-    @BeforeEach
-    void printTempDir(TestInfo info) {
-        System.out.println("[" + info.getDisplayName() + "] tempDir: " + tempDir.toAbsolutePath());
-    }
 
     // -------------------------------------------------------------------------
     // Helper

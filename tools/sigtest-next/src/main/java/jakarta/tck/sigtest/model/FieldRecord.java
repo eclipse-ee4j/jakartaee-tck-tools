@@ -11,9 +11,19 @@ package jakarta.tck.sigtest.model;
 
 import java.util.List;
 
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 /**
  * Describes a public or protected field.
  */
+@JsonbPropertyOrder({
+    "modifiers",
+    "type",
+    "name",
+    "constantValue",
+    "genericSignature",
+    "annotations"
+})
 public class FieldRecord {
 
     /** Simple field name. */

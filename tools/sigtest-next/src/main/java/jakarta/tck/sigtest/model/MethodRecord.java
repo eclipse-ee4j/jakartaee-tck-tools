@@ -11,12 +11,24 @@ package jakarta.tck.sigtest.model;
 
 import java.util.List;
 
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 /**
  * Describes a public or protected method or constructor.
  *
  * <p>Constructors are distinguished from regular methods by {@link #isConstructor}
  * being {@code true} and {@link #returnType} being {@code null}.
  */
+@JsonbPropertyOrder({
+    "modifiers",
+    "returnType",
+    "isConstructor",
+    "name",
+    "genericSignature",
+    "annotations",
+    "parameters",
+    "exceptions"
+})
 public class MethodRecord {
 
     /** Simple method name, or the simple class name for constructors. */
