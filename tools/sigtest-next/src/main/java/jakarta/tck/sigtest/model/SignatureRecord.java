@@ -23,6 +23,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 @JsonbPropertyOrder({
     "formatVersion",
     "apiVersion",
+    "excludes",
     "packages",
     "classes"
 })
@@ -36,6 +37,11 @@ public class SignatureRecord {
 
     /** Version of the API artifact being described (e.g. {@code "11.0.0"}). */
     public String apiVersion;
+
+    /**
+     * Package prefixes excluded during generation. {@code null} when no excludes were applied.
+     */
+    public List<String> excludes;
 
     /**
      * Packages in the scanned API that declare package-level metadata or annotations,

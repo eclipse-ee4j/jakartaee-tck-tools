@@ -9,12 +9,11 @@
  */
 package jakarta.tck.sigtest.mojo;
 
-import jakarta.tck.sigtest.check.SignatureDiff;
-import jakarta.tck.sigtest.util.SignatureIO;
+import jakarta.tck.sigtest.check.SignatureChecker;
 import jakarta.tck.sigtest.check.Violation;
-import jakarta.tck.sigtest.generate.SignatureGenerator;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import jakarta.tck.sigtest.util.PackageUtil;
+import jakarta.tck.sigtest.util.SignatureIO;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -127,37 +126,20 @@ public class CheckMojo extends AbstractMojo {
         // 3. Load baseline.
         SignatureRecord baseline = loadBaseline(sigfile);
 
-        // 4. Scan live artifact — discover all packages, then apply excludes.
-        Set<String> rootPackages;
-        try {
-            rootPackages = PackageUtil.discoverPackages(jar);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Cannot read JAR: " + jar, e);
-        }
-        if (rootPackages.isEmpty()) {
-            getLog().warn("sigtest-next:check — no packages found in " + jar.getName() + ", skipping.");
-            return;
-        }
-
         Set<String> excludePackages = PackageUtil.parsePackages(excludes);
 
         getLog().info("sigtest-next:check scanning: " + jar.getName());
         getLog().info("sigtest-next:check baseline: " + sigfile.getName());
 
         List<File> classpath = buildClasspath();
-        SignatureGenerator generator = new SignatureGenerator(classpath, rootPackages, excludePackages);
-
-        SignatureRecord live;
+        List<Violation> violations;
         try {
-            live = generator.generate(baseline.apiVersion);
+            violations = SignatureChecker.check(baseline, jar, classpath, excludePackages);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to scan " + jar + ": " + e.getMessage(), e);
         }
 
-        // 5. Diff.
-        List<Violation> violations = SignatureDiff.diff(baseline, live);
-
-        // 6. Report.
+        // 4. Report.
         getLog().info("sigtest-next:check — " + violations.size() + " violation(s) found");
         for (Violation v : violations) {
             getLog().info(v.toString());
