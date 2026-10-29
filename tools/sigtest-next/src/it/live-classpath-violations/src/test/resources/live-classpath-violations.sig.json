@@ -1,0 +1,25 @@
+{
+    "formatVersion": "1.0",
+    "apiVersion": "1.0.0",
+    "classes": [
+        {
+            "modifiers": "public abstract",
+            "kind": "interface",
+            "name": "com.example.api.ViolatingService",
+            "methods": [
+                {
+                    "modifiers": "public abstract",
+                    "returnType": "void",
+                    "isConstructor": false,
+                    "name": "execute"
+                },
+                {
+                    "modifiers": "public abstract",
+                    "returnType": "int",
+                    "isConstructor": false,
+                    "name": "getCount"
+                }
+            ]
+        }
+    ]
+}

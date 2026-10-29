@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>jakarta.tck.it</groupId>
+    <artifactId>resolve-mojo-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>IT: sigtest-next:resolve property forwarding</name>
+
+    <description>
+        Verifies the end-to-end flow of sigtest-next:resolve:
+        1. The resolve goal resolves a stub-api jar and sets sigtest-next.resolve.api.
+        2. Surefire forwards the property via systemPropertyVariables.
+        3. SignatureAssert reads the property and scans the resolved jar (not the classpath).
+
+        The stub API jar is compiled from src/main/java and packaged as a jar artifact, then
+        referenced by groupId/artifactId/version through the invoker local repository so the
+        resolve goal can look it up.
+
+        To keep the IT self-contained, a separate stub-api sub-project is not used. Instead,
+        the test uses a simple approach: we generate the baseline from src/main/java classes
+        (written to a jar), then re-resolve that same jar via the resolve goal to test the
+        property forwarding path.
+    </description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>11</maven.compiler.release>
+        <!--
+          The stub API artifact coordinates resolved by sigtest-next:resolve.
+          These point at a minimal jar that is installed by the invoker setup
+          using the stub-api project in src/it/stub-api/.
+        -->
+        <stub.api.groupId>jakarta.tck.it</stub.api.groupId>
+        <stub.api.artifactId>resolve-stub-api</stub.api.artifactId>
+        <stub.api.version>1.0.0</stub.api.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.tck</groupId>
+            <artifactId>sigtest-next-plugin</artifactId>
+            <version>@project.version@</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.yasson</groupId>
+            <artifactId>yasson</artifactId>
+            <version>@jsonb.impl.version@</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>@junit.version@</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              Step 1: resolve the stub-api jar and set sigtest-next.resolve.api
+              so that Surefire can forward it to the test JVM.
+            -->
+            <plugin>
+                <groupId>jakarta.tck</groupId>
+                <artifactId>sigtest-next-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>resolve-stub-api</id>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>${stub.api.groupId}</groupId>
+                            <artifactId>${stub.api.artifactId}</artifactId>
+                            <version>${stub.api.version}</version>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+              Step 2: forward the resolved jar path to the test JVM.
+              Surefire does not automatically propagate project properties set by mojos,
+              so this explicit systemPropertyVariables entry is required.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <sigtest-next.resolve.api>${sigtest-next.resolve.api}</sigtest-next.resolve.api>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
