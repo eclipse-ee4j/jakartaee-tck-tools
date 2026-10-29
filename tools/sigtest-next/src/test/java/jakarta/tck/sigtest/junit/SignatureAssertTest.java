@@ -13,6 +13,7 @@ import jakarta.tck.sigtest.check.Violation;
 import jakarta.tck.sigtest.generate.SignatureGenerator;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import jakarta.tck.sigtest.util.SignatureIO;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -26,9 +27,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -466,6 +469,282 @@ class SignatureAssertTest {
                 () -> SignatureAssert.forResource("/nonexistent/resource.sig.json").check());
         assertTrue(ex.getMessage().contains("/nonexistent/resource.sig.json"),
                 "Exception message should name the missing resource: " + ex.getMessage());
+    }
+
+    // -------------------------------------------------------------------------
+    // dynamicTests() scenarios (@TestFactory helper)
+    // -------------------------------------------------------------------------
+
+    @Test
+    void dynamicTests_matchingBaseline_allPass() throws Exception {
+        Path classesDir = tempDir.resolve("dyn_match");
+        compile(classesDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n",
+                "package com.example.api;\n" +
+                "public class BetaService {\n" +
+                "    public void process() {}\n" +
+                "}\n");
+
+        SignatureRecord baseline = generateBaseline(classesDir, Set.of("com.example.api"));
+        Path sigFile = classesDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{classesDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            List<DynamicTest> tests = SignatureAssert.forResource("test.sig.json")
+                    .dynamicTests()
+                    .collect(Collectors.toList());
+            assertEquals(3, tests.size(), "Expected 2 class tests + 1 added classes test");
+
+            Map<String, DynamicTest> byName = tests.stream().collect(Collectors.toMap(DynamicTest::getDisplayName, t -> t));
+            assertTrue(byName.containsKey("com.example.api.AlphaService"));
+            assertTrue(byName.containsKey("com.example.api.BetaService"));
+            assertTrue(byName.containsKey("[added classes]"));
+
+            for (DynamicTest dt : tests) {
+                assertDoesNotThrow(() -> dt.getExecutable().execute(),
+                        "Dynamic test '" + dt.getDisplayName() + "' should pass for matching baseline");
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_missingMethodInOneClass_onlyAffectedClassFails() throws Exception {
+        Path baseDir = tempDir.resolve("dyn_base_missing");
+        compile(baseDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "    void extra();\n" +
+                "}\n",
+                "package com.example.api;\n" +
+                "public class BetaService {\n" +
+                "    public void process() {}\n" +
+                "}\n");
+        SignatureRecord baseline = generateBaseline(baseDir, Set.of("com.example.api"));
+        Path sigFile = baseDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        Path liveDir = tempDir.resolve("dyn_live_missing");
+        compile(liveDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n",
+                "package com.example.api;\n" +
+                "public class BetaService {\n" +
+                "    public void process() {}\n" +
+                "}\n");
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{baseDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            Map<String, DynamicTest> testsByName = SignatureAssert.forResource("test.sig.json")
+                    .liveApi(liveDir)
+                    .dynamicTests()
+                    .collect(Collectors.toMap(DynamicTest::getDisplayName, t -> t));
+
+            // AlphaService must fail because extra() is missing
+            DynamicTest alphaTest = testsByName.get("com.example.api.AlphaService");
+            assertNotNull(alphaTest);
+            AssertionError error = assertThrows(AssertionError.class, () -> alphaTest.getExecutable().execute());
+            assertTrue(error.getMessage().contains("MISSING_METHOD"), "Error message: " + error.getMessage());
+            assertTrue(error.getMessage().contains("com.example.api.AlphaService"), "Error message: " + error.getMessage());
+
+            // BetaService must pass
+            DynamicTest betaTest = testsByName.get("com.example.api.BetaService");
+            assertNotNull(betaTest);
+            assertDoesNotThrow(() -> betaTest.getExecutable().execute());
+
+            // [added classes] must pass
+            DynamicTest addedTest = testsByName.get("[added classes]");
+            assertNotNull(addedTest);
+            assertDoesNotThrow(() -> addedTest.getExecutable().execute());
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_addedClassInLiveApi_addedClassesTestFails() throws Exception {
+        Path baseDir = tempDir.resolve("dyn_base_added");
+        compile(baseDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n");
+        SignatureRecord baseline = generateBaseline(baseDir, Set.of("com.example.api"));
+        Path sigFile = baseDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        Path liveDir = tempDir.resolve("dyn_live_added");
+        compile(liveDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n",
+                "package com.example.api;\n" +
+                "public class ExtraService {\n" +
+                "    public void run() {}\n" +
+                "}\n");
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{baseDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            Map<String, DynamicTest> testsByName = SignatureAssert.forResource("test.sig.json")
+                    .liveApi(liveDir)
+                    .dynamicTests()
+                    .collect(Collectors.toMap(DynamicTest::getDisplayName, t -> t));
+
+            // AlphaService passes
+            DynamicTest alphaTest = testsByName.get("com.example.api.AlphaService");
+            assertNotNull(alphaTest);
+            assertDoesNotThrow(() -> alphaTest.getExecutable().execute());
+
+            // [added classes] fails with ADDED_CLASS ExtraService
+            DynamicTest addedTest = testsByName.get("[added classes]");
+            assertNotNull(addedTest);
+            AssertionError error = assertThrows(AssertionError.class, () -> addedTest.getExecutable().execute());
+            assertTrue(error.getMessage().contains("ADDED_CLASS"), "Error message: " + error.getMessage());
+            assertTrue(error.getMessage().contains("com.example.api.ExtraService"), "Error message: " + error.getMessage());
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_missingClass_missingClassTestFails() throws Exception {
+        Path baseDir = tempDir.resolve("dyn_base_missing_cls");
+        compile(baseDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n",
+                "package com.example.api;\n" +
+                "public interface BetaService {\n" +
+                "    void process();\n" +
+                "}\n");
+        SignatureRecord baseline = generateBaseline(baseDir, Set.of("com.example.api"));
+        Path sigFile = baseDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        Path liveDir = tempDir.resolve("dyn_live_missing_cls");
+        compile(liveDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n");
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{baseDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            Map<String, DynamicTest> testsByName = SignatureAssert.forResource("test.sig.json")
+                    .liveApi(liveDir)
+                    .dynamicTests()
+                    .collect(Collectors.toMap(DynamicTest::getDisplayName, t -> t));
+
+            // AlphaService passes
+            assertDoesNotThrow(() -> testsByName.get("com.example.api.AlphaService").getExecutable().execute());
+
+            // BetaService fails with MISSING_CLASS
+            DynamicTest betaTest = testsByName.get("com.example.api.BetaService");
+            assertNotNull(betaTest);
+            AssertionError error = assertThrows(AssertionError.class, () -> betaTest.getExecutable().execute());
+            assertTrue(error.getMessage().contains("MISSING_CLASS"), "Error message: " + error.getMessage());
+            assertTrue(error.getMessage().contains("com.example.api.BetaService"), "Error message: " + error.getMessage());
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_modifiedMethodReturnType_classTestFails() throws Exception {
+        Path baseDir = tempDir.resolve("dyn_base_ret");
+        compile(baseDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    String execute();\n" +
+                "}\n");
+        SignatureRecord baseline = generateBaseline(baseDir, Set.of("com.example.api"));
+        Path sigFile = baseDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        Path liveDir = tempDir.resolve("dyn_live_ret");
+        compile(liveDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n");
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{baseDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            Map<String, DynamicTest> testsByName = SignatureAssert.forResource("test.sig.json")
+                    .liveApi(liveDir)
+                    .dynamicTests()
+                    .collect(Collectors.toMap(DynamicTest::getDisplayName, t -> t));
+
+            DynamicTest alphaTest = testsByName.get("com.example.api.AlphaService");
+            assertNotNull(alphaTest);
+            AssertionError error = assertThrows(AssertionError.class, () -> alphaTest.getExecutable().execute());
+            assertTrue(error.getMessage().contains("METHOD_RETURN_TYPE_CHANGED"), "Error message: " + error.getMessage());
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_excludesOverride_ignoresExcludedClasses() throws Exception {
+        Path baseDir = tempDir.resolve("dyn_base_excl");
+        compile(baseDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n");
+        SignatureRecord baseline = generateBaseline(baseDir, Set.of("com.example.api"));
+        Path sigFile = baseDir.resolve("test.sig.json");
+        SignatureIO.save(baseline, sigFile);
+
+        Path liveDir = tempDir.resolve("dyn_live_excl");
+        compile(liveDir,
+                "package com.example.api;\n" +
+                "public interface AlphaService {\n" +
+                "    void execute();\n" +
+                "}\n",
+                "package com.example.internal;\n" +
+                "public class InternalHelper {\n" +
+                "    public void help() {}\n" +
+                "}\n");
+
+        URLClassLoader loader = new URLClassLoader(new URL[]{baseDir.toUri().toURL()}, null);
+        Thread.currentThread().setContextClassLoader(loader);
+        try {
+            List<DynamicTest> tests = SignatureAssert.forResource("test.sig.json")
+                    .liveApi(liveDir)
+                    .excludes("com.example.internal")
+                    .dynamicTests()
+                    .collect(Collectors.toList());
+
+            for (DynamicTest dt : tests) {
+                assertDoesNotThrow(() -> dt.getExecutable().execute(),
+                        "Dynamic test '" + dt.getDisplayName() + "' should pass when internal package is excluded");
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(null);
+        }
+    }
+
+    @Test
+    void dynamicTests_missingResource_throwsIllegalState() {
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> SignatureAssert.forResource("/nonexistent/resource.sig.json").dynamicTests());
+        assertTrue(ex.getMessage().contains("/nonexistent/resource.sig.json"));
     }
 
     // -------------------------------------------------------------------------

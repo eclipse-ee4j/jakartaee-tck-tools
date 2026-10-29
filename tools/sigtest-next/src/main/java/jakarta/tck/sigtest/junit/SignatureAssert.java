@@ -11,15 +11,20 @@ package jakarta.tck.sigtest.junit;
 
 import jakarta.tck.sigtest.check.SignatureChecker;
 import jakarta.tck.sigtest.check.Violation;
+import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.SignatureRecord;
 import jakarta.tck.sigtest.util.SignatureIO;
+import org.junit.jupiter.api.DynamicTest;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,20 +32,35 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
 /**
- * JUnit 5 assertions for API signature compatibility.
+ * JUnit 5 assertions and dynamic test factory for API signature compatibility.
  *
- * <p>Use {@link #assertCompatible(String)} (or the builder returned by
- * {@link #forResource(String)}) inside a JUnit 5 {@code @Test} method to verify that
- * the live API on the test classpath matches a pre-generated baseline {@code .sig.json}
- * file stored as a classpath resource.
+ * <p>Verifies that the live API on the test classpath (or resolved via configuration)
+ * matches a pre-generated baseline {@code .sig.json} file stored as a classpath resource.
  *
- * <p>Example usage:
+ * <h2>Single assertion mode ({@code @Test})</h2>
+ * <p>Use {@link #assertCompatible(String)} (or {@link #forResource(String)}{@code .check()})
+ * inside a standard {@code @Test} method to fail on any signature violation:
  * <pre>{@code
  * @Test
  * void apiMatchesBaseline() {
  *     SignatureAssert.assertCompatible("/jakarta.servlet-api.sig.json");
+ * }
+ * }</pre>
+ *
+ * <h2>Dynamic tests mode ({@code @TestFactory})</h2>
+ * <p>Use {@link #forResource(String)}{@code .dynamicTests()} inside a {@link org.junit.jupiter.api.TestFactory @TestFactory}
+ * method to emit one {@link DynamicTest} per baseline class, plus additional checks for added
+ * classes and package annotations. This gives isolated, class-by-class test reporting in Surefire
+ * and IDEs without requiring inheritance from an abstract base class:
+ * <pre>{@code
+ * @TestFactory
+ * Stream<DynamicTest> apiSignatures() {
+ *     return SignatureAssert.forResource("/jakarta.servlet-api.sig.json")
+ *             .dynamicTests();
  * }
  * }</pre>
  *
@@ -99,7 +119,7 @@ public final class SignatureAssert {
     // -------------------------------------------------------------------------
 
     /**
-     * Fluent builder that configures and executes a single signature compatibility assertion.
+     * Fluent builder that configures and executes signature compatibility assertions or dynamic tests.
      */
     public static final class Options {
 
@@ -160,6 +180,93 @@ public final class SignatureAssert {
             if (!violations.isEmpty()) {
                 throw new AssertionError(formatViolations(violations));
             }
+        }
+
+        /**
+         * Returns a stream of {@link DynamicTest} instances: one per baseline class, plus
+         * tests for added classes and package annotations.
+         *
+         * <p>Use this inside a JUnit 5 {@link org.junit.jupiter.api.TestFactory @TestFactory}
+         * method to get isolated per-class failure reporting.
+         *
+         * <p>Example usage:
+         * <pre>{@code
+         * @TestFactory
+         * Stream<DynamicTest> apiSignatures() {
+         *     return SignatureAssert.forResource("/jakarta.servlet-api.sig.json")
+         *             .dynamicTests();
+         * }
+         * }</pre>
+         *
+         * @return stream of dynamic tests
+         * @throws IllegalStateException if the baseline resource cannot be read or the live API
+         *                               resolved via system property cannot be accessed
+         */
+        public Stream<DynamicTest> dynamicTests() {
+            ClassLoader cl = classLoader();
+            SignatureRecord baseline = loadBaseline(cl);
+            List<Violation> violations = runCheck(baseline, cl);
+
+            // Map violations by class name
+            Map<String, List<Violation>> violationsByClass = new HashMap<>();
+            List<Violation> addedClassViolations = new ArrayList<>();
+            List<Violation> packageViolations = new ArrayList<>();
+
+            for (Violation v : violations) {
+                if (v.kind == Violation.Kind.ADDED_CLASS) {
+                    addedClassViolations.add(v);
+                } else if (v.kind == Violation.Kind.PACKAGE_ANNOTATIONS_CHANGED) {
+                    packageViolations.add(v);
+                } else {
+                    violationsByClass.computeIfAbsent(v.className, k -> new ArrayList<>()).add(v);
+                }
+            }
+
+            Set<String> baselineClassNames = new TreeSet<>();
+            if (baseline.classes != null) {
+                for (ClassRecord c : baseline.classes) {
+                    if (c != null && c.name != null) {
+                        baselineClassNames.add(c.name);
+                    }
+                }
+            }
+
+            List<DynamicTest> tests = new ArrayList<>();
+
+            // 1. One test per baseline class (sorted alphabetically)
+            for (String className : baselineClassNames) {
+                List<Violation> classViolations = violationsByClass.getOrDefault(className, Collections.emptyList());
+                tests.add(DynamicTest.dynamicTest(className, () -> {
+                    if (!classViolations.isEmpty()) {
+                        throw new AssertionError(formatViolations(classViolations));
+                    }
+                }));
+            }
+
+            // 2. Added / unexpected classes test
+            List<Violation> extraViolations = new ArrayList<>(addedClassViolations);
+            for (Map.Entry<String, List<Violation>> entry : violationsByClass.entrySet()) {
+                if (!baselineClassNames.contains(entry.getKey())) {
+                    extraViolations.addAll(entry.getValue());
+                }
+            }
+            tests.add(DynamicTest.dynamicTest("[added classes]", () -> {
+                if (!extraViolations.isEmpty()) {
+                    throw new AssertionError(formatViolations(extraViolations));
+                }
+            }));
+
+            // 3. Package annotations test (if baseline declares packages or package violations exist)
+            boolean hasPackages = baseline.packages != null && !baseline.packages.isEmpty();
+            if (hasPackages || !packageViolations.isEmpty()) {
+                tests.add(DynamicTest.dynamicTest("[package annotations]", () -> {
+                    if (!packageViolations.isEmpty()) {
+                        throw new AssertionError(formatViolations(packageViolations));
+                    }
+                }));
+            }
+
+            return tests.stream();
         }
 
         // -------------------------------------------------------------------------
