@@ -154,6 +154,9 @@ public class SignatureGenerator {
 
         SignatureRecord record = new SignatureRecord();
         record.apiVersion = apiVersion;
+        if (!excludePackages.isEmpty()) {
+            record.excludes = excludePackages.stream().sorted().collect(Collectors.toList());
+        }
         if (!packages.isEmpty()) {
             packages.sort(Comparator.comparing(p -> p.name));
             record.packages = packages;
@@ -187,7 +190,9 @@ public class SignatureGenerator {
             Enumeration<JarEntry> entries = jf.entries();
             while (entries.hasMoreElements()) {
                 JarEntry e = entries.nextElement();
-                if (!e.getName().endsWith(".class")) {
+                // Skip directories, non-class entries and multi-release variants, which
+                // would otherwise produce duplicate class records.
+                if (!e.getName().endsWith(".class") || e.getName().startsWith("META-INF/versions/")) {
                     continue;
                 }
                 try (InputStream is = jf.getInputStream(e)) {

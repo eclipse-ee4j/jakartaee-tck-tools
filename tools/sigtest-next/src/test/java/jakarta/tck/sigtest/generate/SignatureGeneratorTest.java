@@ -160,6 +160,27 @@ class SignatureGeneratorTest {
     }
 
     @Test
+    void excludesAreRecordedSortedInSignatureRecord() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class Hello {}\n",
+                Set.of("com.example"),
+                Set.of("com.example.internal", "com.example.impl"));
+
+        assertEquals(List.of("com.example.impl", "com.example.internal"), record.excludes);
+    }
+
+    @Test
+    void excludesAreNullWhenNoneApplied() throws Exception {
+        SignatureRecord record = generate(
+                "package com.example;\n" +
+                "public class Hello {}\n",
+                Set.of("com.example"));
+
+        assertNull(record.excludes);
+    }
+
+    @Test
     void packagePrivateClassIsExcluded() throws Exception {
         compileDirect(
                 "package com.example;\n" +
@@ -1100,6 +1121,28 @@ class SignatureGeneratorTest {
 
             assertTrue(record.classes.isEmpty());
         }
+    }
+
+    @Test
+    void scanJar_skipsMultiReleaseVersionEntries() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("mr-classes"));
+        compileToDir("package com.example.mr;\npublic class Service {}\n", classesDir);
+
+        // Duplicate the class under META-INF/versions/9 as a multi-release jar would.
+        Path original = classesDir.resolve("com/example/mr/Service.class");
+        Path versioned = classesDir.resolve("META-INF/versions/9/com/example/mr/Service.class");
+        Files.createDirectories(versioned.getParent());
+        Files.copy(original, versioned);
+
+        Path jarPath = tempDir.resolve("multi-release.jar");
+        packageDirectoryToJar(classesDir, jarPath);
+
+        SignatureGenerator gen = new SignatureGenerator(
+                List.of(jarPath.toFile()), Set.of("com.example.mr"), Set.of());
+        SignatureRecord record = gen.generate("1.0");
+
+        assertEquals(1, record.classes.size());
+        assertTrue(findClass(record, "com.example.mr.Service").isPresent());
     }
 
     // -------------------------------------------------------------------------

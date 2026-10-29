@@ -91,7 +91,8 @@ public class CheckMojo extends AbstractMojo {
 
     /**
      * Comma-separated list of package prefixes to exclude from the scan.
-     * Must match what was used when the baseline was generated.
+     * When empty, the excludes stored in the baseline (written by
+     * {@code sigtest-next:generate}) are used; an explicit value overrides them.
      */
     @Parameter(defaultValue = "")
     private String excludes;

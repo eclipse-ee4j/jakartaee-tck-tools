@@ -126,6 +126,18 @@ class PackageUtilTest {
     }
 
     @Test
+    void discoverPackages_ignoresMultiReleaseVersionEntries() throws Exception {
+        File jar = buildJar(
+                "jakarta/servlet/Servlet.class",
+                "META-INF/versions/9/jakarta/servlet/extra/Extra.class"
+        );
+
+        Set<String> packages = PackageUtil.discoverPackages(jar);
+
+        assertEquals(Set.of("jakarta.servlet"), packages);
+    }
+
+    @Test
     void discoverPackages_defaultPackageClassIgnored() throws Exception {
         // A class in the default (unnamed) package has no slash in its name.
         File jar = buildJar("DefaultClass.class");

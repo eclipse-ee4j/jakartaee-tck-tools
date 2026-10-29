@@ -130,6 +130,17 @@ public class GenerateMojo extends AbstractMojo {
     private File sigfile;
 
     /**
+     * Optional directory to write the signature file into, keeping the file name of
+     * {@link #sigfile}. When set, it replaces the parent directory of {@link #sigfile}.
+     *
+     * <p>Use {@code ${project.build.testOutputDirectory}} to put the baseline on the test
+     * resource classpath (for {@code SignatureAssert}), or
+     * {@code ${project.build.outputDirectory}} to package it with the main artifact.
+     */
+    @Parameter
+    private File outputDirectory;
+
+    /**
      * Comma-separated list of package prefixes to <em>include</em> in the scan.
      * When scanning a classes directory this acts as a positive filter; when
      * scanning a JAR it is used as an override over the auto-discovered package set.
@@ -165,6 +176,9 @@ public class GenerateMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (outputDirectory != null) {
+            sigfile = new File(outputDirectory, sigfile.getName());
+        }
         if (classes != null) {
             executeDirectory();
         } else {

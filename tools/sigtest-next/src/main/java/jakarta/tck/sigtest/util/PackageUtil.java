@@ -45,7 +45,7 @@ public final class PackageUtil {
             while (entries.hasMoreElements()) {
                 String name = entries.nextElement().getName();
                 if (!name.endsWith(".class") || name.startsWith("module-info")
-                        || name.contains("package-info")) {
+                        || name.contains("package-info") || name.startsWith("META-INF/versions/")) {
                     continue;
                 }
                 int lastSlash = name.lastIndexOf('/');

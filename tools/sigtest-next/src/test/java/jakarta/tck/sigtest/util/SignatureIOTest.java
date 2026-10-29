@@ -23,8 +23,11 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -128,6 +131,35 @@ class SignatureIOTest {
 
         byte[] bytes = sw.toString().getBytes(StandardCharsets.UTF_8);
         assertEquals("4.0.0", SignatureIO.load(new ByteArrayInputStream(bytes)).apiVersion);
+    }
+
+    @Test
+    void save_toPath_roundtripsExcludes() throws Exception {
+        SignatureRecord record = new SignatureRecord();
+        record.apiVersion = "6.0.0";
+        record.excludes = List.of("com.example.internal", "com.example.impl");
+
+        Path file = tempDir.resolve("excludes.sig.json");
+        SignatureIO.save(record, file);
+
+        assertEquals(List.of("com.example.internal", "com.example.impl"), SignatureIO.load(file).excludes);
+    }
+
+    @Test
+    void save_toPath_omitsExcludesWhenNull() throws Exception {
+        SignatureRecord record = new SignatureRecord();
+        record.apiVersion = "7.0.0";
+
+        Path file = tempDir.resolve("no-excludes.sig.json");
+        SignatureIO.save(record, file);
+
+        assertFalse(Files.readString(file).contains("excludes"));
+        assertNull(SignatureIO.load(file).excludes);
+    }
+
+    @Test
+    void load_baselineWithoutExcludesField_hasNullExcludes() throws Exception {
+        assertNull(SignatureIO.load(new ByteArrayInputStream(json().getBytes(StandardCharsets.UTF_8))).excludes);
     }
 
     @Test
