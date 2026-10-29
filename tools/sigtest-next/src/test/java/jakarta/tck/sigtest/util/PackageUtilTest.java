@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package jakarta.tck.sigtest.mojo;
+package jakarta.tck.sigtest.util;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
@@ -38,9 +38,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Unit tests for the static helper methods on {@link GenerateMojo}.
+ * Unit tests for {@link PackageUtil}.
  */
-class GenerateMojoTest {
+class PackageUtilTest {
 
     // @TempDir(cleanup = CleanupMode.NEVER)
     @TempDir
@@ -52,9 +52,9 @@ class GenerateMojoTest {
 
     @Test
     void parsePackages_emptyStringReturnsEmptySet() {
-        assertTrue(GenerateMojo.parsePackages("").isEmpty());
-        assertTrue(GenerateMojo.parsePackages("   ").isEmpty());
-        assertTrue(GenerateMojo.parsePackages(null).isEmpty());
+        assertTrue(PackageUtil.parsePackages("").isEmpty());
+        assertTrue(PackageUtil.parsePackages("   ").isEmpty());
+        assertTrue(PackageUtil.parsePackages(null).isEmpty());
     }
 
     @ParameterizedTest
@@ -66,19 +66,19 @@ class GenerateMojoTest {
         "jakarta.servlet.http.**,      jakarta.servlet.http",
     })
     void parsePackages_stripsWildcardSuffixes(String input, String expected) {
-        Set<String> result = GenerateMojo.parsePackages(input.trim());
+        Set<String> result = PackageUtil.parsePackages(input.trim());
         assertEquals(Set.of(expected.trim()), result);
     }
 
     @Test
     void parsePackages_supportsMultipleDelimiters() {
-        Set<String> result = GenerateMojo.parsePackages("jakarta.servlet,jakarta.ws.rs;jakarta.json:jakarta.persistence");
+        Set<String> result = PackageUtil.parsePackages("jakarta.servlet,jakarta.ws.rs;jakarta.json:jakarta.persistence");
         assertEquals(Set.of("jakarta.servlet", "jakarta.ws.rs", "jakarta.json", "jakarta.persistence"), result);
     }
 
     @Test
     void parsePackages_deduplicatesEntries() {
-        Set<String> result = GenerateMojo.parsePackages("jakarta.servlet,jakarta.servlet,jakarta.servlet.*");
+        Set<String> result = PackageUtil.parsePackages("jakarta.servlet,jakarta.servlet,jakarta.servlet.*");
         assertEquals(1, result.size());
         assertTrue(result.contains("jakarta.servlet"));
     }
@@ -95,7 +95,7 @@ class GenerateMojoTest {
                 "jakarta/servlet/http/HttpServletRequest.class"
         );
 
-        Set<String> packages = GenerateMojo.discoverPackages(jar);
+        Set<String> packages = PackageUtil.discoverPackages(jar);
 
         assertTrue(packages.contains("jakarta.servlet"), "Expected jakarta.servlet");
         assertTrue(packages.contains("jakarta.servlet.http"), "Expected jakarta.servlet.http");
@@ -105,7 +105,7 @@ class GenerateMojoTest {
     void discoverPackages_ignoresModuleInfo() throws Exception {
         File jar = buildJar("module-info.class", "jakarta/servlet/Servlet.class");
 
-        Set<String> packages = GenerateMojo.discoverPackages(jar);
+        Set<String> packages = PackageUtil.discoverPackages(jar);
 
         assertFalse(packages.stream().anyMatch(p -> p.contains("module")),
                 "module-info.class should not produce a package entry");
@@ -119,7 +119,7 @@ class GenerateMojoTest {
                 "jakarta/servlet/Servlet.class"
         );
 
-        Set<String> packages = GenerateMojo.discoverPackages(jar);
+        Set<String> packages = PackageUtil.discoverPackages(jar);
         // package-info entries should not create duplicate / extra entries
         assertEquals(1, packages.size());
         assertTrue(packages.contains("jakarta.servlet"));
@@ -130,14 +130,14 @@ class GenerateMojoTest {
         // A class in the default (unnamed) package has no slash in its name.
         File jar = buildJar("DefaultClass.class");
 
-        Set<String> packages = GenerateMojo.discoverPackages(jar);
+        Set<String> packages = PackageUtil.discoverPackages(jar);
         assertTrue(packages.isEmpty(), "Default-package class should not produce a package entry");
     }
 
     @Test
     void discoverPackages_throwsOnMissingJar() {
         File missing = tempDir.resolve("nonexistent.jar").toFile();
-        assertThrows(Exception.class, () -> GenerateMojo.discoverPackages(missing));
+        assertThrows(Exception.class, () -> PackageUtil.discoverPackages(missing));
     }
 
     // -------------------------------------------------------------------------
@@ -152,7 +152,7 @@ class GenerateMojoTest {
         Files.writeString(classesDir.resolve("com/example/api/Service.class"), "stub");
         Files.writeString(classesDir.resolve("com/example/internal/Helper.class"), "stub");
 
-        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+        Set<String> packages = PackageUtil.discoverPackagesFromDirectory(classesDir.toFile());
 
         assertTrue(packages.contains("com.example.api"), "Expected com.example.api");
         assertTrue(packages.contains("com.example.internal"), "Expected com.example.internal");
@@ -163,7 +163,7 @@ class GenerateMojoTest {
         Path classesDir = tempDir.resolve("empty-classes");
         Files.createDirectories(classesDir);
 
-        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+        Set<String> packages = PackageUtil.discoverPackagesFromDirectory(classesDir.toFile());
 
         assertTrue(packages.isEmpty(), "Empty directory should produce no packages");
     }
@@ -174,7 +174,7 @@ class GenerateMojoTest {
         Files.createDirectories(classesDir);
         Files.writeString(classesDir.resolve("RootClass.class"), "stub");
 
-        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+        Set<String> packages = PackageUtil.discoverPackagesFromDirectory(classesDir.toFile());
 
         assertTrue(packages.isEmpty(), "Class at root (default package) should not produce an entry");
     }
@@ -196,7 +196,7 @@ class GenerateMojoTest {
                 + "}\n",
                 "MyService.java");
 
-        Set<String> packages = GenerateMojo.discoverPackagesFromDirectory(classesDir.toFile());
+        Set<String> packages = PackageUtil.discoverPackagesFromDirectory(classesDir.toFile());
         assertFalse(packages.isEmpty(), "Should discover at least one package");
         assertTrue(packages.contains("com.example"));
 

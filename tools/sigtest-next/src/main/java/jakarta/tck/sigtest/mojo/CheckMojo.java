@@ -9,12 +9,12 @@
  */
 package jakarta.tck.sigtest.mojo;
 
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
 import jakarta.tck.sigtest.check.SignatureDiff;
+import jakarta.tck.sigtest.util.SignatureIO;
 import jakarta.tck.sigtest.check.Violation;
 import jakarta.tck.sigtest.generate.SignatureGenerator;
 import jakarta.tck.sigtest.model.SignatureRecord;
+import jakarta.tck.sigtest.util.PackageUtil;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,15 +28,9 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Checks the public API of a dependency artifact against a previously generated
@@ -44,7 +38,8 @@ import java.util.stream.Collectors;
  *
  * <p>Every aspect of the API contract — class kinds, modifiers, superclasses,
  * interfaces, methods, constructors, and fields — is checked in a single pass.
- * Added classes are reported at INFO level but do not fail the build by default.
+ * The check is strict: additions to the API are violations just like removals
+ * and changes.
  *
  * <h2>Minimal configuration</h2>
  * <pre>{@code
@@ -109,13 +104,6 @@ public class CheckMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "sigtest.failOnError")
     private boolean failOnError;
 
-    /**
-     * When {@code true} (the default), treat added classes (present in the live
-     * API but absent from the baseline) as failures.
-     */
-    @Parameter(defaultValue = "true", property = "sigtest.failOnAddition")
-    private boolean failOnAddition;
-
     // -------------------------------------------------------------------------
 
     @Override
@@ -142,16 +130,16 @@ public class CheckMojo extends AbstractMojo {
         // 4. Scan live artifact — discover all packages, then apply excludes.
         Set<String> rootPackages;
         try {
-            rootPackages = GenerateMojo.discoverPackages(jar);
-        } catch (MojoExecutionException e) {
-            throw e;
+            rootPackages = PackageUtil.discoverPackages(jar);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Cannot read JAR: " + jar, e);
         }
         if (rootPackages.isEmpty()) {
             getLog().warn("sigtest-next:check — no packages found in " + jar.getName() + ", skipping.");
             return;
         }
 
-        Set<String> excludePackages = GenerateMojo.parsePackages(excludes);
+        Set<String> excludePackages = PackageUtil.parsePackages(excludes);
 
         getLog().info("sigtest-next:check scanning: " + jar.getName());
         getLog().info("sigtest-next:check baseline: " + sigfile.getName());
@@ -170,37 +158,16 @@ public class CheckMojo extends AbstractMojo {
         List<Violation> violations = SignatureDiff.diff(baseline, live);
 
         // 6. Report.
-        List<Violation> failures = new ArrayList<>();
+        getLog().info("sigtest-next:check — " + violations.size() + " violation(s) found");
         for (Violation v : violations) {
-            if (isAddition(v.kind)) {
-                if (failOnAddition) {
-                    getLog().error("[ADDITION] " + v);
-                    failures.add(v);
-                } else {
-                    getLog().info("[ADDITION] " + v);
-                }
-            } else {
-                getLog().error("[INCOMPATIBLE] " + v);
-                failures.add(v);
-            }
+            getLog().info(v.toString());
         }
 
-        getLog().info("sigtest-next:check — " + violations.size() + " violation(s) found, "
-                + failures.size() + " failure(s).");
-
-        if (!failures.isEmpty() && failOnError) {
+        if (!violations.isEmpty() && failOnError) {
             throw new MojoFailureException(
-                    "API signature check failed with " + failures.size() + " incompatibility(ies). "
+                    "API signature check failed with " + violations.size() + " incompatibility(ies). "
                     + "See the log above for details.");
         }
-    }
-
-    private static boolean isAddition(Violation.Kind kind) {
-        return kind == Violation.Kind.ADDED_CLASS
-                || kind == Violation.Kind.ADDED_INTERFACE
-                || kind == Violation.Kind.ADDED_METHOD
-                || kind == Violation.Kind.ADDED_CONSTRUCTOR
-                || kind == Violation.Kind.ADDED_FIELD;
     }
 
     // -------------------------------------------------------------------------
@@ -219,12 +186,10 @@ public class CheckMojo extends AbstractMojo {
     }
 
     private SignatureRecord loadBaseline(File file) throws MojoExecutionException {
-        try (Jsonb jsonb = JsonbBuilder.create();
-             Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-            return jsonb.fromJson(reader, SignatureRecord.class);
-        } catch (Exception e) {
-            throw new MojoExecutionException(
-                    "Failed to read baseline signature file " + file + ": " + e.getMessage(), e);
+        try {
+            return SignatureIO.load(file);
+        } catch (IOException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 

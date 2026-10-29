@@ -9,9 +9,7 @@
  */
 package jakarta.tck.sigtest.generate;
 
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
+import jakarta.tck.sigtest.util.SignatureIO;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
 import jakarta.tck.sigtest.model.MethodRecord;
@@ -29,8 +27,6 @@ import org.objectweb.asm.Type;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.lang.reflect.Array;
@@ -88,14 +84,7 @@ public class SignatureGenerator {
      */
     public SignatureRecord generate(String apiVersion, Path output) throws IOException {
         SignatureRecord record = generate(apiVersion);
-        output.getParent().toFile().mkdirs();
-        JsonbConfig config = new JsonbConfig().withFormatting(true).withNullValues(false);
-        try (Jsonb jsonb = JsonbBuilder.create(config);
-             Writer writer = Files.newBufferedWriter(output, StandardCharsets.UTF_8)) {
-            jsonb.toJson(record, writer);
-        } catch (Exception e) {
-            throw new IOException("Failed to write signature file: " + output, e);
-        }
+        SignatureIO.save(record, output);
         return record;
     }
 

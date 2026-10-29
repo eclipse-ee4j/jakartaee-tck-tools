@@ -26,13 +26,16 @@ import java.util.stream.Collectors;
 
 /**
  * Compares a baseline {@link SignatureRecord} against a live one and returns
- * every compatibility violation found.
+ * every difference found.
  *
- * <p>The rules applied are binary-compatibility-oriented: anything that
- * removes or changes an existing public/protected API member is a violation.
- * Additions (new classes, methods, fields) are reported as informational
- * {@link Violation.Kind#ADDED_CLASS} entries but do not constitute failures
- * unless the caller chooses to treat them as such.
+ * <p>The comparison is strict: the live API must match the baseline exactly.
+ * Anything that removes or changes an existing public/protected API member
+ * is a violation, and so is anything that adds to the API (new classes,
+ * interfaces, methods, constructors, or fields — see the {@code ADDED_*}
+ * values of {@link Violation.Kind}). Additions are reported as violations
+ * exactly like removals and changes; this class does not distinguish
+ * between them in severity, and a non-empty result means the live API
+ * differs from the baseline.
  *
  * <h2>Matching strategy</h2>
  * <ul>
@@ -53,7 +56,7 @@ public final class SignatureDiff {
      *
      * @param baseline the previously recorded "golden" signature
      * @param live     the freshly scanned signature to validate
-     * @return unmodifiable list of violations; empty when the APIs are compatible
+     * @return unmodifiable list of violations; empty only when the live API is identical to the baseline
      */
     public static List<Violation> diff(SignatureRecord baseline, SignatureRecord live) {
         List<Violation> violations = new ArrayList<>();
@@ -75,7 +78,7 @@ public final class SignatureDiff {
             diffClass(baseClass, liveClass, violations);
         }
 
-        // Report additions (informational only).
+        // Report additions (violations, like removals and changes).
         Map<String, ClassRecord> baseByName = index(baseline.classes);
         for (ClassRecord liveClass : nullToEmpty(live.classes)) {
             if (!baseByName.containsKey(liveClass.name)) {
