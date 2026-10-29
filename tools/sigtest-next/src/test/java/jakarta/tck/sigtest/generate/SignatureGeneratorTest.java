@@ -23,12 +23,17 @@ import org.junit.jupiter.api.io.TempDir;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -1002,6 +1007,102 @@ class SignatureGeneratorTest {
     }
 
     // -------------------------------------------------------------------------
+    // forClassLoader tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    void forClassLoader_scansDirectoryClasspathEntry() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("dir-target"));
+        compileToDir("package com.example.api;\npublic class SampleApi {\n    public void doWork() {}\n}\n", classesDir);
+
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{classesDir.toUri().toURL()}, null)) {
+            SignatureGenerator gen = SignatureGenerator.forClassLoader(loader, Set.of("com.example.api"));
+            SignatureRecord record = gen.generate("1.0");
+
+            assertEquals(1, record.classes.size());
+            assertEquals("com.example.api.SampleApi", record.classes.get(0).name);
+            assertTrue(findMethod(record.classes.get(0), "doWork").isPresent());
+        }
+    }
+
+    @Test
+    void forClassLoader_discoversWholeJarIncludingAddedPackages() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("jar-classes-raw"));
+        compileToDir("package com.example.baseline;\npublic class BaseService {\n    public void baseOp() {}\n}\n", classesDir);
+        compileToDir("package com.example.added;\npublic class AddedService {\n    public void addedOp() {}\n}\n", classesDir);
+
+        Path jarPath = tempDir.resolve("api.jar");
+        packageDirectoryToJar(classesDir, jarPath);
+
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{jarPath.toUri().toURL()}, null)) {
+            // Baseline only lists com.example.baseline, but the whole JAR is scanned so com.example.added is also discovered
+            SignatureGenerator gen = SignatureGenerator.forClassLoader(loader, Set.of("com.example.baseline"));
+            SignatureRecord record = gen.generate("1.0");
+
+            assertEquals(2, record.classes.size());
+            assertTrue(findClass(record, "com.example.baseline.BaseService").isPresent());
+            assertTrue(findClass(record, "com.example.added.AddedService").isPresent());
+        }
+    }
+
+    @Test
+    void forClassLoader_appliesExcludePackages() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("jar-excludes-raw"));
+        compileToDir("package com.example.api;\npublic class PublicApi {}\n", classesDir);
+        compileToDir("package com.example.api.internal;\npublic class InternalApi {}\n", classesDir);
+        compileToDir("package com.example.extra;\npublic class ExtraApi {}\n", classesDir);
+
+        Path jarPath = tempDir.resolve("excludes-api.jar");
+        packageDirectoryToJar(classesDir, jarPath);
+
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{jarPath.toUri().toURL()}, null)) {
+            SignatureGenerator gen = SignatureGenerator.forClassLoader(
+                    loader,
+                    Set.of("com.example.api"),
+                    Set.of("com.example.api.internal")
+            );
+            SignatureRecord record = gen.generate("1.0");
+
+            assertEquals(2, record.classes.size());
+            assertTrue(findClass(record, "com.example.api.PublicApi").isPresent());
+            assertTrue(findClass(record, "com.example.extra.ExtraApi").isPresent());
+            assertFalse(findClass(record, "com.example.api.internal.InternalApi").isPresent());
+        }
+    }
+
+    @Test
+    void forClassLoader_scansMultipleJarsAcrossClasspath() throws Exception {
+        Path jar1Classes = Files.createDirectories(tempDir.resolve("jar1-classes"));
+        Path jar2Classes = Files.createDirectories(tempDir.resolve("jar2-classes"));
+        compileToDir("package com.example.one;\npublic class ServiceOne {}\n", jar1Classes);
+        compileToDir("package com.example.two;\npublic class ServiceTwo {}\n", jar2Classes);
+
+        Path jar1 = tempDir.resolve("module-one.jar");
+        Path jar2 = tempDir.resolve("module-two.jar");
+        packageDirectoryToJar(jar1Classes, jar1);
+        packageDirectoryToJar(jar2Classes, jar2);
+
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{jar1.toUri().toURL(), jar2.toUri().toURL()}, null)) {
+            SignatureGenerator gen = SignatureGenerator.forClassLoader(loader, Set.of("com.example.one", "com.example.two"));
+            SignatureRecord record = gen.generate("1.0");
+
+            assertEquals(2, record.classes.size());
+            assertTrue(findClass(record, "com.example.one.ServiceOne").isPresent());
+            assertTrue(findClass(record, "com.example.two.ServiceTwo").isPresent());
+        }
+    }
+
+    @Test
+    void forClassLoader_packageNotFound_returnsEmptyRecord() throws Exception {
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{}, null)) {
+            SignatureGenerator gen = SignatureGenerator.forClassLoader(loader, Set.of("com.nonexistent"));
+            SignatureRecord record = gen.generate("1.0");
+
+            assertTrue(record.classes.isEmpty());
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Lower-level compile helper (no class-name inference needed)
     // -------------------------------------------------------------------------
 
@@ -1022,5 +1123,47 @@ class SignatureGeneratorTest {
                 "--release", "11",
                 srcFile.toString());
         assertTrue(rc == 0, "Compilation failed: " + srcFile);
+    }
+
+    private void compileToDir(String source, Path targetDir) throws Exception {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertNotNull(compiler);
+        String className = extractPublicClassName(source);
+        String pkg = extractPackageName(source);
+        Path srcDir = tempDir.resolve("compile-src");
+        if (!pkg.isEmpty()) {
+            srcDir = srcDir.resolve(pkg.replace('.', File.separatorChar));
+        }
+        Files.createDirectories(srcDir);
+        Path srcFile = srcDir.resolve(className + ".java");
+        Files.writeString(srcFile, source);
+        int rc = compiler.run(null, null, null,
+                "-d", targetDir.toString(),
+                "--release", "11",
+                srcFile.toString());
+        assertTrue(rc == 0, "Compilation failed: " + srcFile);
+    }
+
+    private void packageDirectoryToJar(Path directory, Path jarPath) throws Exception {
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(jarPath.toFile()))) {
+            try (var stream = Files.walk(directory)) {
+                List<Path> paths = stream.collect(java.util.stream.Collectors.toList());
+                for (Path p : paths) {
+                    if (p.equals(directory)) {
+                        continue;
+                    }
+                    String entryName = directory.relativize(p).toString().replace(File.separatorChar, '/');
+                    if (Files.isDirectory(p)) {
+                        entryName += "/";
+                        jos.putNextEntry(new JarEntry(entryName));
+                        jos.closeEntry();
+                    } else {
+                        jos.putNextEntry(new JarEntry(entryName));
+                        Files.copy(p, jos);
+                        jos.closeEntry();
+                    }
+                }
+            }
+        }
     }
 }

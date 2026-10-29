@@ -9,6 +9,7 @@
  */
 package jakarta.tck.sigtest.generate;
 
+import jakarta.tck.sigtest.util.ClasspathUtil;
 import jakarta.tck.sigtest.util.SignatureIO;
 import jakarta.tck.sigtest.model.ClassRecord;
 import jakarta.tck.sigtest.model.FieldRecord;
@@ -68,9 +69,47 @@ public class SignatureGenerator {
      *                        (checked after {@code rootPackages})
      */
     public SignatureGenerator(List<File> classpath, Set<String> rootPackages, Set<String> excludePackages) {
-        this.classpath = classpath;
-        this.rootPackages = rootPackages;
-        this.excludePackages = excludePackages;
+        this.classpath = classpath != null ? classpath : Collections.emptyList();
+        this.rootPackages = rootPackages != null ? rootPackages : Collections.emptySet();
+        this.excludePackages = excludePackages != null ? excludePackages : Collections.emptySet();
+    }
+
+    /**
+     * Creates a {@link SignatureGenerator} by locating the classpath entries (JARs or directories)
+     * providing the given baseline packages using the specified {@link ClassLoader}.
+     *
+     * <p>For each package in {@code baselinePackages}, the class loader is queried via
+     * {@link ClassLoader#getResources(String)} to map package paths back to their source
+     * JARs or directory roots. Each located JAR or directory is then discovered as a whole
+     * so that any packages added to the live API are captured during the signature scan.
+     *
+     * @param classLoader      class loader containing the live API on its classpath
+     * @param baselinePackages baseline package names used to locate API classpath entries
+     * @param excludePackages  dot-separated package prefixes to exclude from the scan
+     * @return a configured signature generator
+     * @throws IOException if an I/O error occurs while discovering resources or packages
+     */
+    public static SignatureGenerator forClassLoader(
+            ClassLoader classLoader,
+            Set<String> baselinePackages,
+            Set<String> excludePackages) throws IOException {
+        Set<File> entries = ClasspathUtil.locateClasspathEntries(classLoader, baselinePackages);
+        Set<String> livePackages = ClasspathUtil.discoverPackages(entries);
+        return new SignatureGenerator(new ArrayList<>(entries), livePackages, excludePackages);
+    }
+
+    /**
+     * Convenience overload for {@link #forClassLoader(ClassLoader, Set, Set)} with no excludes.
+     *
+     * @param classLoader      class loader containing the live API on its classpath
+     * @param baselinePackages baseline package names used to locate API classpath entries
+     * @return a configured signature generator
+     * @throws IOException if an I/O error occurs while discovering resources or packages
+     */
+    public static SignatureGenerator forClassLoader(
+            ClassLoader classLoader,
+            Set<String> baselinePackages) throws IOException {
+        return forClassLoader(classLoader, baselinePackages, Collections.emptySet());
     }
 
     /**
