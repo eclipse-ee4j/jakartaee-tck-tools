@@ -132,6 +132,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- JUnit 5 API (optional: only needed when users write JUnit-based signature tests) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

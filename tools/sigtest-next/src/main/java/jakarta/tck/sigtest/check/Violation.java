@@ -103,8 +103,8 @@ public final class Violation {
         this.message = message;
     }
 
-    /** Factory used internally by {@link SignatureDiff}. */
-    static Violation of(Kind kind, String className, String message) {
+    /** Factory method for creating violations. Used by {@link SignatureDiff} and tests. */
+    public static Violation of(Kind kind, String className, String message) {
         return new Violation(kind, className, message);
     }
 
