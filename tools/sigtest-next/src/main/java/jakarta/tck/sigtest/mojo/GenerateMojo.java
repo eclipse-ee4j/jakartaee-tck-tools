@@ -124,20 +124,20 @@ public class GenerateMojo extends AbstractMojo {
     private File classes;
 
     /**
-     * Output JSON signature file.
+     * Output JSON signature file name.
      */
-    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.sig.json", required = true)
+    @Parameter(defaultValue = "${project.build.finalName}.sig.json", required = true)
     private File sigfile;
 
     /**
-     * Optional directory to write the signature file into, keeping the file name of
-     * {@link #sigfile}. When set, it replaces the parent directory of {@link #sigfile}.
+     * Directory to write the signature file into.
      *
-     * <p>Use {@code ${project.build.testOutputDirectory}} to put the baseline on the test
+     * <p>Defaults to {@code ${project.build.directory}}.
+     * Use {@code ${project.build.testOutputDirectory}} to put the baseline on the test
      * resource classpath (for {@code SignatureAssert}), or
      * {@code ${project.build.outputDirectory}} to package it with the main artifact.
      */
-    @Parameter
+    @Parameter(defaultValue = "${project.build.directory}", required = true)
     private File outputDirectory;
 
     /**
