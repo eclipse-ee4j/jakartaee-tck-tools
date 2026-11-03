@@ -1,0 +1,24 @@
+{
+    "formatVersion": "1.0",
+    "apiVersion": "1.0.0",
+    "classes": [
+        {
+            "modifiers": "public abstract",
+            "kind": "interface",
+            "name": "com.example.resolveapi.ResolveService",
+            "methods": [
+                {
+                    "modifiers": "public abstract",
+                    "returnType": "java.lang.String",
+                    "isConstructor": false,
+                    "name": "resolve",
+                    "parameters": [
+                        {
+                            "type": "java.lang.String"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
