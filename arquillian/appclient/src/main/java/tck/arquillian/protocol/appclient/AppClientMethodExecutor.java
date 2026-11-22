@@ -15,10 +15,7 @@ import org.jboss.arquillian.container.spi.client.deployment.Deployment;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
 import tck.arquillian.protocol.common.TargetVehicle;
@@ -192,7 +189,6 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
         String deploymentName = config.getDeploymentName();
         log.info("Getting deployment stubs, deployment: " + deploymentName);
         String[] cmdLine = config.clientStubsCmdLineAsArray();
-        String[] clientEnvp = {};
         for (int n = 0; n < cmdLine.length; n ++) {
             String arg = cmdLine[n];
             if (arg.contains("${deploymentName}")) {
@@ -201,7 +197,7 @@ public class AppClientMethodExecutor implements ContainerMethodExecutor {
             }
         }
         log.info("Running: " + String.join(" ", cmdLine));
-        Process stubsProcess = Runtime.getRuntime().exec(cmdLine, clientEnvp, null);
+        Process stubsProcess = Runtime.getRuntime().exec(cmdLine, null, null);
         int exit = stubsProcess.waitFor();
         log.info("Stubs process exited with: " + exit);
         if (exit != 0) {
